@@ -3,7 +3,21 @@ import React from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { AssessmentResult, CEFRLevel } from '../types/assessment';
-import { PolarArea, Radar, Bar } from 'recharts';
+import { 
+  RadarChart, 
+  PolarGrid, 
+  PolarAngleAxis, 
+  PolarRadiusAxis, 
+  Radar, 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from 'recharts';
 
 interface AssessmentReportProps {
   result: AssessmentResult | null;
@@ -105,16 +119,20 @@ const AssessmentReport: React.FC<AssessmentReportProps> = ({ result, isLoading }
         <TabsContent value="overview" className="pt-2">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="radar-chart-container md:w-1/2">
-              <Radar 
-                width={400}
-                height={300}
-                data={radarData}
-                cx="50%"
-                cy="50%"
-                outerRadius="70%"
-              >
-                <PolarArea dataKey="score" stroke="#3BCEAC" fill="#3BCEAC" fillOpacity={0.6} />
-              </Radar>
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="subject" />
+                  <PolarRadiusAxis angle={30} domain={[0, 10]} />
+                  <Radar 
+                    name="Skills" 
+                    dataKey="score" 
+                    stroke="#3BCEAC" 
+                    fill="#3BCEAC" 
+                    fillOpacity={0.6} 
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
             </div>
             <div className="md:w-1/2">
               <h3 className="text-lg font-semibold mb-3">Overall Assessment</h3>
@@ -174,14 +192,16 @@ const AssessmentReport: React.FC<AssessmentReportProps> = ({ result, isLoading }
         
         <TabsContent value="chart" className="pt-2">
           <div className="h-96 w-full">
-            <Bar
-              width={800}
-              height={350}
-              data={barData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-            >
-              <Bar dataKey="value" fill="#3BCEAC" />
-            </Bar>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis domain={[0, 10]} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#3BCEAC" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
           
           <div className="mt-6">

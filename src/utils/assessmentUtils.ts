@@ -1,5 +1,5 @@
 
-import { AssessmentMetrics, AssessmentResult, CEFRLevel } from "../types/assessment";
+import { AssessmentMetrics, AssessmentResult, CEFRLevel, AssessmentFeedback } from "../types/assessment";
 
 // Mock implementation for demo purposes
 // In a real app, this would connect to a backend AI service
