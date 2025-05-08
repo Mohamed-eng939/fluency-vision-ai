@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
@@ -17,21 +16,18 @@ const FullAssessmentIntro: React.FC<FullAssessmentIntroProps> = ({
   onStartAssessment,
   onClose
 }) => {
-  const tasksByLevel = assessment.sections.flatMap(section => 
-    section.tasks.reduce<Record<string, TestTask[]>>((acc, task) => {
-      if (!acc[task.level]) {
-        acc[task.level] = [];
+  // Restructured to avoid the type error
+  const tasksByLevel: Record<string, TestTask[]> = {};
+  
+  // Populate tasksByLevel
+  assessment.sections.forEach(section => {
+    section.tasks.forEach(task => {
+      if (!tasksByLevel[task.level]) {
+        tasksByLevel[task.level] = [];
       }
-      acc[task.level].push(task);
-      return acc;
-    }, {})
-  ).reduce((acc, obj) => {
-    Object.entries(obj).forEach(([key, value]) => {
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(...value);
+      tasksByLevel[task.level].push(task);
     });
-    return acc;
-  }, {} as Record<string, TestTask[]>);
+  });
 
   const levels = Object.keys(tasksByLevel).sort();
 
