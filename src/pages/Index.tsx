@@ -1,260 +1,98 @@
 
-import React, { useState } from 'react';
-import Header from '../components/Header';
-import CustomHeader from '../components/CustomHeader';
-import PromptSection from '../components/PromptSection';
-import RecordingSection from '../components/RecordingSection';
-import AssessmentReport from '../components/AssessmentReport';
-import FullAssessmentIntro from '../components/FullAssessmentIntro';
-import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
-import { toast } from '../components/ui/use-toast';
-import { AssessmentResult, SpeakingPrompt } from '../types/assessment';
-import { analyzeAudio, fullAssessmentTests } from '../utils/assessmentUtils';
-import Logo from '../components/Logo';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
-  const [selectedPrompt, setSelectedPrompt] = useState<SpeakingPrompt | null>(null);
-  const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
-  const [assessmentMode, setAssessmentMode] = useState<'quick' | 'full'>('quick');
-  const [fullAssessmentStarted, setFullAssessmentStarted] = useState(false);
-
-  const handlePromptSelect = (prompt: SpeakingPrompt) => {
-    setSelectedPrompt(prompt);
-    setAssessmentResult(null);
-    setAudioBlob(null);
-    setShowIntro(false);
-  };
-
-  const handleRecordingComplete = (blob: Blob) => {
-    setAudioBlob(blob);
-    toast({
-      title: "Recording completed",
-      description: "Your response has been recorded. You can now analyze it or re-record.",
-    });
-  };
-
-  const handleAnalyze = async () => {
-    if (!audioBlob) {
-      toast({
-        title: "No recording found",
-        description: "Please record your response before analyzing.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsAnalyzing(true);
-    
-    try {
-      const result = await analyzeAudio(audioBlob);
-      setAssessmentResult(result);
-      toast({
-        title: "Analysis complete",
-        description: `Your speech has been analyzed with CEFR level ${result.cefrLevel}.`,
-      });
-    } catch (error) {
-      console.error('Error analyzing audio:', error);
-      toast({
-        title: "Analysis failed",
-        description: "There was a problem analyzing your speech. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const handleReset = () => {
-    setSelectedPrompt(null);
-    setAssessmentResult(null);
-    setAudioBlob(null);
-    setShowIntro(true);
-  };
-
-  const handleSelectAssessmentMode = (mode: 'quick' | 'full') => {
-    setAssessmentMode(mode);
-    setFullAssessmentStarted(false);
-    if (mode === 'quick') {
-      setShowIntro(true);
-    }
-  };
-
-  const handleStartFullAssessment = () => {
-    setFullAssessmentStarted(true);
-    toast({
-      title: "Full Assessment Mode",
-      description: "Full assessment functionality coming soon. This is a preview of the interface.",
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CustomHeader 
-        onSelectAssessmentMode={handleSelectAssessmentMode} 
-        currentMode={assessmentMode} 
-      />
-      
-      <main className="assessment-container py-6">
-        {assessmentMode === 'quick' ? (
-          // Quick Assessment Mode
-          <>
-            {showIntro ? (
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 mb-8">
-                <div className="flex justify-center mb-6">
-                  <Logo size="lg" variant="full" />
-                </div>
-                <h2 className="text-2xl font-bold text-assessment-blue mb-4">Welcome to LinguaSpeak AI</h2>
-                <p className="mb-4">
-                  This tool evaluates your spoken language proficiency across multiple dimensions:
-                </p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                  {['Fluency', 'Grammar', 'Pronunciation', 'Prosody', 'Vocabulary', 'Syntax', 'Coherence'].map((metric) => (
-                    <div key={metric} className="bg-assessment-blue/5 p-3 rounded-lg">
-                      <h3 className="font-semibold text-assessment-blue">{metric}</h3>
-                      <p className="text-sm text-gray-600">
-                        {getMetricDescription(metric)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="text-center mt-8">
-                  <Button
-                    className="bg-assessment-teal hover:bg-assessment-lightBlue text-white px-8"
-                    onClick={() => setShowIntro(false)}
-                  >
-                    Start Quick Assessment
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <PromptSection 
-                  onPromptSelect={handlePromptSelect} 
-                  selectedPrompt={selectedPrompt} 
-                />
-                
-                <RecordingSection 
-                  prompt={selectedPrompt} 
-                  onRecordingComplete={handleRecordingComplete} 
-                />
-                
-                {audioBlob && !assessmentResult && !isAnalyzing && (
-                  <Card className="p-4 mb-8">
-                    <div className="flex flex-col sm:flex-row justify-between items-center">
-                      <div>
-                        <p className="font-medium text-assessment-blue">Recording complete</p>
-                        <p className="text-sm text-gray-500">Ready for analysis</p>
-                      </div>
-                      <div className="flex gap-2 mt-4 sm:mt-0">
-                        <Button 
-                          variant="outline" 
-                          onClick={handleReset}
-                        >
-                          Start Over
-                        </Button>
-                        <Button 
-                          className="bg-assessment-teal hover:bg-assessment-lightBlue text-white"
-                          onClick={handleAnalyze}
-                        >
-                          Analyze Speech
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                )}
-                
-                <AssessmentReport 
-                  result={assessmentResult} 
-                  isLoading={isAnalyzing} 
-                />
-                
-                {assessmentResult && (
-                  <div className="text-center mb-8">
-                    <Button 
-                      variant="outline" 
-                      onClick={handleReset}
-                    >
-                      Start New Assessment
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        ) : (
-          // Full Assessment Mode
-          <div className="py-4">
-            {!fullAssessmentStarted ? (
-              <FullAssessmentIntro 
-                assessment={fullAssessmentTests[0]} 
-                onStartAssessment={handleStartFullAssessment}
-                onClose={() => handleSelectAssessmentMode('quick')}
-              />
-            ) : (
-              <div className="text-center py-12">
-                <div className="mb-8">
-                  <Logo size="lg" variant="full" />
-                </div>
-                <h2 className="text-2xl font-bold mb-4">Full Assessment Coming Soon</h2>
-                <p className="text-gray-600 mb-6">The complete assessment functionality is under development.</p>
-                <Button 
-                  onClick={() => setFullAssessmentStarted(false)} 
-                  variant="outline"
-                  className="mr-4"
-                >
-                  Back to Instructions
+    <div className="container mx-auto py-12 px-4">
+      <header className="text-center mb-16">
+        <h1 className="text-4xl font-bold text-assessment-blue mb-4">LinguaSpeak AI</h1>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          Advanced language proficiency assessment powered by artificial intelligence.
+        </p>
+      </header>
+
+      <div className="max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="flex flex-col justify-center">
+            <h2 className="text-3xl font-bold text-assessment-blue mb-6">
+              Discover Your True Language Level
+            </h2>
+            <p className="text-gray-700 mb-4">
+              LinguaSpeak AI uses advanced speech recognition and natural language processing 
+              to accurately assess your language proficiency according to the CEFR framework.
+            </p>
+            <ul className="mb-8 space-y-2">
+              <li className="flex items-center">
+                <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
+                Quick 2-minute speaking assessments
+              </li>
+              <li className="flex items-center">
+                <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
+                Comprehensive full skill evaluations
+              </li>
+              <li className="flex items-center">
+                <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
+                Detailed feedback and improvement suggestions
+              </li>
+            </ul>
+            <div>
+              <Link to="/assessment">
+                <Button className="bg-assessment-teal hover:bg-assessment-lightBlue text-white px-8 py-6 text-lg rounded-md">
+                  Start Your Assessment
                 </Button>
-                <Button 
-                  onClick={() => handleSelectAssessmentMode('quick')} 
-                  className="bg-assessment-teal hover:bg-assessment-lightBlue text-white"
-                >
-                  Try Quick Assessment
-                </Button>
-              </div>
-            )}
+              </Link>
+            </div>
           </div>
-        )}
-      </main>
-      
-      <footer className="bg-assessment-blue text-white py-4 mt-12">
-        <div className="assessment-container text-center">
-          <p className="text-sm">
-            LinguaSpeak AI - Advanced Language Proficiency Assessment Tool
-          </p>
-          <p className="text-xs opacity-75 mt-1">
-            Powered by AI speech analysis
-          </p>
+          <div className="rounded-lg bg-gradient-to-br from-assessment-blue to-assessment-teal p-1">
+            <div className="bg-white rounded-lg h-full flex items-center justify-center">
+              <img 
+                src="/placeholder.svg" 
+                alt="LinguaSpeak AI Assessment" 
+                className="max-h-80"
+              />
+            </div>
+          </div>
         </div>
-      </footer>
+
+        <div className="mt-24">
+          <h2 className="text-2xl font-bold text-center text-assessment-blue mb-12">
+            How It Works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6 border border-gray-100 rounded-lg shadow-sm">
+              <div className="bg-assessment-blue/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-assessment-blue">1</span>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Choose Your Assessment</h3>
+              <p className="text-gray-600">
+                Select a quick speaking assessment or a comprehensive full evaluation of all skills.
+              </p>
+            </div>
+            <div className="text-center p-6 border border-gray-100 rounded-lg shadow-sm">
+              <div className="bg-assessment-blue/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-assessment-blue">2</span>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Complete the Tasks</h3>
+              <p className="text-gray-600">
+                Read texts, listen to audio, speak responses, or write answers based on your assessment type.
+              </p>
+            </div>
+            <div className="text-center p-6 border border-gray-100 rounded-lg shadow-sm">
+              <div className="bg-assessment-blue/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-assessment-blue">3</span>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Get Your Results</h3>
+              <p className="text-gray-600">
+                Receive detailed feedback on your performance and your CEFR proficiency level.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-};
-
-const getMetricDescription = (metric: string): string => {
-  switch (metric) {
-    case 'Fluency':
-      return 'Rate and ease of speech, pauses, fillers';
-    case 'Grammar':
-      return 'Correct sentence structure and grammar rules';
-    case 'Pronunciation':
-      return 'Accurate sounds, word stress and articulation';
-    case 'Prosody':
-      return 'Rhythm, intonation and stress patterns';
-    case 'Vocabulary':
-      return 'Word choice, range and appropriateness';
-    case 'Syntax':
-      return 'Sentence structure complexity and variation';
-    case 'Coherence':
-      return 'Logical flow and topic relevance';
-    default:
-      return '';
-  }
 };
 
 export default Index;
