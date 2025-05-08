@@ -1,14 +1,17 @@
 
 import React, { useState } from 'react';
 import Header from '../components/Header';
+import CustomHeader from '../components/CustomHeader';
 import PromptSection from '../components/PromptSection';
 import RecordingSection from '../components/RecordingSection';
 import AssessmentReport from '../components/AssessmentReport';
+import FullAssessmentIntro from '../components/FullAssessmentIntro';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
 import { AssessmentResult, SpeakingPrompt } from '../types/assessment';
-import { analyzeAudio } from '../utils/assessmentUtils';
+import { analyzeAudio, fullAssessmentTests } from '../utils/assessmentUtils';
+import Logo from '../components/Logo';
 
 const Index = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<SpeakingPrompt | null>(null);
@@ -16,6 +19,8 @@ const Index = () => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [assessmentMode, setAssessmentMode] = useState<'quick' | 'full'>('quick');
+  const [fullAssessmentStarted, setFullAssessmentStarted] = useState(false);
 
   const handlePromptSelect = (prompt: SpeakingPrompt) => {
     setSelectedPrompt(prompt);
@@ -70,98 +75,157 @@ const Index = () => {
     setShowIntro(true);
   };
 
+  const handleSelectAssessmentMode = (mode: 'quick' | 'full') => {
+    setAssessmentMode(mode);
+    setFullAssessmentStarted(false);
+    if (mode === 'quick') {
+      setShowIntro(true);
+    }
+  };
+
+  const handleStartFullAssessment = () => {
+    setFullAssessmentStarted(true);
+    toast({
+      title: "Full Assessment Mode",
+      description: "Full assessment functionality coming soon. This is a preview of the interface.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <CustomHeader 
+        onSelectAssessmentMode={handleSelectAssessmentMode} 
+        currentMode={assessmentMode} 
+      />
       
       <main className="assessment-container py-6">
-        {showIntro ? (
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 mb-8">
-            <h2 className="text-2xl font-bold text-assessment-blue mb-4">Welcome to FluencyVision AI</h2>
-            <p className="mb-4">
-              This tool evaluates your spoken language proficiency across multiple dimensions:
-            </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-              {['Fluency', 'Grammar', 'Pronunciation', 'Prosody', 'Vocabulary', 'Syntax', 'Coherence'].map((metric) => (
-                <div key={metric} className="bg-assessment-blue/5 p-3 rounded-lg">
-                  <h3 className="font-semibold text-assessment-blue">{metric}</h3>
-                  <p className="text-sm text-gray-600">
-                    {getMetricDescription(metric)}
-                  </p>
-                </div>
-              ))}
-            </div>
-            
-            <div className="text-center mt-8">
-              <Button
-                className="bg-assessment-teal hover:bg-assessment-lightBlue text-white px-8"
-                onClick={() => setShowIntro(false)}
-              >
-                Start Assessment
-              </Button>
-            </div>
-          </div>
-        ) : (
+        {assessmentMode === 'quick' ? (
+          // Quick Assessment Mode
           <>
-            <PromptSection 
-              onPromptSelect={handlePromptSelect} 
-              selectedPrompt={selectedPrompt} 
-            />
-            
-            <RecordingSection 
-              prompt={selectedPrompt} 
-              onRecordingComplete={handleRecordingComplete} 
-            />
-            
-            {audioBlob && !assessmentResult && !isAnalyzing && (
-              <Card className="p-4 mb-8">
-                <div className="flex flex-col sm:flex-row justify-between items-center">
-                  <div>
-                    <p className="font-medium text-assessment-blue">Recording complete</p>
-                    <p className="text-sm text-gray-500">Ready for analysis</p>
-                  </div>
-                  <div className="flex gap-2 mt-4 sm:mt-0">
+            {showIntro ? (
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 mb-8">
+                <div className="flex justify-center mb-6">
+                  <Logo size="lg" variant="full" />
+                </div>
+                <h2 className="text-2xl font-bold text-assessment-blue mb-4">Welcome to LinguaSpeak AI</h2>
+                <p className="mb-4">
+                  This tool evaluates your spoken language proficiency across multiple dimensions:
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                  {['Fluency', 'Grammar', 'Pronunciation', 'Prosody', 'Vocabulary', 'Syntax', 'Coherence'].map((metric) => (
+                    <div key={metric} className="bg-assessment-blue/5 p-3 rounded-lg">
+                      <h3 className="font-semibold text-assessment-blue">{metric}</h3>
+                      <p className="text-sm text-gray-600">
+                        {getMetricDescription(metric)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="text-center mt-8">
+                  <Button
+                    className="bg-assessment-teal hover:bg-assessment-lightBlue text-white px-8"
+                    onClick={() => setShowIntro(false)}
+                  >
+                    Start Quick Assessment
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <PromptSection 
+                  onPromptSelect={handlePromptSelect} 
+                  selectedPrompt={selectedPrompt} 
+                />
+                
+                <RecordingSection 
+                  prompt={selectedPrompt} 
+                  onRecordingComplete={handleRecordingComplete} 
+                />
+                
+                {audioBlob && !assessmentResult && !isAnalyzing && (
+                  <Card className="p-4 mb-8">
+                    <div className="flex flex-col sm:flex-row justify-between items-center">
+                      <div>
+                        <p className="font-medium text-assessment-blue">Recording complete</p>
+                        <p className="text-sm text-gray-500">Ready for analysis</p>
+                      </div>
+                      <div className="flex gap-2 mt-4 sm:mt-0">
+                        <Button 
+                          variant="outline" 
+                          onClick={handleReset}
+                        >
+                          Start Over
+                        </Button>
+                        <Button 
+                          className="bg-assessment-teal hover:bg-assessment-lightBlue text-white"
+                          onClick={handleAnalyze}
+                        >
+                          Analyze Speech
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+                
+                <AssessmentReport 
+                  result={assessmentResult} 
+                  isLoading={isAnalyzing} 
+                />
+                
+                {assessmentResult && (
+                  <div className="text-center mb-8">
                     <Button 
                       variant="outline" 
                       onClick={handleReset}
                     >
-                      Start Over
-                    </Button>
-                    <Button 
-                      className="bg-assessment-teal hover:bg-assessment-lightBlue text-white"
-                      onClick={handleAnalyze}
-                    >
-                      Analyze Speech
+                      Start New Assessment
                     </Button>
                   </div>
-                </div>
-              </Card>
+                )}
+              </>
             )}
-            
-            <AssessmentReport 
-              result={assessmentResult} 
-              isLoading={isAnalyzing} 
-            />
-            
-            {assessmentResult && (
-              <div className="text-center mb-8">
+          </>
+        ) : (
+          // Full Assessment Mode
+          <div className="py-4">
+            {!fullAssessmentStarted ? (
+              <FullAssessmentIntro 
+                assessment={fullAssessmentTests[0]} 
+                onStartAssessment={handleStartFullAssessment}
+                onClose={() => handleSelectAssessmentMode('quick')}
+              />
+            ) : (
+              <div className="text-center py-12">
+                <div className="mb-8">
+                  <Logo size="lg" variant="full" />
+                </div>
+                <h2 className="text-2xl font-bold mb-4">Full Assessment Coming Soon</h2>
+                <p className="text-gray-600 mb-6">The complete assessment functionality is under development.</p>
                 <Button 
-                  variant="outline" 
-                  onClick={handleReset}
+                  onClick={() => setFullAssessmentStarted(false)} 
+                  variant="outline"
+                  className="mr-4"
                 >
-                  Start New Assessment
+                  Back to Instructions
+                </Button>
+                <Button 
+                  onClick={() => handleSelectAssessmentMode('quick')} 
+                  className="bg-assessment-teal hover:bg-assessment-lightBlue text-white"
+                >
+                  Try Quick Assessment
                 </Button>
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
       
       <footer className="bg-assessment-blue text-white py-4 mt-12">
         <div className="assessment-container text-center">
           <p className="text-sm">
-            FluencyVision AI - Advanced Language Proficiency Assessment Tool
+            LinguaSpeak AI - Advanced Language Proficiency Assessment Tool
           </p>
           <p className="text-xs opacity-75 mt-1">
             Powered by AI speech analysis
