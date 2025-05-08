@@ -124,7 +124,7 @@ const AssessmentPage: React.FC = () => {
             </>
           ) : (
             <>
-              <AssessmentReport result={assessmentResult} />
+              <AssessmentReport result={assessmentResult} isLoading={isProcessing} />
               
               <div className="mt-6 flex justify-center">
                 <Button 
