@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +7,7 @@ import AssessmentReport from '@/components/AssessmentReport';
 import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
 import { SpeakingPrompt, AssessmentResult } from '@/types/assessment';
-import { analyzeAudio, fullAssessmentTests } from '@/utils/assessmentUtils';
+import { analyzeAudio, getFullAssessmentTests } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
 
 const AssessmentPage: React.FC = () => {
@@ -18,6 +17,9 @@ const AssessmentPage: React.FC = () => {
   const [showFullAssessment, setShowFullAssessment] = useState(false);
   const [showFullAssessmentIntro, setShowFullAssessmentIntro] = useState(false);
   const { toast } = useToast();
+
+  // Get the enhanced full assessment tests
+  const fullAssessmentTests = getFullAssessmentTests();
 
   const handlePromptSelect = (prompt: SpeakingPrompt) => {
     setSelectedPrompt(prompt);

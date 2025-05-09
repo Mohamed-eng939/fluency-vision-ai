@@ -1,5 +1,13 @@
-
-import { AssessmentMetrics, AssessmentResult, CEFRLevel, AssessmentFeedback, TestTask, TestSection, FullAssessment } from "../types/assessment";
+import { 
+  AssessmentMetrics, 
+  AssessmentResult, 
+  CEFRLevel, 
+  AssessmentFeedback, 
+  TestTask, 
+  TestSection, 
+  FullAssessment 
+} from "../types/assessment";
+import { getQuestionsForTask, enhanceTaskWithQuestions } from "./questionUtils";
 
 // Mock implementation for demo purposes
 // In a real app, this would connect to a backend AI service
@@ -145,7 +153,18 @@ export const fullAssessmentTests: FullAssessment[] = [
             description: 'Listen to short phrases and select the corresponding image',
             instructions: 'For each audio clip, select the picture that best matches what you hear.',
             timeLimit: 5,
-            questions: 5
+            questions: 5,
+            objective: 'Assess ability to identify factual information in simple spoken phrases',
+            rubric: {
+              criteria: [
+                'Comprehension Accuracy',
+                'Attention to Detail'
+              ],
+              scale: 5,
+              cognitiveTag: 'recall',
+              languageFunctions: ['identifying'],
+              canDoDescriptor: "Can understand phrases and the highest frequency vocabulary related to areas of most immediate personal relevance."
+            }
           },
           {
             id: 'a1-reading',
@@ -155,7 +174,18 @@ export const fullAssessmentTests: FullAssessment[] = [
             description: 'Match basic words with their corresponding images',
             instructions: 'Match each word in the list with its corresponding picture.',
             timeLimit: 5,
-            questions: 10
+            questions: 10,
+            objective: 'Assess ability to recognize basic written vocabulary',
+            rubric: {
+              criteria: [
+                'Word Recognition',
+                'Visual Association'
+              ],
+              scale: 5,
+              cognitiveTag: 'recall',
+              languageFunctions: ['identifying'],
+              canDoDescriptor: "Can understand familiar names, words and very basic phrases."
+            }
           },
           {
             id: 'a2-listening',
@@ -389,3 +419,15 @@ export const fullAssessmentTests: FullAssessment[] = [
     ]
   }
 ];
+
+// Enhance the tasks with questions
+export const enhancedFullAssessmentTests: FullAssessment[] = fullAssessmentTests.map(assessment => ({
+  ...assessment,
+  sections: assessment.sections.map(section => ({
+    ...section,
+    tasks: section.tasks.map(task => enhanceTaskWithQuestions(task.id, task))
+  }))
+}));
+
+// This makes the enhanced version the default exported version
+export const getFullAssessmentTests = () => enhancedFullAssessmentTests;

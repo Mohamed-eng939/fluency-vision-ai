@@ -1,10 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
-import { CheckCircle, ArrowRight, Clock, Book } from 'lucide-react';
-import { FullAssessment, TestTask } from '../types/assessment';
+import { Textarea } from './ui/textarea';
+import { CheckCircle, ArrowRight, Clock, Book, Mic, MicOff } from 'lucide-react';
+import { 
+  FullAssessment, 
+  TestTask, 
+  AssessmentQuestion, 
+  QuestionType 
+} from '../types/assessment';
 
 interface FullAssessmentProps {
   assessment: FullAssessment;
@@ -12,54 +18,23 @@ interface FullAssessmentProps {
   onExit: () => void;
 }
 
-interface TaskQuestion {
-  id: string;
-  text: string;
-  options?: string[];
-  imageUrl?: string;
-  audioUrl?: string;
-}
-
-const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ assessment, onComplete, onExit }) => {
+const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ 
+  assessment, 
+  onComplete, 
+  onExit 
+}) => {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isTaskActive, setIsTaskActive] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   
   const currentSection = assessment.sections[currentSectionIndex];
   const currentTask = currentSection?.tasks[currentTaskIndex];
-  
-  // Sample questions for each task - in a real app, these would come from an API or database
-  const [questions] = useState<Record<string, TaskQuestion[]>>({
-    'a1-listening': [
-      { 
-        id: 'q1', 
-        text: 'Listen to the phrase and select the matching image.', 
-        audioUrl: '/sample-audio.mp3',
-        options: ['A person eating breakfast', 'A person reading a book', 'A person walking a dog']
-      },
-      { 
-        id: 'q2', 
-        text: 'Listen and choose the correct picture.', 
-        audioUrl: '/sample-audio-2.mp3',
-        options: ['A woman driving a car', 'A family at the beach', 'A student in a classroom']
-      }
-    ],
-    'a1-reading': [
-      {
-        id: 'q1',
-        text: 'Match the word "apple" with the correct image.',
-        options: ['🍎', '🍌', '🍇', '🍊']
-      },
-      {
-        id: 'q2',
-        text: 'Match the word "house" with the correct image.',
-        options: ['🏠', '🏢', '🏫', '🏕️']
-      }
-    ]
-  });
+  const questions = currentTask?.questionsList || [];
   
   // Start the task timer
   const startTask = () => {
@@ -108,6 +83,7 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ assessment, on
     // Reset task state
     setIsTaskActive(false);
     setTimeRemaining(null);
+    setAudioBlob(null);
   };
   
   // Format time from seconds to MM:SS
@@ -123,13 +99,244 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ assessment, on
   const completedTasks = currentSectionIndex * currentSection.tasks.length + currentTaskIndex;
   const progressPercentage = (completedTasks / totalTasks) * 100;
   
+  // Start audio recording for speaking tasks
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const audioChunks: BlobPart[] = [];
+      
+      recorder.ondataavailable = (e) => {
+        audioChunks.push(e.data);
+      };
+      
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        setAudioBlob(audioBlob);
+      };
+      
+      setMediaRecorder(recorder);
+      recorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+    }
+  };
+  
+  const stopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
+  // Render questions based on their type
+  const renderQuestion = (question: AssessmentQuestion) => {
+    switch(question.type) {
+      case 'multiple-choice':
+        return (
+          <div className="space-y-2">
+            {question.options?.map((option, index) => (
+              <label 
+                key={index} 
+                className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
+              >
+                <input 
+                  type="radio" 
+                  name={`question-${question.id}`} 
+                  value={option}
+                  onChange={() => handleAnswer(question.id, option)}
+                  checked={answers[`${currentTask.id}-${question.id}`] === option}
+                  className="mr-2"
+                />
+                <span>{option}</span>
+              </label>
+            ))}
+          </div>
+        );
+        
+      case 'matching':
+        // For simplicity, we're treating this as selecting options from a dropdown for each item
+        return (
+          <div className="space-y-4">
+            {question.options?.map((option, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <span className="font-medium">{option}</span>
+                <select
+                  className="border rounded p-2 flex-1"
+                  onChange={(e) => {
+                    const currentAnswers = answers[`${currentTask.id}-${question.id}`] || {};
+                    handleAnswer(question.id, {
+                      ...currentAnswers,
+                      [option]: e.target.value
+                    });
+                  }}
+                  value={
+                    (answers[`${currentTask.id}-${question.id}`] || {})[option] || ""
+                  }
+                >
+                  <option value="">Select a match</option>
+                  {question.options?.map((matchOption, i) => (
+                    <option key={i} value={matchOption}>{matchOption}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        );
+        
+      case 'gap-fill':
+        // Simple implementation - in a real app, this would be more sophisticated
+        return (
+          <div className="p-4 border rounded-lg">
+            <textarea
+              className="w-full p-3 border rounded"
+              rows={5}
+              placeholder="Fill in the blanks..."
+              onChange={(e) => handleAnswer(question.id, e.target.value)}
+              value={answers[`${currentTask.id}-${question.id}`] || ""}
+            />
+          </div>
+        );
+        
+      case 'short-answer':
+        return (
+          <div className="p-4 border rounded-lg">
+            <textarea
+              className="w-full p-3 border rounded"
+              rows={3}
+              placeholder="Type your answer..."
+              onChange={(e) => handleAnswer(question.id, e.target.value)}
+              value={answers[`${currentTask.id}-${question.id}`] || ""}
+            />
+          </div>
+        );
+        
+      case 'paragraph-writing':
+      case 'essay-writing':
+      case 'long-answer':
+        return (
+          <div className="p-4 border rounded-lg">
+            <Textarea
+              className="w-full min-h-[150px]"
+              placeholder="Write your response..."
+              onChange={(e) => handleAnswer(question.id, e.target.value)}
+              value={answers[`${currentTask.id}-${question.id}`] || ""}
+            />
+          </div>
+        );
+        
+      case 'image-selection':
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {question.options?.map((option, index) => (
+              <div 
+                key={index}
+                className={`p-2 border rounded-lg cursor-pointer ${
+                  answers[`${currentTask.id}-${question.id}`] === option 
+                    ? 'border-assessment-teal bg-assessment-teal/10' 
+                    : 'hover:bg-gray-50'
+                }`}
+                onClick={() => handleAnswer(question.id, option)}
+              >
+                <img 
+                  src={`/images/${option}`} 
+                  alt={`Option ${index + 1}`}
+                  className="w-full h-32 object-contain mb-2"
+                />
+                <div className="text-center text-sm">{option}</div>
+              </div>
+            ))}
+          </div>
+        );
+        
+      case 'audio-recording':
+        return (
+          <div className="p-6 border rounded-lg text-center">
+            {!audioBlob ? (
+              <div className="space-y-4">
+                <div className="text-lg font-medium">Record your response</div>
+                <Button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={isRecording ? "bg-red-500 hover:bg-red-600" : "bg-assessment-teal hover:bg-assessment-lightBlue"}
+                >
+                  {isRecording ? (
+                    <>
+                      <MicOff className="w-4 h-4 mr-2" /> Stop Recording
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-4 h-4 mr-2" /> Start Recording
+                    </>
+                  )}
+                </Button>
+                {isRecording && (
+                  <div className="text-sm text-red-500 animate-pulse">
+                    Recording in progress...
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-lg font-medium text-assessment-teal">Recording complete</div>
+                <audio controls className="w-full">
+                  <source src={URL.createObjectURL(audioBlob)} type="audio/wav" />
+                  Your browser does not support the audio element.
+                </audio>
+                <Button
+                  onClick={() => {
+                    setAudioBlob(null);
+                    handleAnswer(question.id, null);
+                  }}
+                  variant="outline"
+                >
+                  Delete & Re-record
+                </Button>
+              </div>
+            )}
+          </div>
+        );
+        
+      case 'heading-matching':
+      case 'note-completion':
+      case 'summary-completion':
+        // For simplicity, these are implemented similar to gap-fill
+        return (
+          <div className="p-4 border rounded-lg">
+            <textarea
+              className="w-full p-3 border rounded"
+              rows={5}
+              placeholder={`Complete the ${question.type.replace('-', ' ')}...`}
+              onChange={(e) => handleAnswer(question.id, e.target.value)}
+              value={answers[`${currentTask.id}-${question.id}`] || ""}
+            />
+          </div>
+        );
+        
+      default:
+        return (
+          <div className="p-4 border border-red-300 rounded-lg bg-red-50 text-red-700">
+            Question type '{question.type}' not supported yet
+          </div>
+        );
+    }
+  };
+
   // Render questions for the current task
   const renderTaskQuestions = () => {
-    const taskQuestions = questions[currentTask.id] || [];
+    if (!questions.length) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-gray-500">
+            No questions available for this task.
+          </div>
+        </div>
+      );
+    }
     
     return (
       <div className="space-y-6">
-        {taskQuestions.map((question) => (
+        {questions.map((question) => (
           <div key={question.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <h3 className="font-medium mb-3">{question.text}</h3>
             
@@ -142,26 +349,17 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ assessment, on
               </div>
             )}
             
-            {question.options && (
-              <div className="space-y-2">
-                {question.options.map((option, index) => (
-                  <label 
-                    key={index} 
-                    className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
-                  >
-                    <input 
-                      type="radio" 
-                      name={`question-${question.id}`} 
-                      value={option}
-                      onChange={() => handleAnswer(question.id, option)}
-                      checked={answers[`${currentTask.id}-${question.id}`] === option}
-                      className="mr-2"
-                    />
-                    <span>{option}</span>
-                  </label>
-                ))}
+            {question.imageUrl && (
+              <div className="mb-4">
+                <img 
+                  src={question.imageUrl} 
+                  alt="Question visual" 
+                  className="max-w-full h-auto rounded-lg"
+                />
               </div>
             )}
+            
+            {renderQuestion(question)}
           </div>
         ))}
       </div>
@@ -183,13 +381,38 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ assessment, on
               <h3 className="font-medium text-assessment-blue mb-1">Instructions:</h3>
               <p className="text-gray-700">{currentTask.instructions}</p>
             </div>
+            
+            {currentTask.objective && (
+              <div className="mt-3 text-left">
+                <h3 className="font-medium text-assessment-blue mb-1">Objective:</h3>
+                <p className="text-gray-700">{currentTask.objective}</p>
+              </div>
+            )}
+            
+            {currentTask.rubric && (
+              <div className="mt-3 text-left">
+                <h3 className="font-medium text-assessment-blue mb-1">Assessment Criteria:</h3>
+                <ul className="list-disc pl-5 text-sm text-gray-700">
+                  {currentTask.rubric.criteria.map((criterion, idx) => (
+                    <li key={idx}>{criterion}</li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs text-gray-500">
+                  <span className="font-medium">Cognitive Tag:</span> {currentTask.rubric.cognitiveTag}
+                </p>
+                <p className="text-xs text-gray-500">
+                  <span className="font-medium">Language Functions:</span> {currentTask.rubric.languageFunctions.join(', ')}
+                </p>
+              </div>
+            )}
+            
             <div className="mt-4 flex items-center justify-center gap-3 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {currentTask.timeLimit} minutes
               </span>
               <span className="px-2 py-1 bg-gray-100 rounded-full">
-                {currentTask.questions} questions
+                {questions.length || currentTask.questions} questions
               </span>
             </div>
           </div>
