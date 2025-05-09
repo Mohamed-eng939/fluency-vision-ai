@@ -1,4 +1,3 @@
-
 export interface AssessmentMetrics {
   fluency: number;
   grammar: number;
@@ -16,7 +15,7 @@ export type LanguageFunction =
   'describing' | 'explaining' | 'suggesting' | 'comparing' | 
   'evaluating' | 'narrating' | 'arguing' | 'justifying' | 
   'rebutting' | 'identifying' | 'instructing' | 'synthesizing' |
-  'analyzing' | 'summarizing';
+  'analyzing' | 'summarizing' | 'recognizing';
 
 export type QuestionType = 
   'multiple-choice' | 'matching' | 'gap-fill' | 'short-answer' | 
