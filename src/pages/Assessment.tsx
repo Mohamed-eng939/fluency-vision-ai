@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -49,13 +50,22 @@ const AssessmentPage: React.FC = () => {
     setShowFullAssessment(true);
   };
 
-  const handleFullAssessmentComplete = () => {
+  const handleFullAssessmentComplete = (result?: AssessmentResult) => {
     setShowFullAssessment(false);
-    toast({
-      title: "Assessment Complete",
-      description: "Your full assessment has been completed and is being processed.",
-    });
-    // In a real app, you would process the results here
+    
+    if (result) {
+      // Display the result if available
+      setAssessmentResult(result);
+      toast({
+        title: "Assessment Complete",
+        description: `Your assessment is complete with a score of ${result.totalScore}% (${result.cefrLevel}).`,
+      });
+    } else {
+      toast({
+        title: "Assessment Complete",
+        description: "Your assessment has been completed and is being processed.",
+      });
+    }
   };
 
   const handleFullAssessmentExit = () => {
