@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import PromptSection from '@/components/PromptSection';
 import RecordingSection from '@/components/RecordingSection';
-import AssessmentReport from '@/components/AssessmentReport';
+import EnhancedAssessmentReport from '@/components/EnhancedAssessmentReport';
 import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
 import { SpeakingPrompt, AssessmentResult, AssessmentQuestion } from '@/types/assessment';
@@ -189,7 +188,7 @@ const AssessmentPage: React.FC = () => {
             </>
           ) : (
             <>
-              <AssessmentReport 
+              <EnhancedAssessmentReport 
                 result={assessmentResult}
                 isLoading={isProcessing} 
                 detailedFeedback={detailedFeedback}

@@ -1,10 +1,10 @@
 
 // Basic Types
-export type QuestionType = 'multiple-choice' | 'image-selection' | 'heading-matching' | 'audio-recording' | 'essay-writing' | 'open-ended';
+export type QuestionType = 'multiple-choice' | 'image-selection' | 'heading-matching' | 'audio-recording' | 'essay-writing' | 'open-ended' | 'matching' | 'gap-fill' | 'short-answer' | 'paragraph-writing' | 'long-answer' | 'note-completion' | 'summary-completion';
 export type CEFRLevel = 'Pre-A1' | 'A1' | 'A1+' | 'A2' | 'A2+' | 'B1' | 'B1+' | 'B2' | 'B2+' | 'C1' | 'C1+' | 'C2';
 export type Skill = 'reading' | 'writing' | 'listening' | 'speaking';
 export type CognitiveTag = 'recall' | 'comprehend' | 'apply' | 'analyze' | 'evaluate' | 'create' | 'infer' | 'problem-solve';
-export type LanguageFunction = 'identifying' | 'describing' | 'comparing' | 'arguing' | 'explaining' | 'analyzing' | 'justifying' | 'recognizing' | 'evaluating' | 'inferring' | 'hypothesizing' | 'rebutting';
+export type LanguageFunction = 'identifying' | 'describing' | 'comparing' | 'arguing' | 'explaining' | 'analyzing' | 'justifying' | 'recognizing' | 'evaluating' | 'inferring' | 'hypothesizing' | 'rebutting' | 'suggesting' | 'synthesizing';
 
 // Question and Rubric Interfaces
 export interface TestRubric {
@@ -30,6 +30,7 @@ export interface AssessmentQuestion {
   type: QuestionType;
   text: string;
   audioUrl?: string;
+  imageUrl?: string;
   options?: string[];
   correctAnswer?: string | string[];
   rubric: TestRubric;

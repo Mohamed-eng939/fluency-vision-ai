@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
@@ -225,7 +226,6 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
         );
         
       case 'matching':
-        // For simplicity, we're treating this as selecting options from a dropdown for each item
         return (
           <div className="space-y-4">
             {question.options?.map((option, index) => (

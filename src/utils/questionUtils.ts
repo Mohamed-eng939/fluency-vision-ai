@@ -1,4 +1,3 @@
-
 import { 
   AssessmentQuestion, 
   QuestionType, 
@@ -152,7 +151,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
         ],
         scale: 5,
         cognitiveTag: 'problem-solve',
-        languageFunctions: ['explaining', 'suggesting'],
+        languageFunctions: ['explaining', 'suggesting' as LanguageFunction],
         canDoDescriptor: "Can explain a viewpoint on a topical issue giving the advantages and disadvantages of various options."
       }
     }
@@ -232,7 +231,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
         ],
         scale: 5,
         cognitiveTag: 'evaluate',
-        languageFunctions: ['analyzing', 'synthesizing'],
+        languageFunctions: ['analyzing', 'synthesizing' as LanguageFunction],
         canDoDescriptor: "Can understand complex technical discussions within their field of specialization."
       }
     }

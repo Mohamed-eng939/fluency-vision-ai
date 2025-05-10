@@ -1,4 +1,3 @@
-
 import { 
   AssessmentQuestion, 
   AssessmentResult,
@@ -224,14 +223,21 @@ const getFeedbackForMetric = (metricName: string, score: number, cefrLevel: CEFR
 };
 
 const getOverallFeedback = (cefrLevel: CEFRLevel): string => {
-  const feedbackMap: Record<CEFRLevel, string> = {
+  const feedbackMap: Partial<Record<CEFRLevel, string>> = {
+    'Pre-A1': 'You can understand and use familiar everyday expressions aimed at satisfying basic needs.',
     'A1': 'You can use simple phrases and expressions related to basic personal information and concrete needs.',
+    'A1+': 'You can engage in simple conversations on very familiar topics with additional vocabulary and understanding.',
     'A2': 'You can communicate in simple and routine tasks requiring a direct exchange of information on familiar topics.',
+    'A2+': 'You can communicate with increased fluency on familiar topics and have a broader vocabulary range.',
     'B1': 'You can deal with most situations likely to arise while traveling in an area where the language is spoken.',
+    'B1+': 'You can interact with a reasonable degree of fluency and spontaneity in familiar contexts.',
     'B2': 'You can interact with a degree of fluency and spontaneity that makes regular interaction with native speakers possible.',
+    'B2+': 'You can express yourself fluently and effectively in most contexts with good structural control.',
     'C1': 'You can express yourself fluently and spontaneously without much obvious searching for expressions.',
+    'C1+': 'You can express yourself with precision and nuance in almost all contexts.',
     'C2': 'You can express yourself spontaneously, very fluently and precisely, differentiating finer shades of meaning even in more complex situations.'
   };
   
-  return feedbackMap[cefrLevel];
+  // Return the feedback for the level, or a default message if not found
+  return feedbackMap[cefrLevel] || `You are at the ${cefrLevel} proficiency level according to the CEFR framework.`;
 };
