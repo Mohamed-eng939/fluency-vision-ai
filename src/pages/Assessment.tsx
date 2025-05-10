@@ -7,8 +7,8 @@ import RecordingSection from '@/components/RecordingSection';
 import AssessmentReport from '@/components/AssessmentReport';
 import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
-import { SpeakingPrompt, AssessmentResult } from '@/types/assessment';
-import { analyzeAudio, getFullAssessmentTests } from '@/utils/assessmentUtils';
+import { SpeakingPrompt, AssessmentResult, AssessmentQuestion } from '@/types/assessment';
+import { analyzeAudio, getFullAssessmentTests, scoreSpeakingResponse } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
 
 const AssessmentPage: React.FC = () => {
@@ -17,6 +17,7 @@ const AssessmentPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showFullAssessment, setShowFullAssessment] = useState(false);
   const [showFullAssessmentIntro, setShowFullAssessmentIntro] = useState(false);
+  const [detailedFeedback, setDetailedFeedback] = useState<Record<string, string> | null>(null);
   const { toast } = useToast();
 
   // Get the enhanced full assessment tests
@@ -25,14 +26,65 @@ const AssessmentPage: React.FC = () => {
   const handlePromptSelect = (prompt: SpeakingPrompt) => {
     setSelectedPrompt(prompt);
     setAssessmentResult(null);
+    setDetailedFeedback(null);
   };
 
-  const handleRecordingComplete = async (audioBlob: Blob) => {
+  const handleRecordingComplete = async (audioBlob: Blob, transcript?: string) => {
     try {
       setIsProcessing(true);
-      // In a real app, this would send the audio to a backend for processing
-      const result = await analyzeAudio(audioBlob);
-      setAssessmentResult(result);
+      
+      // Use enhanced scoring if we have a prompt with assessment question data
+      if (selectedPrompt && selectedPrompt.questionData) {
+        const questionData = selectedPrompt.questionData as AssessmentQuestion;
+        
+        // Get detailed scoring using the question rubric
+        const scoringResult = await scoreSpeakingResponse(
+          audioBlob, 
+          questionData,
+          transcript
+        );
+        
+        // Create assessment result from detailed scoring
+        const result: AssessmentResult = {
+          totalScore: scoringResult.score,
+          cefrLevel: scoringResult.cefrLevel,
+          metrics: {
+            fluency: scoringResult.detailedScores['Fluency'] || scoringResult.detailedScores['Fluency & Coherence'] || 7,
+            grammar: scoringResult.detailedScores['Grammar'] || 7, 
+            pronunciation: scoringResult.detailedScores['Pronunciation'] || 7,
+            prosody: scoringResult.detailedScores['Prosody'] || 7,
+            vocabulary: scoringResult.detailedScores['Vocabulary'] || scoringResult.detailedScores['Lexical Resource'] || 7,
+            syntax: scoringResult.detailedScores['Syntax'] || 7,
+            coherence: scoringResult.detailedScores['Coherence'] || 7,
+          },
+          feedback: {
+            fluency: scoringResult.feedback['Fluency'] || scoringResult.feedback['Fluency & Coherence'] || '',
+            grammar: scoringResult.feedback['Grammar'] || '',
+            pronunciation: scoringResult.feedback['Pronunciation'] || '',
+            prosody: scoringResult.feedback['Prosody'] || '',
+            vocabulary: scoringResult.feedback['Vocabulary'] || scoringResult.feedback['Lexical Resource'] || '',
+            syntax: scoringResult.feedback['Syntax'] || '',
+            coherence: scoringResult.feedback['Coherence'] || '',
+            overall: `Your overall performance is at ${scoringResult.cefrLevel} level.`
+          },
+          audioUrl: URL.createObjectURL(audioBlob),
+          transcript: transcript || ''
+        };
+        
+        setAssessmentResult(result);
+        setDetailedFeedback(scoringResult.feedback);
+        
+      } else {
+        // Use the standard audio analysis
+        const result = await analyzeAudio(audioBlob);
+        
+        // Add transcript if available
+        if (transcript) {
+          result.transcript = transcript;
+        }
+        
+        setAssessmentResult(result);
+      }
     } catch (error) {
       console.error("Error processing recording:", error);
       toast({
@@ -79,6 +131,7 @@ const AssessmentPage: React.FC = () => {
   const handleReset = () => {
     setSelectedPrompt(null);
     setAssessmentResult(null);
+    setDetailedFeedback(null);
   };
 
   if (showFullAssessment) {
@@ -136,7 +189,11 @@ const AssessmentPage: React.FC = () => {
             </>
           ) : (
             <>
-              <AssessmentReport result={assessmentResult} isLoading={isProcessing} />
+              <AssessmentReport 
+                result={assessmentResult}
+                isLoading={isProcessing} 
+                detailedFeedback={detailedFeedback}
+              />
               
               <div className="mt-6 flex justify-center">
                 <Button 

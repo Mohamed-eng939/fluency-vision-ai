@@ -1,3 +1,4 @@
+
 import { 
   AssessmentMetrics, 
   AssessmentResult, 
@@ -5,9 +6,10 @@ import {
   AssessmentFeedback, 
   TestTask, 
   TestSection, 
-  FullAssessment 
+  FullAssessment,
+  AssessmentQuestion
 } from "../types/assessment";
-import { getQuestionsForTask, enhanceTaskWithQuestions } from "./questionUtils";
+import { getQuestionsForTask, enhanceTaskWithQuestions, generateRubricForQuestion } from "./questionUtils";
 import { processAudioForAssessment } from "./speechAnalysisUtils";
 
 // Enhanced audio analysis for assessment
@@ -83,60 +85,159 @@ export const calculateTotalScore = (metrics: AssessmentMetrics): number => {
   return Math.round((sum / 70) * 100);
 };
 
+// Enhanced CEFR level determination with more nuanced thresholds
 export const determineCEFRLevel = (score: number): CEFRLevel => {
   if (score >= 95) return 'C2';
+  if (score >= 85) return 'C1+';
   if (score >= 80) return 'C1';
+  if (score >= 75) return 'B2+';
   if (score >= 65) return 'B2';
+  if (score >= 55) return 'B1+';
   if (score >= 50) return 'B1';
+  if (score >= 45) return 'A2+';
   if (score >= 35) return 'A2';
-  return 'A1';
+  if (score >= 25) return 'A1+';
+  if (score >= 15) return 'A1';
+  return 'Pre-A1';
 };
 
+// Enhanced feedback generation based on metrics and dynamic rubrics
 export const generateFeedback = (metrics: AssessmentMetrics, cefrLevel: CEFRLevel): AssessmentFeedback => {
-  // This would typically involve more sophisticated logic based on actual speech analysis
-  // For now, we'll return templated feedback based on score ranges
-  
   return {
-    fluency: getFeedbackForMetric('fluency', metrics.fluency),
-    grammar: getFeedbackForMetric('grammar', metrics.grammar),
-    pronunciation: getFeedbackForMetric('pronunciation', metrics.pronunciation),
-    prosody: getFeedbackForMetric('prosody', metrics.prosody),
-    vocabulary: getFeedbackForMetric('vocabulary', metrics.vocabulary),
-    syntax: getFeedbackForMetric('syntax', metrics.syntax),
-    coherence: getFeedbackForMetric('coherence', metrics.coherence),
+    fluency: getFeedbackForMetric('fluency', metrics.fluency, cefrLevel),
+    grammar: getFeedbackForMetric('grammar', metrics.grammar, cefrLevel),
+    pronunciation: getFeedbackForMetric('pronunciation', metrics.pronunciation, cefrLevel),
+    prosody: getFeedbackForMetric('prosody', metrics.prosody, cefrLevel),
+    vocabulary: getFeedbackForMetric('vocabulary', metrics.vocabulary, cefrLevel),
+    syntax: getFeedbackForMetric('syntax', metrics.syntax, cefrLevel),
+    coherence: getFeedbackForMetric('coherence', metrics.coherence, cefrLevel),
     overall: getOverallFeedback(cefrLevel)
   };
 };
 
-const getFeedbackForMetric = (metric: string, score: number): string => {
+// Enhanced metric feedback with CEFR-aligned descriptors
+const getFeedbackForMetric = (metric: string, score: number, cefrLevel: CEFRLevel): string => {
+  const cefrSpecificFeedback = getCEFRSpecificFeedback(metric, cefrLevel);
+  
   if (score > 8) {
-    return `Your ${metric} is excellent. You demonstrate native-like proficiency in this area.`;
+    return `${cefrSpecificFeedback.excellent} Your ${metric} is excellent and exceeds ${cefrLevel} level expectations.`;
   } else if (score > 6) {
-    return `Your ${metric} is good. You demonstrate clear competence with minor areas for improvement.`;
+    return `${cefrSpecificFeedback.good} Your ${metric} is good for ${cefrLevel} level, with some areas for improvement.`;
   } else if (score > 4) {
-    return `Your ${metric} is adequate. There are several areas where you could improve.`;
+    return `${cefrSpecificFeedback.adequate} Your ${metric} meets basic ${cefrLevel} level requirements, but needs development.`;
   } else {
-    return `Your ${metric} needs significant improvement. Focus on developing basic skills in this area.`;
+    return `${cefrSpecificFeedback.needs_improvement} Your ${metric} needs significant improvement to reach ${cefrLevel} level standards.`;
   }
 };
 
+// Get CEFR-specific feedback phrases
+const getCEFRSpecificFeedback = (metric: string, level: CEFRLevel): Record<string, string> => {
+  const feedbackMap: Record<string, Record<CEFRLevel, Record<string, string>>> = {
+    'fluency': {
+      'C2': {
+        excellent: 'You express yourself spontaneously, very fluently and precisely.',
+        good: 'You can express yourself fluently with only occasional hesitation.',
+        adequate: 'You can maintain fluent speech but with some noticeable effort.',
+        needs_improvement: 'Your speech shows frequent hesitation and reformulation.'
+      },
+      'C1': {
+        excellent: 'You can express yourself fluently and spontaneously without much obvious searching for expressions.',
+        good: 'You can produce stretches of language with a fairly even tempo with few noticeably long pauses.',
+        adequate: 'You can keep going comprehensibly, even though pausing for grammatical and lexical planning is evident.',
+        needs_improvement: 'Your speech contains many hesitations and interruptions.'
+      },
+      // Add other levels...
+      'B2': {
+        excellent: 'You can produce stretches of language with a fairly even tempo with few noticeably long pauses.',
+        good: 'You can communicate with a degree of fluency and spontaneity.',
+        adequate: 'You can speak with reasonable fluency despite some formulation problems.',
+        needs_improvement: 'Your speech is often hesitant with frequent pauses.'
+      },
+      // Default entries for other levels
+      'B1': {
+        excellent: 'You can express yourself with relative ease despite some pauses.',
+        good: 'You can keep going comprehensibly, even though pausing is evident.',
+        adequate: 'You can make yourself understood with some effort.',
+        needs_improvement: 'Your speech is characterized by frequent pauses and reformulations.'
+      },
+      'A2': {
+        excellent: 'You can make yourself understood in short contributions.',
+        good: 'You can construct phrases on familiar topics with sufficient ease.',
+        adequate: 'You can manage short, isolated utterances with pauses.',
+        needs_improvement: 'Your speech consists of very short, isolated utterances with frequent pauses.'
+      },
+      'A1': {
+        excellent: 'You can manage very short, isolated, rehearsed utterances.',
+        good: 'You can produce basic phrases with some effort.',
+        adequate: 'You can produce simple sentences with significant pauses.',
+        needs_improvement: 'You can only produce words and very simple phrases with difficulty.'
+      },
+      'Pre-A1': {
+        excellent: 'You can say some isolated words related to personal information.',
+        good: 'You can produce a few basic words with support.',
+        adequate: 'You can repeat some basic words when prompted.',
+        needs_improvement: 'You are still developing the ability to produce basic words.'
+      },
+      'A1+': { 
+        excellent: 'You can manage short utterances with minimal hesitation.',
+        good: 'You can produce simple phrases with reasonable ease.',
+        adequate: 'You can produce basic utterances with some pausing.',
+        needs_improvement: 'You struggle to produce complete utterances.'
+      },
+      'A2+': { 
+        excellent: 'You can express yourself on familiar topics with reasonable fluency.',
+        good: 'You can make yourself understood with some confidence.',
+        adequate: 'You can speak with some fluency on familiar topics.',
+        needs_improvement: 'Your speech is hesitant even on familiar topics.'
+      },
+      'B1+': { 
+        excellent: 'You can communicate with good fluency on familiar topics.',
+        good: 'You can express yourself with relatively few pauses.',
+        adequate: 'You can maintain conversation with some pauses.',
+        needs_improvement: 'Your speech contains frequent hesitation.'
+      },
+      'B2+': { 
+        excellent: 'You communicate with good fluency and spontaneity.',
+        good: 'You can interact with a good degree of fluency.',
+        adequate: 'You can maintain conversation with reasonable fluency.',
+        needs_improvement: 'Your speech lacks the fluency expected at this level.'
+      },
+      'C1+': { 
+        excellent: 'You express yourself fluently and spontaneously with ease.',
+        good: 'You can communicate very fluently with minimal hesitation.',
+        adequate: 'You can express yourself with good fluency.',
+        needs_improvement: 'Your fluency is inconsistent for this level.'
+      }
+    },
+    // Add other metrics with their level-specific feedback...
+  };
+
+  // Default feedback if specific metric/level combination not found
+  return feedbackMap[metric]?.[level] || {
+    excellent: 'Excellent work!',
+    good: 'Good effort.',
+    adequate: 'Adequate performance.',
+    needs_improvement: 'This area needs improvement.'
+  };
+};
+
 const getOverallFeedback = (cefrLevel: CEFRLevel): string => {
-  switch(cefrLevel) {
-    case 'C2':
-      return 'You demonstrate mastery of the language at a professional level. Your speech is fluent, precise, and nuanced.';
-    case 'C1':
-      return 'You can use the language flexibly and effectively for social, academic, and professional purposes.';
-    case 'B2':
-      return 'You can interact with a degree of fluency and spontaneity that makes regular interaction with native speakers possible without strain.';
-    case 'B1':
-      return 'You can deal with most situations likely to arise while traveling in an area where the language is spoken.';
-    case 'A2':
-      return 'You can communicate in simple and routine tasks requiring a simple and direct exchange of information.';
-    case 'A1':
-      return 'You can interact in a simple way provided the other person talks slowly and clearly and is prepared to help.';
-    default:
-      return 'Your language proficiency has been assessed.';
-  }
+  const feedbackMap: Record<CEFRLevel, string> = {
+    'C2': 'You demonstrate mastery of the language at a professional level. Your speech is fluent, precise, and nuanced.',
+    'C1': 'You can use the language flexibly and effectively for social, academic, and professional purposes.',
+    'B2': 'You can interact with a degree of fluency and spontaneity that makes regular interaction with native speakers possible without strain.',
+    'B1': 'You can deal with most situations likely to arise while traveling in an area where the language is spoken.',
+    'A2': 'You can communicate in simple and routine tasks requiring a simple and direct exchange of information.',
+    'A1': 'You can interact in a simple way provided the other person talks slowly and clearly and is prepared to help.',
+    'Pre-A1': 'You are beginning to develop basic language skills and can use a few isolated words and phrases.',
+    'A1+': 'You can communicate at a basic level about personal information and immediate needs.',
+    'A2+': 'You can handle social exchanges with confidence, going beyond basic routine exchanges.',
+    'B1+': 'You can communicate with some confidence on familiar matters and maintain conversation on a fairly wide range of topics.',
+    'B2+': 'You can communicate effectively and connect ideas fluently across a range of topics.',
+    'C1+': 'You have near-native fluency and can engage in extended, sophisticated discourse.'
+  };
+
+  return feedbackMap[cefrLevel] || 'Your language proficiency has been assessed.';
 };
 
 export const mockPrompts = [
@@ -469,3 +570,129 @@ export const enhancedFullAssessmentTests: FullAssessment[] = fullAssessmentTests
 
 // This makes the enhanced version the default exported version
 export const getFullAssessmentTests = () => enhancedFullAssessmentTests;
+
+// New function to apply dynamic scoring to student responses
+export const scoreSpeakingResponse = async (
+  audioBlob: Blob, 
+  question: AssessmentQuestion, 
+  transcript?: string
+): Promise<{
+  score: number, 
+  cefrLevel: CEFRLevel,
+  detailedScores: Record<string, number>,
+  feedback: Record<string, string>
+}> => {
+  // Process audio to get basic metrics
+  const processedAudio = await processAudioForAssessment(audioBlob);
+  
+  // If we have a specific question with rubric, use that for more detailed scoring
+  if (question?.rubric) {
+    // Extract CEFR level from question ID or context
+    const level = question.id.substring(0, 2).toUpperCase();
+    
+    // Generate detailed rubric with level-appropriate descriptors
+    const enhancedRubric = generateRubricForQuestion(question, level);
+    
+    // Calculate scores for each criterion in the rubric
+    const detailedScores: Record<string, number> = {};
+    const feedback: Record<string, string> = {};
+    
+    if (enhancedRubric) {
+      enhancedRubric.criteria.forEach(criterion => {
+        // Calculate a score based on audio metrics and transcript analysis
+        // This is a simplified version - in a real system, this would involve 
+        // sophisticated NLP and speech analysis
+        const score = calculateCriterionScore(
+          criterion, 
+          processedAudio.metrics, 
+          transcript || ''
+        );
+        
+        detailedScores[criterion] = score;
+        
+        // Generate feedback for this criterion
+        feedback[criterion] = getCriterionFeedback(criterion, score, level as any);
+      });
+    }
+    
+    // Calculate overall score
+    const overallScore = Object.values(detailedScores).reduce((sum, score) => sum + score, 0) / 
+                         Object.values(detailedScores).length;
+    
+    // Convert to 0-100 scale
+    const finalScore = Math.round((overallScore / 5) * 100);
+    
+    // Determine CEFR level
+    const cefrLevel = determineCEFRLevel(finalScore);
+    
+    return {
+      score: finalScore,
+      cefrLevel,
+      detailedScores,
+      feedback
+    };
+  }
+  
+  // Fallback to basic scoring if no rubric available
+  const metrics = {
+    fluency: processedAudio.metrics.fluency,
+    pronunciation: processedAudio.metrics.pronunciation,
+    prosody: processedAudio.metrics.prosody,
+    // Basic estimates for other metrics
+    grammar: 7.5,
+    vocabulary: 7.5,
+    syntax: 7.5,
+    coherence: 7.5
+  };
+  
+  const totalScore = calculateTotalScore(metrics);
+  const cefrLevel = determineCEFRLevel(totalScore);
+  
+  return {
+    score: totalScore,
+    cefrLevel,
+    detailedScores: metrics,
+    feedback: Object.keys(metrics).reduce((acc, key) => {
+      acc[key] = getFeedbackForMetric(key, metrics[key as keyof typeof metrics], cefrLevel);
+      return acc;
+    }, {} as Record<string, string>)
+  };
+};
+
+// Helper function to calculate a criterion score based on audio metrics and transcript
+const calculateCriterionScore = (
+  criterion: string,
+  audioMetrics: any,
+  transcript: string
+): number => {
+  // In a real implementation, this would use sophisticated analysis
+  // For now, we'll use a simplified mapping
+  switch (criterion) {
+    case 'Fluency & Coherence':
+    case 'Fluency':
+      return audioMetrics.fluency;
+    case 'Pronunciation':
+      return audioMetrics.pronunciation;
+    case 'Prosody':
+      return audioMetrics.pausePattern;
+    // For other criteria, we'd need deeper text analysis
+    // This is a placeholder implementation
+    default:
+      // Return a value between 6-9 for now
+      return Math.random() * 3 + 6;
+  }
+};
+
+// Get specific feedback for a criterion based on score and level
+const getCriterionFeedback = (criterion: string, score: number, level: string): string => {
+  // This would be expanded with much more detailed, criterion-specific feedback
+  if (score > 8) {
+    return `Your ${criterion} shows excellent mastery at ${level} level. Keep up the great work!`;
+  } else if (score > 6) {
+    return `Your ${criterion} is good for ${level} level, showing solid competence with minor areas to improve.`;
+  } else if (score > 4) {
+    return `Your ${criterion} is adequate for ${level} level, but shows several areas where focused practice would help.`;
+  } else {
+    return `Your ${criterion} needs significant improvement to meet ${level} level standards. Consider focused practice.`;
+  }
+};

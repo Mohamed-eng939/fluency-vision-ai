@@ -9,7 +9,7 @@ import { VoiceActivityDetector, SpeechRecognitionService, processAudioForAssessm
 
 interface RecordingSectionProps {
   prompt: SpeakingPrompt | null;
-  onRecordingComplete: (audioBlob: Blob) => void;
+  onRecordingComplete: (audioBlob: Blob, transcript?: string) => void;
 }
 
 const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecordingComplete }) => {
@@ -20,6 +20,12 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
   const [speechDetected, setSpeechDetected] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
+  const [speechLevel, setSpeechLevel] = useState(0);
+  const [recordingStats, setRecordingStats] = useState({
+    totalSpeechTime: 0,
+    silenceDuration: 0,
+    speechEnergyAvg: 0,
+  });
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -30,6 +36,12 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const vadRef = useRef<VoiceActivityDetector | null>(null);
   const asrRef = useRef<SpeechRecognitionService | null>(null);
+  const speechTimeRef = useRef<number>(0);
+  const silenceTimeRef = useRef<number>(0);
+  const lastSpeechStateRef = useRef<boolean>(false);
+  const speechStartTimeRef = useRef<number | null>(null);
+  const speechEndTimeRef = useRef<number | null>(null);
+  const energySamplesRef = useRef<number[]>([]);
   
   useEffect(() => {
     return () => {
@@ -102,9 +114,25 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
         
         // Process the audio with our enhanced analysis
         try {
-          // We'll just call the original handler for now
-          // In a real implementation, we'd process the audio first
-          onRecordingComplete(audioBlob);
+          // Calculate final speech statistics
+          const finalStats = {
+            totalSpeechTime: speechTimeRef.current,
+            silenceDuration: silenceTimeRef.current,
+            speechEnergyAvg: energySamplesRef.current.length > 0 
+              ? energySamplesRef.current.reduce((sum, val) => sum + val, 0) / energySamplesRef.current.length
+              : 0
+          };
+          
+          setRecordingStats(finalStats);
+          
+          // Pass both the audio blob and transcript to the handler
+          onRecordingComplete(audioBlob, transcript);
+          
+          // Display statistics
+          toast({
+            title: "Recording Stats",
+            description: `Speech: ${Math.round(finalStats.totalSpeechTime)}s, Silence: ${Math.round(finalStats.silenceDuration)}s`,
+          });
         } catch (error) {
           console.error('Error processing audio:', error);
           toast({
@@ -115,12 +143,29 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
         }
       };
       
+      // Reset speech analysis variables
+      speechTimeRef.current = 0;
+      silenceTimeRef.current = 0;
+      lastSpeechStateRef.current = false;
+      speechStartTimeRef.current = null;
+      speechEndTimeRef.current = null;
+      energySamplesRef.current = [];
+      
       // Set up Voice Activity Detection
-      const vad = new VoiceActivityDetector();
+      const vad = new VoiceActivityDetector({
+        threshold: 0.03, // Lower threshold for better sensitivity
+        voicingProbabilityThreshold: 0.5,
+        silenceTimeThreshold: 1000, // 1 second of silence
+      });
+      
       vadRef.current = vad;
       vad.init(stream);
       vad.setOnSpeechStart(() => {
         setSpeechDetected(true);
+        lastSpeechStateRef.current = true;
+        speechStartTimeRef.current = Date.now();
+        speechEndTimeRef.current = null;
+        
         // Visual feedback for speech detection
         toast({
           title: "Speech detected",
@@ -128,8 +173,17 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
           variant: "default"
         });
       });
+      
       vad.setOnSpeechEnd(() => {
         setSpeechDetected(false);
+        lastSpeechStateRef.current = false;
+        speechEndTimeRef.current = Date.now();
+        
+        // Calculate speech duration
+        if (speechStartTimeRef.current !== null) {
+          const duration = (speechEndTimeRef.current - speechStartTimeRef.current) / 1000;
+          speechTimeRef.current += duration;
+        }
       });
       
       // Set up Speech Recognition if supported
@@ -170,6 +224,12 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
             stopRecording();
             return 0;
           }
+          
+          // Update silence time if not speaking
+          if (!lastSpeechStateRef.current) {
+            silenceTimeRef.current += 1;
+          }
+          
           return prev - 1;
         });
       }, 1000);
@@ -194,8 +254,6 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
       
       setIsRecording(false);
       setTimeLeft(0);
-      setTranscript("");
-      setInterimTranscript("");
     }
   };
   
@@ -216,6 +274,12 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
             stopRecording();
             return 0;
           }
+          
+          // Update silence time if not speaking
+          if (!lastSpeechStateRef.current) {
+            silenceTimeRef.current += 1;
+          }
+          
           return prev - 1;
         });
       }, 1000);
@@ -266,11 +330,22 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     const segmentLength = Math.floor(data.length / numberOfBars);
     
     const reducedData = [];
+    let totalEnergy = 0;
+    
     for (let i = 0; i < numberOfBars; i++) {
       const startIndex = i * segmentLength;
       const segment = data.slice(startIndex, startIndex + segmentLength);
       const average = segment.reduce((a, b) => a + b, 0) / segment.length;
       reducedData.push(Math.min(100, average));
+      totalEnergy += average;
+    }
+    
+    const currentEnergyLevel = totalEnergy / (numberOfBars * 255);
+    setSpeechLevel(currentEnergyLevel);
+    
+    // Store energy sample if speaking
+    if (lastSpeechStateRef.current) {
+      energySamplesRef.current.push(currentEnergyLevel);
     }
     
     setVisualizerData(reducedData);
