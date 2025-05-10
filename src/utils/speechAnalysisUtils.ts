@@ -1,6 +1,45 @@
-
 // Speech Analysis Utilities
 // This file contains functions for speech analysis, including VAD and ASR integration
+
+// Add type definitions for the Web Speech API
+interface Window {
+  SpeechRecognition?: new () => SpeechRecognition;
+  webkitSpeechRecognition?: new () => SpeechRecognition;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: ((event: Event) => void) | null;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
 
 interface VADOptions {
   threshold: number; // Energy threshold for voice detection
@@ -177,7 +216,7 @@ export class VoiceActivityDetector {
  * Speech-to-Text recognition service using the Web Speech API
  */
 export class SpeechRecognitionService {
-  private recognition: any = null;
+  private recognition: SpeechRecognition | null = null;
   private options: ASROptions;
   private isListening: boolean = false;
   private transcript: string = '';
@@ -189,7 +228,7 @@ export class SpeechRecognitionService {
     
     // Check if browser supports SpeechRecognition
     const SpeechRecognition = 
-      window.SpeechRecognition || 
+      (window as any).SpeechRecognition || 
       (window as any).webkitSpeechRecognition;
     
     if (SpeechRecognition) {
@@ -210,7 +249,7 @@ export class SpeechRecognitionService {
     this.recognition.interimResults = this.options.interimResults;
     this.recognition.lang = this.options.language;
 
-    this.recognition.onresult = (event: any) => {
+    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = '';
       let finalTranscript = '';
 
@@ -304,7 +343,10 @@ export class SpeechRecognitionService {
    * Check if speech recognition is supported
    */
   public static isSupported(): boolean {
-    return !!(window.SpeechRecognition || (window as any).webkitSpeechRecognition);
+    return !!(
+      (window as any).SpeechRecognition || 
+      (window as any).webkitSpeechRecognition
+    );
   }
 }
 

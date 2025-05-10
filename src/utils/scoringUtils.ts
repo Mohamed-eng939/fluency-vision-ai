@@ -1,7 +1,6 @@
 
 import { 
   AssessmentQuestion, 
-  QuestionRubric, 
   AssessmentResult,
   CEFRLevel,
   AssessmentMetrics,
@@ -33,13 +32,13 @@ export const calculateRubricScore = (
     question.rubric.criteria.forEach(criterion => {
       // For this mock implementation, we assign a score between 1-5 based on pre-defined logic
       // In a real app, this would use AI or more complex evaluation
-      const score = getScoreForCriterion(criterion.name, answer, question);
+      const score = getScoreForCriterion(criterion, answer, question);
       
       // Add to criteria scores
-      if (!criteriaScores[criterion.name]) {
-        criteriaScores[criterion.name] = 0;
+      if (!criteriaScores[criterion]) {
+        criteriaScores[criterion] = 0;
       }
-      criteriaScores[criterion.name] += score;
+      criteriaScores[criterion] += score;
       
       // Add to totals
       totalAvailablePoints += 5; // Maximum score per criterion is 5
@@ -79,7 +78,7 @@ const getScoreForCriterion = (
       // For multiple correct answers
       if (Array.isArray(userAnswer)) {
         const correctCount = userAnswer.filter(ans => 
-          question.correctAnswer.includes(ans)
+          question.correctAnswer!.includes(ans)
         ).length;
         const totalCorrect = question.correctAnswer.length;
         return Math.ceil((correctCount / totalCorrect) * 5);
@@ -161,8 +160,7 @@ export const determineCEFRLevel = (score: number): CEFRLevel => {
   if (score >= 65) return 'B2';
   if (score >= 50) return 'B1';
   if (score >= 35) return 'A2';
-  if (score >= 20) return 'A1';
-  return 'A0';
+  return 'A1';
 };
 
 /**
@@ -227,7 +225,6 @@ const getFeedbackForMetric = (metricName: string, score: number, cefrLevel: CEFR
 
 const getOverallFeedback = (cefrLevel: CEFRLevel): string => {
   const feedbackMap: Record<CEFRLevel, string> = {
-    'A0': 'You are at a pre-beginner level. Focus on building basic vocabulary and simple phrases for everyday communication.',
     'A1': 'You can use simple phrases and expressions related to basic personal information and concrete needs.',
     'A2': 'You can communicate in simple and routine tasks requiring a direct exchange of information on familiar topics.',
     'B1': 'You can deal with most situations likely to arise while traveling in an area where the language is spoken.',

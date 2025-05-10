@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
 import { toast } from '../components/ui/use-toast';
 import { SpeakingPrompt } from '../types/assessment';
-import { Mic, MicOff, Volume2, AlertTriangle, Waveform } from 'lucide-react';
+import { Mic, MicOff, Volume2, AlertTriangle, AudioWaveform } from 'lucide-react';
 import { VoiceActivityDetector, SpeechRecognitionService, processAudioForAssessment } from '../utils/speechAnalysisUtils';
 
 interface RecordingSectionProps {
@@ -293,7 +293,7 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
       <h2 className="text-xl font-semibold mb-4 text-assessment-blue flex items-center gap-2">
         Record Your Response
         {isRecording && speechDetected && (
-          <Waveform className="h-5 w-5 text-assessment-teal animate-pulse" />
+          <AudioWaveform className="h-5 w-5 text-assessment-teal animate-pulse" />
         )}
       </h2>
       

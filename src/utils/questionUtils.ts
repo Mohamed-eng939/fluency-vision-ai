@@ -22,15 +22,8 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       correctAnswer: 'A person eating breakfast',
       rubric: {
         criteria: [
-          {
-            name: 'Comprehension Accuracy',
-            description: 'Ability to understand simple spoken phrases',
-            scale: {
-              1: 'Unable to identify correct option',
-              3: 'Partially identifies correct elements',
-              5: 'Correctly identifies the described activity'
-            }
-          }
+          'Comprehension Accuracy',
+          'Attention to Detail'
         ],
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
@@ -50,15 +43,8 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       correctAnswer: 'A family at the beach',
       rubric: {
         criteria: [
-          {
-            name: 'Comprehension Accuracy',
-            description: 'Ability to understand simple spoken phrases',
-            scale: {
-              1: 'Unable to identify correct option',
-              3: 'Partially identifies correct elements',
-              5: 'Correctly identifies the described activity'
-            }
-          }
+          'Comprehension Accuracy',
+          'Attention to Detail'
         ],
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
@@ -75,15 +61,8 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       correctAnswer: 'apple.jpg',
       rubric: {
         criteria: [
-          {
-            name: 'Word Recognition',
-            description: 'Ability to match basic written words to images',
-            scale: {
-              1: 'Unable to match word with corresponding image',
-              3: 'Hesitates but eventually selects correct image',
-              5: 'Quickly and correctly matches word to image'
-            }
-          }
+          'Word Recognition',
+          'Visual Association'
         ],
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
@@ -98,15 +77,8 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       correctAnswer: 'house.jpg',
       rubric: {
         criteria: [
-          {
-            name: 'Word Recognition',
-            description: 'Ability to match basic written words to images',
-            scale: {
-              1: 'Unable to match word with corresponding image',
-              3: 'Hesitates but eventually selects correct image',
-              5: 'Quickly and correctly matches word to image'
-            }
-          }
+          'Word Recognition',
+          'Visual Association'
         ],
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
@@ -129,17 +101,10 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       correctAnswer: 'Go to a restaurant',
       rubric: {
         criteria: [
-          {
-            name: 'Dialogue Comprehension',
-            description: 'Ability to understand the main point of short dialogues',
-            scale: {
-              1: 'Unable to identify main intent of speakers',
-              3: 'Understands some elements but misses key information',
-              5: 'Accurately identifies speaker intentions and key information'
-            }
-          }
+          'Dialogue Comprehension',
+          'Active Listening'
         ],
-        cognitiveTag: 'comprehension',
+        cognitiveTag: 'comprehend',
         languageFunctions: ['identifying', 'comparing'],
         canDoDescriptor: "Can understand phrases and expressions related to immediate needs."
       }
@@ -159,27 +124,11 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       correctAnswer: ['Historical Background', 'Environmental Impact', 'Economic Benefits', 'Future Developments'],
       rubric: {
         criteria: [
-          {
-            name: 'Main Idea Identification',
-            description: 'Ability to identify the main theme of paragraphs',
-            scale: {
-              1: 'Unable to correctly match headings with paragraphs',
-              3: 'Matches some headings correctly but misses others',
-              5: 'Correctly matches all headings to appropriate paragraphs'
-            }
-          },
-          {
-            name: 'Skimming Skill',
-            description: 'Ability to skim text efficiently to locate themes',
-            scale: {
-              1: 'Struggles to locate relevant information',
-              3: 'Finds some relevant information with effort',
-              5: 'Efficiently locates key information to make matches'
-            }
-          }
+          'Main Idea Identification',
+          'Skimming Skill'
         ],
-        cognitiveTag: 'inference',
-        languageFunctions: ['recognizing', 'synthesizing'],
+        cognitiveTag: 'infer',
+        languageFunctions: ['recognizing', 'identifying'],
         canDoDescriptor: "Can understand texts that consist mainly of high frequency everyday or job-related language."
       }
     }
@@ -191,35 +140,11 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       text: 'Discuss the following problem and suggest possible solutions: "Traffic congestion in major cities"',
       rubric: {
         criteria: [
-          {
-            name: 'Task Fulfillment',
-            description: 'Addresses the problem and provides solutions',
-            scale: {
-              1: 'Does not address problem or provide solutions',
-              3: 'Partially addresses problem with vague solutions',
-              5: 'Clearly presents problem and offers specific, realistic solutions'
-            }
-          },
-          {
-            name: 'Fluency & Coherence',
-            description: 'Speaking flow and logical organization',
-            scale: {
-              1: 'Disconnected speech with frequent pauses',
-              3: 'Some hesitations but generally connected ideas',
-              5: 'Smooth delivery with logical progression of ideas'
-            }
-          },
-          {
-            name: 'Lexical Resource',
-            description: 'Vocabulary range and appropriacy',
-            scale: {
-              1: 'Limited vocabulary affecting communication',
-              3: 'Adequate but somewhat repetitive vocabulary',
-              5: 'Wide range of topic-appropriate vocabulary'
-            }
-          }
+          'Task Fulfillment',
+          'Fluency & Coherence',
+          'Lexical Resource'
         ],
-        cognitiveTag: 'problem-solving',
+        cognitiveTag: 'problem-solve',
         languageFunctions: ['explaining', 'suggesting'],
         canDoDescriptor: "Can explain a viewpoint on a topical issue giving the advantages and disadvantages of various options."
       }
@@ -232,36 +157,12 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
       text: 'Read the following editorial excerpt criticizing remote work. Write a counterargument essay of approximately 300 words.',
       rubric: {
         criteria: [
-          {
-            name: 'Argument Clarity & Relevance',
-            description: 'Quality and relevance of counterarguments',
-            scale: {
-              1: 'Unclear or irrelevant arguments',
-              3: 'Generally relevant but underdeveloped arguments',
-              5: 'Clear, well-supported counterpoints directly addressing the editorial'
-            }
-          },
-          {
-            name: 'Organization & Coherence',
-            description: 'Essay structure and flow of ideas',
-            scale: {
-              1: 'Disorganized with unclear connections',
-              3: 'Basic structure with some logical connections',
-              5: 'Logical structure with effective transitions between ideas'
-            }
-          },
-          {
-            name: 'Lexical & Grammatical Accuracy',
-            description: 'Vocabulary range and grammatical control',
-            scale: {
-              1: 'Frequent errors affecting meaning',
-              3: 'Occasional errors but generally accurate',
-              5: 'Wide range of language with minimal errors'
-            }
-          }
+          'Argument Clarity & Relevance',
+          'Organization & Coherence',
+          'Lexical & Grammatical Accuracy'
         ],
-        cognitiveTag: 'evaluation',
-        languageFunctions: ['justifying', 'rebutting'],
+        cognitiveTag: 'evaluate',
+        languageFunctions: ['arguing', 'justifying', 'rebutting'],
         canDoDescriptor: "Can produce clear, well-structured, detailed text on complex subjects, showing controlled use of organizational patterns."
       }
     }

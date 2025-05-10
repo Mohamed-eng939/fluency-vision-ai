@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { AssessmentResult } from '../types/assessment';
-import { Waveform, Clock, Mic, Volume2, Award } from 'lucide-react';
+import { AudioWaveform, Clock, Mic, Volume2, Award } from 'lucide-react';
 
 interface AssessmentReportProps {
   result: AssessmentResult;
@@ -58,7 +58,7 @@ const AssessmentReport: React.FC<AssessmentReportProps> = ({ result, isLoading }
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="text-sm font-medium mb-2 flex justify-between items-center">
               <span className="flex items-center gap-1">
-                <Waveform className="h-4 w-4 text-assessment-teal" />
+                <AudioWaveform className="h-4 w-4 text-assessment-teal" />
                 Your Recording
               </span>
               {duration && (
@@ -86,8 +86,7 @@ const AssessmentReport: React.FC<AssessmentReportProps> = ({ result, isLoading }
                 </div>
                 <Progress 
                   value={value * 10} 
-                  className="h-2" 
-                  indicatorClassName={getScoreColor(value)}
+                  className={`h-2 ${getScoreColor(value)}`}
                 />
               </div>
             ))}
@@ -126,8 +125,11 @@ const AssessmentReport: React.FC<AssessmentReportProps> = ({ result, isLoading }
                 </div>
                 <Progress 
                   value={confidenceScore * 100} 
-                  className="h-2 mb-1" 
-                  indicatorClassName={confidenceScore > 0.8 ? 'bg-green-500' : confidenceScore > 0.6 ? 'bg-amber-500' : 'bg-red-500'}
+                  className={`h-2 mb-1 ${
+                    confidenceScore > 0.8 ? 'bg-green-500' : 
+                    confidenceScore > 0.6 ? 'bg-amber-500' : 
+                    'bg-red-500'
+                  }`}
                 />
                 <div className="text-xs text-gray-500">
                   {confidenceScore > 0.8 && "Your speech is very clear and easily understood."}

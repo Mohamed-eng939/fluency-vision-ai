@@ -25,7 +25,11 @@ export type LanguageFunction =
   'comparing' | 
   'hypothesizing' |
   'identifying' |
-  'recognizing';
+  'recognizing' |
+  'suggesting' |
+  'justifying' |
+  'rebutting' |
+  'synthesizing';
 
 export type CognitiveTag = 
   'recall' | 
@@ -33,7 +37,9 @@ export type CognitiveTag =
   'apply' | 
   'analyze' | 
   'evaluate' | 
-  'create';
+  'create' |
+  'problem-solve' |
+  'infer';
 
 export interface AssessmentMetrics {
   fluency: number; // 0-10
