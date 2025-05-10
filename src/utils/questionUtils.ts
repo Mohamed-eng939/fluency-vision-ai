@@ -1,4 +1,3 @@
-
 import { 
   AssessmentQuestion, 
   QuestionType, 
@@ -25,6 +24,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Comprehension Accuracy',
           'Attention to Detail'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
         canDoDescriptor: "Can understand simple phrases about everyday activities."
@@ -46,6 +46,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Comprehension Accuracy',
           'Attention to Detail'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
         canDoDescriptor: "Can understand simple phrases about familiar activities and places."
@@ -64,6 +65,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Word Recognition',
           'Visual Association'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
         canDoDescriptor: "Can recognize familiar names, words and very basic phrases."
@@ -80,6 +82,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Word Recognition',
           'Visual Association'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'recall',
         languageFunctions: ['identifying'],
         canDoDescriptor: "Can recognize familiar names, words and very basic phrases."
@@ -104,6 +107,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Dialogue Comprehension',
           'Active Listening'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'comprehend',
         languageFunctions: ['identifying', 'comparing'],
         canDoDescriptor: "Can understand phrases and expressions related to immediate needs."
@@ -127,6 +131,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Main Idea Identification',
           'Skimming Skill'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'infer',
         languageFunctions: ['recognizing', 'identifying'],
         canDoDescriptor: "Can understand texts that consist mainly of high frequency everyday or job-related language."
@@ -144,6 +149,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Fluency & Coherence',
           'Lexical Resource'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'problem-solve',
         languageFunctions: ['explaining', 'suggesting'],
         canDoDescriptor: "Can explain a viewpoint on a topical issue giving the advantages and disadvantages of various options."
@@ -161,6 +167,7 @@ export const sampleQuestions: Record<string, AssessmentQuestion[]> = {
           'Organization & Coherence',
           'Lexical & Grammatical Accuracy'
         ],
+        scale: 5, // Adding the required scale property
         cognitiveTag: 'evaluate',
         languageFunctions: ['arguing', 'justifying', 'rebutting'],
         canDoDescriptor: "Can produce clear, well-structured, detailed text on complex subjects, showing controlled use of organizational patterns."
