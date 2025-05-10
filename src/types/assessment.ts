@@ -1,4 +1,3 @@
-
 export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export type TestSkill = 'reading' | 'writing' | 'listening' | 'speaking';
 export type TestLevel = CEFRLevel;
@@ -108,6 +107,7 @@ export interface AssessmentQuestion {
     weightedCriteria?: {
       [key: string]: number; // criterion: weight (0-1)
     };
+    canDoDescriptor?: string; // Add this field to fix the error
   };
   audioUrl?: string;
   imageUrl?: string;
@@ -127,7 +127,7 @@ export interface TestRubric {
   scale: number;
   cognitiveTag: CognitiveTag;
   languageFunctions: LanguageFunction[];
-  canDoDescriptor?: string;
+  canDoDescriptor?: string; // Add this field to fix the error
 }
 
 export interface TestTask {
