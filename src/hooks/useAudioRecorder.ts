@@ -1,8 +1,10 @@
 
 import { useState, useRef } from 'react';
+import { VoiceActivityDetector } from '@/utils/speechAnalysisUtils';
 
 interface UseAudioRecorderOptions {
   onRecordingComplete?: (blob: Blob) => void;
+  autoStopSilenceMs?: number; // Time in ms to auto-stop after silence
 }
 
 export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
@@ -14,6 +16,10 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
   const audioChunksRef = useRef<BlobPart[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const vadRef = useRef<VoiceActivityDetector | null>(null);
+  
+  // Default to 2 seconds of silence if not specified
+  const silenceTimeThreshold = options.autoStopSilenceMs || 2000;
   
   const startRecording = async () => {
     try {
@@ -38,6 +44,12 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
+        
+        // Clean up VAD
+        if (vadRef.current) {
+          vadRef.current.stop();
+          vadRef.current = null;
+        }
       };
       
       mediaRecorderRef.current.start();
@@ -48,6 +60,20 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
+      
+      // Initialize voice activity detection
+      if (silenceTimeThreshold > 0) {
+        vadRef.current = new VoiceActivityDetector({
+          silenceTimeThreshold: silenceTimeThreshold
+        });
+        
+        vadRef.current.setOnSpeechEnd(() => {
+          console.log("Auto-stopping recording after silence detected");
+          stopRecording();
+        });
+        
+        vadRef.current.init(stream);
+      }
       
       return true;
     } catch (err) {

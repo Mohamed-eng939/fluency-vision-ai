@@ -22,7 +22,9 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     stopRecording,
     resetRecording,
     formatTime
-  } = useAudioRecorder();
+  } = useAudioRecorder({
+    autoStopSilenceMs: 2000 // Auto-stop after 2 seconds of silence
+  });
   
   const { 
     transcript, 
