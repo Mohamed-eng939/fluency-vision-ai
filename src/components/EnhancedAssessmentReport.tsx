@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Book, Lightbulb, LineChart } from 'lucide-react';
+import { generateRecommendations } from '../utils/scoring';
 
 interface EnhancedAssessmentReportProps {
   result: AssessmentResult;
@@ -31,56 +32,7 @@ const EnhancedAssessmentReport: React.FC<EnhancedAssessmentReportProps> = ({
   ];
 
   // Generate learning recommendations based on lowest scores
-  const generateRecommendations = () => {
-    // Find the two lowest scoring areas
-    const sortedMetrics = [...metricsData].sort((a, b) => a.value - b.value);
-    const lowestAreas = sortedMetrics.slice(0, 2);
-    
-    const recommendations = {
-      'Fluency': [
-        'Practice speaking aloud for 10 minutes daily',
-        'Record yourself speaking and listen back to identify hesitations',
-        'Join a language exchange or conversation club'
-      ],
-      'Grammar': [
-        'Review verb tenses that you find challenging',
-        'Work through targeted grammar exercises on your weak points',
-        'Use a grammar checker tool when writing'
-      ],
-      'Pronunciation': [
-        'Focus on specific sounds you find difficult',
-        'Practice minimal pairs (words that differ by one sound)',
-        'Shadow native speakers' speech from videos or podcasts'
-      ],
-      'Prosody': [
-        'Practice sentence stress and intonation patterns',
-        'Read aloud texts with clear emotional content',
-        'Listen and repeat techniques with audio materials'
-      ],
-      'Vocabulary': [
-        'Create flashcards for new words in your field',
-        'Read extensively in topics of interest',
-        'Practice using new vocabulary in sentences'
-      ],
-      'Syntax': [
-        'Practice sentence combining exercises',
-        'Analyze complex sentences from academic texts',
-        'Write daily and focus on varying your sentence structures'
-      ],
-      'Coherence': [
-        'Practice using transition words and phrases',
-        'Create outlines before speaking or writing',
-        'Record yourself explaining a complex topic and review for clarity'
-      ]
-    };
-
-    return lowestAreas.map(area => ({
-      area: area.name,
-      tips: recommendations[area.name as keyof typeof recommendations]
-    }));
-  };
-
-  const learningRecommendations = generateRecommendations();
+  const learningRecommendations = generateRecommendations(result.metrics);
 
   return (
     <div className="space-y-6">
