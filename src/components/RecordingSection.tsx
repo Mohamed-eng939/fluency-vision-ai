@@ -1,11 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '../components/ui/button';
-import { Progress } from '../components/ui/progress';
-import { toast } from '../components/ui/use-toast';
-import { SpeakingPrompt } from '../types/assessment';
-import { Mic, MicOff, Volume2, AlertTriangle, AudioWaveform } from 'lucide-react';
-import { VoiceActivityDetector, SpeechRecognitionService, processAudioForAssessment } from '../utils/speechAnalysisUtils';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Mic, MicOff, Play, Square, Volume2 } from 'lucide-react';
+import { SpeakingPrompt } from '@/types/assessment';
 
 interface RecordingSectionProps {
   prompt: SpeakingPrompt | null;
@@ -14,461 +12,289 @@ interface RecordingSectionProps {
 
 const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecordingComplete }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [visualizerData, setVisualizerData] = useState<number[]>(Array(30).fill(0));
-  const [speechDetected, setSpeechDetected] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const [interimTranscript, setInterimTranscript] = useState("");
-  const [speechLevel, setSpeechLevel] = useState(0);
-  const [recordingStats, setRecordingStats] = useState({
-    totalSpeechTime: 0,
-    silenceDuration: 0,
-    speechEnergyAvg: 0,
-  });
-  
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [transcript, setTranscript] = useState<string>('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [promptAudio, setPromptAudio] = useState<HTMLAudioElement | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
-  const animationFrameRef = useRef<number | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const dataArrayRef = useRef<Uint8Array | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const vadRef = useRef<VoiceActivityDetector | null>(null);
-  const asrRef = useRef<SpeechRecognitionService | null>(null);
-  const speechTimeRef = useRef<number>(0);
-  const silenceTimeRef = useRef<number>(0);
-  const lastSpeechStateRef = useRef<boolean>(false);
-  const speechStartTimeRef = useRef<number | null>(null);
-  const speechEndTimeRef = useRef<number | null>(null);
-  const energySamplesRef = useRef<number[]>([]);
-  
+  const speechRecognitionRef = useRef<any>(null);
+
+  // Initialize Web Speech API
   useEffect(() => {
-    return () => {
-      // Cleanup
-      cleanupResources();
-    };
-  }, []);
-  
-  const cleanupResources = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-    
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    
-    if (vadRef.current) {
-      vadRef.current.stop();
-    }
-    
-    if (asrRef.current) {
-      asrRef.current.stop();
-    }
-  };
-  
-  const startRecording = async () => {
-    if (!prompt) {
-      toast({
-        title: "No prompt selected",
-        description: "Please select a speaking prompt before recording.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+    // Check for Speech Recognition API
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      speechRecognitionRef.current = new SpeechRecognition();
+      speechRecognitionRef.current.continuous = true;
+      speechRecognitionRef.current.interimResults = true;
       
-      // Set up audio context and analyzer
-      const audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      
-      source.connect(analyser);
-      analyserRef.current = analyser;
-      
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      dataArrayRef.current = dataArray;
-      
-      // Set up media recorder
-      const recorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = recorder;
-      
-      audioChunksRef.current = [];
-      recorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-      
-      recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+      speechRecognitionRef.current.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
         
-        // Process the audio with our enhanced analysis
-        try {
-          // Calculate final speech statistics
-          const finalStats = {
-            totalSpeechTime: speechTimeRef.current,
-            silenceDuration: silenceTimeRef.current,
-            speechEnergyAvg: energySamplesRef.current.length > 0 
-              ? energySamplesRef.current.reduce((sum, val) => sum + val, 0) / energySamplesRef.current.length
-              : 0
-          };
-          
-          setRecordingStats(finalStats);
-          
-          // Pass both the audio blob and transcript to the handler
-          onRecordingComplete(audioBlob, transcript);
-          
-          // Display statistics
-          toast({
-            title: "Recording Stats",
-            description: `Speech: ${Math.round(finalStats.totalSpeechTime)}s, Silence: ${Math.round(finalStats.silenceDuration)}s`,
-          });
-        } catch (error) {
-          console.error('Error processing audio:', error);
-          toast({
-            title: "Processing error",
-            description: "There was a problem processing your recording.",
-            variant: "destructive"
-          });
-        }
-      };
-      
-      // Reset speech analysis variables
-      speechTimeRef.current = 0;
-      silenceTimeRef.current = 0;
-      lastSpeechStateRef.current = false;
-      speechStartTimeRef.current = null;
-      speechEndTimeRef.current = null;
-      energySamplesRef.current = [];
-      
-      // Set up Voice Activity Detection
-      const vad = new VoiceActivityDetector({
-        threshold: 0.03, // Lower threshold for better sensitivity
-        voicingProbabilityThreshold: 0.5,
-        silenceTimeThreshold: 1000, // 1 second of silence
-      });
-      
-      vadRef.current = vad;
-      vad.init(stream);
-      vad.setOnSpeechStart(() => {
-        setSpeechDetected(true);
-        lastSpeechStateRef.current = true;
-        speechStartTimeRef.current = Date.now();
-        speechEndTimeRef.current = null;
-        
-        // Visual feedback for speech detection
-        toast({
-          title: "Speech detected",
-          description: "We can hear you speaking.",
-          variant: "default"
-        });
-      });
-      
-      vad.setOnSpeechEnd(() => {
-        setSpeechDetected(false);
-        lastSpeechStateRef.current = false;
-        speechEndTimeRef.current = Date.now();
-        
-        // Calculate speech duration
-        if (speechStartTimeRef.current !== null) {
-          const duration = (speechEndTimeRef.current - speechStartTimeRef.current) / 1000;
-          speechTimeRef.current += duration;
-        }
-      });
-      
-      // Set up Speech Recognition if supported
-      if (SpeechRecognitionService.isSupported()) {
-        const asr = new SpeechRecognitionService({
-          language: 'en-US',
-          continuous: true,
-          interimResults: true
-        });
-        
-        asrRef.current = asr;
-        
-        asr.onResult((text, isFinal) => {
-          if (isFinal) {
-            setTranscript(prev => prev ? `${prev} ${text}` : text);
-            setInterimTranscript("");
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
           } else {
-            setInterimTranscript(text);
+            interimTranscript += event.results[i][0].transcript;
           }
-        });
+        }
         
-        asr.onError((error) => {
-          console.error('Speech recognition error:', error);
-        });
-        
-        asr.start();
+        setTranscript(finalTranscript || interimTranscript);
+      };
+    }
+  }, []);
+
+  // Generate TTS audio for prompt when prompt changes
+  useEffect(() => {
+    if (prompt && prompt.text) {
+      generatePromptAudio(prompt.text);
+    }
+  }, [prompt]);
+
+  // Generate audio for the prompt using Web Speech API
+  const generatePromptAudio = (text: string) => {
+    // Check if the Web Speech API is available
+    if ('speechSynthesis' in window) {
+      // Create a new instance of SpeechSynthesisUtterance
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Set properties
+      utterance.lang = 'en-US';
+      utterance.rate = 1; // Speed - normal
+      utterance.pitch = 1; // Pitch - normal
+      
+      // Get available voices
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Try to find a good voice
+      const preferredVoice = voices.find(voice => 
+        voice.name.includes('Google') || 
+        voice.name.includes('Natural') || 
+        voice.name.includes('Daniel') ||
+        voice.name.includes('Samantha')
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
       }
       
-      // Start recording
-      recorder.start();
-      setIsRecording(true);
-      setTimeLeft(prompt.timeLimit);
+      // Create an Audio element from the speech synthesis
+      const audio = new Audio();
       
-      // Set up timer
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            stopRecording();
-            return 0;
-          }
-          
-          // Update silence time if not speaking
-          if (!lastSpeechStateRef.current) {
-            silenceTimeRef.current += 1;
-          }
-          
-          return prev - 1;
+      // Using a hack to convert speech synthesis to Audio element
+      const speechSynthesisToAudio = () => {
+        return new Promise<void>(resolve => {
+          utterance.onend = () => {
+            window.speechSynthesis.cancel(); // Stop speaking
+            resolve();
+          };
+          window.speechSynthesis.speak(utterance);
         });
+      };
+      
+      // Set the prompt audio
+      setPromptAudio(audio);
+    }
+  };
+
+  // Play the prompt audio
+  const playPromptAudio = () => {
+    if ('speechSynthesis' in window && prompt) {
+      const utterance = new SpeechSynthesisUtterance(prompt.text);
+      
+      utterance.lang = 'en-US';
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      
+      setIsPlaying(true);
+      
+      utterance.onend = () => {
+        setIsPlaying(false);
+      };
+      
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        audioChunksRef.current.push(e.data);
+      };
+      
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        setAudioBlob(audioBlob);
+        
+        // Stop all tracks on the stream
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      // Start speech recognition if available
+      if (speechRecognitionRef.current) {
+        setTranscript('');
+        speechRecognitionRef.current.start();
+      }
+      
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      
+      // Start timer
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
       }, 1000);
       
-      // Start visualizer
-      updateVisualizer();
-      
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      toast({
-        title: "Microphone access denied",
-        description: "Please allow microphone access to record your speech.",
-        variant: "destructive"
-      });
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
     }
   };
   
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-      cleanupResources();
+      
+      // Stop speech recognition
+      if (speechRecognitionRef.current) {
+        speechRecognitionRef.current.stop();
+      }
+      
+      // Clear timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
       
       setIsRecording(false);
-      setTimeLeft(0);
     }
   };
   
-  const togglePause = () => {
-    if (isPaused) {
-      // Resume
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.resume();
-      }
-      
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            stopRecording();
-            return 0;
-          }
-          
-          // Update silence time if not speaking
-          if (!lastSpeechStateRef.current) {
-            silenceTimeRef.current += 1;
-          }
-          
-          return prev - 1;
-        });
-      }, 1000);
-      
-      if (vadRef.current && streamRef.current) {
-        vadRef.current.init(streamRef.current);
-      }
-      
-      if (asrRef.current) {
-        asrRef.current.start();
-      }
-      
-      updateVisualizer();
-    } else {
-      // Pause
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.pause();
-      }
-      
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      
-      if (vadRef.current) {
-        vadRef.current.stop();
-      }
-      
-      if (asrRef.current) {
-        asrRef.current.stop();
-      }
-    }
-    
-    setIsPaused(!isPaused);
-  };
-  
-  const updateVisualizer = () => {
-    if (!analyserRef.current || !dataArrayRef.current) return;
-    
-    analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-    const data = [...dataArrayRef.current];
-    
-    // Get average levels for visualization
-    const numberOfBars = 30;
-    const segmentLength = Math.floor(data.length / numberOfBars);
-    
-    const reducedData = [];
-    let totalEnergy = 0;
-    
-    for (let i = 0; i < numberOfBars; i++) {
-      const startIndex = i * segmentLength;
-      const segment = data.slice(startIndex, startIndex + segmentLength);
-      const average = segment.reduce((a, b) => a + b, 0) / segment.length;
-      reducedData.push(Math.min(100, average));
-      totalEnergy += average;
-    }
-    
-    const currentEnergyLevel = totalEnergy / (numberOfBars * 255);
-    setSpeechLevel(currentEnergyLevel);
-    
-    // Store energy sample if speaking
-    if (lastSpeechStateRef.current) {
-      energySamplesRef.current.push(currentEnergyLevel);
-    }
-    
-    setVisualizerData(reducedData);
-    
-    animationFrameRef.current = requestAnimationFrame(updateVisualizer);
-  };
-  
-  const formatTime = (seconds: number): string => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
   
-  const progressPercentage = prompt && isRecording 
-    ? ((prompt.timeLimit - timeLeft) / prompt.timeLimit) * 100
-    : 0;
+  const handleSubmit = () => {
+    if (audioBlob) {
+      onRecordingComplete(audioBlob, transcript);
+    }
+  };
+  
+  if (!prompt) return null;
   
   return (
-    <div className="recorder-container mb-8">
-      <h2 className="text-xl font-semibold mb-4 text-assessment-blue flex items-center gap-2">
-        Record Your Response
-        {isRecording && speechDetected && (
-          <AudioWaveform className="h-5 w-5 text-assessment-teal animate-pulse" />
-        )}
-      </h2>
-      
-      {isRecording && (
-        <>
-          <div className="visualizer mb-4">
-            <div className="visualizer-bar">
-              {visualizerData.map((value, index) => (
-                <span
-                  key={index}
-                  style={{ 
-                    height: `${value}%`,
-                    backgroundColor: speechDetected ? '#38b2ac' : undefined
-                  }}
-                  className={`transition-all duration-100 ${isPaused ? "opacity-30" : ""}`}
-                />
-              ))}
-            </div>
+    <Card className="mb-8 border-assessment-teal/20">
+      <CardContent className="p-6">
+        <div className="text-lg font-medium mb-6 text-assessment-blue">
+          {prompt.text}
+        </div>
+        
+        <div className="mb-4">
+          <Button 
+            type="button"
+            variant="outline"
+            className="flex items-center gap-2 mb-4"
+            onClick={playPromptAudio}
+            disabled={isPlaying}
+          >
+            {isPlaying ? (
+              <span className="flex items-center gap-2">
+                <Volume2 className="h-4 w-4 animate-pulse" /> Playing Audio...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Volume2 className="h-4 w-4" /> Listen to Prompt
+              </span>
+            )}
+          </Button>
+        </div>
+        
+        <div className="mb-4">
+          <div className="text-sm text-gray-500 mb-2">
+            Category: <span className="text-assessment-blue">{prompt.category}</span> | 
+            Difficulty: <span className="text-assessment-blue">{prompt.difficulty}</span> | 
+            Time: <span className="text-assessment-blue">{prompt.timeLimit} min</span>
           </div>
           
-          <div className="flex justify-between items-center mb-2">
-            <div className="text-sm font-medium flex items-center gap-1">
-              {isPaused ? "Paused" : (
-                speechDetected ? (
-                  <>
-                    <Mic className="h-4 w-4 text-assessment-teal" />
-                    <span className="text-assessment-teal">Speaking detected</span>
-                  </>
-                ) : (
-                  "Recording"
-                )
+          {!isRecording && !audioBlob && (
+            <Button 
+              className="bg-assessment-teal hover:bg-assessment-lightBlue text-white"
+              onClick={startRecording}
+            >
+              <Mic className="h-4 w-4 mr-2" />
+              Start Recording
+            </Button>
+          )}
+          
+          {isRecording && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="destructive" 
+                  onClick={stopRecording}
+                >
+                  <Square className="h-4 w-4 mr-2" />
+                  Stop Recording
+                </Button>
+                <div className="animate-pulse text-red-500 flex items-center">
+                  <MicOff className="h-4 w-4 mr-2" />
+                  Recording: {formatTime(recordingTime)}
+                </div>
+              </div>
+              
+              {transcript && (
+                <div className="bg-gray-50 p-3 rounded-md text-sm italic">
+                  <div className="font-medium text-gray-700 mb-1">Transcript (real-time):</div>
+                  {transcript}
+                </div>
               )}
             </div>
-            <div className={`text-sm font-medium ${timeLeft < 10 ? "text-assessment-error" : ""}`}>
-              Time left: {formatTime(timeLeft)}
-            </div>
-          </div>
+          )}
           
-          <Progress 
-            value={progressPercentage} 
-            className={`h-2 mb-4 ${speechDetected ? "bg-assessment-teal/20" : ""}`}
-          />
-          
-          {(transcript || interimTranscript) && (
-            <div className="mt-4 mb-4 p-3 bg-gray-50 rounded-md border text-sm max-h-32 overflow-y-auto">
-              <p className="font-medium text-xs text-gray-500 mb-1">Live transcript:</p>
-              <p>
-                {transcript}{' '}
-                <span className="text-gray-400">{interimTranscript}</span>
-              </p>
+          {audioBlob && (
+            <div className="space-y-4">
+              <div>
+                <audio controls src={URL.createObjectURL(audioBlob)} className="w-full"></audio>
+              </div>
+              
+              {transcript && (
+                <div className="bg-gray-50 p-3 rounded-md text-sm">
+                  <div className="font-medium text-gray-700 mb-1">Transcript:</div>
+                  {transcript}
+                </div>
+              )}
+              
+              <div className="flex items-center gap-4">
+                <Button 
+                  className="bg-assessment-teal hover:bg-assessment-lightBlue text-white"
+                  onClick={handleSubmit}
+                >
+                  Submit Recording
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setAudioBlob(null);
+                    setTranscript('');
+                  }}
+                >
+                  Record Again
+                </Button>
+              </div>
             </div>
           )}
-        </>
-      )}
-      
-      <div className="flex gap-2 mt-4">
-        {!isRecording ? (
-          <Button
-            className="bg-assessment-blue hover:bg-assessment-lightBlue text-white w-full"
-            onClick={startRecording}
-            disabled={!prompt}
-          >
-            <Mic className="mr-2 h-4 w-4" />
-            Start Recording
-          </Button>
-        ) : (
-          <>
-            <Button
-              variant="outline"
-              className="w-1/3"
-              onClick={togglePause}
-            >
-              {isPaused ? "Resume" : "Pause"}
-            </Button>
-            <Button
-              className="bg-assessment-error hover:bg-red-600 text-white w-2/3"
-              onClick={stopRecording}
-            >
-              <MicOff className="mr-2 h-4 w-4" />
-              Stop Recording
-            </Button>
-          </>
-        )}
-      </div>
-      
-      {!prompt && (
-        <p className="text-sm text-gray-500 text-center mt-4">
-          Select a speaking prompt to enable recording
-        </p>
-      )}
-
-      {!isRecording && SpeechRecognitionService.isSupported() === false && (
-        <div className="mt-4 flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700 text-xs">
-          <AlertTriangle className="h-4 w-4" />
-          <span>
-            Live transcription is not available in this browser. For best results, use Chrome, Edge, or Safari.
-          </span>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

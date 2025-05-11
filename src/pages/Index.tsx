@@ -48,9 +48,9 @@ const Index = () => {
           <div className="rounded-lg bg-gradient-to-br from-assessment-blue to-assessment-teal p-1">
             <div className="bg-white rounded-lg h-full flex items-center justify-center">
               <img 
-                src="/placeholder.svg" 
-                alt="LinguaSpeak AI Assessment" 
-                className="max-h-80"
+                src="/language-assessment.jpg" 
+                alt="Student taking a language assessment"
+                className="w-full h-auto rounded-lg object-cover"
               />
             </div>
           </div>
