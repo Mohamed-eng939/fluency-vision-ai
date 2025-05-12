@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SpeakingPrompt } from '@/types/assessment';
@@ -23,7 +22,7 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     resetRecording,
     formatTime
   } = useAudioRecorder({
-    autoStopSilenceMs: 2000 // Auto-stop after 2 seconds of silence
+    autoStopSilenceMs: 4000 // Auto-stop after 4 seconds of silence (increased from 2 seconds)
   });
   
   const { 

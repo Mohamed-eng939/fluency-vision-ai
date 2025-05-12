@@ -12,6 +12,7 @@ import { analyzeTranscript } from './transcriptAnalysis';
 import { mapCriteriaToMetrics, determineCEFRLevel } from './metricsCalculation';
 import { generateDetailedFeedback } from './feedbackGeneration';
 import { generateRecommendations } from './recommendationsGenerator';
+import { calculateIELTSSpeakingScore, mapIELTStoCEFR } from './ieltsScoringUtils';
 
 /**
  * Generate a comprehensive assessment result
@@ -21,26 +22,36 @@ export const generateAssessmentResult = (
   totalScore: number,
   transcript?: string
 ): AssessmentResult => {
-  const metrics = mapCriteriaToMetrics(criteriaScores);
+  let metrics: AssessmentMetrics;
+  let cefrLevel: CEFRLevel;
   
-  // Apply dynamic scoring if transcript is available
+  // If transcript is available, use IELTS scoring for speaking tasks
   if (transcript) {
-    const transcriptAnalysis = analyzeTranscript(transcript);
-    // Adjust metrics based on transcript analysis
-    Object.keys(transcriptAnalysis).forEach(key => {
-      const metricKey = key as keyof AssessmentMetrics;
-      if (metrics[metricKey]) {
-        // Blend the original metric with transcript analysis
-        metrics[metricKey] = (metrics[metricKey] + transcriptAnalysis[metricKey]!) / 2;
-      }
-    });
+    // Get scores from IELTS scoring engine
+    const ieltsScores = calculateIELTSSpeakingScore(transcript);
     
-    // Recalculate total score based on adjusted metrics
-    const averageMetric = Object.values(metrics).reduce((sum, val) => sum + val, 0) / Object.values(metrics).length;
-    totalScore = Math.min(Math.round(averageMetric * 10), 100);
+    // Map to our application's metrics (1-10 scale)
+    metrics = {
+      fluency: mapIELTSBandToScale(ieltsScores["Fluency and Coherence"]),
+      grammar: mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]),
+      pronunciation: mapIELTSBandToScale(ieltsScores["Pronunciation"]),
+      prosody: mapIELTSBandToScale(ieltsScores["Pronunciation"]),
+      vocabulary: mapIELTSBandToScale(ieltsScores["Lexical Resource"]),
+      syntax: mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]),
+      coherence: mapIELTSBandToScale(ieltsScores["Fluency and Coherence"])
+    };
+    
+    // Use IELTS CEFR mapping
+    cefrLevel = ieltsScores.CEFR_Level as CEFRLevel;
+    
+    // Recalculate total score based on IELTS band
+    totalScore = Math.min(Math.round(ieltsScores.Total_Band * 11.1), 100);
+  } else {
+    // For non-speaking assessments, use the original scoring method
+    metrics = mapCriteriaToMetrics(criteriaScores);
+    cefrLevel = determineCEFRLevel(totalScore);
   }
   
-  const cefrLevel = determineCEFRLevel(totalScore);
   const feedback = generateDetailedFeedback(metrics, cefrLevel);
   
   return {
@@ -52,6 +63,14 @@ export const generateAssessmentResult = (
   };
 };
 
+/**
+ * Map IELTS band (0-9) to the application's 1-10 scale
+ */
+export const mapIELTSBandToScale = (band: number): number => {
+  // Simple linear mapping: IELTS 0-9 → App scale 1-10
+  return 1 + (band / 9) * 9;
+};
+
 // Re-export from modules to maintain API compatibility
 export { 
   calculateRubricScore,
@@ -59,5 +78,7 @@ export {
   mapCriteriaToMetrics, 
   determineCEFRLevel,
   generateDetailedFeedback,
-  generateRecommendations
+  generateRecommendations,
+  calculateIELTSSpeakingScore,
+  mapIELTStoCEFR
 };

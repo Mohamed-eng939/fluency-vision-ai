@@ -1,227 +1,79 @@
 
 import { AssessmentMetrics } from '../../types/assessment';
+import { calculateIELTSSpeakingScore, mapIELTSto5Point } from './ieltsScoringUtils';
 
 /**
- * Analyze transcript for linguistic features
+ * Analyze transcript for linguistic features and calculate scores
  */
 export const analyzeTranscript = (transcript: string): Partial<AssessmentMetrics> => {
-  const metrics: Partial<AssessmentMetrics> = {};
+  // Get the IELTS scores
+  const ieltsScores = calculateIELTSSpeakingScore(transcript);
   
-  // Basic fluency analysis
-  metrics.fluency = calculateFluencyScore(transcript);
+  // Map IELTS bands to the 1-10 scale used in the app
+  const metrics: Partial<AssessmentMetrics> = {
+    fluency: mapIELTSBandToScale(ieltsScores["Fluency and Coherence"]),
+    vocabulary: mapIELTSBandToScale(ieltsScores["Lexical Resource"]),
+    grammar: mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]),
+    pronunciation: mapIELTSBandToScale(ieltsScores["Pronunciation"]),
+  };
   
-  // Vocabulary analysis
-  metrics.vocabulary = calculateVocabularyScore(transcript);
-  
-  // Grammar analysis
-  metrics.grammar = calculateGrammarScore(transcript);
-  
-  // Coherence analysis
-  metrics.coherence = calculateCoherenceScore(transcript);
-  
-  // Syntax complexity
-  metrics.syntax = calculateSyntaxScore(transcript);
+  // Calculate derived metrics
+  metrics.coherence = metrics.fluency; // Coherence is part of the fluency score in IELTS
+  metrics.syntax = metrics.grammar; // Syntax is part of grammatical range
+  metrics.prosody = metrics.pronunciation; // Prosody is part of pronunciation
   
   return metrics;
 };
 
 /**
+ * Map IELTS band (0-9) to the application's 1-10 scale
+ */
+const mapIELTSBandToScale = (band: number): number => {
+  // Simple linear mapping: IELTS 0-9 → App scale 1-10
+  return 1 + (band / 9) * 9;
+};
+
+/**
  * Calculate fluency score based on transcript features
+ * Note: This function is kept for backward compatibility
  */
 export const calculateFluencyScore = (transcript: string): number => {
-  const words = transcript.split(/\s+/);
-  const wordCount = words.length;
-  const uniqueWords = new Set(words.map(w => w.toLowerCase())).size;
-  
-  // Analyze for hesitations and fillers
-  const fillerWords = ['um', 'uh', 'like', 'you know', 'well', 'so'];
-  const fillerCount = words.filter(w => 
-    fillerWords.includes(w.toLowerCase())
-  ).length;
-  
-  // Calculate type-token ratio (lexical diversity)
-  const ttr = uniqueWords / wordCount;
-  
-  // Calculate filler ratio
-  const fillerRatio = fillerCount / wordCount;
-  
-  // Base score from 1-10
-  let score = 7; // Default middle-high score
-  
-  // Adjust for lexical diversity
-  if (ttr > 0.7) score += 1.5;
-  else if (ttr > 0.6) score += 1;
-  else if (ttr > 0.5) score += 0.5;
-  else if (ttr < 0.4) score -= 1;
-  
-  // Adjust for fillers
-  if (fillerRatio < 0.02) score += 1;
-  else if (fillerRatio > 0.05) score -= 1;
-  else if (fillerRatio > 0.1) score -= 2;
-  
-  // Ensure score is between 1-10
-  return Math.max(1, Math.min(10, score));
+  const ieltsScores = calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Fluency and Coherence"]);
 };
 
 /**
  * Calculate vocabulary score based on transcript content
+ * Note: This function is kept for backward compatibility
  */
 export const calculateVocabularyScore = (transcript: string): number => {
-  const text = transcript.toLowerCase();
-  const words = text.split(/\s+/);
-  
-  // Advanced vocabulary markers
-  const advancedWords = [
-    'therefore', 'however', 'furthermore', 'consequently', 'nevertheless',
-    'despite', 'although', 'nonetheless', 'moreover', 'subsequently',
-    'particularly', 'significant', 'fundamental', 'essential', 'crucial',
-    'perspective', 'substantial', 'demonstrate', 'establish', 'consider'
-  ];
-  
-  // Count advanced words
-  const advancedWordCount = words.filter(w => 
-    advancedWords.includes(w.toLowerCase())
-  ).length;
-  
-  // Calculate average word length
-  const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
-  
-  // Base score
-  let score = 6; // Default middle score
-  
-  // Adjust for advanced vocabulary
-  const advancedRatio = advancedWordCount / words.length;
-  if (advancedRatio > 0.1) score += 2;
-  else if (advancedRatio > 0.05) score += 1;
-  
-  // Adjust for word length
-  if (avgWordLength > 5.5) score += 1;
-  else if (avgWordLength < 4) score -= 1;
-  
-  // Ensure score is between 1-10
-  return Math.max(1, Math.min(10, score));
+  const ieltsScores = calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Lexical Resource"]);
 };
 
 /**
  * Calculate grammar score based on transcript content
+ * Note: This function is kept for backward compatibility
  */
 export const calculateGrammarScore = (transcript: string): number => {
-  // Basic grammar patterns to check
-  const text = transcript.toLowerCase();
-  
-  // Check for complex grammar structures
-  const complexStructures = [
-    /if.*would/,
-    /had been/,
-    /should have/,
-    /might have/,
-    /were to/,
-    /not only.*but also/,
-    /despite/,
-    /nevertheless/,
-    /whereas/
-  ];
-  
-  const complexCount = complexStructures.filter(pattern => pattern.test(text)).length;
-  
-  // Check for common errors
-  const commonErrors = [
-    /he have/,
-    /she have/,
-    /it have/,
-    /they is/,
-    /we is/,
-    /i is/
-  ];
-  
-  const errorCount = commonErrors.filter(pattern => pattern.test(text)).length;
-  
-  // Base score
-  let score = 7; // Default score
-  
-  // Adjust for complex structures
-  score += complexCount * 0.5;
-  
-  // Adjust for errors
-  score -= errorCount * 1.5;
-  
-  // Ensure score is between 1-10
-  return Math.max(1, Math.min(10, score));
+  const ieltsScores = calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]);
 };
 
 /**
  * Calculate coherence score based on transcript content
+ * Note: This function is kept for backward compatibility
  */
 export const calculateCoherenceScore = (transcript: string): number => {
-  const text = transcript.toLowerCase();
-  const sentences = text.split(/[.!?]+/);
-  
-  // Check for discourse markers
-  const discourseMarkers = [
-    'first', 'second', 'third', 'finally', 'in conclusion',
-    'for example', 'such as', 'similarly', 'in contrast',
-    'however', 'therefore', 'thus', 'consequently'
-  ];
-  
-  const markerCount = discourseMarkers.filter(marker => 
-    text.includes(marker)
-  ).length;
-  
-  // Base score
-  let score = 6; // Default score
-  
-  // Adjust for discourse markers
-  score += Math.min(markerCount, 4) * 0.5;
-  
-  // Adjust for sentence count
-  if (sentences.length >= 5) score += 0.5;
-  if (sentences.length >= 10) score += 0.5;
-  
-  // Ensure score is between 1-10
-  return Math.max(1, Math.min(10, score));
+  const ieltsScores = calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Fluency and Coherence"]);
 };
 
 /**
  * Calculate syntax score based on transcript content
+ * Note: This function is kept for backward compatibility
  */
 export const calculateSyntaxScore = (transcript: string): number => {
-  const sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 0);
-  
-  // Calculate average sentence length
-  const avgSentenceLength = transcript.split(/\s+/).length / sentences.length;
-  
-  // Check for complex syntax
-  const complexSyntaxPatterns = [
-    /although/,
-    /despite/,
-    /which/,
-    /who/,
-    /where/,
-    /when/,
-    /whose/,
-    /however/
-  ];
-  
-  let complexSyntaxCount = 0;
-  sentences.forEach(sentence => {
-    complexSyntaxPatterns.forEach(pattern => {
-      if (pattern.test(sentence.toLowerCase())) {
-        complexSyntaxCount++;
-      }
-    });
-  });
-  
-  // Base score
-  let score = 6; // Default score
-  
-  // Adjust for sentence length
-  if (avgSentenceLength > 12) score += 1;
-  if (avgSentenceLength > 15) score += 1;
-  if (avgSentenceLength < 5) score -= 1;
-  
-  // Adjust for complex syntax
-  score += Math.min(complexSyntaxCount / sentences.length * 4, 3);
-  
-  // Ensure score is between 1-10
-  return Math.max(1, Math.min(10, score));
+  const ieltsScores = calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]);
 };
