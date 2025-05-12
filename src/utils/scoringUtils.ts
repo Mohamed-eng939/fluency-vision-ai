@@ -6,9 +6,13 @@ import {
   generateAssessmentResult
 } from './scoring';
 
+// Import the new pronunciation scoring function
+import { calculatePronunciationScore } from './assessment/scoringUtils';
+
 // Re-export for backward compatibility
 export {
   calculateRubricScore,
   determineCEFRLevel,
-  generateAssessmentResult
+  generateAssessmentResult,
+  calculatePronunciationScore
 };

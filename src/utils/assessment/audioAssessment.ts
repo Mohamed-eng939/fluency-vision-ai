@@ -24,7 +24,8 @@ export const analyzeAudio = async (audioBlob: Blob): Promise<AssessmentResult> =
     const metrics: AssessmentMetrics = {
       fluency: processedAudio.metrics.fluency,
       grammar: Math.random() * 5 + 5, // Still random as we can't assess grammar from audio alone
-      pronunciation: processedAudio.metrics.pronunciation,
+      // Use updated pronunciation scoring
+      pronunciation: calculateCriterionScore('Pronunciation', processedAudio.metrics, ''),
       prosody: processedAudio.metrics.prosody,
       vocabulary: Math.random() * 5 + 5, // Still random as we can't assess vocabulary from audio alone
       syntax: Math.random() * 5 + 5, // Still random as we can't assess syntax from audio alone
@@ -62,7 +63,7 @@ const fallbackAnalyzeAudio = (audioBlob: Blob): Promise<AssessmentResult> => {
       const metrics: AssessmentMetrics = {
         fluency: Math.random() * 5 + 5, // 5-10
         grammar: Math.random() * 5 + 5,
-        pronunciation: Math.random() * 5 + 5,
+        pronunciation: Math.min(7, Math.random() * 3 + 4), // Capped at 7 per new requirements
         prosody: Math.random() * 5 + 5,
         vocabulary: Math.random() * 5 + 5,
         syntax: Math.random() * 5 + 5,
@@ -149,7 +150,7 @@ export const scoreSpeakingResponse = async (
                          Object.values(detailedScores).length;
     
     // Convert to 0-100 scale
-    const finalScore = Math.round((overallScore / 5) * 100);
+    const finalScore = Math.round((overallScore / 10) * 100);
     
     // Determine CEFR level
     const cefrLevel = determineCEFRLevel(finalScore);
@@ -165,7 +166,8 @@ export const scoreSpeakingResponse = async (
   // Fallback to basic scoring if no rubric available
   const metrics = {
     fluency: processedAudio.metrics.fluency,
-    pronunciation: processedAudio.metrics.pronunciation,
+    // Use the updated pronunciation scoring logic
+    pronunciation: calculateCriterionScore('Pronunciation', processedAudio.metrics, transcript || ''),
     prosody: processedAudio.metrics.prosody,
     // Basic estimates for other metrics
     grammar: 7.5,
