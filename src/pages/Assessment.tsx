@@ -6,7 +6,7 @@ import RecordingSection from '@/components/RecordingSection';
 import EnhancedAssessmentReport from '@/components/EnhancedAssessmentReport';
 import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
-import { SpeakingPrompt, AssessmentResult, AssessmentQuestion } from '@/types/assessment';
+import { SpeakingPrompt, AssessmentResult, AssessmentQuestion, AudioAnalysisResult } from '@/types/assessment';
 import { analyzeAudio, getFullAssessmentTests, scoreSpeakingResponse } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -40,8 +40,7 @@ const AssessmentPage: React.FC = () => {
         const scoringResult = await scoreSpeakingResponse(
           audioBlob, 
           questionData,
-          transcript,
-          audioAnalysis
+          transcript
         );
         
         // Create assessment result from detailed scoring
@@ -68,8 +67,7 @@ const AssessmentPage: React.FC = () => {
             overall: `Your overall performance is at ${scoringResult.cefrLevel} level.`
           },
           audioUrl: URL.createObjectURL(audioBlob),
-          transcript: transcript || '',
-          audioAnalysis: audioAnalysis
+          transcript: transcript || ''
         };
         
         setAssessmentResult(result);
@@ -77,7 +75,7 @@ const AssessmentPage: React.FC = () => {
         
       } else {
         // Use the standard audio analysis
-        const result = await analyzeAudio(audioBlob, transcript, audioAnalysis);
+        const result = await analyzeAudio(audioBlob);
         
         // Add transcript if available
         if (transcript) {

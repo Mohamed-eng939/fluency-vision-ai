@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 
 interface UseSpeechRecognitionResult {
@@ -9,19 +10,14 @@ interface UseSpeechRecognitionResult {
   isSupported: boolean;
 }
 
-declare global {
-  interface Window {
-    SpeechRecognition?: new () => SpeechRecognition;
-    webkitSpeechRecognition?: new () => SpeechRecognition;
-  }
-}
-
+// Use a different approach to declare the global interfaces to avoid conflicts
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
   start(): void;
   stop(): void;
+  abort(): void; // Add abort method
   onresult: ((event: SpeechRecognitionEvent) => void) | null;
   onerror: ((event: any) => void) | null;
   onend: ((event: Event) => void) | null;
@@ -50,7 +46,17 @@ interface SpeechRecognitionAlternative {
   confidence: number;
 }
 
-export const useSpeechRecognition = () => {
+// Modify the global declaration to fix conflicts
+declare global {
+  var SpeechRecognition: {
+    new (): SpeechRecognition;
+  } | undefined;
+  var webkitSpeechRecognition: {
+    new (): SpeechRecognition;
+  } | undefined;
+}
+
+export const useSpeechRecognition = (): UseSpeechRecognitionResult => {
   const [transcript, setTranscript] = useState<string>('');
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSupported, setIsSupported] = useState<boolean>(false);
@@ -59,8 +65,8 @@ export const useSpeechRecognition = () => {
   
   useEffect(() => {
     // Check if browser supports SpeechRecognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    setIsSupported(!!SpeechRecognition);
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setIsSupported(!!SpeechRecognitionAPI);
     
     return () => {
       // Cleanup function
@@ -83,7 +89,13 @@ export const useSpeechRecognition = () => {
       recognitionRef.current.abort();
     }
     
-    const recognition = new window.SpeechRecognition() || new window.webkitSpeechRecognition();
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) {
+      console.warn('Speech recognition is not supported in this browser.');
+      return;
+    }
+    
+    const recognition = new SpeechRecognitionAPI();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
@@ -92,12 +104,14 @@ export const useSpeechRecognition = () => {
       let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          setTranscript(event.results[i][0].transcript);
+          setTranscript(prev => prev + event.results[i][0].transcript);
         } else {
           interimTranscript += event.results[i][0].transcript;
         }
       }
-      setTranscript(prevTranscript => prevTranscript + interimTranscript);
+      if (interimTranscript) {
+        setTranscript(prevTranscript => prevTranscript + interimTranscript);
+      }
     };
     
     recognition.onerror = (event: any) => {

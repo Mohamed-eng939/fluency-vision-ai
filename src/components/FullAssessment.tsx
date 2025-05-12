@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { useToast } from './ui/use-toast';
@@ -6,7 +5,7 @@ import {
   FullAssessment, 
   AssessmentResult 
 } from '../types/assessment';
-import { calculateRubricScore, generateAssessmentResult } from '../utils/scoringUtils';
+import { calculateRubricScore, generateAssessmentResult } from '../utils/scoring';
 
 // Import our new components
 import AssessmentHeader from './assessment/AssessmentHeader';
@@ -114,7 +113,7 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
     setTimeRemaining(null);
   };
   
-  // Calculate final assessment result
+  // Calculate final assessment result - changed to use the non-async version
   const calculateFinalResult = (): AssessmentResult => {
     // Aggregate all criteria scores
     const allCriteriaScores: Record<string, number[]> = {};
@@ -147,7 +146,7 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
       averageCriteriaScores[criterion] = average;
     });
     
-    // Generate final assessment result
+    // Generate final assessment result - use the non-async version
     return generateAssessmentResult(averageCriteriaScores, totalScore);
   };
   
