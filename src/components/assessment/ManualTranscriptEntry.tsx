@@ -38,7 +38,8 @@ const ManualTranscriptEntry: React.FC<ManualTranscriptEntryProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!transcript.trim()) {
+    // Allow submission if either transcript is provided or audio file is uploaded
+    if (!transcript.trim() && !audioFile) {
       return;
     }
 
@@ -129,7 +130,7 @@ const ManualTranscriptEntry: React.FC<ManualTranscriptEntryProps> = ({
       <Button
         className="bg-assessment-teal text-white hover:bg-assessment-lightBlue"
         onClick={handleSubmit}
-        disabled={isLoading || !transcript.trim()}
+        disabled={isLoading || (!transcript.trim() && !audioFile)}
       >
         {isLoading ? 'Processing...' : 'Submit Response'}
       </Button>
