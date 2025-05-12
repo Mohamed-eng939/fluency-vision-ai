@@ -101,16 +101,14 @@ export const useSpeechRecognition = (): UseSpeechRecognitionResult => {
     recognition.lang = 'en-US';
     
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let interimTranscript = '';
+      let finalTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          setTranscript(prev => prev + event.results[i][0].transcript);
-        } else {
-          interimTranscript += event.results[i][0].transcript;
+          finalTranscript += event.results[i][0].transcript;
         }
       }
-      if (interimTranscript) {
-        setTranscript(prevTranscript => prevTranscript + interimTranscript);
+      if (finalTranscript) {
+        setTranscript(prev => prev + finalTranscript.trim() + ' ');
       }
     };
     
