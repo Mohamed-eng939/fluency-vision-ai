@@ -1,20 +1,25 @@
 
 import { AssessmentMetrics } from '../../types/assessment';
-import { calculateIELTSSpeakingScore, mapIELTSto5Point } from './ieltsScoringUtils';
+import { calculateIELTSSpeakingScore } from './ieltsScoringUtils';
+import { mapBandToCEFR, mapIELTSto5Point } from '../rubricLoaderUtils';
+import { analyzeAudioFeatures, AudioAnalysisResult } from '../audioAnalysisUtils';
 
 /**
- * Analyze transcript for linguistic features and calculate scores
+ * Analyze transcript and audio for linguistic features and calculate scores
  */
-export const analyzeTranscript = (transcript: string): Partial<AssessmentMetrics> => {
+export const analyzeTranscript = async (
+  transcript: string, 
+  audioBlob?: Blob
+): Promise<Partial<AssessmentMetrics> & { audioAnalysis?: AudioAnalysisResult }> => {
   // Get the IELTS scores
-  const ieltsScores = calculateIELTSSpeakingScore(transcript);
+  const ieltsScores = await calculateIELTSSpeakingScore(transcript, audioBlob);
   
   // Map IELTS bands to the 1-10 scale used in the app
   const metrics: Partial<AssessmentMetrics> = {
-    fluency: mapIELTSBandToScale(ieltsScores["Fluency and Coherence"]),
-    vocabulary: mapIELTSBandToScale(ieltsScores["Lexical Resource"]),
-    grammar: mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]),
-    pronunciation: mapIELTSBandToScale(ieltsScores["Pronunciation"]),
+    fluency: mapIELTSBandToScale(ieltsScores["Fluency and Coherence"] as number),
+    vocabulary: mapIELTSBandToScale(ieltsScores["Lexical Resource"] as number),
+    grammar: mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"] as number),
+    pronunciation: mapIELTSBandToScale(ieltsScores["Pronunciation"] as number),
   };
   
   // Calculate derived metrics
@@ -22,7 +27,21 @@ export const analyzeTranscript = (transcript: string): Partial<AssessmentMetrics
   metrics.syntax = metrics.grammar; // Syntax is part of grammatical range
   metrics.prosody = metrics.pronunciation; // Prosody is part of pronunciation
   
-  return metrics;
+  // Additional audio analysis if available
+  let audioAnalysis: AudioAnalysisResult | undefined;
+  
+  if (audioBlob) {
+    try {
+      audioAnalysis = await analyzeAudioFeatures(audioBlob, transcript);
+    } catch (error) {
+      console.error("Error analyzing audio features:", error);
+    }
+  }
+  
+  return {
+    ...metrics,
+    audioAnalysis
+  };
 };
 
 /**
@@ -37,43 +56,43 @@ const mapIELTSBandToScale = (band: number): number => {
  * Calculate fluency score based on transcript features
  * Note: This function is kept for backward compatibility
  */
-export const calculateFluencyScore = (transcript: string): number => {
-  const ieltsScores = calculateIELTSSpeakingScore(transcript);
-  return mapIELTSBandToScale(ieltsScores["Fluency and Coherence"]);
+export const calculateFluencyScore = async (transcript: string): Promise<number> => {
+  const ieltsScores = await calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Fluency and Coherence"] as number);
 };
 
 /**
  * Calculate vocabulary score based on transcript content
  * Note: This function is kept for backward compatibility
  */
-export const calculateVocabularyScore = (transcript: string): number => {
-  const ieltsScores = calculateIELTSSpeakingScore(transcript);
-  return mapIELTSBandToScale(ieltsScores["Lexical Resource"]);
+export const calculateVocabularyScore = async (transcript: string): Promise<number> => {
+  const ieltsScores = await calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Lexical Resource"] as number);
 };
 
 /**
  * Calculate grammar score based on transcript content
  * Note: This function is kept for backward compatibility
  */
-export const calculateGrammarScore = (transcript: string): number => {
-  const ieltsScores = calculateIELTSSpeakingScore(transcript);
-  return mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]);
+export const calculateGrammarScore = async (transcript: string): Promise<number> => {
+  const ieltsScores = await calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"] as number);
 };
 
 /**
  * Calculate coherence score based on transcript content
  * Note: This function is kept for backward compatibility
  */
-export const calculateCoherenceScore = (transcript: string): number => {
-  const ieltsScores = calculateIELTSSpeakingScore(transcript);
-  return mapIELTSBandToScale(ieltsScores["Fluency and Coherence"]);
+export const calculateCoherenceScore = async (transcript: string): Promise<number> => {
+  const ieltsScores = await calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Fluency and Coherence"] as number);
 };
 
 /**
  * Calculate syntax score based on transcript content
  * Note: This function is kept for backward compatibility
  */
-export const calculateSyntaxScore = (transcript: string): number => {
-  const ieltsScores = calculateIELTSSpeakingScore(transcript);
-  return mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"]);
+export const calculateSyntaxScore = async (transcript: string): Promise<number> => {
+  const ieltsScores = await calculateIELTSSpeakingScore(transcript);
+  return mapIELTSBandToScale(ieltsScores["Grammatical Range and Accuracy"] as number);
 };

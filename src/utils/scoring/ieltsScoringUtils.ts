@@ -1,128 +1,79 @@
 
-/**
- * IELTS to CEFR Scoring Logic for Speaking Assessments
- */
+import { CEFRLevel } from '../../types/assessment';
+import { 
+  getRubric, 
+  mapBandToCEFR, 
+  mapIELTSto5Point, 
+  Rubric 
+} from '../rubricLoaderUtils';
+import { analyzeAudioFeatures, detectHesitationMarkers } from '../audioAnalysisUtils';
 
-// Define types for IELTS bands and criteria
-export type IELTSBand = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-export type IELTSCriterion = 'Fluency and Coherence' | 'Lexical Resource' | 'Grammatical Range and Accuracy' | 'Pronunciation';
+// Default GitHub URL for IELTS Rubric
+const DEFAULT_RUBRIC_URL = 'https://raw.githubusercontent.com/csmertx/IELTS-CEFR-Rubrics/main/ielts_cefr_speaking_rubric.json';
 
-// IELTS to CEFR mapping
-const IELTS_TO_CEFR_MAP: Record<number, string> = {
-  9: "C2",
-  8: "C1+",
-  7: "C1",
-  6: "B2",
-  5: "B1",
-  4: "A2",
-  3: "A1",
-  2: "Pre-A1",
-  1: "Below Pre-A1",
-  0: "N/A"
-};
-
-// IELTS to 5-point scale mapping
-const IELTS_TO_5POINT_MAP = (band: number): number => {
-  if (band >= 8) return 5;
-  if (band >= 7) return 4;
-  if (band >= 6) return 3;
-  if (band >= 5) return 2;
-  return 1;
-};
-
-// Band descriptors for each criterion
-export const IELTS_BAND_DESCRIPTORS = {
-  "Fluency and Coherence": {
-    9: "Effortless speech, natural cohesion, advanced discourse markers, rare self-correction.",
-    8: "Very fluent, rare hesitation, flexible discourse use, quick self-correction.",
-    7: "Fluent with minor hesitation, organized speech, occasional breakdowns.",
-    6: "Some hesitation, extended turns, basic cohesive devices.",
-    5: "Frequent pauses, limited discourse control, self-correction needed.",
-    4: "Noticeable pauses, repetitious connectives, frequent coherence issues.",
-    3: "Long pauses, minimal connected speech, basic message fails.",
-    2: "Isolated words, poor cohesion, no flow.",
-    1: "No coherence, unintelligible.",
-    0: "No speech or no attempt."
-  },
-  "Lexical Resource": {
-    9: "Full flexibility and precision, idiomatic control, accurate paraphrasing.",
-    8: "Wide range, natural collocations, rare hesitation.",
-    7: "Varied vocab with some inaccuracy, attempts paraphrasing.",
-    6: "Sufficient for topics, occasional misusage, limited paraphrasing.",
-    5: "Basic vocab, repetitive, lacks flexibility.",
-    4: "Very limited vocab, errors in word choice, no paraphrasing.",
-    3: "Personal/basic vocab only, insufficient for unfamiliar topics.",
-    2: "Memorized or isolated words.",
-    1: "Few recognizable words.",
-    0: "No meaningful language."
-  },
-  "Grammatical Range and Accuracy": {
-    9: "Complex structures used precisely and accurately at all times.",
-    8: "Wide range, mostly accurate, minor slips.",
-    7: "Good mix of forms, some persistent errors.",
-    6: "Mix of simple/complex, errors noticeable but not obstructive.",
-    5: "Basic forms, frequent grammatical errors.",
-    4: "Some short accurate utterances, frequent structural errors.",
-    3: "Frequent errors except memorized phrases.",
-    2: "No evidence of basic sentence structure.",
-    1: "Unrateable grammar.",
-    0: "No attempt."
-  },
-  "Pronunciation": {
-    9: "Native-like delivery, intonation, rhythm, stress accurate.",
-    8: "Clear speech, rare mispronunciations, natural intonation.",
-    7: "Generally clear with minor lapses, effective rhythm.",
-    6: "Mostly intelligible, minor control of stress/intonation.",
-    5: "Mostly understandable, mispronunciations do not impede meaning.",
-    4: "Frequent rhythm/stress problems, listener effort needed.",
-    3: "Partial intelligibility, regular mispronunciations.",
-    2: "Mainly unintelligible speech.",
-    1: "Isolated phonemes or words, unintelligible.",
-    0: "No speech or completely unintelligible."
-  }
-} as const;
+// Cached rubric to avoid repeated fetches
+let cachedRubric: Rubric | null = null;
 
 /**
- * Calculate the IELTS band score for a speaking assessment
- * @param transcript The transcript of the speaking response
- * @param audioFeatures Optional audio features extracted from the recording
- * @returns Object with scores for each criterion, total band and CEFR level
+ * Calculate IELTS speaking score from transcript
  */
-export const calculateIELTSSpeakingScore = (
+export const calculateIELTSSpeakingScore = async (
   transcript: string,
-  audioFeatures?: {
-    speechRate?: number;
-    pauseCount?: number;
-    fillerWordCount?: number;
-    pronunciationErrors?: number;
+  audioBlob?: Blob,
+  rubricUrl: string = DEFAULT_RUBRIC_URL
+): Promise<Record<string, number | string>> => {
+  // Load rubric (use cached version if available)
+  if (!cachedRubric) {
+    cachedRubric = await getRubric(rubricUrl);
   }
-) => {
-  // Default audio features if not provided
-  const features = audioFeatures || {
-    speechRate: 0,
-    pauseCount: 0,
-    fillerWordCount: 0,
-    pronunciationErrors: 0
-  };
+  const rubric = cachedRubric;
   
-  // Calculate individual criterion scores
-  const fluencyScore = calculateFluencyScore(transcript, features);
-  const lexicalScore = calculateLexicalScore(transcript);
-  const grammarScore = calculateGrammarScore(transcript);
-  const pronunciationScore = calculatePronunciationScore(transcript, features);
+  // Default scores
+  let fluencyScore = 5;
+  let vocabularyScore = 5;
+  let grammarScore = 5;
+  let pronunciationScore = 5;
   
-  // Calculate the total band score (average of the four criteria)
-  const totalScoreRaw = (fluencyScore + lexicalScore + grammarScore + pronunciationScore) / 4;
+  // Enhanced scoring with audio analysis if available
+  if (audioBlob) {
+    const audioAnalysis = await analyzeAudioFeatures(audioBlob, transcript);
+    
+    // Analyze hesitation markers
+    const hesitationAnalysis = detectHesitationMarkers(transcript);
+    
+    // Calculate fluency score based on WPM and pauses
+    fluencyScore = calculateFluencyScore(
+      audioAnalysis.wpm, 
+      audioAnalysis.pauseRatio,
+      hesitationAnalysis.ratio
+    );
+    
+    // Approximate pronunciation score based on transcript completion
+    // (This is a placeholder - real pronunciation scoring requires phonemic analysis)
+    pronunciationScore = 5;
+  } else {
+    // Use text-only analysis
+    fluencyScore = calculateFluencyScoreFromText(transcript);
+    pronunciationScore = 5; // Default without audio
+  }
   
-  // Round to nearest 0.5 as per IELTS convention
-  const totalBand = Math.round(totalScoreRaw * 2) / 2;
+  // Calculate vocabulary score
+  vocabularyScore = calculateVocabularyScore(transcript);
+  
+  // Calculate grammar score
+  grammarScore = calculateGrammarScore(transcript);
+  
+  // Calculate total band score (average of the four criteria)
+  const totalBand = roundToHalf(
+    (fluencyScore + vocabularyScore + grammarScore + pronunciationScore) / 4
+  );
   
   // Map to CEFR level
-  const cefrLevel = mapIELTStoCEFR(totalBand);
+  const cefrLevel = mapBandToCEFR(totalBand, rubric);
   
   return {
     "Fluency and Coherence": fluencyScore,
-    "Lexical Resource": lexicalScore,
+    "Lexical Resource": vocabularyScore,
     "Grammatical Range and Accuracy": grammarScore,
     "Pronunciation": pronunciationScore,
     "Total_Band": totalBand,
@@ -133,281 +84,150 @@ export const calculateIELTSSpeakingScore = (
 /**
  * Map IELTS band score to CEFR level
  */
-export const mapIELTStoCEFR = (band: number): string => {
-  // Round down to get the integer part
-  const integerBand = Math.floor(band);
-  return IELTS_TO_CEFR_MAP[integerBand] || "N/A";
+export const mapIELTStoCEFR = async (
+  band: number,
+  rubricUrl: string = DEFAULT_RUBRIC_URL
+): Promise<CEFRLevel> => {
+  // Load rubric (use cached version if available)
+  if (!cachedRubric) {
+    cachedRubric = await getRubric(rubricUrl);
+  }
+  return mapBandToCEFR(band, cachedRubric);
 };
 
 /**
- * Map IELTS band to 5-point scale
- */
-export const mapIELTSto5Point = (band: number): number => {
-  return IELTS_TO_5POINT_MAP(band);
-};
-
-/**
- * Calculate Fluency and Coherence score
+ * Calculate fluency score based on speaking rate, pauses and hesitations
  */
 const calculateFluencyScore = (
-  transcript: string,
-  features: { speechRate?: number; pauseCount?: number; fillerWordCount?: number }
-): IELTSBand => {
-  // Extract basic metrics from transcript
-  const words = transcript.split(/\s+/);
-  const wordCount = words.length;
+  wpm: number, 
+  pauseRatio: number,
+  hesitationRatio: number
+): number => {
+  // Typical speaking rates:
+  // - Below 100 WPM: Very slow (bands 3-4)
+  // - 100-130 WPM: Slow (bands 4-5)
+  // - 130-160 WPM: Moderate (bands 5-6)
+  // - 160-190 WPM: Moderately fast (bands 6-7)
+  // - 190-220 WPM: Fast (bands 7-8)
+  // - Above 220 WPM: Very fast (bands 8-9)
   
-  // Calculate speech rate (words per minute) if not provided
-  const speechRate = features.speechRate || wordCount / 3; // Assuming a 3-minute speaking task
+  let score = 5; // Start at middle band
   
-  // Count discourse markers
-  const discourseMarkers = [
-    'first', 'firstly', 'second', 'secondly', 'third', 'thirdly', 'finally', 
-    'moreover', 'furthermore', 'in addition', 'however', 'nevertheless', 'therefore',
-    'thus', 'consequently', 'in conclusion', 'to summarize', 'for example',
-    'such as', 'in other words', 'on the other hand', 'similarly', 'in contrast'
-  ];
+  // WPM scoring
+  if (wpm < 80) score -= 2;
+  else if (wpm < 110) score -= 1;
+  else if (wpm > 190) score += 1;
+  else if (wpm > 220) score += 2;
   
-  const markerCount = discourseMarkers.reduce((count, marker) => 
-    count + (transcript.toLowerCase().match(new RegExp(`\\b${marker}\\b`, 'g'))?.length || 0), 0);
+  // Pause ratio scoring (higher pause ratio = lower fluency)
+  if (pauseRatio > 0.4) score -= 2;
+  else if (pauseRatio > 0.3) score -= 1;
+  else if (pauseRatio < 0.15) score += 1;
   
-  // Calculate filler word usage
-  const fillerWords = ['um', 'uh', 'like', 'you know', 'well', 'so', 'actually'];
-  const fillerCount = features.fillerWordCount || fillerWords.reduce((count, filler) => 
-    count + (transcript.toLowerCase().match(new RegExp(`\\b${filler}\\b`, 'g'))?.length || 0), 0);
+  // Hesitation ratio scoring
+  if (hesitationRatio > 0.15) score -= 2;
+  else if (hesitationRatio > 0.1) score -= 1;
+  else if (hesitationRatio < 0.05) score += 1;
   
-  // Pause count (if not provided, estimate from transcript)
-  const pauseCount = features.pauseCount || (transcript.match(/[.?!…,;:]/g)?.length || 0);
-  
-  // Calculate fluency metrics
-  const fillerRatio = wordCount > 0 ? fillerCount / wordCount : 0;
-  const markerRatio = wordCount > 0 ? markerCount / wordCount : 0;
-  const cohesionLevel = markerRatio * 10; // Scale from 0-1
-  
-  // Determine base score
-  let score: IELTSBand = 5; // Start with middle band
-  
-  // Apply scoring logic
-  if (wordCount < 10) {
-    score = 1; // Very minimal response
-  } else if (wordCount < 30) {
-    score = 2; // Extremely limited response
-  } else if (wordCount < 50) {
-    score = 3; // Very limited response
-  } else {
-    // Adjust for speech rate and fluency
-    if (speechRate > 150) score += 1;
-    if (speechRate > 180) score += 1;
-    if (speechRate < 100) score -= 1;
-    if (speechRate < 70) score -= 1;
-    
-    // Adjust for filler word usage
-    if (fillerRatio < 0.02) score += 1;
-    if (fillerRatio > 0.05) score -= 1;
-    if (fillerRatio > 0.1) score -= 2;
-    
-    // Adjust for discourse markers and cohesion
-    if (cohesionLevel > 0.4) score += 1;
-    if (cohesionLevel > 0.7) score += 1;
-    if (cohesionLevel < 0.2) score -= 1;
-  }
-  
-  // Ensure score is between 0-9
-  return Math.max(0, Math.min(9, score)) as IELTSBand;
+  // Ensure score is within IELTS band range (0-9)
+  return Math.max(0, Math.min(9, score));
 };
 
 /**
- * Calculate Lexical Resource score
+ * Calculate fluency score from text only (fallback method)
  */
-const calculateLexicalScore = (transcript: string): IELTSBand => {
-  const text = transcript.toLowerCase();
-  const words = text.split(/\s+/);
+const calculateFluencyScoreFromText = (transcript: string): number => {
+  const words = transcript.trim().split(/\s+/).filter(word => word.length > 0);
   const wordCount = words.length;
   
-  if (wordCount < 10) return 1; // Minimal vocabulary
+  // Very basic text-based fluency estimate
+  // - Less than 30 words: Band 3-4
+  // - 30-60 words: Band 4-5
+  // - 60-100 words: Band 5-6
+  // - 100-150 words: Band 6-7
+  // - 150-200 words: Band 7-8
+  // - 200+ words: Band 8-9
   
-  const uniqueWords = new Set(words.map(w => w.toLowerCase()));
-  const lexicalDiversity = uniqueWords.size / wordCount; // Type-token ratio
-  
-  // Academic and advanced vocabulary lists
-  const advancedWords = [
-    'analyze', 'assessment', 'complex', 'concept', 'considerable', 'context', 
-    'crucial', 'demonstrate', 'determine', 'emphasize', 'establish', 'evaluate', 
-    'evident', 'expand', 'fundamental', 'generate', 'highlight', 'implement', 
-    'imply', 'indicate', 'individual', 'interpret', 'involve', 'justify', 
-    'maintain', 'method', 'negative', 'obtain', 'participate', 'potential', 
-    'previous', 'primary', 'process', 'range', 'require', 'research', 
-    'significant', 'similar', 'specific', 'strategy', 'structure', 'theory',
-    'therefore', 'traditional', 'whereas', 'utilize'
-  ];
-  
-  const idioms = [
-    'a piece of cake', 'break a leg', 'cost an arm and a leg', 'hit the books',
-    'get your act together', 'once in a blue moon', 'push your luck',
-    'under the weather', 'wrap your head around', 'back to square one'
-  ];
-  
-  const collocations = [
-    'heavy rain', 'strong coffee', 'take a break', 'pay attention',
-    'make an effort', 'draw a conclusion', 'catch a cold', 'meet the deadline',
-    'conduct research', 'raise awareness'
-  ];
-  
-  // Calculate advanced vocabulary usage
-  const advancedWordCount = words.filter(w => advancedWords.includes(w)).length;
-  const advancedRatio = wordCount > 0 ? advancedWordCount / wordCount : 0;
-  
-  // Check for idioms and collocations
-  let idiomCount = 0;
-  let collocationCount = 0;
-  
-  idioms.forEach(idiom => {
-    if (text.includes(idiom)) idiomCount++;
-  });
-  
-  collocations.forEach(collocation => {
-    if (text.includes(collocation)) collocationCount++;
-  });
-  
-  // Calculate average word length
-  const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / wordCount;
-  
-  // Base score calculation
-  let score: IELTSBand = 5; // Start with middle band
-  
-  // Apply scoring adjustments
-  if (lexicalDiversity > 0.7) score += 1;
-  if (lexicalDiversity > 0.8) score += 1;
-  if (lexicalDiversity < 0.5) score -= 1;
-  if (lexicalDiversity < 0.4) score -= 1;
-  
-  if (advancedRatio > 0.1) score += 1;
-  if (advancedRatio > 0.15) score += 1;
-  if (advancedRatio < 0.05) score -= 1;
-  
-  if (idiomCount >= 2) score += 1;
-  if (collocationCount >= 3) score += 1;
-  
-  if (avgWordLength > 5) score += 1;
-  if (avgWordLength < 4) score -= 1;
-  
-  // Ensure score is between 0-9
-  return Math.max(0, Math.min(9, score)) as IELTSBand;
+  if (wordCount < 30) return 3.5;
+  if (wordCount < 60) return 4.5;
+  if (wordCount < 100) return 5.5;
+  if (wordCount < 150) return 6.5;
+  if (wordCount < 200) return 7.5;
+  return 8.5;
 };
 
 /**
- * Calculate Grammatical Range and Accuracy score
+ * Calculate vocabulary score from transcript
  */
-const calculateGrammarScore = (transcript: string): IELTSBand => {
-  const text = transcript.toLowerCase();
+const calculateVocabularyScore = (transcript: string): number => {
+  // In a real implementation, this would analyze:
+  // - Lexical diversity
+  // - Word frequency (common vs. rare words)
+  // - Collocations
+  // - Idioms and phrasal verbs
   
-  // Simple sentence pattern
-  const simplePatterns = [
-    /\b(i|we|they|he|she|it)\s+(am|is|are|was|were|have|has|had)\b/i,
-    /\b(i|we|they|he|she|it)\s+(go|goes|went|like|likes|liked)\b/i
-  ];
+  // Simplified implementation based on text length
+  const words = transcript.trim().split(/\s+/).filter(word => word.length > 0);
+  const uniqueWords = new Set(words.map(word => word.toLowerCase()));
   
-  // Complex sentence structures
-  const complexPatterns = [
-    /\bif\b.+\bwould\b/i, 
-    /\b(although|though)\b/i,
-    /\bhad been\b/i,
-    /\bwould have\b/i,
-    /\bcould have\b/i,
-    /\bmight have\b/i,
-    /\bshould have\b/i,
-    /\bnot only.+but also\b/i,
-    /\bdespite\b/i,
-    /\bnevertheless\b/i,
-    /\bwhereas\b/i,
-    /\bin spite of\b/i,
-    /\bin order to\b/i
-  ];
+  // Calculate lexical diversity (unique words / total words)
+  const lexicalDiversity = words.length > 0 ? uniqueWords.size / words.length : 0;
   
-  // Common grammatical errors
-  const errorPatterns = [
-    /\b(he|she|it)\s+have\b/i,
-    /\b(they|we|you)\s+has\b/i,
-    /\b(i|we|you|they)\s+is\b/i,
-    /\b(he|she|it)\s+are\b/i,
-    /\bthe\s+[aeiou]/i, // Incorrect article usage
-    /\ba\s+[aeiou]/i, // Incorrect article usage
-    /\b(go|come|eat|drink|speak)\s+to\s+the\b/i // Incorrect preposition
-  ];
+  // Calculate vocabulary score
+  let score = 5; // Start at middle band
   
-  // Count pattern matches
-  const simpleCount = simplePatterns.filter(pattern => pattern.test(text)).length;
-  const complexCount = complexPatterns.filter(pattern => pattern.test(text)).length;
-  const errorCount = errorPatterns.filter(pattern => pattern.test(text)).length;
+  if (lexicalDiversity > 0.8) score += 2;
+  else if (lexicalDiversity > 0.7) score += 1;
+  else if (lexicalDiversity < 0.5) score -= 1;
+  else if (lexicalDiversity < 0.4) score -= 2;
   
-  // Sentences count
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-  const sentenceCount = sentences.length;
+  // Adjust based on transcript length
+  if (words.length > 200) score += 1;
+  else if (words.length < 50) score -= 1;
   
-  // Base score calculation
-  let score: IELTSBand = 5; // Start with middle band
-  
-  // No real sentences formed
-  if (sentenceCount < 3) {
-    return 2;
-  }
-  
-  // Apply scoring adjustments
-  if (complexCount > 5) score += 1;
-  if (complexCount > 8) score += 1;
-  if (complexCount > 12) score += 1;
-  
-  // Adjust for grammatical errors
-  const errorRatio = sentenceCount > 0 ? errorCount / sentenceCount : 0;
-  if (errorRatio < 0.1) score += 1;
-  if (errorRatio < 0.05) score += 1;
-  if (errorRatio > 0.2) score -= 1;
-  if (errorRatio > 0.3) score -= 2;
-  
-  // Sentence complexity ratio
-  const complexityRatio = sentenceCount > 0 ? complexCount / sentenceCount : 0;
-  if (complexityRatio > 0.7) score += 1;
-  if (complexityRatio < 0.3) score -= 1;
-  
-  // Ensure score is between 0-9
-  return Math.max(0, Math.min(9, score)) as IELTSBand;
+  // Ensure score is within IELTS band range (0-9)
+  return Math.max(0, Math.min(9, score));
 };
 
 /**
- * Calculate Pronunciation score
+ * Calculate grammar score from transcript
  */
-const calculatePronunciationScore = (
-  transcript: string, 
-  features: { pronunciationErrors?: number }
-): IELTSBand => {
-  // In a real-world scenario, this would use audio analysis
-  // For this implementation, we'll base it mostly on transcript length and errors
+const calculateGrammarScore = (transcript: string): number => {
+  // In a real implementation, this would analyze:
+  // - Sentence complexity
+  // - Grammatical accuracy
+  // - Variety of structures
+  // - Errors per sentence
   
-  const words = transcript.split(/\s+/);
-  const wordCount = words.length;
+  // Simplified implementation based on sentence length
+  const sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const words = transcript.split(/\s+/).filter(w => w.length > 0);
   
-  if (wordCount < 10) {
-    return 1; // Too little to assess pronunciation
-  }
+  // Calculate average sentence length
+  const avgSentenceLength = sentences.length > 0 ? words.length / sentences.length : 0;
   
-  // Start with middle score
-  let score: IELTSBand = 5;
+  // Calculate grammar score
+  let score = 5; // Start at middle band
   
-  // If we have pronunciation errors from audio analysis, use them
-  if (features.pronunciationErrors !== undefined) {
-    const errorRatio = wordCount > 0 ? features.pronunciationErrors / wordCount : 0;
-    
-    if (errorRatio < 0.05) score += 2;
-    else if (errorRatio < 0.1) score += 1;
-    else if (errorRatio > 0.2) score -= 1;
-    else if (errorRatio > 0.3) score -= 2;
-  } else {
-    // Without audio analysis, make educated guess based on transcript length
-    // This is a fallback and should be replaced with real audio analysis
-    if (wordCount > 150) score += 1; // Longer responses suggest better pronunciation confidence
-    if (wordCount > 200) score += 1;
-  }
+  // Adjust based on average sentence length
+  // Very short sentences often indicate limited grammatical range
+  // Very long sentences without proper punctuation may indicate poor grammar
+  if (avgSentenceLength > 20) score += 1;
+  else if (avgSentenceLength > 15) score += 0.5;
+  else if (avgSentenceLength < 8) score -= 0.5;
+  else if (avgSentenceLength < 5) score -= 1;
   
-  // Ensure score is between 0-9
-  return Math.max(0, Math.min(9, score)) as IELTSBand;
+  // Adjust based on transcript length (more content = more opportunity to demonstrate range)
+  if (words.length > 200) score += 1;
+  else if (words.length < 50) score -= 1;
+  
+  // Ensure score is within IELTS band range (0-9)
+  return Math.max(0, Math.min(9, score));
+};
+
+/**
+ * Round a number to the nearest 0.5
+ */
+const roundToHalf = (num: number): number => {
+  return Math.round(num * 2) / 2;
 };

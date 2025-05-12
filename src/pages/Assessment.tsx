@@ -28,7 +28,7 @@ const AssessmentPage: React.FC = () => {
     setDetailedFeedback(null);
   };
 
-  const handleRecordingComplete = async (audioBlob: Blob, transcript?: string) => {
+  const handleRecordingComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
     try {
       setIsProcessing(true);
       
@@ -40,7 +40,8 @@ const AssessmentPage: React.FC = () => {
         const scoringResult = await scoreSpeakingResponse(
           audioBlob, 
           questionData,
-          transcript
+          transcript,
+          audioAnalysis
         );
         
         // Create assessment result from detailed scoring
@@ -67,7 +68,8 @@ const AssessmentPage: React.FC = () => {
             overall: `Your overall performance is at ${scoringResult.cefrLevel} level.`
           },
           audioUrl: URL.createObjectURL(audioBlob),
-          transcript: transcript || ''
+          transcript: transcript || '',
+          audioAnalysis: audioAnalysis
         };
         
         setAssessmentResult(result);
@@ -75,7 +77,7 @@ const AssessmentPage: React.FC = () => {
         
       } else {
         // Use the standard audio analysis
-        const result = await analyzeAudio(audioBlob);
+        const result = await analyzeAudio(audioBlob, transcript, audioAnalysis);
         
         // Add transcript if available
         if (transcript) {

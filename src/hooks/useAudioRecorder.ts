@@ -1,9 +1,10 @@
 
 import { useState, useRef } from 'react';
 import { VoiceActivityDetector } from '@/utils/speechAnalysisUtils';
+import { analyzeAudioFeatures, AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
 
 interface UseAudioRecorderOptions {
-  onRecordingComplete?: (blob: Blob) => void;
+  onRecordingComplete?: (blob: Blob, analysis?: AudioAnalysisResult) => void;
   autoStopSilenceMs?: number; // Time in ms to auto-stop after silence
 }
 
@@ -11,6 +12,8 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioAnalysis, setAudioAnalysis] = useState<AudioAnalysisResult | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
@@ -32,12 +35,23 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         audioChunksRef.current.push(e.data);
       };
       
-      mediaRecorderRef.current.onstop = () => {
+      mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         setAudioBlob(audioBlob);
         
-        if (options.onRecordingComplete) {
-          options.onRecordingComplete(audioBlob);
+        // Process audio features
+        setIsProcessing(true);
+        try {
+          const analysis = await analyzeAudioFeatures(audioBlob);
+          setAudioAnalysis(analysis);
+          
+          if (options.onRecordingComplete) {
+            options.onRecordingComplete(audioBlob, analysis);
+          }
+        } catch (error) {
+          console.error("Error analyzing audio:", error);
+        } finally {
+          setIsProcessing(false);
         }
         
         // Stop all tracks on the stream
@@ -100,6 +114,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
   
   const resetRecording = () => {
     setAudioBlob(null);
+    setAudioAnalysis(null);
     setRecordingTime(0);
   };
   
@@ -113,6 +128,8 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
     isRecording,
     recordingTime,
     audioBlob,
+    audioAnalysis,
+    isProcessing,
     startRecording,
     stopRecording,
     resetRecording,
