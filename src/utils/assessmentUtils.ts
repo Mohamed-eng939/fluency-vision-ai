@@ -1,4 +1,3 @@
-
 import { 
   AssessmentMetrics, 
   AssessmentResult, 
@@ -207,6 +206,18 @@ const getCEFRSpecificFeedback = (metric: string, level: CEFRLevel): Record<strin
         good: 'You can communicate very fluently with minimal hesitation.',
         adequate: 'You can express yourself with good fluency.',
         needs_improvement: 'Your fluency is inconsistent for this level.'
+      },
+      'Below Pre-A1': {
+        excellent: 'You can produce a few isolated words related to basic needs.',
+        good: 'You can repeat some basic words with support.',
+        adequate: 'You can use a few memorized words or phrases.',
+        needs_improvement: 'You are at the beginning stages of developing oral language ability.'
+      },
+      'N/A': {
+        excellent: 'Your fluency cannot be assessed within standard CEFR frameworks.',
+        good: 'Your fluency shows good qualities outside standard frameworks.',
+        adequate: 'Your fluency demonstrates basic competence outside standard frameworks.',
+        needs_improvement: 'Your fluency needs development outside standard assessment frameworks.'
       }
     },
     // Add other metrics with their level-specific feedback...
@@ -234,7 +245,9 @@ const getOverallFeedback = (cefrLevel: CEFRLevel): string => {
     'A2+': 'You can handle social exchanges with confidence, going beyond basic routine exchanges.',
     'B1+': 'You can communicate with some confidence on familiar matters and maintain conversation on a fairly wide range of topics.',
     'B2+': 'You can communicate effectively and connect ideas fluently across a range of topics.',
-    'C1+': 'You have near-native fluency and can engage in extended, sophisticated discourse.'
+    'C1+': 'You have near-native fluency and can engage in extended, sophisticated discourse.',
+    'Below Pre-A1': 'You are at the very initial stages of language learning, beginning to recognize and use a few isolated words.',
+    'N/A': 'Your language proficiency falls outside the standard CEFR framework.'
   };
 
   return feedbackMap[cefrLevel] || 'Your language proficiency has been assessed.';

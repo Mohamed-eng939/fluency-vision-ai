@@ -1,4 +1,3 @@
-
 import { AssessmentMetrics, CEFRLevel, AssessmentFeedback } from '../../types/assessment';
 
 /**
@@ -74,7 +73,9 @@ export const getOverallFeedback = (cefrLevel: CEFRLevel): string => {
     'B2+': 'You can express yourself fluently and effectively in most contexts with good structural control.',
     'C1': 'You can express yourself fluently and spontaneously without much obvious searching for expressions.',
     'C1+': 'You can express yourself with precision and nuance in almost all contexts.',
-    'C2': 'You can express yourself spontaneously, very fluently and precisely, differentiating finer shades of meaning even in more complex situations.'
+    'C2': 'You can express yourself spontaneously, very fluently and precisely, differentiating finer shades of meaning even in more complex situations.',
+    'Below Pre-A1': 'You are at the very beginning of your language learning journey and can recognize or use a few isolated words and phrases.',
+    'N/A': 'Your language proficiency falls outside the standard CEFR framework assessment.'
   };
   
   // Return the feedback for the level, or a default message if not found
