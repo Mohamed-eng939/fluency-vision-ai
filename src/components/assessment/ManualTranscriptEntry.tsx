@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload } from 'lucide-react';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 interface ManualTranscriptEntryProps {
   onTranscriptSubmit: (transcript: string) => void;
@@ -18,6 +19,13 @@ const ManualTranscriptEntry: React.FC<ManualTranscriptEntryProps> = ({
   const [transcript, setTranscript] = useState('');
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { isSupported } = useSpeechRecognition();
+  const [showWarning, setShowWarning] = useState(false);
+  
+  // Check speech recognition support on mount
+  useEffect(() => {
+    setShowWarning(!isSupported);
+  }, [isSupported]);
 
   const handleTranscriptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTranscript(e.target.value);
@@ -76,11 +84,13 @@ const ManualTranscriptEntry: React.FC<ManualTranscriptEntryProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-amber-50 border border-amber-200 p-3 rounded-md">
-        <p className="text-amber-800 text-sm">
-          Speech recognition is not available in your browser. Please enter your response manually.
-        </p>
-      </div>
+      {showWarning && (
+        <div className="bg-amber-50 border border-amber-200 p-3 rounded-md">
+          <p className="text-amber-800 text-sm">
+            Speech recognition is not available in your browser. Please enter your response manually.
+          </p>
+        </div>
+      )}
       
       <Textarea 
         placeholder="Type your spoken response here..."

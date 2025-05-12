@@ -66,7 +66,7 @@ export const useSpeechRecognition = (): UseSpeechRecognitionResult => {
   useEffect(() => {
     // Check if browser supports SpeechRecognition
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-    setIsSupported(!!SpeechRecognitionAPI);
+    setIsSupported(Boolean(SpeechRecognitionAPI));
     
     return () => {
       // Cleanup function
