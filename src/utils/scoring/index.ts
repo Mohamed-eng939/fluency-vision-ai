@@ -75,7 +75,7 @@ export {
   mapCriteriaToMetrics, 
   determineCEFRLevel,
   generateDetailedFeedback,
-  generateRecommendations,
+  generateRecommendations,  // Added this export
   calculateIELTSSpeakingScore,
   mapBandToCEFR,
   mapIELTSto5Point
