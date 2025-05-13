@@ -1,0 +1,15 @@
+
+version: '3'
+
+services:
+  pronunciation-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./alignments:/app/alignments
+      - ./models:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

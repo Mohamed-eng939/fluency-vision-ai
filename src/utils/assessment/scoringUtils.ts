@@ -1,5 +1,6 @@
 
 import { AssessmentMetrics, CEFRLevel } from '../../types/assessment';
+import { PronunciationDetails } from '../audioAnalysisUtils';
 
 /**
  * Calculate total score from metrics
@@ -42,6 +43,10 @@ export const calculateCriterionScore = (
     case 'Fluency':
       return audioMetrics.fluency;
     case 'Pronunciation':
+      // Use enhanced pronunciation score if available
+      if (audioMetrics.pronunciationScore !== undefined) {
+        return audioMetrics.pronunciationScore;
+      }
       return calculatePronunciationScore(audioMetrics, transcript);
     case 'Prosody':
       return audioMetrics.pausePattern;
@@ -55,11 +60,23 @@ export const calculateCriterionScore = (
 
 /**
  * Calculate pronunciation score based on the revised criteria
+ * with integration of MFA results when available
  */
 export const calculatePronunciationScore = (
   audioMetrics: any,
   transcript: string
 ): number => {
+  // Check if we have detailed pronunciation analysis from MFA
+  if (audioMetrics.pronunciationDetails) {
+    const details: PronunciationDetails = audioMetrics.pronunciationDetails;
+    
+    // Calculate score based on MFA pronunciation analysis
+    let score = details.pronunciation_score;
+    
+    // Convert from IELTS 1-9 scale to our 1-10 scale
+    return 1 + (score / 9) * 9;
+  }
+  
   // Default max score is 7.0 unless all criteria are met
   let baseScore = 7.0;
   

@@ -9,6 +9,8 @@ import RecordingControls from './assessment/RecordingControls';
 import AudioSubmission from './assessment/AudioSubmission';
 import ManualTranscriptEntry from './assessment/ManualTranscriptEntry';
 import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
+import { getPronunciationScore, checkApiAvailability } from '@/utils/pronunciationScoreApi';
+import { toast } from '@/hooks/use-toast';
 
 interface RecordingSectionProps {
   prompt: SpeakingPrompt | null;
@@ -18,6 +20,7 @@ interface RecordingSectionProps {
 const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecordingComplete }) => {
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState<boolean>(true);
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
+  const [isPronunciationApiAvailable, setIsPronunciationApiAvailable] = useState<boolean>(false);
   
   const {
     isRecording,
@@ -30,7 +33,7 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     resetRecording,
     formatTime
   } = useAudioRecorder({
-    autoStopSilenceMs: 4000 // Auto-stop after 4 seconds of silence (increased from 2 seconds)
+    autoStopSilenceMs: 4000 // Auto-stop after 4 seconds of silence
   });
   
   const { 
@@ -41,6 +44,23 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     resetTranscript, 
     isSupported 
   } = useSpeechRecognition();
+  
+  // Check backend API availability on mount
+  useEffect(() => {
+    const checkBackendAvailability = async () => {
+      const isApiAvailable = await checkApiAvailability();
+      setIsPronunciationApiAvailable(isApiAvailable);
+      
+      if (isApiAvailable) {
+        toast({
+          title: "Pronunciation API detected",
+          description: "Enhanced pronunciation scoring is available.",
+        });
+      }
+    };
+    
+    checkBackendAvailability().catch(console.error);
+  }, []);
   
   // Check browser compatibility on mount
   useEffect(() => {
@@ -66,10 +86,57 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     stopListening();
   };
   
-  // Handle submit recording
-  const handleSubmit = () => {
+  // Handle submit recording with enhanced pronunciation scoring
+  const handleSubmit = async () => {
     if (audioBlob) {
-      onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
+      try {
+        if (isPronunciationApiAvailable && transcript) {
+          // Show processing toast
+          toast({
+            title: "Analyzing pronunciation",
+            description: "This may take a few seconds...",
+          });
+          
+          // Get enhanced pronunciation score from the API
+          const pronunciationResult = await getPronunciationScore(
+            audioBlob, 
+            transcript, 
+            audioAnalysis || {} as AudioAnalysisResult
+          );
+          
+          // Create enhanced audio analysis with pronunciation data
+          const enhancedAnalysis = {
+            ...(audioAnalysis || {}),
+            pronunciationScore: pronunciationResult.score,
+            cefrLevel: pronunciationResult.cefrLevel,
+            pronunciationDetails: pronunciationResult.details
+          };
+          
+          // Submit enhanced analysis
+          onRecordingComplete(audioBlob, transcript, enhancedAnalysis as any);
+          
+          // Show success toast
+          toast({
+            title: "Pronunciation analysis complete",
+            description: `Score: ${pronunciationResult.score.toFixed(1)}/10 (${pronunciationResult.cefrLevel})`,
+          });
+          
+        } else {
+          // Fallback to basic analysis
+          onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
+        }
+      } catch (error) {
+        console.error("Pronunciation analysis error:", error);
+        // Fallback to basic analysis on error
+        onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
+        
+        // Show error toast
+        toast({
+          title: "Pronunciation analysis failed",
+          description: "Using fallback scoring method instead.",
+          variant: "destructive"
+        });
+      }
     }
   };
   
@@ -124,6 +191,13 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
             Difficulty: <span className="text-assessment-blue">{prompt.difficulty}</span> | 
             Time: <span className="text-assessment-blue">{prompt.timeLimit} min</span>
           </div>
+          
+          {/* Show pronunciation API status */}
+          {isPronunciationApiAvailable && (
+            <div className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-md inline-block mb-3">
+              Enhanced pronunciation scoring active
+            </div>
+          )}
           
           {/* Show recording controls or manual entry based on mode */}
           {!isManualEntryMode ? (
