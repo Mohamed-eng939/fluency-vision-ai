@@ -3,7 +3,8 @@
 import {
   calculateRubricScore,
   determineCEFRLevel,
-  generateAssessmentResult
+  generateAssessmentResult,
+  generateRecommendations
 } from './scoring';
 
 // Import the new pronunciation scoring function
@@ -14,5 +15,6 @@ export {
   calculateRubricScore,
   determineCEFRLevel,
   generateAssessmentResult,
-  calculatePronunciationScore
+  calculatePronunciationScore,
+  generateRecommendations
 };

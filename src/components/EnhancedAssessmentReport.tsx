@@ -1,4 +1,3 @@
-
 import React from 'react';
 import AssessmentReport from './AssessmentReport';
 import DetailedFeedback from './DetailedFeedback';
@@ -7,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Book, Lightbulb, LineChart } from 'lucide-react';
-import { generateRecommendations } from '../utils/scoring';
+import { generateRecommendations } from '../utils/scoringUtils';
 
 interface EnhancedAssessmentReportProps {
   result: AssessmentResult;
