@@ -1,5 +1,6 @@
 
 import { AudioAnalysisResult } from './audioAnalysisUtils';
+import config from '../config';
 
 export interface PronunciationResponse {
   session_id: string;
@@ -24,8 +25,8 @@ export interface PronunciationResponse {
 
 // Configuration object for the API
 const API_CONFIG = {
-  // Change this to your deployed API URL
-  BASE_URL: 'http://localhost:8000',
+  // Use the configuration value
+  BASE_URL: config.PRONUNCIATION_API_URL,
   ENDPOINTS: {
     ANALYZE: '/analyze/'
   }
