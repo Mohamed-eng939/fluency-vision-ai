@@ -1,4 +1,3 @@
-
 import { AudioAnalysisResult } from './audioAnalysisUtils';
 import config from '../config';
 
@@ -25,10 +24,12 @@ export interface PronunciationResponse {
 
 // Configuration object for the API
 const API_CONFIG = {
-  // Use the configuration value
-  BASE_URL: config.PRONUNCIATION_API_URL,
+  // Use the configuration value - note that our URL already includes /aligned path
+  BASE_URL: config.PRONUNCIATION_API_URL.endsWith('/aligned') 
+    ? config.PRONUNCIATION_API_URL.substring(0, config.PRONUNCIATION_API_URL.lastIndexOf('/aligned'))
+    : config.PRONUNCIATION_API_URL,
   ENDPOINTS: {
-    ANALYZE: '/analyze/'
+    ANALYZE: '/aligned/'
   }
 };
 
