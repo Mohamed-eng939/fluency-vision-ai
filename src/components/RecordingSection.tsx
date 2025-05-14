@@ -4,13 +4,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SpeakingPrompt } from '@/types/assessment';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
-import PromptAudioControls from './assessment/PromptAudioControls';
-import RecordingControls from './assessment/RecordingControls';
-import AudioSubmission from './assessment/AudioSubmission';
-import ManualTranscriptEntry from './assessment/ManualTranscriptEntry';
 import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
-import { getPronunciationScore, checkApiAvailability } from '@/utils/pronunciationScoreApi';
+import { getPronunciationScore } from '@/utils/pronunciationScoreApi';
 import { toast } from '@/hooks/use-toast';
+import { usePronunciationApi } from '@/hooks/usePronunciationApi';
+
+// Import refactored components
+import PromptAudioControls from './assessment/PromptAudioControls';
+import PromptHeader from './assessment/PromptHeader';
+import ApiStatusIndicator from './assessment/ApiStatusIndicator';
+import RecordingFlowController from './assessment/RecordingFlowController';
+import ManualEntryController from './assessment/ManualEntryController';
+import RecordingStatus from './assessment/RecordingStatus';
 
 interface RecordingSectionProps {
   prompt: SpeakingPrompt | null;
@@ -20,7 +25,7 @@ interface RecordingSectionProps {
 const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecordingComplete }) => {
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState<boolean>(true);
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
-  const [isPronunciationApiAvailable, setIsPronunciationApiAvailable] = useState<boolean>(false);
+  const { isPronunciationApiAvailable } = usePronunciationApi();
   
   const {
     isRecording,
@@ -44,23 +49,6 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     resetTranscript, 
     isSupported 
   } = useSpeechRecognition();
-  
-  // Check backend API availability on mount
-  useEffect(() => {
-    const checkBackendAvailability = async () => {
-      const isApiAvailable = await checkApiAvailability();
-      setIsPronunciationApiAvailable(isApiAvailable);
-      
-      if (isApiAvailable) {
-        toast({
-          title: "Pronunciation API detected",
-          description: "Enhanced pronunciation scoring is available.",
-        });
-      }
-    };
-    
-    checkBackendAvailability().catch(console.error);
-  }, []);
   
   // Check browser compatibility on mount
   useEffect(() => {
@@ -177,107 +165,39 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
   return (
     <Card className="mb-8 border-assessment-teal/20">
       <CardContent className="p-6">
-        <div className="text-lg font-medium mb-6 text-assessment-blue">
-          {prompt.text}
-        </div>
+        <PromptHeader prompt={prompt} />
         
         <div className="mb-4">
           <PromptAudioControls text={prompt.text} />
         </div>
         
         <div className="mb-4">
-          <div className="text-sm text-gray-500 mb-2">
-            Category: <span className="text-assessment-blue">{prompt.category}</span> | 
-            Difficulty: <span className="text-assessment-blue">{prompt.difficulty}</span> | 
-            Time: <span className="text-assessment-blue">{prompt.timeLimit} min</span>
-          </div>
+          <ApiStatusIndicator isApiAvailable={isPronunciationApiAvailable} />
           
-          {/* Show pronunciation API status */}
-          {isPronunciationApiAvailable && (
-            <div className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-md inline-block mb-3">
-              Enhanced pronunciation scoring active
-            </div>
-          )}
+          <RecordingFlowController
+            isManualEntryMode={isManualEntryMode}
+            isRecording={isRecording}
+            recordingTime={recordingTime}
+            audioBlob={audioBlob}
+            transcript={transcript}
+            isSpeechRecognitionSupported={isSpeechRecognitionSupported}
+            onStartRecording={handleStartRecording}
+            onStopRecording={handleStopRecording}
+            onSubmit={handleSubmit}
+            onReset={handleReset}
+            onToggleEntryMode={toggleEntryMode}
+            formatTime={formatTime}
+          />
           
-          {/* Show recording controls or manual entry based on mode */}
-          {!isManualEntryMode ? (
-            <>
-              {!isRecording && !audioBlob && (
-                <div className="space-y-4">
-                  <RecordingControls 
-                    isRecording={false}
-                    recordingTime={recordingTime}
-                    onStartRecording={handleStartRecording}
-                    onStopRecording={handleStopRecording}
-                    formatTime={formatTime}
-                  />
-                  
-                  {/* Option to switch to manual entry */}
-                  <div className="mt-4 text-center">
-                    <button 
-                      onClick={toggleEntryMode}
-                      className="text-sm text-gray-500 underline hover:text-assessment-blue"
-                    >
-                      Switch to manual entry
-                    </button>
-                  </div>
-                </div>
-              )}
-              
-              {isRecording && (
-                <RecordingControls 
-                  isRecording={true}
-                  recordingTime={recordingTime}
-                  onStartRecording={handleStartRecording}
-                  onStopRecording={handleStopRecording}
-                  formatTime={formatTime}
-                />
-              )}
-              
-              {transcript && isRecording && (
-                <div className="bg-gray-50 p-3 rounded-md text-sm italic mt-4">
-                  <div className="font-medium text-gray-700 mb-1">Transcript (real-time):</div>
-                  {transcript}
-                </div>
-              )}
-              
-              {audioBlob && (
-                <AudioSubmission
-                  audioBlob={audioBlob}
-                  transcript={transcript}
-                  onSubmit={handleSubmit}
-                  onReset={handleReset}
-                />
-              )}
-            </>
-          ) : (
-            <>
-              <ManualTranscriptEntry 
-                onTranscriptSubmit={handleManualTranscriptSubmit}
-                onAudioSubmit={handleManualAudioSubmit}
-              />
-              
-              {/* Option to switch back to recording mode if supported */}
-              {isSpeechRecognitionSupported && (
-                <div className="mt-4 text-center">
-                  <button 
-                    onClick={toggleEntryMode}
-                    className="text-sm text-gray-500 underline hover:text-assessment-blue"
-                  >
-                    Switch to recording mode
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+          <ManualEntryController
+            isManualEntryMode={isManualEntryMode}
+            isSpeechRecognitionSupported={isSpeechRecognitionSupported}
+            onTranscriptSubmit={handleManualTranscriptSubmit}
+            onAudioSubmit={handleManualAudioSubmit}
+            onToggleEntryMode={toggleEntryMode}
+          />
           
-          {isProcessing && (
-            <div className="mt-4 text-center">
-              <div className="animate-pulse text-assessment-blue">
-                <p>Analyzing audio features...</p>
-              </div>
-            </div>
-          )}
+          <RecordingStatus isProcessing={isProcessing} />
         </div>
       </CardContent>
     </Card>
