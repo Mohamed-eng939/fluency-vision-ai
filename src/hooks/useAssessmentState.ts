@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AssessmentQuestion, AudioAnalysisResult } from '@/types/assessment';
 import { useToast } from '@/components/ui/use-toast';
 import { analyzeAudio, scoreSpeakingResponse } from '@/utils/assessmentUtils';
-import { estimateSyllableCount } from '@/utils/scoringUtils';
+import { estimateSyllableCount, calculateFluencyScoreFromSyllables } from '@/utils/scoringUtils';
 
 export const useAssessmentState = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<SpeakingPrompt | null>(null);
