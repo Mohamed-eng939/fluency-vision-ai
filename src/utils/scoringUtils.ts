@@ -7,8 +7,13 @@ import {
   generateRecommendations
 } from './scoring';
 
-// Import the new pronunciation scoring function
-import { calculatePronunciationScore } from './assessment/scoringUtils';
+// Import the new pronunciation and fluency scoring functions
+import { 
+  calculatePronunciationScore,
+  calculateFluencyScore,
+  calculateFluencyScoreFromSyllables,
+  estimateSyllableCount 
+} from './assessment/scoringUtils';
 
 // Re-export for backward compatibility
 export {
@@ -16,5 +21,8 @@ export {
   determineCEFRLevel,
   generateAssessmentResult,
   calculatePronunciationScore,
+  calculateFluencyScore,
+  calculateFluencyScoreFromSyllables,
+  estimateSyllableCount,
   generateRecommendations
 };

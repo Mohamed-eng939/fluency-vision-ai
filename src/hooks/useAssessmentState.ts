@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AssessmentQuestion, AudioAnalysisResult } from '@/types/assessment';
 import { useToast } from '@/components/ui/use-toast';
 import { analyzeAudio, scoreSpeakingResponse } from '@/utils/assessmentUtils';
+import { estimateSyllableCount } from '@/utils/scoringUtils';
 
 export const useAssessmentState = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<SpeakingPrompt | null>(null);
@@ -71,6 +71,46 @@ export const useAssessmentState = () => {
         // Add transcript if available
         if (transcript) {
           result.transcript = transcript;
+          
+          // Calculate and add syllable data if not already present
+          if (!result.metrics || result.metrics.fluency === undefined) {
+            // If we don't have metrics at all, create basic ones
+            result.metrics = result.metrics || {
+              fluency: 7,
+              grammar: 7,
+              pronunciation: 7,
+              prosody: 7,
+              vocabulary: 7,
+              syntax: 7,
+              coherence: 7
+            };
+          }
+          
+          // Enhance with syllable-based fluency if we have duration
+          if (result.duration) {
+            const syllableCount = estimateSyllableCount(transcript);
+            const durationInMinutes = result.duration / 60;
+            const syllablesPerMinute = syllableCount / durationInMinutes;
+            
+            // Store the syllable data in the result
+            if (!result.speechRate) {
+              result.speechRate = (syllableCount / (result.duration / 60));
+            }
+            
+            // Update the fluency metric with our new SPM-based calculation
+            if (audioAnalysis) {
+              audioAnalysis.syllableCount = syllableCount;
+              audioAnalysis.syllablesPerMinute = syllablesPerMinute;
+              
+              // Use our improved fluency scoring based on SPM
+              const improvedFluencyScore = calculateFluencyScoreFromSyllables(
+                syllablesPerMinute, 
+                audioAnalysis.pauseRatio || 0.2
+              );
+              
+              result.metrics.fluency = improvedFluencyScore;
+            }
+          }
         }
         
         setAssessmentResult(result);
