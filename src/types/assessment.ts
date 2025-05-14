@@ -1,3 +1,4 @@
+
 // Basic Types
 export type QuestionType = 'multiple-choice' | 'image-selection' | 'heading-matching' | 'audio-recording' | 'essay-writing' | 'open-ended' | 'matching' | 'gap-fill' | 'short-answer' | 'paragraph-writing' | 'long-answer' | 'note-completion' | 'summary-completion';
 export type CEFRLevel = 'Pre-A1' | 'A1' | 'A1+' | 'A2' | 'A2+' | 'B1' | 'B1+' | 'B2' | 'B2+' | 'C1' | 'C1+' | 'C2' | 'Below Pre-A1' | 'N/A';
@@ -117,4 +118,24 @@ export interface AudioAnalysisResult {
   pauseRatio: number;
   speakingDuration: number;
   totalDuration: number;
+  // New fields for syllable-based analysis
+  syllableCount: number;
+  syllablesPerMinute: number;
+  // New fields for grammar and syntax analysis
+  grammaticalErrors?: GrammaticalError[];
+  syntaxComplexity?: SyntaxComplexity;
+}
+
+// New interfaces for enhanced grammar and syntax analysis
+export interface GrammaticalError {
+  type: 'agreement' | 'tense' | 'article' | 'preposition' | 'other';
+  context: string;
+  suggestion?: string;
+}
+
+export interface SyntaxComplexity {
+  averageSentenceLength: number;
+  complexSentenceRatio: number; // Proportion of sentences with multiple clauses
+  structuralVariety: number; // 1-10 score based on different sentence patterns
+  subordinationIndex: number; // Average number of dependent clauses per sentence
 }
