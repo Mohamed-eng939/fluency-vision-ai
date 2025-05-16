@@ -60,3 +60,37 @@ export const getLevelThresholds = (isLowerLevel: boolean) => {
     requiredHighSimilarity: false // Don't require high similarity
   };
 };
+
+/**
+ * Apply level-specific adjustments to coherence score
+ */
+export const applyLevelAdjustments = (
+  score: number,
+  isLowerLevel: boolean,
+  highSimilarityPairFound: boolean,
+  avgWordsPerSentence: number
+): number => {
+  // Get appropriate thresholds based on level
+  const thresholds = getLevelThresholds(isLowerLevel);
+  
+  // Apply caps and adjustments based on level
+  let adjustedScore = score;
+  
+  // Cap score based on level
+  adjustedScore = Math.min(adjustedScore, thresholds.maxCoherenceScore);
+  
+  // For lower levels, apply stricter requirements
+  if (isLowerLevel && thresholds.requiredHighSimilarity) {
+    // Require high similarity pair for scores > 6
+    if (!highSimilarityPairFound && adjustedScore > 6) {
+      adjustedScore = 6;
+    }
+  }
+  
+  // If the average sentence length is too low, cap the score
+  if (avgWordsPerSentence < 4) {
+    adjustedScore = Math.min(adjustedScore, 5.0);
+  }
+  
+  return adjustedScore;
+};
