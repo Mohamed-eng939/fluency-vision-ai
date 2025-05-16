@@ -119,11 +119,18 @@ export interface AudioAnalysisResult {
   speakingDuration: number;
   totalDuration: number;
   // New fields for syllable-based analysis
-  syllableCount: number;
-  syllablesPerMinute: number;
+  syllableCount?: number;
+  syllablesPerMinute?: number;
   // New fields for grammar and syntax analysis
   grammaticalErrors?: GrammaticalError[];
   syntaxComplexity?: SyntaxComplexity;
+  // New fields for CEFR evaluation
+  grammarScore?: number;
+  syntaxScore?: number;
+  cefrGrammarLevel?: string;
+  cefrSyntaxLevel?: string;
+  grammarJustification?: string;
+  syntaxJustification?: string;
 }
 
 // New interfaces for enhanced grammar and syntax analysis
