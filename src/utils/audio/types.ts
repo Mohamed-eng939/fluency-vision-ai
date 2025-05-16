@@ -52,10 +52,12 @@ export interface AudioAnalysisResult {
   cefrVocabularyLevel?: string; // CEFR level for vocabulary
   vocabularyJustification?: string; // Explanation of vocabulary assessment
   vocabularyDistribution?: Record<string, number>; // Distribution of words by CEFR level
-  // New fields for hesitation analysis
+  // Hesitation analysis fields
   hesitationCount?: number; // Number of hesitation markers detected
   hesitationRatio?: number; // Ratio of hesitation markers to total words
   hesitationMarkers?: string[]; // List of detected hesitation markers
+  // Repetition analysis fields
+  repetitionCount?: number; // Number of repetitions detected
+  repetitions?: string[]; // List of detected repetitions
   fluencyJustification?: string; // Explanation of fluency assessment
 }
-
