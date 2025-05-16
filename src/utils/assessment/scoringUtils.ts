@@ -1,24 +1,38 @@
 
-// Re-export all scoring functions from their respective modules
-import { calculateTotalScore, determineCEFRLevel } from './coreScoring';
-import { calculateCriterionScore } from './criterionScoring';
-import { 
-  calculateFluencyScore, 
-  calculateFluencyScoreFromSyllables, 
-  estimateSyllableCount,
-  applyHesitationPenalties 
-} from './fluency';
-import { calculatePronunciationScore } from './pronunciationScoring';
-import { calculateGrammarScore, calculateGrammarScoreFromErrors, calculateBasicGrammarScore, countPattern as grammarCountPattern, countTenseMixing, detectTense, countArticleErrors, calculateSentenceVariety } from './grammarScoring';
-import { calculateSyntaxScore } from './syntaxScoring';
-import { calculateVocabularyScore, checkAdvancedVocabulary } from './vocabularyScoring';
-import { calculateCoherenceScore } from './coherenceScoring';
-import { getCriterionFeedback } from './feedbackScoring';
+/**
+ * Core Assessment Scoring Utilities
+ * 
+ * This module provides the core scoring functionality for the assessment engine.
+ * It re-exports scoring functions in a more structured way to reduce complexity.
+ */
 
-// Export all criterion scoring modules
+// Core scoring functionality
+import { calculateTotalScore, determineCEFRLevel } from './coreScoring';
+
+// Re-export individual scoring components
+import { 
+  calculateFluencyScore,
+  calculateFluencyScoreFromSyllables,
+  estimateSyllableCount
+} from './fluency';
+
+import { calculatePronunciationScore } from './pronunciationScoring';
+
+import { 
+  calculateGrammarScore, 
+  calculateGrammarScoreFromErrors, 
+  calculateBasicGrammarScore 
+} from './grammarScoring';
+
+import { calculateVocabularyScore } from './vocabularyScoring';
+import { calculateSyntaxScore } from './syntaxScoring';
+import { calculateCoherenceScore } from './coherenceScoring';
+import { calculateCriterionScore } from './criterionScoring';
+
+// Re-export criterion scorers
 import {
   calculateFluencyCriterion,
-  calculatePronunciationCriterion,
+  calculatePronunciationCriterion, 
   calculateGrammarCriterion,
   calculateVocabularyCriterion,
   calculateSyntaxCriterion,
@@ -27,38 +41,26 @@ import {
   calculateDefaultCriterion
 } from './criterion';
 
-// Export everything for backwards compatibility
+// Export all scoring functions in organized groups
 export {
   // Core scoring
   calculateTotalScore,
   determineCEFRLevel,
-  calculateCriterionScore,
-  // Fluency scoring
+  
+  // Individual metric scoring
   calculateFluencyScore,
   calculateFluencyScoreFromSyllables,
   estimateSyllableCount,
-  applyHesitationPenalties,
-  // Pronunciation scoring
   calculatePronunciationScore,
-  // Grammar scoring
   calculateGrammarScore,
   calculateGrammarScoreFromErrors,
   calculateBasicGrammarScore,
-  grammarCountPattern,
-  countTenseMixing,
-  detectTense,
-  countArticleErrors,
-  calculateSentenceVariety,
-  // Syntax scoring
-  calculateSyntaxScore,
-  // Vocabulary scoring
   calculateVocabularyScore,
-  checkAdvancedVocabulary,
-  // Coherence scoring
+  calculateSyntaxScore,
   calculateCoherenceScore,
-  // Feedback scoring
-  getCriterionFeedback,
-  // Individual criterion scorers
+  
+  // Criterion-based scoring
+  calculateCriterionScore,
   calculateFluencyCriterion,
   calculatePronunciationCriterion,
   calculateGrammarCriterion,

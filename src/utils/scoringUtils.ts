@@ -1,28 +1,39 @@
 
-// This file now serves as a re-export of the refactored modules for backward compatibility
+/**
+ * Legacy Scoring Utilities
+ * 
+ * This file maintains backward compatibility by re-exporting from refactored modules.
+ * New code should import directly from the assessment modules.
+ */
+
+// Import core assessment scoring functionality
+import {
+  calculateTotalScore,
+  determineCEFRLevel,
+  calculateFluencyScore,
+  calculateFluencyScoreFromSyllables,
+  estimateSyllableCount,
+  calculatePronunciationScore
+} from './assessment/scoringUtils';
+
+// Import existing scoring functions for backward compatibility
 import {
   calculateRubricScore,
-  determineCEFRLevel as determineCEFRLevelOriginal,
   generateAssessmentResult,
   generateRecommendations
 } from './scoring';
 
-// Import the new pronunciation and fluency scoring functions from refactored modules
-import { 
-  calculatePronunciationScore,
-  calculateFluencyScore,
-  calculateFluencyScoreFromSyllables,
-  estimateSyllableCount 
-} from './assessment/scoringUtils';
-
 // Re-export for backward compatibility
 export {
+  // Core scoring
   calculateRubricScore,
-  determineCEFRLevelOriginal as determineCEFRLevel,
+  determineCEFRLevel as determineCEFRLevel,
   generateAssessmentResult,
+  generateRecommendations,
+  
+  // Pronunciation and fluency assessment
   calculatePronunciationScore,
   calculateFluencyScore,
   calculateFluencyScoreFromSyllables,
-  estimateSyllableCount,
-  generateRecommendations
+  estimateSyllableCount
 };
