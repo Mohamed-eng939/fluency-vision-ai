@@ -1,4 +1,3 @@
-
 // Basic Types
 export type QuestionType = 'multiple-choice' | 'image-selection' | 'heading-matching' | 'audio-recording' | 'essay-writing' | 'open-ended' | 'matching' | 'gap-fill' | 'short-answer' | 'paragraph-writing' | 'long-answer' | 'note-completion' | 'summary-completion';
 export type CEFRLevel = 'Pre-A1' | 'A1' | 'A1+' | 'A2' | 'A2+' | 'B1' | 'B1+' | 'B2' | 'B2+' | 'C1' | 'C1+' | 'C2' | 'Below Pre-A1' | 'N/A';
@@ -131,6 +130,9 @@ export interface AudioAnalysisResult {
   cefrSyntaxLevel?: string;
   grammarJustification?: string;
   syntaxJustification?: string;
+  promptCEFRLevel?: string;  // Added this property to resolve the error
+  levelDiscrepancy?: number;  // Added for storing prompt-response level difference
+  needsReview?: boolean;     // Added flag for responses needing review
 }
 
 // New interfaces for enhanced grammar and syntax analysis

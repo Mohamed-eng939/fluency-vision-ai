@@ -1,4 +1,3 @@
-
 /**
  * CEFR Scoring Adapter
  * This adapter integrates the CEFR evaluation with our existing assessment system
@@ -76,7 +75,6 @@ export const enhanceAudioAnalysisWithCEFR = (
     cefrSyntaxLevel: cefrResult.syntaxCEFRLevel,
     grammarJustification: cefrResult.grammar_justification,
     syntaxJustification: cefrResult.syntax_justification,
-    // Remove the problematic property
     promptCEFRLevel: cefrResult.promptCEFRLevel,
     levelDiscrepancy: cefrResult.levelDiscrepancy,
     needsReview: cefrResult.needsReview
