@@ -30,6 +30,17 @@ import {
   determineCEFRLevelOfPrompt 
 } from './assessment/cefrScoringAdapter';
 
+// Re-export enhanced vocabulary assessment modules
+import { analyzeCefrVocabulary } from './assessment/vocabulary/cefrVocabularyAnalyzer';
+import { 
+  createVocabularyEvaluationPrompt, 
+  processGptVocabularyEvaluation 
+} from './assessment/vocabulary/gptVocabularyEvaluation';
+import { 
+  assessVocabulary, 
+  VocabularyAssessmentMethod 
+} from './assessment/vocabularyAssessmentService';
+
 // Re-export everything for backwards compatibility
 export {
   analyzeAudio,
@@ -46,5 +57,11 @@ export {
   calculateLevelDiscrepancy,
   evaluateGrammarAndSyntax,
   enhanceAudioAnalysisWithCEFR,
-  determineCEFRLevelOfPrompt
+  determineCEFRLevelOfPrompt,
+  // New vocabulary assessment exports
+  analyzeCefrVocabulary,
+  createVocabularyEvaluationPrompt,
+  processGptVocabularyEvaluation,
+  assessVocabulary,
+  VocabularyAssessmentMethod
 };

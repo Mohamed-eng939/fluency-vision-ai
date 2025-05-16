@@ -1,11 +1,29 @@
 
 /**
- * Calculate vocabulary score
+ * Enhanced vocabulary scoring using CEFR standards
+ */
+import { analyzeCefrVocabulary } from './vocabulary/cefrVocabularyAnalyzer';
+
+/**
+ * Calculate vocabulary score based on CEFR standards
  */
 export const calculateVocabularyScore = (
   audioMetrics: any,
   transcript: string
 ): number => {
+  // If we already have a vocabulary score from API or external analysis
+  if (audioMetrics.vocabularyScore !== undefined) {
+    return audioMetrics.vocabularyScore;
+  }
+  
+  // If transcript is available, use the enhanced CEFR vocabulary analyzer
+  if (transcript) {
+    const analysis = analyzeCefrVocabulary(transcript);
+    return analysis.vocabularyScore;
+  }
+  
+  // For backward compatibility, use the simple lexical diversity calculation
+  // when no transcript is available
   if (!transcript) return 5;
   
   const words = transcript.toLowerCase().split(/\s+/).filter(w => w.length > 0);
@@ -39,10 +57,10 @@ export const calculateVocabularyScore = (
 
 /**
  * Check for advanced vocabulary usage
+ * (Keeping this for backward compatibility)
  */
 export const checkAdvancedVocabulary = (transcript: string): number => {
-  // This is a simplified approach - a real implementation would use 
-  // a frequency list or CEFR-aligned vocabulary database
+  // This is a simplified approach - our new analyzer provides more comprehensive analysis
   
   // Sample advanced words that indicate higher proficiency
   const advancedWords = [

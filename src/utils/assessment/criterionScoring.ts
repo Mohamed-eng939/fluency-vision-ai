@@ -5,6 +5,7 @@ import { calculateGrammarScore } from "./grammarScoring";
 import { calculateVocabularyScore } from "./vocabularyScoring";
 import { calculateSyntaxScore } from "./syntaxScoring";
 import { calculateCoherenceScore } from "./coherenceScoring";
+import { analyzeCefrVocabulary } from "./vocabulary/cefrVocabularyAnalyzer";
 
 /**
  * Calculate a criterion score based on audio metrics and transcript
@@ -30,6 +31,27 @@ export const calculateCriterionScore = (
       return calculateGrammarScore(audioMetrics, transcript);
     case 'Vocabulary':
     case 'Lexical Resource':
+      // Enhanced vocabulary scoring using CEFR standards
+      if (audioMetrics.vocabularyScore !== undefined) {
+        return audioMetrics.vocabularyScore;
+      }
+      
+      // If transcript is available, use the enhanced CEFR vocabulary analyzer
+      // and also store additional vocabulary metrics in audioMetrics for later use
+      if (transcript) {
+        const analysis = analyzeCefrVocabulary(transcript);
+        
+        // Add vocabulary analysis results to audioMetrics for use in feedback generation
+        if (audioMetrics) {
+          audioMetrics.cefrVocabularyLevel = analysis.cefrVocabularyLevel;
+          audioMetrics.vocabularyJustification = analysis.vocabularyJustification;
+          audioMetrics.vocabularyDistribution = analysis.wordDistribution;
+          audioMetrics.lexicalDiversity = analysis.lexicalDiversity;
+        }
+        
+        return analysis.vocabularyScore;
+      }
+      
       return calculateVocabularyScore(audioMetrics, transcript);
     case 'Syntax':
       return calculateSyntaxScore(audioMetrics, transcript);

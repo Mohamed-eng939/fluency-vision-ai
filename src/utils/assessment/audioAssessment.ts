@@ -11,6 +11,7 @@ import { generateDetailedFeedback } from '../scoring/feedbackGeneration';
 import { generateRubricForQuestion } from '../questionUtils';
 import { calculateTotalScore, determineCEFRLevel, calculateCriterionScore, getCriterionFeedback } from './scoringUtils';
 import { getFeedbackForMetric, getOverallFeedback } from '../speaking/feedbackUtils';
+import { analyzeCefrVocabulary } from './vocabulary/cefrVocabularyAnalyzer';
 
 /**
  * Enhanced audio analysis for assessment
@@ -115,6 +116,15 @@ export const scoreSpeakingResponse = async (
   // Process audio to get basic metrics
   const processedAudio = await processAudioForAssessment(audioBlob);
   
+  // If we have a transcript, enhance the audio metrics with vocabulary analysis
+  if (transcript) {
+    const vocabularyAnalysis = analyzeCefrVocabulary(transcript);
+    processedAudio.metrics.vocabularyScore = vocabularyAnalysis.vocabularyScore;
+    processedAudio.metrics.cefrVocabularyLevel = vocabularyAnalysis.cefrVocabularyLevel;
+    processedAudio.metrics.vocabularyJustification = vocabularyAnalysis.vocabularyJustification;
+    processedAudio.metrics.vocabularyDistribution = vocabularyAnalysis.wordDistribution;
+  }
+  
   // If we have a specific question with rubric, use that for more detailed scoring
   if (question?.rubric) {
     // Extract CEFR level from question ID or context
@@ -169,9 +179,10 @@ export const scoreSpeakingResponse = async (
     // Use the updated pronunciation scoring logic
     pronunciation: calculateCriterionScore('Pronunciation', processedAudio.metrics, transcript || ''),
     prosody: processedAudio.metrics.prosody,
+    // Use enhanced vocabulary scoring if transcript is available
+    vocabulary: transcript ? calculateCriterionScore('Vocabulary', processedAudio.metrics, transcript) : 7.5,
     // Basic estimates for other metrics
     grammar: 7.5,
-    vocabulary: 7.5,
     syntax: 7.5,
     coherence: 7.5
   };
