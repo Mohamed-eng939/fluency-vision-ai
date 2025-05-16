@@ -1,14 +1,14 @@
-
 import { 
   CEFRLevel, 
   AssessmentQuestion 
 } from '../../../types/assessment';
 import { processAudioForAssessment } from '../../speechAnalysisUtils';
 import { generateRubricForQuestion } from '../../questionUtils';
-import { calculateCriterionScore, getCriterionFeedback } from '../scoringUtils';
+import { calculateCriterionScore } from '../criterionScoring';
 import { determineCEFRLevel } from '../coreScoring';
 import { getFeedbackForMetric } from '../../speaking/feedbackUtils';
 import { analyzeCefrVocabulary } from '../vocabulary/cefrVocabularyAnalyzer';
+import { getCriterionFeedback } from '../feedbackScoring';
 
 /**
  * Score a speaking response
