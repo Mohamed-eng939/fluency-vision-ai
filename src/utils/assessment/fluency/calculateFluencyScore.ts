@@ -4,7 +4,7 @@ import { analyzePauseQuality } from "./pauseQualityAnalyzer";
 import { calculateFluencyScoreFromSyllables } from "./syllableScoring";
 import { estimateSyllableCount } from "./syllableCounter";
 import { applyHesitationPenalties } from "./hesitationScoring";
-import { applyRepetitionPenalties } from "./repetitionScoring";
+import { applyRepetitionPenalties, calculateRepetitionPenalty } from "./repetitionScoring";
 import { applyPauseQualityPenalties } from "./pauseQualityScoring";
 
 /**
@@ -117,19 +117,4 @@ export const calculateFluencyScore = (
   }
   
   return score;
-};
-
-/**
- * Calculate repetition penalty based on count
- */
-export const calculateRepetitionPenalty = (repetitionCount: number): number => {
-  if (repetitionCount <= 2) {
-    return 0; // No penalty for 1-2 repetitions
-  } else if (repetitionCount <= 5) {
-    return 0.5; // -0.5 for 3-5 repetitions
-  } else if (repetitionCount <= 10) {
-    return 1.0; // -1.0 for 6-10 repetitions
-  } else {
-    return 1.5; // -1.5 for >10 repetitions (maximum penalty)
-  }
 };

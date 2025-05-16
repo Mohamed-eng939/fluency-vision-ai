@@ -1,10 +1,13 @@
 
 // Re-export all fluency scoring utilities
 export * from './calculateFluencyScore';
-export * from './repetitionDetector';
-export * from './repetitionScoring';
-export * from './hesitationScoring';
-export * from './pauseQualityAnalyzer';
-export * from './pauseQualityScoring';
-export * from './syllableScoring';
-export * from './syllableCounter';
+export { detectRepetitions } from './repetitionDetector';
+export { 
+  applyRepetitionPenalties,
+  calculateRepetitionPenalty
+} from './repetitionScoring';
+export { applyHesitationPenalties } from './hesitationScoring';
+export { analyzePauseQuality } from './pauseQualityAnalyzer';
+export { applyPauseQualityPenalties } from './pauseQualityScoring';
+export { calculateFluencyScoreFromSyllables } from './syllableScoring';
+export { estimateSyllableCount } from './syllableCounter';
