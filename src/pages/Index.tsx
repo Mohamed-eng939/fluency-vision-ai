@@ -2,12 +2,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Logo from '@/components/Logo';
 
 const Index = () => {
   return (
     <div className="container mx-auto py-12 px-4">
       <header className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-assessment-blue mb-4">LinguaSpeak AI</h1>
+        <div className="flex justify-center mb-4">
+          <Logo size="lg" variant="full" />
+        </div>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Advanced language proficiency assessment powered by artificial intelligence.
         </p>
@@ -45,12 +48,12 @@ const Index = () => {
               </Link>
             </div>
           </div>
-          <div className="rounded-lg bg-gradient-to-br from-assessment-blue to-assessment-teal p-1">
-            <div className="bg-white rounded-lg h-full flex items-center justify-center">
+          <div className="rounded-lg bg-gradient-to-br from-assessment-blue to-assessment-teal p-1 shadow-lg">
+            <div className="bg-white rounded-lg h-full flex items-center justify-center overflow-hidden">
               <img 
                 src="/language-assessment.jpg" 
                 alt="Student taking a language assessment"
-                className="w-full h-auto rounded-lg object-cover"
+                className="w-full h-auto rounded-lg object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
           </div>
