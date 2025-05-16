@@ -202,3 +202,16 @@ export const generateCEFRJustification = (
   return `CEFR ${level} (${score.toFixed(1)}/10): ${descriptors[category]}. 
 Features observed: ${features.join(', ')}`;
 };
+
+/**
+ * Get required features for a specific CEFR level
+ */
+export const getRequiredFeaturesForLevel = (
+  level: CEFRFeatureLevel
+): string[] => {
+  const entry = cefrGrammarSyntaxRubric.cefr_rubric.find(
+    entry => entry.level === level
+  );
+  
+  return entry ? [...entry.features] : [];
+};
