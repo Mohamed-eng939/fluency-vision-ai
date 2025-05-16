@@ -1,5 +1,5 @@
 
-import { calculateFluencyScore } from "../fluencyScoring";
+import { calculateFluencyScore } from "../fluency";
 
 /**
  * Calculate the fluency criterion score based on audio metrics and transcript

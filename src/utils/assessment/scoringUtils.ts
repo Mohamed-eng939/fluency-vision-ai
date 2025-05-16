@@ -2,7 +2,12 @@
 // Re-export all scoring functions from their respective modules
 import { calculateTotalScore, determineCEFRLevel } from './coreScoring';
 import { calculateCriterionScore } from './criterionScoring';
-import { calculateFluencyScore, calculateFluencyScoreFromSyllables, estimateSyllableCount, applyHesitationPenalties } from './fluencyScoring';
+import { 
+  calculateFluencyScore, 
+  calculateFluencyScoreFromSyllables, 
+  estimateSyllableCount,
+  applyHesitationPenalties 
+} from './fluency';
 import { calculatePronunciationScore } from './pronunciationScoring';
 import { calculateGrammarScore, calculateGrammarScoreFromErrors, calculateBasicGrammarScore, countPattern as grammarCountPattern, countTenseMixing, detectTense, countArticleErrors, calculateSentenceVariety } from './grammarScoring';
 import { calculateSyntaxScore } from './syntaxScoring';
