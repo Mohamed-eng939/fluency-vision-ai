@@ -5,7 +5,7 @@
  */
 
 import { evaluateCEFR, CEFRScoringResult } from './cefrEvaluation';
-import { AudioAnalysisResult } from '../types/assessment';
+import { AudioAnalysisResult } from '../../types/assessment';
 
 /**
  * Enhanced scoring result with CEFR evaluation
