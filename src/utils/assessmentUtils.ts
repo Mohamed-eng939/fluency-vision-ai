@@ -37,7 +37,7 @@ import {
   processGptVocabularyEvaluation 
 } from './assessment/vocabulary/gptVocabularyEvaluation';
 import { 
-  assessVocabulary, 
+  assessVocabulary,
   VocabularyAssessmentMethod 
 } from './assessment/vocabularyAssessmentService';
 
@@ -63,5 +63,7 @@ export {
   createVocabularyEvaluationPrompt,
   processGptVocabularyEvaluation,
   assessVocabulary,
-  VocabularyAssessmentMethod
 };
+
+// Use 'export type' for type exports
+export type { VocabularyAssessmentMethod };

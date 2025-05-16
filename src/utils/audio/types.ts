@@ -47,4 +47,9 @@ export interface AudioAnalysisResult {
   pronunciationDetails?: PronunciationDetails; // Detailed pronunciation analysis
   syllableCount?: number; // Total syllable count
   syllablesPerMinute?: number; // Speaking rate in syllables per minute
+  // Add missing vocabulary properties
+  vocabularyScore?: number; // Vocabulary score based on CEFR level (1-10)
+  cefrVocabularyLevel?: string; // CEFR level for vocabulary
+  vocabularyJustification?: string; // Explanation of vocabulary assessment
+  vocabularyDistribution?: Record<string, number>; // Distribution of words by CEFR level
 }

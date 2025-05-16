@@ -116,13 +116,16 @@ export const scoreSpeakingResponse = async (
   // Process audio to get basic metrics
   const processedAudio = await processAudioForAssessment(audioBlob);
   
+  // Create a metrics object that includes optional properties
+  const enhancedMetrics = processedAudio.metrics as any;
+  
   // If we have a transcript, enhance the audio metrics with vocabulary analysis
   if (transcript) {
     const vocabularyAnalysis = analyzeCefrVocabulary(transcript);
-    processedAudio.metrics.vocabularyScore = vocabularyAnalysis.vocabularyScore;
-    processedAudio.metrics.cefrVocabularyLevel = vocabularyAnalysis.cefrVocabularyLevel;
-    processedAudio.metrics.vocabularyJustification = vocabularyAnalysis.vocabularyJustification;
-    processedAudio.metrics.vocabularyDistribution = vocabularyAnalysis.wordDistribution;
+    enhancedMetrics.vocabularyScore = vocabularyAnalysis.vocabularyScore;
+    enhancedMetrics.cefrVocabularyLevel = vocabularyAnalysis.cefrVocabularyLevel;
+    enhancedMetrics.vocabularyJustification = vocabularyAnalysis.vocabularyJustification;
+    enhancedMetrics.vocabularyDistribution = vocabularyAnalysis.wordDistribution;
   }
   
   // If we have a specific question with rubric, use that for more detailed scoring
@@ -144,7 +147,7 @@ export const scoreSpeakingResponse = async (
         // sophisticated NLP and speech analysis
         const score = calculateCriterionScore(
           criterion, 
-          processedAudio.metrics, 
+          enhancedMetrics, 
           transcript || ''
         );
         
@@ -180,7 +183,7 @@ export const scoreSpeakingResponse = async (
     pronunciation: calculateCriterionScore('Pronunciation', processedAudio.metrics, transcript || ''),
     prosody: processedAudio.metrics.prosody,
     // Use enhanced vocabulary scoring if transcript is available
-    vocabulary: transcript ? calculateCriterionScore('Vocabulary', processedAudio.metrics, transcript) : 7.5,
+    vocabulary: transcript ? calculateCriterionScore('Vocabulary', enhancedMetrics, transcript) : 7.5,
     // Basic estimates for other metrics
     grammar: 7.5,
     syntax: 7.5,
