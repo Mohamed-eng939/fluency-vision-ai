@@ -32,6 +32,22 @@ export interface PronunciationDetails {
 }
 
 /**
+ * Pause classification types
+ */
+export interface PauseAnalysis {
+  fluentPauses: number;       // Number of pauses at natural boundaries
+  disfluent_pauses: number;   // Number of pauses mid-phrase or inappropriate locations
+  pauseLocations: Array<{     // Detailed information about each pause
+    position: number;         // Position in the transcript
+    duration: number;         // Duration in milliseconds
+    isFluent: boolean;        // Whether this is a natural/fluent pause
+    context?: string;         // Surrounding text for context
+  }>;
+  fluent_ratio: number;       // Ratio of fluent pauses to total pauses
+  disfluent_ratio: number;    // Ratio of disfluent pauses to total pauses
+}
+
+/**
  * Results from audio analysis
  */
 export interface AudioAnalysisResult {
@@ -60,4 +76,6 @@ export interface AudioAnalysisResult {
   repetitionCount?: number; // Number of repetitions detected
   repetitions?: string[]; // List of detected repetitions
   fluencyJustification?: string; // Explanation of fluency assessment
+  // Pause quality analysis 
+  pauseAnalysis?: PauseAnalysis; // Enhanced pause quality analysis
 }
