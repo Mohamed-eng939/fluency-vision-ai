@@ -39,6 +39,10 @@ const Index = () => {
                 <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
                 Detailed feedback and improvement suggestions
               </li>
+              <li className="flex items-center">
+                <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
+                Intelligent CEFR level comparison
+              </li>
             </ul>
             <div>
               <Link to="/assessment">
@@ -90,6 +94,51 @@ const Index = () => {
               <p className="text-gray-600">
                 Receive detailed feedback on your performance and your CEFR proficiency level.
               </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-16 bg-assessment-blue/5 p-6 rounded-lg">
+          <h3 className="text-xl font-semibold mb-3 text-assessment-blue">New Feature: CEFR Level Comparison</h3>
+          <p className="text-gray-700 mb-4">
+            Our system now analyzes the gap between the prompt's CEFR level and your response level. 
+            This ensures fair assessment by detecting when you're performing significantly above the 
+            expected level for a given prompt.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded-md border border-assessment-blue/20">
+              <h4 className="font-medium text-assessment-blue">How It Works:</h4>
+              <ul className="mt-2 space-y-1 text-sm">
+                <li className="flex items-start">
+                  <span className="text-assessment-teal mr-2">•</span>
+                  Determines the CEFR level of both the prompt and your response
+                </li>
+                <li className="flex items-start">
+                  <span className="text-assessment-teal mr-2">•</span>
+                  Calculates the discrepancy between these levels
+                </li>
+                <li className="flex items-start">
+                  <span className="text-assessment-teal mr-2">•</span>
+                  Adjusts scoring when significant gaps are detected
+                </li>
+              </ul>
+            </div>
+            <div className="bg-white p-4 rounded-md border border-assessment-blue/20">
+              <h4 className="font-medium text-assessment-blue">Benefits:</h4>
+              <ul className="mt-2 space-y-1 text-sm">
+                <li className="flex items-start">
+                  <span className="text-assessment-teal mr-2">•</span>
+                  More accurate assessment of your true language ability
+                </li>
+                <li className="flex items-start">
+                  <span className="text-assessment-teal mr-2">•</span>
+                  Prevents underestimation of advanced learners
+                </li>
+                <li className="flex items-start">
+                  <span className="text-assessment-teal mr-2">•</span>
+                  Provides clearer justification for your CEFR level
+                </li>
+              </ul>
             </div>
           </div>
         </div>

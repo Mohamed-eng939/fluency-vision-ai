@@ -18,6 +18,18 @@ import { calculateTotalScore, determineCEFRLevel } from './assessment/scoringUti
 import { mockPrompts } from './speaking/promptUtils';
 import { getFeedbackForMetric, getOverallFeedback } from './speaking/feedbackUtils';
 
+// Re-export CEFR evaluation modules
+import { 
+  evaluateCEFR, 
+  cefrLevelToNumeric, 
+  calculateLevelDiscrepancy 
+} from './assessment/cefrEvaluation';
+import { 
+  evaluateGrammarAndSyntax, 
+  enhanceAudioAnalysisWithCEFR,
+  determineCEFRLevelOfPrompt 
+} from './assessment/cefrScoringAdapter';
+
 // Re-export everything for backwards compatibility
 export {
   analyzeAudio,
@@ -27,5 +39,12 @@ export {
   getFullAssessmentTests,
   mockPrompts,
   getFeedbackForMetric,
-  getOverallFeedback
+  getOverallFeedback,
+  // New CEFR comparison exports
+  evaluateCEFR,
+  cefrLevelToNumeric,
+  calculateLevelDiscrepancy,
+  evaluateGrammarAndSyntax,
+  enhanceAudioAnalysisWithCEFR,
+  determineCEFRLevelOfPrompt
 };
