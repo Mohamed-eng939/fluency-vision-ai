@@ -68,3 +68,25 @@ export const detectRepetition = (text: string): number => {
   
   return (repetitionRatio * 0.4) + (phraseRepetitionRatio * 0.6);
 };
+
+// Add new function that combines sentence variety and repetition measurements
+export const analyzeTextStructure = (text: string): { 
+  sentenceVariety: number; 
+  repetitionRatio: number;
+  structureScore: number;
+} => {
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const varietyScore = calculateSentenceVariety(sentences);
+  const repetitionScore = detectRepetition(text);
+  
+  // Combined score: higher variety and lower repetition is better
+  const structureScore = Math.min(10, Math.max(1, 
+    (varietyScore * 2.5) + ((1 - repetitionScore) * 5)
+  ));
+  
+  return {
+    sentenceVariety: varietyScore,
+    repetitionRatio: repetitionScore,
+    structureScore
+  };
+};
