@@ -4,8 +4,8 @@ import { calculateTotalScore, determineCEFRLevel } from './coreScoring';
 import { calculateCriterionScore } from './criterionScoring';
 import { calculateFluencyScore, calculateFluencyScoreFromSyllables, estimateSyllableCount } from './fluencyScoring';
 import { calculatePronunciationScore } from './pronunciationScoring';
-import { calculateGrammarScore, calculateGrammarScoreFromErrors, calculateBasicGrammarScore, countPattern, countTenseMixing, detectTense, countArticleErrors, calculateSentenceVariety } from './grammarScoring';
-import { calculateSyntaxScore, calculateSyntaxScoreFromComplexity, calculateBasicSyntaxScore } from './syntaxScoring';
+import { calculateGrammarScore, calculateGrammarScoreFromErrors, calculateBasicGrammarScore, countPattern as grammarCountPattern, countTenseMixing, detectTense, countArticleErrors, calculateSentenceVariety } from './grammarScoring';
+import { calculateSyntaxScore } from './syntaxScoring';
 import { calculateVocabularyScore, checkAdvancedVocabulary } from './vocabularyScoring';
 import { calculateCoherenceScore } from './coherenceScoring';
 import { getCriterionFeedback } from './feedbackScoring';
@@ -26,15 +26,13 @@ export {
   calculateGrammarScore,
   calculateGrammarScoreFromErrors,
   calculateBasicGrammarScore,
-  countPattern,
+  grammarCountPattern,
   countTenseMixing,
   detectTense,
   countArticleErrors,
   calculateSentenceVariety,
   // Syntax scoring
   calculateSyntaxScore,
-  calculateSyntaxScoreFromComplexity,
-  calculateBasicSyntaxScore,
   // Vocabulary scoring
   calculateVocabularyScore,
   checkAdvancedVocabulary,

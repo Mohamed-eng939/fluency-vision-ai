@@ -76,7 +76,7 @@ export const enhanceAudioAnalysisWithCEFR = (
     cefrSyntaxLevel: cefrResult.syntaxCEFRLevel,
     grammarJustification: cefrResult.grammar_justification,
     syntaxJustification: cefrResult.syntax_justification,
-    adjustmentJustification: cefrResult.adjustment_justification,
+    // Remove the problematic property
     promptCEFRLevel: cefrResult.promptCEFRLevel,
     levelDiscrepancy: cefrResult.levelDiscrepancy,
     needsReview: cefrResult.needsReview
