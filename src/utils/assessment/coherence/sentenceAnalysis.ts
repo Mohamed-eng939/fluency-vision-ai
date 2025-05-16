@@ -121,3 +121,72 @@ export const analyzeRepeatedBeginnings = (sentences: string[]): number => {
   // Count how many beginnings occur more than twice
   return Object.values(beginningCounts).filter(count => count > 2).length;
 };
+
+/**
+ * Identify CEFR-specific coherence features
+ */
+export const identifyCoherenceFeatures = (transcript: string): Record<string, boolean> => {
+  if (!transcript) return {};
+  
+  const features: Record<string, boolean> = {};
+  
+  // A1-A2 level features
+  features.hasBasicConjunctions = /\b(and|but|so)\b/i.test(transcript);
+  features.hasChronologicalSequencing = /\b(first|then|next|after that|finally)\b/i.test(transcript);
+  
+  // B1-B2 level features
+  features.hasDiscourseMarkers = /\b(however|therefore|moreover|in addition|on the other hand)\b/i.test(transcript);
+  features.hasCausalConnectors = /\b(because|since|as|due to|as a result)\b/i.test(transcript);
+  features.hasContrastiveConnectors = /\b(although|though|despite|in spite of|nevertheless)\b/i.test(transcript);
+  
+  // C1-C2 level features
+  features.hasAdvancedDiscourseMarkers = /\b(conversely|subsequently|consequently|alternatively|notwithstanding)\b/i.test(transcript);
+  features.hasRhetoricalDevices = /\b(not only|but also|either|or|neither|nor|the former|the latter)\b/i.test(transcript);
+  
+  return features;
+};
+
+/**
+ * Estimate CEFR coherence level based on features
+ */
+export const estimateCEFRCoherenceLevel = (transcript: string): string => {
+  const features = identifyCoherenceFeatures(transcript);
+  const metrics = calculateTextMetrics(transcript);
+  
+  // C1-C2 level indicators
+  if (
+    features.hasAdvancedDiscourseMarkers && 
+    features.hasRhetoricalDevices &&
+    metrics.avgWordsPerSentence > 15
+  ) {
+    return 'C1';
+  }
+  
+  // B2 level indicators
+  if (
+    features.hasDiscourseMarkers && 
+    features.hasContrastiveConnectors &&
+    metrics.avgWordsPerSentence > 12
+  ) {
+    return 'B2';
+  }
+  
+  // B1 level indicators
+  if (
+    features.hasCausalConnectors && 
+    metrics.avgWordsPerSentence > 8
+  ) {
+    return 'B1';
+  }
+  
+  // A2 level indicators
+  if (
+    features.hasChronologicalSequencing && 
+    features.hasBasicConjunctions
+  ) {
+    return 'A2';
+  }
+  
+  // Default to A1
+  return 'A1';
+};

@@ -8,6 +8,18 @@
  * This is a simplified approach - in a real system, this would use more sophisticated heuristics
  */
 export const determineIfLowerLevel = (audioMetrics: any): boolean => {
+  // Check if we have CEFR level information directly 
+  if (audioMetrics?.cefrGrammarLevel || audioMetrics?.cefrSyntaxLevel) {
+    const grammarLevel = audioMetrics.cefrGrammarLevel;
+    const syntaxLevel = audioMetrics.cefrSyntaxLevel;
+    
+    // If either grammar or syntax is A1 or A2, consider it a lower level response
+    if (grammarLevel === 'A1' || grammarLevel === 'A2' || 
+        syntaxLevel === 'A1' || syntaxLevel === 'A2') {
+      return true;
+    }
+  }
+  
   // Check if we have level information directly in the audioMetrics
   if (audioMetrics && audioMetrics.level) {
     const level = audioMetrics.level.toLowerCase();
