@@ -41,6 +41,10 @@ import {
   VocabularyAssessmentMethod 
 } from './assessment/vocabularyAssessmentService';
 
+// Re-export hesitation detection for fluency scoring
+import { detectHesitationMarkers } from './audio/hesitationDetector';
+import { applyHesitationPenalties } from './assessment/fluencyScoring';
+
 // Re-export everything for backwards compatibility
 export {
   analyzeAudio,
@@ -63,7 +67,11 @@ export {
   createVocabularyEvaluationPrompt,
   processGptVocabularyEvaluation,
   assessVocabulary,
+  // Fluency assessment enhancements
+  detectHesitationMarkers,
+  applyHesitationPenalties
 };
 
 // Use 'export type' for type exports
 export type { VocabularyAssessmentMethod };
+
