@@ -42,4 +42,3 @@ export {
   // Feedback scoring
   getCriterionFeedback
 };
-
