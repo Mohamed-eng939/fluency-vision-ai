@@ -1,5 +1,10 @@
 
 /**
+ * Pattern Analysis for Syntax
+ * Functions for analyzing patterns within text
+ */
+
+/**
  * Count instances of a pattern in text
  */
 export const countPattern = (text: string, pattern: RegExp): number => {
@@ -80,3 +85,10 @@ export const detectRepetition = (text: string): number => {
   
   return (repetitionRatio * 0.4) + (phraseRepetitionRatio * 0.6);
 };
+
+// Re-export from features to maintain backward compatibility
+export { 
+  estimateRepetitionRatio, 
+  estimateErrorDensity,
+  countPatterns 
+} from './features/qualityMetrics';
