@@ -1,11 +1,14 @@
 
-import { calculateFluencyScore } from "./fluencyScoring";
-import { calculatePronunciationScore } from "./pronunciationScoring";
-import { calculateGrammarScore } from "./grammarScoring";
-import { calculateVocabularyScore } from "./vocabularyScoring";
-import { calculateSyntaxScore } from "./syntaxScoring";
-import { calculateCoherenceScore } from "./coherenceScoring";
-import { analyzeCefrVocabulary } from "./vocabulary/cefrVocabularyAnalyzer";
+import { 
+  calculateFluencyCriterion,
+  calculatePronunciationCriterion,
+  calculateGrammarCriterion,
+  calculateVocabularyCriterion,
+  calculateSyntaxCriterion,
+  calculateProsodyCriterion,
+  calculateCoherenceCriterion,
+  calculateDefaultCriterion
+} from './criterion';
 
 /**
  * Calculate a criterion score based on audio metrics and transcript
@@ -18,50 +21,23 @@ export const calculateCriterionScore = (
   switch (criterion) {
     case 'Fluency & Coherence':
     case 'Fluency':
-      // Use syllables per minute for fluency if available
-      return calculateFluencyScore(audioMetrics, transcript);
+      return calculateFluencyCriterion(audioMetrics, transcript);
     case 'Pronunciation':
-      // Use enhanced pronunciation score if available
-      if (audioMetrics.pronunciationScore !== undefined) {
-        return audioMetrics.pronunciationScore;
-      }
-      return calculatePronunciationScore(audioMetrics, transcript);
+      return calculatePronunciationCriterion(audioMetrics, transcript);
     case 'Grammar':
     case 'Grammatical Range and Accuracy':
-      return calculateGrammarScore(audioMetrics, transcript);
+      return calculateGrammarCriterion(audioMetrics, transcript);
     case 'Vocabulary':
     case 'Lexical Resource':
-      // Enhanced vocabulary scoring using CEFR standards
-      if (audioMetrics.vocabularyScore !== undefined) {
-        return audioMetrics.vocabularyScore;
-      }
-      
-      // If transcript is available, use the enhanced CEFR vocabulary analyzer
-      // and also store additional vocabulary metrics in audioMetrics for later use
-      if (transcript) {
-        const analysis = analyzeCefrVocabulary(transcript);
-        
-        // Add vocabulary analysis results to audioMetrics for use in feedback generation
-        if (audioMetrics) {
-          audioMetrics.cefrVocabularyLevel = analysis.cefrVocabularyLevel;
-          audioMetrics.vocabularyJustification = analysis.vocabularyJustification;
-          audioMetrics.vocabularyDistribution = analysis.wordDistribution;
-          audioMetrics.lexicalDiversity = analysis.lexicalDiversity;
-        }
-        
-        return analysis.vocabularyScore;
-      }
-      
-      return calculateVocabularyScore(audioMetrics, transcript);
+      return calculateVocabularyCriterion(audioMetrics, transcript);
     case 'Syntax':
-      return calculateSyntaxScore(audioMetrics, transcript);
+      return calculateSyntaxCriterion(audioMetrics, transcript);
     case 'Prosody':
-      return audioMetrics.pausePattern || 7;
+      return calculateProsodyCriterion(audioMetrics);
     case 'Coherence':
-      return calculateCoherenceScore(audioMetrics, transcript);
-    // For other criteria, we'd need deeper text analysis
+      return calculateCoherenceCriterion(audioMetrics, transcript);
     default:
-      // Return a value between 6-9 for now
-      return Math.random() * 3 + 6;
+      // For other criteria, use the default scorer
+      return calculateDefaultCriterion();
   }
 };

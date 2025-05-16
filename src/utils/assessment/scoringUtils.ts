@@ -10,6 +10,18 @@ import { calculateVocabularyScore, checkAdvancedVocabulary } from './vocabularyS
 import { calculateCoherenceScore } from './coherenceScoring';
 import { getCriterionFeedback } from './feedbackScoring';
 
+// Export all criterion scoring modules
+import {
+  calculateFluencyCriterion,
+  calculatePronunciationCriterion,
+  calculateGrammarCriterion,
+  calculateVocabularyCriterion,
+  calculateSyntaxCriterion,
+  calculateProsodyCriterion,
+  calculateCoherenceCriterion,
+  calculateDefaultCriterion
+} from './criterion';
+
 // Export everything for backwards compatibility
 export {
   // Core scoring
@@ -40,5 +52,14 @@ export {
   // Coherence scoring
   calculateCoherenceScore,
   // Feedback scoring
-  getCriterionFeedback
+  getCriterionFeedback,
+  // Individual criterion scorers
+  calculateFluencyCriterion,
+  calculatePronunciationCriterion,
+  calculateGrammarCriterion,
+  calculateVocabularyCriterion,
+  calculateSyntaxCriterion,
+  calculateProsodyCriterion,
+  calculateCoherenceCriterion,
+  calculateDefaultCriterion
 };
