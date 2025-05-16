@@ -3,7 +3,7 @@
  * Grammar and Syntax Scoring
  * Functions for calculating grammar and syntax scores based on CEFR levels
  */
-import { findCEFRLevelForScore } from '../rubrics/cefrGrammarSyntaxRubric';
+import { findCEFRLevelForScore } from '../rubrics/cefrLevelUtils';
 import { detectGrammaticalFeatures } from '../grammar/grammarFeatureDetection';
 import { detectSyntacticFeatures } from '../syntax/syntaxFeatureDetection';
 

@@ -1,9 +1,8 @@
-
 /**
  * Scoring Justification
  * Functions for building justification text for grammar and syntax scoring
  */
-import { CEFRFeatureLevel } from '../rubrics/cefrGrammarSyntaxRubric';
+import { CEFRFeatureLevel } from '../rubrics/cefrTypes';
 
 /**
  * Build justification for grammar scoring

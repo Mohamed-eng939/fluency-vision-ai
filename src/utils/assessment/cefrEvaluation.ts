@@ -4,7 +4,7 @@
  * Evaluates grammar and syntax based on CEFR rubric criteria
  */
 
-import { CEFRFeatureLevel, findCEFRLevelForScore } from './rubrics/cefrGrammarSyntaxRubric';
+import { CEFRFeatureLevel, findCEFRLevelForScore } from './rubrics/cefrTypes';
 import { calculateGrammarScoreUsingCEFR, calculateSyntaxScoreUsingCEFR } from './scoring/grammarSyntaxScoring';
 import { buildGrammarJustification, buildSyntaxJustification } from './justification/scoringJustification';
 
