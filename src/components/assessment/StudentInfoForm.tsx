@@ -11,6 +11,8 @@ interface StudentInfo {
   email?: string;
   institution?: string;
   sessionId: string;
+  countryCode: string;
+  phoneNumber: string;
 }
 
 interface StudentInfoFormProps {
@@ -25,12 +27,14 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [institution, setInstitution] = useState('');
+  const [countryCode, setCountryCode] = useState('+1');
+  const [phoneNumber, setPhoneNumber] = useState('');
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim()) {
-      return; // Don't submit if name is empty
+    if (!name.trim() || !countryCode.trim() || !phoneNumber.trim()) {
+      return; // Don't submit if required fields are empty
     }
     
     // Generate a unique session ID with prefix Q for Quick or F for Full assessment
@@ -41,7 +45,9 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({
       name,
       email: email || undefined,
       institution: institution || undefined,
-      sessionId
+      sessionId,
+      countryCode,
+      phoneNumber
     });
   };
   
@@ -77,6 +83,28 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({
           </div>
           
           <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number <span className="text-red-500">*</span></Label>
+            <div className="flex gap-2">
+              <Input
+                id="countryCode"
+                placeholder="+1"
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-24"
+                required
+              />
+              <Input
+                id="phoneNumber"
+                placeholder="Phone number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="flex-1"
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
             <Label htmlFor="institution">Institution (optional)</Label>
             <Input
               id="institution"
@@ -90,7 +118,7 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({
             <Button 
               type="submit" 
               className="w-full bg-assessment-teal hover:bg-assessment-lightBlue"
-              disabled={!name.trim()}
+              disabled={!name.trim() || !countryCode.trim() || !phoneNumber.trim()}
             >
               Start Assessment
             </Button>

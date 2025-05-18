@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { useToast } from './ui/use-toast';
@@ -27,6 +26,8 @@ interface StudentInfo {
   email?: string;
   institution?: string;
   sessionId: string;
+  countryCode: string;
+  phoneNumber: string;
 }
 
 const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ 

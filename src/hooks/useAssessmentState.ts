@@ -10,6 +10,8 @@ interface StudentInfo {
   email?: string;
   institution?: string;
   sessionId: string;
+  countryCode: string;
+  phoneNumber: string;
 }
 
 export const useAssessmentState = () => {
