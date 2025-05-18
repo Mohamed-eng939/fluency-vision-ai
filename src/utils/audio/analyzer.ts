@@ -1,4 +1,5 @@
-import { analyzeSpeechRate } from './speechRate';
+
+import { calculateSpeakingRate } from './speechRate';
 import { detectHesitationMarkers } from './hesitationDetector';
 import { AudioAnalysisResult } from './types';
 
@@ -16,7 +17,7 @@ export const analyzeAudioFeatures = async (
   const durationSeconds = audioBuffer.duration;
   
   // Calculate speaking rate
-  const { wpm, totalWords } = transcript ? analyzeSpeechRate(transcript, durationSeconds) : { wpm: 0, totalWords: 0 };
+  const { wpm, totalWords } = transcript ? calculateSpeakingRate(transcript, durationSeconds) : { wpm: 0, totalWords: 0 };
   
   // Detect hesitation markers
   const hesitationAnalysis = transcript ? detectHesitationMarkers(transcript) : { count: 0, markers: [], ratio: 0 };
