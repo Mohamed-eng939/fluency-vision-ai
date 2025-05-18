@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { useToast } from './ui/use-toast';
@@ -155,11 +156,15 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
     const result = generateAssessmentResult(averageCriteriaScores, totalScore);
     
     // Add additional metadata for the report
-    result.sessionId = `F-${Date.now().toString(36)}`;
-    result.assessmentName = assessment.name;
-    result.learnerName = "Anonymous Learner"; // This would be replaced with actual user data
+    const enhancedResult = {
+      ...result,
+      sessionId: `F-${Date.now().toString(36)}`,
+      assessmentType: 'full' as const,
+      learnerName: "Anonymous Learner", // This would be replaced with actual user data
+      dateOfTest: new Date().toLocaleDateString()
+    };
     
-    return result;
+    return enhancedResult;
   };
   
   // Calculate progress percentage
@@ -177,7 +182,7 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
           isFullAssessment={true}
           fullAssessmentData={assessment}
           learnerName={finalResult.learnerName || "Anonymous Learner"}
-          sessionId={finalResult.sessionId}
+          sessionId={finalResult.sessionId || `F-${Date.now().toString(36)}`}
         />
         <div className="flex justify-center mt-6">
           <Button onClick={onExit}>

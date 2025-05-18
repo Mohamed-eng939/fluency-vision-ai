@@ -1,3 +1,4 @@
+
 export type CEFRLevel =
   | 'Pre-A1'
   | 'A1'
@@ -10,7 +11,9 @@ export type CEFRLevel =
   | 'B2+'
   | 'C1'
   | 'C1+'
-  | 'C2';
+  | 'C2'
+  | 'Below Pre-A1'
+  | 'N/A';
 
 export interface AssessmentQuestion {
   id: string;
@@ -226,7 +229,4 @@ export interface AssessmentResult {
   learnerName?: string;
   assessmentName?: string;
   assessmentType?: 'quick' | 'full';
-  listening?: number;
-  reading?: number;
-  writing?: number;
 }

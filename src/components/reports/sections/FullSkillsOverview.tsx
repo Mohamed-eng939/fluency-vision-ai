@@ -34,26 +34,36 @@ const FullSkillsOverview: React.FC<FullSkillsOverviewProps> = ({
       score: speakingScore * 10,
       cefrLevel: mapScoreToCEFR(speakingScore * 10),
       color: '#0ea5e9'
-    },
-    {
-      name: 'Listening',
-      score: (metrics.listening || 0) * 10,
-      cefrLevel: mapScoreToCEFR((metrics.listening || 0) * 10),
-      color: '#8b5cf6'
-    },
-    {
-      name: 'Reading',
-      score: (metrics.reading || 0) * 10,
-      cefrLevel: mapScoreToCEFR((metrics.reading || 0) * 10),
-      color: '#10b981'
-    },
-    {
-      name: 'Writing',
-      score: (metrics.writing || 0) * 10,
-      cefrLevel: mapScoreToCEFR((metrics.writing || 0) * 10),
-      color: '#f97316'
     }
   ];
+
+  // Add optional skills if they exist
+  if (metrics.listening !== undefined) {
+    communicationSkills.push({
+      name: 'Listening',
+      score: metrics.listening * 10,
+      cefrLevel: mapScoreToCEFR(metrics.listening * 10),
+      color: '#8b5cf6'
+    });
+  }
+
+  if (metrics.reading !== undefined) {
+    communicationSkills.push({
+      name: 'Reading',
+      score: metrics.reading * 10,
+      cefrLevel: mapScoreToCEFR(metrics.reading * 10),
+      color: '#10b981'
+    });
+  }
+
+  if (metrics.writing !== undefined) {
+    communicationSkills.push({
+      name: 'Writing',
+      score: metrics.writing * 10,
+      cefrLevel: mapScoreToCEFR(metrics.writing * 10),
+      color: '#f97316'
+    });
+  }
 
   // Calculate combined score
   const combinedScore = communicationSkills.reduce((sum, skill) => sum + skill.score, 0) / communicationSkills.length;

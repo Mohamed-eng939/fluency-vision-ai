@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AudioAnalysisResult } from '@/utils/audio/types';
+import { AudioAnalysisResult } from '@/types/assessment';
 import { Progress } from '@/components/ui/progress';
 import { Info } from 'lucide-react';
 import { 
@@ -42,13 +42,13 @@ const SpeechAnalysis: React.FC<SpeechAnalysisProps> = ({
     },
     {
       name: 'Mean Length of Runs',
-      value: audioAnalysis.mlrScore?.toFixed(1) || '0.0',
+      value: audioAnalysis.mlrScore !== undefined ? Number(audioAnalysis.mlrScore).toFixed(1) : '0.0',
       info: 'Average number of syllables between pauses',
       suffix: 'syllables'
     },
     {
       name: 'Articulation Rate',
-      value: audioAnalysis.articulationRate?.toFixed(1) || '0.0',
+      value: audioAnalysis.articulationRate !== undefined ? Number(audioAnalysis.articulationRate).toFixed(1) : '0.0',
       info: 'Speed of articulation excluding pauses',
       suffix: 'syl/sec'
     },
@@ -123,7 +123,10 @@ const SpeechAnalysis: React.FC<SpeechAnalysisProps> = ({
                 </span>
               </div>
               {metric.progress && (
-                <Progress value={Math.min(metric.value, metric.progressMax || 100)} className="h-2 mt-1" />
+                <Progress 
+                  value={Math.min(typeof metric.value === 'number' ? metric.value : parseFloat(String(metric.value)), metric.progressMax || 100)} 
+                  className="h-2 mt-1" 
+                />
               )}
             </div>
           ))}
@@ -161,10 +164,10 @@ const SpeechAnalysis: React.FC<SpeechAnalysisProps> = ({
         <h3 className="font-semibold mb-2">Additional Analysis</h3>
         <div className="text-sm">
           <p className="mb-2">
-            <span className="font-medium">Total Duration:</span> {audioAnalysis.totalDuration?.toFixed(1) || 0} seconds
+            <span className="font-medium">Total Duration:</span> {(audioAnalysis.totalDuration !== undefined ? Number(audioAnalysis.totalDuration).toFixed(1) : 0)} seconds
           </p>
           <p className="mb-2">
-            <span className="font-medium">Speaking Duration:</span> {audioAnalysis.speakingDuration?.toFixed(1) || 0} seconds
+            <span className="font-medium">Speaking Duration:</span> {(audioAnalysis.speakingDuration !== undefined ? Number(audioAnalysis.speakingDuration).toFixed(1) : 0)} seconds
           </p>
           <p>
             <span className="font-medium">Pause Count:</span> {audioAnalysis.pauseCount || 0}

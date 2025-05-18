@@ -16,14 +16,15 @@ export const mapScoreToCEFR = (score: number): CEFRLevel => {
   if (score >= 35) return 'A2';
   if (score >= 25) return 'A1+';
   if (score >= 15) return 'A1';
-  return 'Pre-A1';
+  if (score >= 5) return 'Pre-A1';
+  return 'Below Pre-A1';
 };
 
 /**
  * Get CEFR color by level
  */
 export const getCEFRColor = (level: CEFRLevel): string => {
-  const colorMap: Record<CEFRLevel, string> = {
+  const colorMap: Partial<Record<CEFRLevel, string>> = {
     'C2': '#10b981',     // Green
     'C1+': '#14b8a6',    // Teal-green
     'C1': '#0ea5e9',     // Blue
@@ -36,6 +37,8 @@ export const getCEFRColor = (level: CEFRLevel): string => {
     'A1+': '#f43f5e',    // Red-pink
     'A1': '#ef4444',     // Red
     'Pre-A1': '#f97316', // Orange
+    'Below Pre-A1': '#dc2626', // Dark red
+    'N/A': '#9ca3af',    // Gray
   };
   
   return colorMap[level] || '#9ca3af'; // Gray default
@@ -60,7 +63,7 @@ export const formatReportDate = (date: Date | string): string => {
  * Get CEFR descriptions
  */
 export const getCEFRDescription = (level: CEFRLevel): string => {
-  const descriptions: Record<CEFRLevel, string> = {
+  const descriptions: Partial<Record<CEFRLevel, string>> = {
     'C2': 'Can understand with ease virtually everything heard or read. Can summarize information from different spoken and written sources, reconstructing arguments and accounts in a coherent presentation.',
     'C1+': 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express ideas fluently and spontaneously with high precision.',
     'C1': 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express themselves fluently and spontaneously without much obvious searching for expressions.',
@@ -72,7 +75,9 @@ export const getCEFRDescription = (level: CEFRLevel): string => {
     'A2': 'Can understand sentences and frequently used expressions related to areas of most immediate relevance. Can communicate in simple and routine tasks requiring a simple and direct exchange of information.',
     'A1+': 'Can introduce themselves and others and can ask and answer questions about personal details with increased vocabulary and confidence.',
     'A1': 'Can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type.',
-    'Pre-A1': 'Can understand and use some basic expressions and very simple phrases. Limited ability to communicate.'
+    'Pre-A1': 'Can understand and use some basic expressions and very simple phrases. Limited ability to communicate.',
+    'Below Pre-A1': 'Very limited understanding of basic expressions. Needs significant support to communicate.',
+    'N/A': 'Not assessed or not applicable.'
   };
   
   return descriptions[level] || 'No description available for this level.';

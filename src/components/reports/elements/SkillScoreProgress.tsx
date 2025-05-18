@@ -32,7 +32,9 @@ const SkillScoreProgress: React.FC<SkillScoreProgressProps> = ({
     <Progress 
       value={value} 
       className={height}
-      indicatorColor={colorClass}
+      style={{ 
+        '--progress-indicator-color': colorClass 
+      } as React.CSSProperties}
     />
   );
 };

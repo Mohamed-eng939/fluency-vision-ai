@@ -10,6 +10,8 @@ import LearningRecommendations from './sections/LearningRecommendations';
 import CEFRBadge from './elements/CEFRBadge';
 import { Card } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import SkillScoresOverview from './sections/SkillScoresOverview';
+import { mapScoreToCEFR } from '@/utils/reports/reportUtils';
 
 interface FullAssessmentReportProps {
   result: AssessmentResult;
@@ -109,8 +111,8 @@ const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
           <TabsContent value="listening">
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-4">Listening Skills</h3>
-              <p className="mb-4">Overall Listening Score: {Math.round((metrics.listening || 0) * 10)}%</p>
-              <p className="mb-2">CEFR Level: {mapScoreToCEFR((metrics.listening || 0) * 10)}</p>
+              <p className="mb-4">Overall Listening Score: {metrics.listening !== undefined ? Math.round(metrics.listening * 10) : 'Not Available'}%</p>
+              <p className="mb-2">CEFR Level: {metrics.listening !== undefined ? mapScoreToCEFR(metrics.listening * 10) : 'Not Assessed'}</p>
               <p>{justifications.listening}</p>
             </div>
           </TabsContent>
@@ -118,8 +120,8 @@ const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
           <TabsContent value="reading">
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-4">Reading Skills</h3>
-              <p className="mb-4">Overall Reading Score: {Math.round((metrics.reading || 0) * 10)}%</p>
-              <p className="mb-2">CEFR Level: {mapScoreToCEFR((metrics.reading || 0) * 10)}</p>
+              <p className="mb-4">Overall Reading Score: {metrics.reading !== undefined ? Math.round(metrics.reading * 10) : 'Not Available'}%</p>
+              <p className="mb-2">CEFR Level: {metrics.reading !== undefined ? mapScoreToCEFR(metrics.reading * 10) : 'Not Assessed'}</p>
               <p>{justifications.reading}</p>
             </div>
           </TabsContent>
@@ -127,8 +129,8 @@ const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
           <TabsContent value="writing">
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-4">Writing Skills</h3>
-              <p className="mb-4">Overall Writing Score: {Math.round((metrics.writing || 0) * 10)}%</p>
-              <p className="mb-2">CEFR Level: {mapScoreToCEFR((metrics.writing || 0) * 10)}</p>
+              <p className="mb-4">Overall Writing Score: {metrics.writing !== undefined ? Math.round(metrics.writing * 10) : 'Not Available'}%</p>
+              <p className="mb-2">CEFR Level: {metrics.writing !== undefined ? mapScoreToCEFR(metrics.writing * 10) : 'Not Assessed'}</p>
               <p>{justifications.writing}</p>
               
               <div className="mt-4 grid grid-cols-2 gap-4">
@@ -173,21 +175,6 @@ const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
       </div>
     </div>
   );
-};
-
-// Helper function to map score to CEFR
-const mapScoreToCEFR = (score: number): CEFRLevel => {
-  if (score >= 95) return 'C2';
-  if (score >= 85) return 'C1+';
-  if (score >= 80) return 'C1';
-  if (score >= 75) return 'B2+';
-  if (score >= 65) return 'B2';
-  if (score >= 55) return 'B1+';
-  if (score >= 50) return 'B1';
-  if (score >= 45) return 'A2+';
-  if (score >= 35) return 'A2';
-  if (score >= 25) return 'A1+';
-  return 'A1';
 };
 
 export default FullAssessmentReport;
