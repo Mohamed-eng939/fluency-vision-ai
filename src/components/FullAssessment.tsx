@@ -11,6 +11,7 @@ import { calculateRubricScore, generateAssessmentResult } from '../utils/scoring
 import AssessmentHeader from './assessment/AssessmentHeader';
 import TaskInstructions from './assessment/TaskInstructions';
 import ActiveTask from './assessment/ActiveTask';
+import ReportGenerator from './reports/ReportGenerator';
 import { Button } from './ui/button';
 
 interface FullAssessmentProps {
@@ -30,6 +31,8 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isTaskActive, setIsTaskActive] = useState(false);
   const [taskResults, setTaskResults] = useState<Record<string, { score: number; criteriaScores: Record<string, number> }>>({});
+  const [finalResult, setFinalResult] = useState<AssessmentResult | null>(null);
+  const [showReport, setShowReport] = useState(false);
   const { toast } = useToast();
   
   const currentSection = assessment.sections[currentSectionIndex];
@@ -103,8 +106,10 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
       setCurrentTaskIndex(0);
     } else {
       // Assessment complete - calculate final result
-      const finalResult = calculateFinalResult();
-      onComplete(finalResult);
+      const result = calculateFinalResult();
+      setFinalResult(result);
+      setShowReport(true);
+      onComplete(result);
       return;
     }
     
@@ -113,7 +118,7 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
     setTimeRemaining(null);
   };
   
-  // Calculate final assessment result - changed to use the non-async version
+  // Calculate final assessment result
   const calculateFinalResult = (): AssessmentResult => {
     // Aggregate all criteria scores
     const allCriteriaScores: Record<string, number[]> = {};
@@ -146,8 +151,15 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
       averageCriteriaScores[criterion] = average;
     });
     
-    // Generate final assessment result - use the non-async version
-    return generateAssessmentResult(averageCriteriaScores, totalScore);
+    // Generate final assessment result
+    const result = generateAssessmentResult(averageCriteriaScores, totalScore);
+    
+    // Add additional metadata for the report
+    result.sessionId = `F-${Date.now().toString(36)}`;
+    result.assessmentName = assessment.name;
+    result.learnerName = "Anonymous Learner"; // This would be replaced with actual user data
+    
+    return result;
   };
   
   // Calculate progress percentage
@@ -155,6 +167,27 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
   const completedTasks = currentSectionIndex * currentSection.tasks.length + currentTaskIndex;
   const progressPercentage = (completedTasks / totalTasks) * 100;
   
+  // Show the report view if assessment is complete
+  if (showReport && finalResult) {
+    return (
+      <div className="w-full max-w-4xl mx-auto my-8">
+        <h1 className="text-2xl font-bold mb-6">Assessment Complete</h1>
+        <ReportGenerator 
+          result={finalResult}
+          isFullAssessment={true}
+          fullAssessmentData={assessment}
+          learnerName={finalResult.learnerName || "Anonymous Learner"}
+          sessionId={finalResult.sessionId}
+        />
+        <div className="flex justify-center mt-6">
+          <Button onClick={onExit}>
+            Return to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <AssessmentHeader 
