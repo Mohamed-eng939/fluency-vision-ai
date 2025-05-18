@@ -2,12 +2,10 @@
 import React, { useState } from 'react';
 import { SpeakingPrompt } from '@/types/assessment';
 import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
-import { useRecordingFlow } from '@/hooks/useRecordingFlow';
 
 // Import components
 import RecordingContainer from './assessment/RecordingContainer';
 import RecordingFlowController from './assessment/RecordingFlowController';
-import ManualEntryController from './assessment/ManualEntryController';
 import RecordingStatus from './assessment/RecordingStatus';
 import MicTest from './assessment/MicTest';
 
@@ -26,27 +24,7 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     analysis: AudioAnalysisResult | null;
   } | null>(null);
   
-  const {
-    // State
-    isRecording,
-    recordingTime,
-    audioBlob,
-    isProcessing,
-    transcript,
-    isManualEntryMode,
-    isSpeechRecognitionSupported,
-    isPronunciationApiAvailable,
-    
-    // Actions
-    handleStartRecording,
-    handleStopRecording,
-    handleSubmit,
-    handleReset,
-    handleManualTranscriptSubmit,
-    handleManualAudioSubmit,
-    toggleEntryMode,
-    formatTime
-  } = useRecordingFlow(onRecordingComplete);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   if (!prompt) return null;
   
@@ -66,11 +44,18 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
     setShowMicTest(false);
   };
   
+  const handleRecordingComplete = (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
+    setIsProcessing(true);
+    
+    // Add a small delay to simulate processing
+    setTimeout(() => {
+      onRecordingComplete(audioBlob, transcript, audioAnalysis);
+      setIsProcessing(false);
+    }, 500);
+  };
+  
   return (
-    <RecordingContainer 
-      prompt={prompt}
-      isPronunciationApiAvailable={isPronunciationApiAvailable}
-    >
+    <div>
       {showMicTest ? (
         <MicTest 
           onComplete={handleMicTestComplete}
@@ -79,32 +64,16 @@ const RecordingSection: React.FC<RecordingSectionProps> = ({ prompt, onRecording
       ) : (
         <>
           <RecordingFlowController
-            isManualEntryMode={isManualEntryMode}
-            isRecording={isRecording}
-            recordingTime={recordingTime}
-            audioBlob={audioBlob}
-            transcript={transcript}
-            isSpeechRecognitionSupported={isSpeechRecognitionSupported}
-            onStartRecording={handleStartRecording}
-            onStopRecording={handleStopRecording}
-            onSubmit={handleSubmit}
-            onReset={handleReset}
-            onToggleEntryMode={toggleEntryMode}
-            formatTime={formatTime}
-          />
-          
-          <ManualEntryController
-            isManualEntryMode={isManualEntryMode}
-            isSpeechRecognitionSupported={isSpeechRecognitionSupported}
-            onTranscriptSubmit={handleManualTranscriptSubmit}
-            onAudioSubmit={handleManualAudioSubmit}
-            onToggleEntryMode={toggleEntryMode}
+            selectedPrompt={prompt}
+            onComplete={handleRecordingComplete}
+            onCancel={() => {}}
+            isProcessing={isProcessing}
           />
           
           <RecordingStatus isProcessing={isProcessing} />
         </>
       )}
-    </RecordingContainer>
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRecordingFlow } from '@/hooks/useRecordingFlow';
 import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment'; 
 import RecordingContainer from './RecordingContainer';
@@ -33,19 +33,18 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
     isManualEntryMode,
     isSpeechRecognitionSupported,
     manualTranscript,
-    startRecording,
-    stopRecording,
-    resetRecording,
+    handleStartRecording,
+    handleStopRecording,
+    handleReset,
     toggleEntryMode,
     setManualTranscript,
-    submitRecording,
+    handleSubmit,
     formatTime
-  } = useRecordingFlow(selectedPrompt);
-
-  const handleSubmit = async () => {
-    await submitRecording();
-    onComplete(audioBlob!, isManualEntryMode ? manualTranscript : transcript);
-  };
+  } = useRecordingFlow((audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
+    if (audioBlob) {
+      onComplete(audioBlob, transcript, audioAnalysis);
+    }
+  });
 
   return (
     <RecordingContainer 
@@ -54,12 +53,14 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
     >
       {isManualEntryMode ? (
         <ManualEntryController
-          transcript={manualTranscript}
-          onTranscriptChange={setManualTranscript}
-          onSubmit={handleSubmit}
-          onCancel={onCancel}
-          onToggleMode={toggleEntryMode}
-          isProcessing={isProcessing}
+          isManualEntryMode={isManualEntryMode}
+          isSpeechRecognitionSupported={isSpeechRecognitionSupported}
+          onTranscriptSubmit={(manualText) => {
+            setManualTranscript(manualText);
+            handleSubmit();
+          }}
+          onAudioSubmit={(audioBlob) => onComplete(audioBlob, manualTranscript)}
+          onToggleEntryMode={toggleEntryMode}
         />
       ) : (
         <>
@@ -68,8 +69,8 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
               <RecordingControls 
                 isRecording={false}
                 recordingTime={recordingTime}
-                onStartRecording={startRecording}
-                onStopRecording={stopRecording}
+                onStartRecording={handleStartRecording}
+                onStopRecording={handleStopRecording}
                 formatTime={formatTime}
               />
               
@@ -85,8 +86,8 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
             <RecordingControls 
               isRecording={true}
               recordingTime={recordingTime}
-              onStartRecording={startRecording}
-              onStopRecording={stopRecording}
+              onStartRecording={handleStartRecording}
+              onStopRecording={handleStopRecording}
               formatTime={formatTime}
             />
           )}
@@ -98,7 +99,7 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
               audioBlob={audioBlob}
               transcript={transcript}
               onSubmit={handleSubmit}
-              onReset={resetRecording}
+              onReset={handleReset}
             />
           )}
         </>

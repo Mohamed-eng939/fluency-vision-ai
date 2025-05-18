@@ -6,12 +6,14 @@ import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
 import { getPronunciationScore } from '@/utils/pronunciationScoreApi';
 import { toast } from '@/hooks/use-toast';
 import { usePronunciationApi } from '@/hooks/usePronunciationApi';
+import { SpeakingPrompt } from '@/types/assessment';
 
 export const useRecordingFlow = (
   onRecordingComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void
 ) => {
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState<boolean>(true);
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
+  const [manualTranscript, setManualTranscript] = useState<string>('');
   const { isPronunciationApiAvailable } = usePronunciationApi();
   
   const {
@@ -112,6 +114,10 @@ export const useRecordingFlow = (
           variant: "destructive"
         });
       }
+    } else if (isManualEntryMode && manualTranscript) {
+      // Create an empty audio blob if none exists
+      const emptyBlob = new Blob([], { type: 'audio/wav' });
+      onRecordingComplete(emptyBlob, manualTranscript);
     }
   };
   
@@ -119,31 +125,13 @@ export const useRecordingFlow = (
   const handleReset = () => {
     resetRecording();
     resetTranscript();
-  };
-  
-  // Handle manual transcript entry
-  const handleManualTranscriptSubmit = (manualTranscript: string) => {
-    if (!audioBlob) {
-      // Create an empty audio blob if none exists
-      const emptyBlob = new Blob([], { type: 'audio/wav' });
-      onRecordingComplete(emptyBlob, manualTranscript);
-    } else {
-      onRecordingComplete(audioBlob, manualTranscript);
-    }
-  };
-  
-  // Handle manual audio submission
-  const handleManualAudioSubmit = (uploadedAudioBlob: Blob) => {
-    if (uploadedAudioBlob) {
-      onRecordingComplete(uploadedAudioBlob, transcript);
-    }
+    setManualTranscript('');
   };
   
   // Toggle between recording and manual entry modes
   const toggleEntryMode = () => {
     setIsManualEntryMode(!isManualEntryMode);
-    resetRecording();
-    resetTranscript();
+    handleReset();
   };
   
   return {
@@ -157,14 +145,14 @@ export const useRecordingFlow = (
     isManualEntryMode,
     isSpeechRecognitionSupported,
     isPronunciationApiAvailable,
+    manualTranscript,
     
     // Actions
     handleStartRecording,
     handleStopRecording,
     handleSubmit,
     handleReset,
-    handleManualTranscriptSubmit,
-    handleManualAudioSubmit,
+    setManualTranscript,
     toggleEntryMode,
     formatTime
   };
