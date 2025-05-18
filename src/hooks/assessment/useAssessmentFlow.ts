@@ -1,37 +1,17 @@
 
 import { useState } from 'react';
-import { SpeakingPrompt, AssessmentResult, CEFRLevel } from '@/types/assessment';
+import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import { useStudentInfo } from './useStudentInfo';
 import { usePromptSelection } from './usePromptSelection';
 import { useAssessmentResult } from './useAssessmentResult';
-import { generateUniqueId } from '@/utils/assessmentUtils';
-import { mockPrompts } from '@/utils/speaking/promptUtils';
+import { usePromptManagement } from './usePromptManagement';
+import { useAssessmentScoring } from './useAssessmentScoring';
+import { useAdminControls } from './useAdminControls';
+import { useSessionManagement } from './useSessionManagement';
+import { AssessmentStep, AssessmentFlowConfig, DEFAULT_CONFIG } from './types/assessmentTypes';
 
-// Define the assessment flow steps
-export enum AssessmentStep {
-  ENTRY = 'entry',
-  WELCOME = 'welcome',
-  RECORDING = 'recording',
-  PROCESSING = 'processing',
-  RESULTS = 'results',
-  ADMIN_REVIEW = 'admin_review'
-}
-
-// Configuration type for assessment flow
-export interface AssessmentFlowConfig {
-  promptsCount: number;
-  requiredConsistentScores: number;
-  emailDelay: number; // in milliseconds
-  showAdminControls: boolean;
-}
-
-// Default configuration
-const DEFAULT_CONFIG: AssessmentFlowConfig = {
-  promptsCount: 10,
-  requiredConsistentScores: 4,
-  emailDelay: 15 * 60 * 1000, // 15 minutes
-  showAdminControls: false
-};
+export { AssessmentStep } from './types/assessmentTypes';
+export type { AssessmentFlowConfig } from './types/assessmentTypes';
 
 export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) => {
   // Merge provided config with defaults
@@ -43,37 +23,45 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
   // Student information state
   const { studentInfo, handleStudentInfoSubmit } = useStudentInfo();
   
-  // Track email consent
-  const [emailResults, setEmailResults] = useState(false);
+  // Session management
+  const { 
+    sessionId, 
+    emailResults, 
+    initializeSession, 
+    storeAssessmentData,
+    resetSession 
+  } = useSessionManagement();
   
-  // Track assessment session
-  const [sessionId, setSessionId] = useState<string>('');
+  // Prompt management
+  const { 
+    promptQueue, 
+    promptHistory, 
+    currentPromptIndex, 
+    currentPrompt,
+    totalPrompts,
+    initializePromptQueue,
+    addToHistory,
+    moveToNextPrompt,
+    setPromptHistory
+  } = usePromptManagement(flowConfig.promptsCount);
   
-  // Sort prompts by CEFR level for adaptive testing
-  const sortedPrompts = [...mockPrompts].sort((a, b) => {
-    // Order: A1, A2, B1, B2, C1, C2
-    const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-    return levels.indexOf(a.cefrLevel || 'A1') - levels.indexOf(b.cefrLevel || 'A1');
-  });
+  // Assessment scoring
+  const { 
+    finalResult, 
+    setFinalResult,
+    consistentScores,
+    checkConsistency,
+    shouldFinishAssessment,
+    resetScoring
+  } = useAssessmentScoring(flowConfig.requiredConsistentScores);
   
-  // Prompt queue and history
-  const [promptQueue, setPromptQueue] = useState<SpeakingPrompt[]>([]);
-  const [promptHistory, setPromptHistory] = useState<{
-    prompt: SpeakingPrompt;
-    result?: AssessmentResult;
-  }[]>([]);
-  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
-  
-  // Result storage
-  const [finalResult, setFinalResult] = useState<AssessmentResult | null>(null);
-  const [consistentScores, setConsistentScores] = useState<{
-    level: CEFRLevel;
-    count: number;
-  }>({ level: 'A1', count: 0 });
-  
-  // Admin/Bypass mode
-  const [bypassScoringDelay, setBypassScoringDelay] = useState(false);
-  const [showRawScoring, setShowRawScoring] = useState(false);
+  // Admin controls
+  const {
+    bypassScoringDelay,
+    showRawScoring,
+    toggleAdminReviewMode,
+    resetAdminControls
+  } = useAdminControls();
   
   // Prompt selection and assessment result hooks
   const { selectedPrompt, handlePromptSelect } = usePromptSelection();
@@ -93,25 +81,14 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
   
   // Initialize the assessment
   const initializeAssessment = (withEmail: boolean = false) => {
-    // Generate session ID
-    const newSessionId = generateUniqueId('QA');
-    setSessionId(newSessionId);
+    // Generate session ID and set email preference
+    initializeSession(withEmail);
     
-    // Set email preference
-    setEmailResults(withEmail);
+    // Initialize prompts queue
+    initializePromptQueue();
     
-    // Initialize prompts queue with sorted prompts (limited by config)
-    setPromptQueue(sortedPrompts.slice(0, flowConfig.promptsCount));
-    
-    // Reset prompt history and index
-    setPromptHistory([]);
-    setCurrentPromptIndex(0);
-    
-    // Reset result
-    setFinalResult(null);
-    
-    // Reset consistent scores
-    setConsistentScores({ level: 'A1', count: 0 });
+    // Reset result and scoring
+    resetScoring();
     
     // Move to welcome step
     setCurrentStep(AssessmentStep.WELCOME);
@@ -129,7 +106,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
   };
   
   // Handle recording completion
-  const handleResponseComplete = (audioBlob: Blob, transcript?: string, audioAnalysis?: any) => {
+  const handleResponseComplete = (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
     // Process the recording
     handleRecordingComplete(audioBlob, transcript, audioAnalysis);
     
@@ -137,43 +114,27 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     setTimeout(() => {
       if (assessmentResult) {
         // Add to history
-        const updatedHistory = [
-          ...promptHistory,
-          {
-            prompt: selectedPrompt!,
-            result: assessmentResult
-          }
-        ];
-        setPromptHistory(updatedHistory);
+        const updatedHistory = addToHistory(selectedPrompt!, assessmentResult);
         
         // Check for consistency in CEFR level
         const currentLevel = assessmentResult.cefrLevel;
-        if (consistentScores.level === currentLevel) {
-          setConsistentScores({
-            level: currentLevel,
-            count: consistentScores.count + 1
-          });
-        } else {
-          setConsistentScores({
-            level: currentLevel,
-            count: 1
-          });
-        }
+        const consistencyCount = checkConsistency(currentLevel);
         
         // Determine if we should continue or finish
-        const shouldFinish = 
-          // If we've reached consistent scores threshold
-          consistentScores.count >= flowConfig.requiredConsistentScores ||
-          // Or if we've gone through all prompts
-          currentPromptIndex >= promptQueue.length - 1;
+        const shouldFinish = shouldFinishAssessment(
+          consistencyCount, 
+          currentPromptIndex, 
+          promptQueue.length
+        );
         
         if (shouldFinish) {
           finishAssessment(assessmentResult);
         } else {
           // Move to next prompt
-          const nextIndex = currentPromptIndex + 1;
-          setCurrentPromptIndex(nextIndex);
-          handlePromptSelect(promptQueue[nextIndex]);
+          const nextPrompt = moveToNextPrompt();
+          if (nextPrompt) {
+            handlePromptSelect(nextPrompt);
+          }
         }
         
         // Reset for next recording
@@ -184,11 +145,10 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
   
   // Skip to next prompt
   const skipToNextPrompt = () => {
-    const nextIndex = currentPromptIndex + 1;
+    const nextPrompt = moveToNextPrompt();
     
-    if (nextIndex < promptQueue.length) {
-      setCurrentPromptIndex(nextIndex);
-      handlePromptSelect(promptQueue[nextIndex]);
+    if (nextPrompt) {
+      handlePromptSelect(nextPrompt);
       handleReset();
     } else {
       // If no more prompts, finish with current result
@@ -216,55 +176,17 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     }
     
     // Store assessment data
-    storeAssessmentData();
-  };
-  
-  // Store assessment data for future analysis
-  const storeAssessmentData = () => {
-    // In a real implementation, this would save to a database
-    console.log('Storing assessment data', {
-      sessionId,
-      studentInfo,
-      promptHistory,
-      finalResult
-    });
-    
-    // For now, we're just returning exportable data
-    return {
-      sessionId,
-      studentInfo,
-      promptHistory,
-      finalResult,
-      date: new Date().toISOString(),
-      testType: 'quick'
-    };
+    storeAssessmentData(studentInfo, promptHistory, finalAssessmentResult);
   };
   
   // Reset the entire assessment
   const resetAssessment = () => {
     handleReset();
     setCurrentStep(AssessmentStep.ENTRY);
-    setSessionId('');
-    setEmailResults(false);
-    setPromptQueue([]);
+    resetSession();
+    resetScoring();
     setPromptHistory([]);
-    setCurrentPromptIndex(0);
-    setFinalResult(null);
-    setConsistentScores({ level: 'A1', count: 0 });
   };
-  
-  // Toggle admin review mode
-  const toggleAdminReviewMode = () => {
-    setBypassScoringDelay(!bypassScoringDelay);
-    setShowRawScoring(!showRawScoring);
-    
-    if (currentStep === AssessmentStep.PROCESSING) {
-      setCurrentStep(AssessmentStep.RESULTS);
-    }
-  };
-  
-  // Get current prompt
-  const currentPrompt = promptQueue[currentPromptIndex] || null;
   
   return {
     // State
@@ -299,6 +221,6 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     
     // Configuration
     flowConfig,
-    totalPrompts: promptQueue.length
+    totalPrompts
   };
 };
