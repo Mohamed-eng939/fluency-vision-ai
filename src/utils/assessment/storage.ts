@@ -1,4 +1,3 @@
-
 import { AssessmentResult } from '@/types/assessment';
 
 // Interface for export-ready assessment data
@@ -7,6 +6,18 @@ export interface AssessmentExportData {
   studentInfo: {
     name?: string;
     email?: string;
+    phone?: string;
+    citizenshipCountry?: string;
+    residenceCountry?: string;
+    dateOfBirth?: Date | string;
+    firstLanguage?: string;
+    testReason?: string;
+    otherReason?: string;
+    estimatedLevel?: string;
+    preferredContact?: string;
+    pronunciationPreference?: string;
+    promoCode?: string;
+    dataConsent?: boolean;
   } | null;
   date: string;
   type: 'quick' | 'full';
@@ -40,7 +51,22 @@ export const storeAssessmentData = async (
   audioBlob: Blob,
   result: AssessmentResult,
   sessionId: string,
-  studentInfo: { name?: string; email?: string } | null
+  studentInfo: { 
+    name?: string; 
+    email?: string;
+    phone?: string;
+    citizenshipCountry?: string;
+    residenceCountry?: string;
+    dateOfBirth?: Date;
+    firstLanguage?: string;
+    testReason?: string;
+    otherReason?: string;
+    estimatedLevel?: string;
+    preferredContact?: string;
+    pronunciationPreference?: string;
+    promoCode?: string;
+    dataConsent?: boolean;
+  } | null
 ): Promise<boolean> => {
   try {
     // Convert audio blob to base64 for storage/export

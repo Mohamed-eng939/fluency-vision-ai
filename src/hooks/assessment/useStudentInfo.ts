@@ -6,6 +6,18 @@ import { useToast } from '@/components/ui/use-toast';
 export interface StudentInfo {
   name?: string;
   email?: string;
+  phone?: string;
+  citizenshipCountry?: string;
+  residenceCountry?: string;
+  dateOfBirth?: Date;
+  firstLanguage?: string;
+  testReason?: string;
+  otherReason?: string;
+  estimatedLevel?: string;
+  preferredContact?: "email" | "whatsapp" | "phone";
+  pronunciationPreference?: "british" | "american" | "neutral";
+  promoCode?: string;
+  dataConsent?: boolean;
   sessionId?: string;
 }
 
@@ -49,7 +61,7 @@ export const useStudentInfo = (initialInfo: Partial<StudentInfo> = {}) => {
     if (info.name) {
       toast({
         title: "Information Saved",
-        description: `Thank you, ${info.name}. Your assessment results will be sent to ${info.email}.`
+        description: `Thank you, ${info.name}. Your assessment will begin shortly.`
       });
     }
     
