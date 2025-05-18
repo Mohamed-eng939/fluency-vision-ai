@@ -1,4 +1,3 @@
-
 // Basic Types
 export type QuestionType = 'multiple-choice' | 'image-selection' | 'heading-matching' | 'audio-recording' | 'essay-writing' | 'open-ended' | 'matching' | 'gap-fill' | 'short-answer' | 'paragraph-writing' | 'long-answer' | 'note-completion' | 'summary-completion';
 export type CEFRLevel = 'Pre-A1' | 'A1' | 'A1+' | 'A2' | 'A2+' | 'B1' | 'B1+' | 'B2' | 'B2+' | 'C1' | 'C1+' | 'C2' | 'Below Pre-A1' | 'N/A';
@@ -43,6 +42,10 @@ export interface SpeakingPrompt {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   timeLimit: number;
   questionData?: AssessmentQuestion;
+  cefrLevel?: CEFRLevel;
+  topic?: string;
+  audioUrl?: string;
+  imageUrl?: string;
 }
 
 // Assessment Results Interfaces

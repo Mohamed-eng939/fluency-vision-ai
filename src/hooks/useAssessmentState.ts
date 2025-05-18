@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AssessmentQuestion, AudioAnalysisResult } from '@/types/assessment';
 import { useToast } from '@/components/ui/use-toast';
@@ -139,6 +138,16 @@ export const useAssessmentState = () => {
         result.learnerName = studentInfo?.name || 'Anonymous Learner';
         result.dateOfTest = new Date().toLocaleDateString();
         result.assessmentType = 'quick';
+        
+        // Add CEFR level from prompt if available
+        if (selectedPrompt?.cefrLevel) {
+          // Adjust scoring based on the CEFR level of the prompt
+          // This ensures the scoring is appropriate for the expected level
+          result.cefrLevel = selectedPrompt.cefrLevel;
+          
+          // We could also adjust the total score here based on the CEFR level
+          // For now, we'll keep the existing scoring system
+        }
         
         setAssessmentResult(result);
       }

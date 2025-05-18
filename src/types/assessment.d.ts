@@ -54,6 +54,9 @@ export interface SpeakingPrompt {
   skill?: string;
   type?: string;
   questionData?: AssessmentQuestion;
+  category?: 'describe' | 'argue' | 'explain' | 'narrate';
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  timeLimit?: number;
 }
 
 // Extend AssessmentResult type with the new properties
