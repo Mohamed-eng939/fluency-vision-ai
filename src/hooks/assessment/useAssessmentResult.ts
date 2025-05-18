@@ -38,7 +38,9 @@ export const useAssessmentResult = ({ selectedPrompt, studentInfo }: UseAssessme
       
       // If we have detailed scores from question-based scoring, set detailed feedback
       if (selectedPrompt?.questionData && result.feedback) {
-        setDetailedFeedback(result.feedback as Record<string, string>);
+        // Cast the feedback to Record<string, string> if it comes from a question-based assessment
+        // This is safe because question-based feedback follows the Record<string, string> structure
+        setDetailedFeedback(result.feedback as unknown as Record<string, string>);
       }
     } catch (error) {
       console.error("Error processing recording:", error);
