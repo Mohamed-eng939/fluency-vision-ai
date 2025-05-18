@@ -1,82 +1,109 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRecordingFlow } from '@/hooks/useRecordingFlow';
+import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment'; 
+import RecordingContainer from './RecordingContainer';
 import RecordingControls from './RecordingControls';
 import TranscriptPreview from './TranscriptPreview';
 import AudioSubmission from './AudioSubmission';
 import EntryModeToggle from './EntryModeToggle';
+import ManualEntryController from './ManualEntryController';
+import { usePronunciationApi } from '@/hooks/usePronunciationApi';
 
-interface RecordingFlowControllerProps {
-  isManualEntryMode: boolean;
-  isRecording: boolean;
-  recordingTime: number;
-  audioBlob: Blob | null;
-  transcript: string;
-  isSpeechRecognitionSupported: boolean;
-  onStartRecording: () => void;
-  onStopRecording: () => void;
-  onSubmit: () => void;
-  onReset: () => void;
-  onToggleEntryMode: () => void;
-  formatTime: (seconds: number) => string;
+export interface RecordingFlowControllerProps {
+  selectedPrompt: SpeakingPrompt;
+  onComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void;
+  onCancel: () => void;
+  isProcessing: boolean;
 }
 
 const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
-  isManualEntryMode,
-  isRecording,
-  recordingTime,
-  audioBlob,
-  transcript,
-  isSpeechRecognitionSupported,
-  onStartRecording,
-  onStopRecording,
-  onSubmit,
-  onReset,
-  onToggleEntryMode,
-  formatTime
+  selectedPrompt,
+  onComplete,
+  onCancel,
+  isProcessing
 }) => {
-  if (isManualEntryMode) return null;
+  const { isPronunciationApiAvailable } = usePronunciationApi();
   
+  const {
+    isRecording,
+    recordingTime,
+    audioBlob,
+    transcript,
+    isManualEntryMode,
+    isSpeechRecognitionSupported,
+    manualTranscript,
+    startRecording,
+    stopRecording,
+    resetRecording,
+    toggleEntryMode,
+    setManualTranscript,
+    submitRecording,
+    formatTime
+  } = useRecordingFlow(selectedPrompt);
+
+  const handleSubmit = async () => {
+    await submitRecording();
+    onComplete(audioBlob!, isManualEntryMode ? manualTranscript : transcript);
+  };
+
   return (
-    <>
-      {!isRecording && !audioBlob && (
-        <div className="space-y-4">
-          <RecordingControls 
-            isRecording={false}
-            recordingTime={recordingTime}
-            onStartRecording={onStartRecording}
-            onStopRecording={onStopRecording}
-            formatTime={formatTime}
-          />
+    <RecordingContainer 
+      prompt={selectedPrompt} 
+      isPronunciationApiAvailable={isPronunciationApiAvailable}
+    >
+      {isManualEntryMode ? (
+        <ManualEntryController
+          transcript={manualTranscript}
+          onTranscriptChange={setManualTranscript}
+          onSubmit={handleSubmit}
+          onCancel={onCancel}
+          onToggleMode={toggleEntryMode}
+          isProcessing={isProcessing}
+        />
+      ) : (
+        <>
+          {!isRecording && !audioBlob && (
+            <div className="space-y-4">
+              <RecordingControls 
+                isRecording={false}
+                recordingTime={recordingTime}
+                onStartRecording={startRecording}
+                onStopRecording={stopRecording}
+                formatTime={formatTime}
+              />
+              
+              <EntryModeToggle 
+                isManualMode={false}
+                isSpeechRecognitionSupported={isSpeechRecognitionSupported}
+                onToggle={toggleEntryMode}
+              />
+            </div>
+          )}
           
-          <EntryModeToggle 
-            isManualMode={false}
-            isSpeechRecognitionSupported={isSpeechRecognitionSupported}
-            onToggle={onToggleEntryMode}
-          />
-        </div>
+          {isRecording && (
+            <RecordingControls 
+              isRecording={true}
+              recordingTime={recordingTime}
+              onStartRecording={startRecording}
+              onStopRecording={stopRecording}
+              formatTime={formatTime}
+            />
+          )}
+          
+          <TranscriptPreview transcript={transcript} isRecording={isRecording} />
+          
+          {audioBlob && (
+            <AudioSubmission
+              audioBlob={audioBlob}
+              transcript={transcript}
+              onSubmit={handleSubmit}
+              onReset={resetRecording}
+            />
+          )}
+        </>
       )}
-      
-      {isRecording && (
-        <RecordingControls 
-          isRecording={true}
-          recordingTime={recordingTime}
-          onStartRecording={onStartRecording}
-          onStopRecording={onStopRecording}
-          formatTime={formatTime}
-        />
-      )}
-      
-      <TranscriptPreview transcript={transcript} isRecording={isRecording} />
-      
-      {audioBlob && (
-        <AudioSubmission
-          audioBlob={audioBlob}
-          transcript={transcript}
-          onSubmit={onSubmit}
-          onReset={onReset}
-        />
-      )}
-    </>
+    </RecordingContainer>
   );
 };
 
