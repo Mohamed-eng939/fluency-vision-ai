@@ -56,7 +56,7 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
                 htmlFor="email-results"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                ✅ Email me my results
+                Email me my results
               </Label>
               <p className="text-xs text-muted-foreground">
                 Get your detailed assessment report by email
