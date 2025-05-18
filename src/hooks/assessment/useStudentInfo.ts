@@ -20,6 +20,7 @@ export interface StudentInfo {
   pronunciationPreference?: "british" | "american" | "neutral";
   promoCode?: string;
   dataConsent?: boolean;
+  emailResults?: boolean;
   sessionId?: string;
 }
 
