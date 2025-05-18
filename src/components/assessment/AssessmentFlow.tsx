@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AssessmentStep, useAssessmentFlow } from '@/hooks/assessment/useAssessmentFlow';
 import TestEntryStep from './TestEntryStep';
@@ -10,14 +9,15 @@ import AdminControls from './AdminControls';
 import AssessmentOptions from './AssessmentOptions';
 import { Button } from '@/components/ui/button';
 import { UserPlus, LogIn } from 'lucide-react';
+import LoginModal from './auth/LoginModal';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle,
+  SheetDescription,
+  SheetFooter
+} from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -28,9 +28,8 @@ interface AssessmentFlowProps {
 const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment }) => {
   const [showAdminControls, setShowAdminControls] = useState(false);
   const [showAssessmentOptions, setShowAssessmentOptions] = useState(true);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
-  const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' });
   
   // Initialize the assessment flow
   const {
@@ -83,13 +82,8 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     setShowAssessmentOptions(false);
   };
 
-  const handleSelectFullAssessment = () => {
-    // This now is handled inside the AssessmentOptions component
-    // with a dialog that shows "coming soon"
-  };
-
   const handleLoginClick = () => {
-    setShowLoginDialog(true);
+    setShowLoginModal(true);
   };
 
   const handleSignUpClick = () => {
@@ -97,31 +91,11 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     setShowAssessmentOptions(false);
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would validate credentials against a backend
-    // For now, we'll just check localStorage
-    try {
-      const users = JSON.parse(localStorage.getItem('lingua_auth_users') || '[]');
-      const user = users.find((u: any) => 
-        (u.username === loginCredentials.username || u.email === loginCredentials.username) && 
-        u.password === loginCredentials.password
-      );
-      
-      if (user) {
-        // Login successful
-        handleStudentInfoSubmit(user);
-        setShowLoginDialog(false);
-        setShowAssessmentOptions(false);
-        startAssessment();
-      } else {
-        // Login failed
-        alert('Invalid username or password');
-      }
-    } catch (error) {
-      console.error('Error during login:', error);
-      alert('An error occurred during login');
-    }
+  const handleLoginSuccess = (user: any) => {
+    handleStudentInfoSubmit(user);
+    setShowLoginModal(false);
+    setShowAssessmentOptions(false);
+    startAssessment();
   };
 
   // Render the appropriate step
@@ -229,48 +203,45 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         />
       )}
 
-      {/* Login Dialog */}
-      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Log In</DialogTitle>
-            <DialogDescription>
-              Enter your credentials to access your account
-            </DialogDescription>
-          </DialogHeader>
+      {/* Login Modal */}
+      <LoginModal 
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      {/* Sign Up Sheet (Existing) */}
+      <Sheet open={showSignUpDialog} onOpenChange={setShowSignUpDialog}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Sign Up</SheetTitle>
+            <SheetDescription>
+              Create a new account to take the assessment
+            </SheetDescription>
+          </SheetHeader>
           
-          <form onSubmit={handleLoginSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="username">Username or Email</Label>
-                <Input
-                  id="username"
-                  value={loginCredentials.username}
-                  onChange={(e) => setLoginCredentials({...loginCredentials, username: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={loginCredentials.password}
-                  onChange={(e) => setLoginCredentials({...loginCredentials, password: e.target.value})}
-                  required
-                />
-              </div>
-            </div>
-            
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowLoginDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Log In</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          <div className="py-6">
+            <p className="text-sm text-muted-foreground mb-4">
+              Please complete the sign up form to create your account.
+            </p>
+            <Button 
+              className="w-full" 
+              onClick={() => {
+                setShowSignUpDialog(false);
+                setShowAssessmentOptions(false);
+              }}
+            >
+              Continue to Sign Up Form
+            </Button>
+          </div>
+
+          <SheetFooter>
+            <Button variant="outline" onClick={() => setShowSignUpDialog(false)}>
+              Cancel
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
