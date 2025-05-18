@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +8,13 @@ import shutil
 from typing import Optional
 import textgrid
 import json
+import logging
 
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("whisperx")
+
+# Initialize FastAPI app
 app = FastAPI()
 
 # Configure CORS to allow requests from the frontend
@@ -49,6 +54,102 @@ def map_score_to_cefr(score: float) -> str:
 @app.get("/")
 async def root():
     return {"message": "Pronunciation Assessment API"}
+
+@app.post("/whisperx/transcribe/")
+async def transcribe_audio(
+    audio: UploadFile = File(...),
+    speaker_id: Optional[str] = Form(None),
+    compute_type: Optional[str] = Form("float16"),  # float16 is faster but less precise than float32
+    model_size: Optional[str] = Form("large-v2")   # Default to large-v2 for best accuracy
+):
+    """
+    Transcribe audio using WhisperX to get word-level timestamps
+    """
+    # Generate a unique session ID for this analysis
+    session_id = str(uuid.uuid4())
+    session_dir = os.path.join(UPLOAD_DIR, session_id)
+    os.makedirs(session_dir, exist_ok=True)
+    
+    # Save uploaded audio file
+    audio_path = os.path.join(session_dir, "audio.wav")
+    with open(audio_path, "wb") as buffer:
+        shutil.copyfileobj(audio.file, buffer)
+    
+    try:
+        # Import WhisperX here to avoid loading GPU on import
+        import whisperx
+        import torch
+        
+        # Check if CUDA is available
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        logger.info(f"Using device: {device}, model: {model_size}, compute_type: {compute_type}")
+        
+        # Load WhisperX model
+        model = whisperx.load_model(model_size, device, compute_type=compute_type)
+        
+        # Transcribe audio
+        result = model.transcribe(audio_path, language="en")
+        
+        # Get word-level alignments
+        model_a, metadata = whisperx.load_align_model(language_code="en", device=device)
+        result = whisperx.align(result["segments"], model_a, metadata, audio_path, device)
+        
+        # Extract word segments and create a list of word timings
+        word_segments = []
+        for segment in result["segments"]:
+            for word in segment.get("words", []):
+                word_segments.append({
+                    "word": word["word"].strip(),
+                    "start": round(word["start"], 3),
+                    "end": round(word["end"], 3),
+                    "score": word.get("score", 1.0)
+                })
+        
+        # Calculate pause durations between words
+        pause_durations = []
+        for i in range(1, len(word_segments)):
+            pause_duration = round(word_segments[i]["start"] - word_segments[i-1]["end"], 3)
+            # Only record pauses longer than 200ms
+            if pause_duration > 0.2:
+                pause_durations.append({
+                    "duration": pause_duration,
+                    "position": i-1,
+                    "before_word": word_segments[i]["word"],
+                    "after_word": word_segments[i-1]["word"]
+                })
+        
+        # Calculate speaking time (total duration of words)
+        speaking_time = sum(word["end"] - word["start"] for word in word_segments)
+        
+        # Get total audio duration
+        total_duration = word_segments[-1]["end"] if word_segments else 0
+        
+        # Calculate silence time
+        silence_time = total_duration - speaking_time if total_duration > speaking_time else 0
+        
+        # Get transcript as plain text
+        transcript = " ".join(segment["text"] for segment in result["segments"])
+        
+        return {
+            "session_id": session_id,
+            "transcript": transcript,
+            "segments": result["segments"],
+            "word_segments": word_segments,
+            "pause_durations": pause_durations,
+            "speaking_time": round(speaking_time, 2),
+            "silence_time": round(silence_time, 2),
+            "total_duration": round(total_duration, 2),
+            "transcription_failed": False
+        }
+    
+    except Exception as e:
+        logger.error(f"WhisperX transcription failed: {str(e)}")
+        return {
+            "session_id": session_id,
+            "transcript": "",
+            "transcription_failed": True,
+            "error": str(e)
+        }
 
 @app.post("/analyze/")
 async def analyze_pronunciation(
@@ -252,6 +353,24 @@ async def check_mfa_installation():
         return {"installed": True, "version": result.stdout.strip()}
     except:
         return {"installed": False}
+
+@app.get("/check-whisperx/")
+async def check_whisperx_installation():
+    """Check if WhisperX is correctly installed"""
+    try:
+        import whisperx
+        import torch
+        
+        return {
+            "installed": True, 
+            "version": whisperx.__version__ if hasattr(whisperx, "__version__") else "Unknown",
+            "cuda_available": torch.cuda.is_available(),
+            "device": "cuda" if torch.cuda.is_available() else "cpu"
+        }
+    except ImportError:
+        return {"installed": False, "error": "WhisperX not installed"}
+    except Exception as e:
+        return {"installed": False, "error": str(e)}
 
 if __name__ == "__main__":
     import uvicorn

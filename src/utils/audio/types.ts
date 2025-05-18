@@ -32,6 +32,26 @@ export interface PronunciationDetails {
 }
 
 /**
+ * Word timing from WhisperX
+ */
+export interface WordTiming {
+  word: string;
+  start: number;
+  end: number;
+  score?: number;
+}
+
+/**
+ * Pause information between words
+ */
+export interface PauseDuration {
+  duration: number;
+  position: number;
+  before_word?: string;
+  after_word?: string;
+}
+
+/**
  * Pause classification types
  */
 export interface PauseAnalysis {
@@ -61,6 +81,13 @@ export interface AudioAnalysisResult {
   pronunciationScore?: number; // Enhanced pronunciation score (1-10)
   cefrLevel?: string;    // CEFR level from pronunciation analysis
   pronunciationDetails?: PronunciationDetails; // Detailed pronunciation analysis
+  // WhisperX enhanced data
+  wordTimings?: WordTiming[];  // Word-level timing information
+  pauseDurations?: PauseDuration[]; // Detailed pause information
+  speakingTime?: number;      // Time spent speaking (excluding pauses)
+  silenceTime?: number;       // Time spent in silence
+  articulationRate?: number;  // Syllables per second of speech
+  mlrScore?: number;          // Mean Length of Runs score
   syllableCount?: number; // Total syllable count
   syllablesPerMinute?: number; // Speaking rate in syllables per minute
   // Add missing vocabulary properties
@@ -78,4 +105,26 @@ export interface AudioAnalysisResult {
   fluencyJustification?: string; // Explanation of fluency assessment
   // Pause quality analysis 
   pauseAnalysis?: PauseAnalysis; // Enhanced pause quality analysis
+}
+
+/**
+ * WhisperX transcription result
+ */
+export interface WhisperXResult {
+  session_id: string;
+  transcript: string;
+  segments: Array<{
+    id: number;
+    text: string;
+    start: number;
+    end: number;
+    words: WordTiming[];
+  }>;
+  word_segments: WordTiming[];
+  pause_durations: PauseDuration[];
+  speaking_time: number;
+  silence_time: number;
+  total_duration: number;
+  transcription_failed: boolean;
+  error?: string;
 }
