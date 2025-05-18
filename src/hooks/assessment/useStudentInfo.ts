@@ -5,8 +5,10 @@ import { useToast } from '@/components/ui/use-toast';
 
 export interface StudentInfo {
   name?: string;
+  username?: string;
   email?: string;
   phone?: string;
+  password?: string;
   citizenshipCountry?: string;
   residenceCountry?: string;
   dateOfBirth?: Date;
@@ -53,6 +55,31 @@ export const useStudentInfo = (initialInfo: Partial<StudentInfo> = {}) => {
     // Save to localStorage for persistence
     try {
       localStorage.setItem('lingua_student_info', JSON.stringify(updatedInfo));
+      
+      // Also save to auth-related storage for future login
+      if (info.username && info.password && info.email) {
+        const authUsers = JSON.parse(localStorage.getItem('lingua_auth_users') || '[]');
+        const existingUserIndex = authUsers.findIndex((user: any) => 
+          user.username === info.username || user.email === info.email
+        );
+        
+        if (existingUserIndex >= 0) {
+          // Update existing user
+          authUsers[existingUserIndex] = {
+            ...authUsers[existingUserIndex],
+            ...info
+          };
+        } else {
+          // Add new user
+          authUsers.push({
+            ...info,
+            id: sessionId,
+            createdAt: new Date().toISOString()
+          });
+        }
+        
+        localStorage.setItem('lingua_auth_users', JSON.stringify(authUsers));
+      }
     } catch (error) {
       console.warn('Could not save student info to localStorage:', error);
     }
@@ -60,8 +87,8 @@ export const useStudentInfo = (initialInfo: Partial<StudentInfo> = {}) => {
     // Notify
     if (info.name) {
       toast({
-        title: "Information Saved",
-        description: `Thank you, ${info.name}. Your assessment will begin shortly.`
+        title: "Profile Created",
+        description: `Thank you, ${info.name}. Your profile has been created.`
       });
     }
     

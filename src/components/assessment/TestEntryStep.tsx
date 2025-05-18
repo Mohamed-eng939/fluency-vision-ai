@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Calendar } from '@/components/ui/calendar';
@@ -28,7 +29,8 @@ import {
   User, 
   GraduationCap, 
   Settings, 
-  ShieldCheck 
+  ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import { StudentInfo } from '@/hooks/assessment';
 import { useForm } from 'react-hook-form';
@@ -50,8 +52,14 @@ interface TestEntryStepProps {
 // Form schema for validation
 const formSchema = z.object({
   name: z.string().min(2, { message: "Full name is required" }),
+  username: z.string().min(3, { message: "Username is required (min 3 characters)" })
+    .refine(val => /^[a-z0-9_]+$/.test(val), {
+      message: "Username can only contain lowercase letters, numbers, and underscores"
+    }),
   email: z.string().email({ message: "Valid email is required" }),
-  phone: z.string().optional(),
+  phone: z.string().min(4, { message: "Phone number is required (min 4 digits)" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  confirmPassword: z.string(),
   citizenshipCountry: z.string().min(1, { message: "Country of citizenship is required" }),
   residenceCountry: z.string().min(1, { message: "Country of residence is required" }),
   dateOfBirth: z.date({
@@ -68,6 +76,9 @@ const formSchema = z.object({
     message: "You must agree to data usage terms",
   }),
   emailResults: z.boolean().optional(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -80,8 +91,11 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      username: '',
       email: '',
       phone: '',
+      password: '',
+      confirmPassword: '',
       citizenshipCountry: '',
       residenceCountry: '',
       firstLanguage: '',
@@ -95,15 +109,38 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
     },
   });
 
+  // Watch form values for dynamic validation
   const watchTestReason = form.watch('testReason');
   const watchEmailResults = form.watch('emailResults');
+  const watchName = form.watch('name');
+  const watchPhone = form.watch('phone');
+  
+  // Auto-generate username based on name and phone
+  useEffect(() => {
+    if (watchName && watchPhone && watchPhone.length >= 4) {
+      const firstName = watchName.split(' ')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+      const lastFourDigits = watchPhone.slice(-4).replace(/[^0-9]/g, '');
+      
+      if (firstName && lastFourDigits) {
+        const generatedUsername = `${firstName}${lastFourDigits}`;
+        
+        // Only update if user hasn't manually changed it or if we have a new valid username
+        if (!form.getValues('username') || 
+            form.getValues('username').includes(form.getValues('phone').slice(-4))) {
+          form.setValue('username', generatedUsername);
+        }
+      }
+    }
+  }, [watchName, watchPhone, form]);
   
   const handleSubmit = (values: FormValues) => {
     // Create enhanced student info object with all form data
     const studentInfo: StudentInfo = {
       name: values.name,
+      username: values.username,
       email: values.email,
       phone: values.phone,
+      password: values.password,
       citizenshipCountry: values.citizenshipCountry,
       residenceCountry: values.residenceCountry,
       dateOfBirth: values.dateOfBirth,
@@ -186,13 +223,68 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
     <div className="container max-w-3xl mx-auto px-4 py-6">
       <Card>
         <CardHeader className="text-center">
-          <h2 className="text-2xl font-bold text-assessment-blue">Quick Assessment Intake</h2>
+          <h2 className="text-2xl font-bold text-assessment-blue">Create Your Profile</h2>
           <p className="text-gray-600">Please provide the following information before starting your assessment</p>
         </CardHeader>
         
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+              {/* Section 0: Account Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-purple-500" /> Account Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter username" {...field} />
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          Auto-generated from your name and phone number
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="md:row-span-2">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem className="mb-4">
+                          <FormLabel>Password <span className="text-red-500">*</span></FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Create password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password <span className="text-red-500">*</span></FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Confirm password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+            
               {/* Section 1: Required Basic Info */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
@@ -593,7 +685,7 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
               </div>
               
               <Button type="submit" className="w-full bg-assessment-blue hover:bg-assessment-lightBlue">
-                Start Quick Assessment
+                Create Profile & Start Assessment
               </Button>
             </form>
           </Form>

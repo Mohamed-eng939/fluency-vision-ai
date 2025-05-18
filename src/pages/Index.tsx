@@ -1,19 +1,28 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/Logo';
+import { UserPlus, LogIn } from 'lucide-react';
 
 const Index = () => {
   return (
     <div className="container mx-auto py-12 px-4">
-      <header className="text-center mb-16">
-        <div className="flex justify-center mb-4">
+      <header className="flex justify-between items-center mb-16">
+        <div className="flex-1">
           <Logo size="lg" variant="full" />
         </div>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Advanced language proficiency assessment powered by artificial intelligence.
-        </p>
+        <div className="flex gap-2">
+          <Link to="/assessment?login=true">
+            <Button variant="outline" className="flex items-center gap-1">
+              <LogIn className="h-4 w-4" /> Log In
+            </Button>
+          </Link>
+          <Link to="/assessment?signup=true">
+            <Button variant="outline" className="flex items-center gap-1">
+              <UserPlus className="h-4 w-4" /> Sign Up
+            </Button>
+          </Link>
+        </div>
       </header>
 
       <div className="max-w-5xl mx-auto">
@@ -33,7 +42,7 @@ const Index = () => {
               </li>
               <li className="flex items-center">
                 <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
-                Comprehensive full assessment (reading, writing, listening, speaking)
+                Comprehensive full assessment (coming soon)
               </li>
               <li className="flex items-center">
                 <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>

@@ -26,6 +26,13 @@ const QuickAssessmentSection: React.FC<QuickAssessmentSectionProps> = ({
   const { toast } = useToast();
   
   const handleStudentInfoComplete = (info: StudentInfo) => {
+    // Generate a username if one doesn't exist
+    if (!info.username && info.name && info.phone) {
+      const firstName = info.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+      const lastFourDigits = info.phone.slice(-4).replace(/[^0-9]/g, '');
+      info.username = `${firstName}${lastFourDigits}`;
+    }
+    
     setStudentInfo(info);
     toast({
       title: "Registration Complete",
@@ -49,7 +56,7 @@ const QuickAssessmentSection: React.FC<QuickAssessmentSectionProps> = ({
             Quick Speaking Assessment
           </h2>
           <div className="text-sm">
-            <div>Session ID: <span className="font-mono">{studentInfo.sessionId}</span></div>
+            <div>Username: <span className="font-mono">{studentInfo.username}</span></div>
             <div>Name: {studentInfo.name}</div>
           </div>
         </div>
