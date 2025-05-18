@@ -45,6 +45,23 @@ export const useStudentInfo = (initialInfo: Partial<StudentInfo> = {}) => {
     // Generate a session ID if none provided
     const sessionId = info.sessionId || generateUniqueId('ST');
     
+    // Check if username is already taken
+    try {
+      const authUsers = JSON.parse(localStorage.getItem('lingua_auth_users') || '[]');
+      const existingUser = authUsers.find((user: any) => user.username === info.username);
+      
+      if (existingUser) {
+        toast({
+          title: "Username already exists",
+          description: "This username is already taken. Please try a different one.",
+          variant: "destructive"
+        });
+        return null;
+      }
+    } catch (error) {
+      console.warn('Could not check for duplicate usernames:', error);
+    }
+    
     // Store student info
     const updatedInfo = {
       ...info,

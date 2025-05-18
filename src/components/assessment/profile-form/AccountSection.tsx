@@ -31,10 +31,17 @@ export const AccountSection: React.FC<AccountSectionProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Username <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input placeholder="Enter username" {...field} />
+                <Input 
+                  placeholder="Auto-generated username" 
+                  {...field} 
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
+                />
               </FormControl>
               <FormDescription className="text-xs">
-                Auto-generated from your name and phone number
+                Automatically generated from your name and phone number.
+                <br/>
+                This will be your unique identifier.
               </FormDescription>
               <FormMessage />
             </FormItem>

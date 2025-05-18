@@ -52,9 +52,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       const generatedUsername = `${baseName}${lastFourDigits}`;
       
       // Only update if user hasn't manually changed it
-      if (!form.getValues('username') || form.getValues('username').includes(form.getValues('phone').slice(-4))) {
-        form.setValue('username', generatedUsername);
-      }
+      form.setValue('username', generatedUsername);
     }
   }, [form.watch('name'), form.watch('phone'), form]);
   
@@ -87,8 +85,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        <AccountSection form={form} />
         <PersonalInfoSection form={form} countries={countries} languages={languages} />
+        <AccountSection form={form} />
         <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
