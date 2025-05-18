@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,15 @@ import {
 } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Calendar } from '@/components/ui/calendar';
-import { Mail, Phone, Calendar as CalendarIcon } from 'lucide-react';
+import { 
+  Mail, 
+  Phone, 
+  Calendar as CalendarIcon, 
+  User, 
+  GraduationCap, 
+  Settings, 
+  ShieldCheck 
+} from 'lucide-react';
 import { StudentInfo } from '@/hooks/assessment';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -188,7 +195,9 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
               {/* Section 1: Required Basic Info */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2">🟩 Personal Information</h3>
+                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
+                  <User className="h-5 w-5 text-green-500" /> Personal Information
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -360,7 +369,9 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
               
               {/* Section 2: Learning Context */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2">🟦 Learning Context</h3>
+                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-blue-500" /> Learning Context
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -432,7 +443,9 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
               
               {/* Section 3: Preferences */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2">🟨 Preferences (Optional)</h3>
+                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-amber-500" /> Preferences (Optional)
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -526,7 +539,9 @@ const TestEntryStep: React.FC<TestEntryStepProps> = ({
               
               {/* Section 4: Consent + Follow-Up */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2">🟥 Consent & Follow-Up</h3>
+                <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-red-500" /> Consent & Follow-Up
+                </h3>
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
