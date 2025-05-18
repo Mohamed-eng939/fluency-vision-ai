@@ -55,8 +55,8 @@ const Index = () => {
           <div className="rounded-lg bg-gradient-to-br from-assessment-blue to-assessment-teal p-1 shadow-lg">
             <div className="bg-white rounded-lg h-full flex items-center justify-center overflow-hidden">
               <img 
-                src="/language-assessment.jpg" 
-                alt="Student taking a language assessment"
+                src="/lovable-uploads/e6d117b5-e769-46fe-a446-8e52cac843d6.png" 
+                alt="Professional using LinguaSpeak AI language assessment"
                 className="w-full h-auto rounded-lg object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
