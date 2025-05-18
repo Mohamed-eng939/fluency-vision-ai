@@ -1,4 +1,3 @@
-
 import { 
   AssessmentMetrics, 
   AssessmentResult, 
@@ -75,3 +74,11 @@ export {
 // Use 'export type' for type exports
 export type { VocabularyAssessmentMethod };
 
+/**
+ * Generate a unique session ID with a specified prefix
+ */
+export function generateUniqueId(prefix: string = 'S'): string {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 8);
+  return `${prefix}-${timestamp}-${randomStr}`;
+}

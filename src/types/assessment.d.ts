@@ -1,4 +1,3 @@
-
 export type CEFRLevel =
   | 'Pre-A1'
   | 'A1'
@@ -57,6 +56,26 @@ export interface SpeakingPrompt {
   questionData?: AssessmentQuestion;
 }
 
+// Extend AssessmentResult type with the new properties
+export interface AssessmentResult {
+  totalScore: number;
+  cefrLevel: string;
+  metrics: AssessmentMetrics;
+  feedback: AssessmentFeedback;
+  transcript?: string;
+  audioUrl?: string;
+  duration?: number;
+  speechRate?: number;
+  speechAnalysisLog?: string;
+  audioAnalysis?: AudioAnalysisResult; // Add AudioAnalysis directly to AssessmentResult
+  learnerName?: string;
+  sessionId?: string;
+  dateOfTest?: string;
+  assessmentType?: 'quick' | 'full';
+  assessmentName?: string;
+}
+
+// Extend AssessmentMetrics with optional skill properties
 export interface AssessmentMetrics {
   fluency: number;
   grammar: number;
@@ -70,6 +89,7 @@ export interface AssessmentMetrics {
   writing?: number;
 }
 
+// Extend AssessmentFeedback with optional skill properties
 export interface AssessmentFeedback {
   fluency: string;
   grammar: string;
@@ -82,6 +102,22 @@ export interface AssessmentFeedback {
   listening?: string;
   reading?: string;
   writing?: string;
+}
+
+// Extend AudioAnalysisResult with additional properties
+export interface AudioAnalysisResult {
+  wpm: number;
+  syllablesPerMinute: number;
+  pauseCount: number;
+  pauseRatio: number;
+  totalDuration: number;
+  speakingDuration: number;
+  mlrScore?: number;
+  articulationRate?: number;
+  hesitationCount?: number;
+  repetitionCount?: number;
+  fluencyJustification?: string;
+  syllableCount?: number;
 }
 
 // Options for audio analysis
@@ -213,20 +249,4 @@ export interface AudioAnalysisResult {
   // New composite fluency scoring fields
   fluencyScore?: number;         // Composite fluency score (1-10)
   cefrFluencyLevel?: string;     // CEFR level for fluency
-}
-
-// Add additional fields for reporting
-export interface AssessmentResult {
-  metrics: AssessmentMetrics;
-  totalScore: number;
-  cefrLevel: string;
-  feedback?: AssessmentFeedback;
-  transcript?: string;
-  audioUrl?: string;
-  audioAnalysis?: AudioAnalysisResult;
-  sessionId?: string;
-  dateOfTest?: string;
-  learnerName?: string;
-  assessmentName?: string;
-  assessmentType?: 'quick' | 'full';
 }

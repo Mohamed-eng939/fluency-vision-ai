@@ -20,6 +20,7 @@ const AssessmentPage: React.FC = () => {
     showFullAssessment,
     showFullAssessmentIntro,
     detailedFeedback,
+    studentInfo,
     handlePromptSelect,
     handleRecordingComplete,
     handleStartFullAssessment,
@@ -27,7 +28,8 @@ const AssessmentPage: React.FC = () => {
     handleFullAssessmentExit,
     handleReset,
     handleShowFullAssessmentIntro,
-    handleCloseFullAssessmentIntro
+    handleCloseFullAssessmentIntro,
+    handleStudentInfoSubmit
   } = useAssessmentState();
 
   if (showFullAssessment) {

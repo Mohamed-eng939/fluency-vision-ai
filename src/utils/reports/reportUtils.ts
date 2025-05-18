@@ -24,7 +24,7 @@ export const mapScoreToCEFR = (score: number): CEFRLevel => {
  * Get CEFR color by level
  */
 export const getCEFRColor = (level: CEFRLevel): string => {
-  const colorMap: Partial<Record<CEFRLevel, string>> = {
+  const colorMap: Record<CEFRLevel, string> = {
     'C2': '#10b981',     // Green
     'C1+': '#14b8a6',    // Teal-green
     'C1': '#0ea5e9',     // Blue
@@ -63,7 +63,7 @@ export const formatReportDate = (date: Date | string): string => {
  * Get CEFR descriptions
  */
 export const getCEFRDescription = (level: CEFRLevel): string => {
-  const descriptions: Partial<Record<CEFRLevel, string>> = {
+  const descriptions: Record<CEFRLevel, string> = {
     'C2': 'Can understand with ease virtually everything heard or read. Can summarize information from different spoken and written sources, reconstructing arguments and accounts in a coherent presentation.',
     'C1+': 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express ideas fluently and spontaneously with high precision.',
     'C1': 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express themselves fluently and spontaneously without much obvious searching for expressions.',

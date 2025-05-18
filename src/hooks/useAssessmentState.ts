@@ -1,8 +1,16 @@
+
 import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AssessmentQuestion, AudioAnalysisResult } from '@/types/assessment';
 import { useToast } from '@/components/ui/use-toast';
-import { analyzeAudio, scoreSpeakingResponse } from '@/utils/assessmentUtils';
+import { analyzeAudio, generateUniqueId, scoreSpeakingResponse } from '@/utils/assessmentUtils';
 import { estimateSyllableCount, calculateFluencyScoreFromSyllables } from '@/utils/scoringUtils';
+
+interface StudentInfo {
+  name: string;
+  email?: string;
+  institution?: string;
+  sessionId: string;
+}
 
 export const useAssessmentState = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<SpeakingPrompt | null>(null);
@@ -11,12 +19,17 @@ export const useAssessmentState = () => {
   const [showFullAssessment, setShowFullAssessment] = useState(false);
   const [showFullAssessmentIntro, setShowFullAssessmentIntro] = useState(false);
   const [detailedFeedback, setDetailedFeedback] = useState<Record<string, string> | null>(null);
+  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const { toast } = useToast();
 
   const handlePromptSelect = (prompt: SpeakingPrompt) => {
     setSelectedPrompt(prompt);
     setAssessmentResult(null);
     setDetailedFeedback(null);
+  };
+  
+  const handleStudentInfoSubmit = (info: StudentInfo) => {
+    setStudentInfo(info);
   };
 
   const handleRecordingComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
@@ -58,7 +71,12 @@ export const useAssessmentState = () => {
             overall: `Your overall performance is at ${scoringResult.cefrLevel} level.`
           },
           audioUrl: URL.createObjectURL(audioBlob),
-          transcript: transcript || ''
+          transcript: transcript || '',
+          audioAnalysis: audioAnalysis,
+          sessionId: studentInfo?.sessionId || generateUniqueId('Q'),
+          learnerName: studentInfo?.name || 'Anonymous Learner',
+          dateOfTest: new Date().toLocaleDateString(),
+          assessmentType: 'quick'
         };
         
         setAssessmentResult(result);
@@ -113,6 +131,13 @@ export const useAssessmentState = () => {
           }
         }
         
+        // Add student info and audio analysis to result
+        result.audioAnalysis = audioAnalysis;
+        result.sessionId = studentInfo?.sessionId || generateUniqueId('Q');
+        result.learnerName = studentInfo?.name || 'Anonymous Learner';
+        result.dateOfTest = new Date().toLocaleDateString();
+        result.assessmentType = 'quick';
+        
         setAssessmentResult(result);
       }
     } catch (error) {
@@ -162,6 +187,7 @@ export const useAssessmentState = () => {
     setSelectedPrompt(null);
     setAssessmentResult(null);
     setDetailedFeedback(null);
+    setStudentInfo(null);
   };
   
   const handleShowFullAssessmentIntro = () => {
@@ -179,6 +205,7 @@ export const useAssessmentState = () => {
     showFullAssessment,
     showFullAssessmentIntro,
     detailedFeedback,
+    studentInfo,
     handlePromptSelect,
     handleRecordingComplete,
     handleStartFullAssessment,
@@ -186,6 +213,7 @@ export const useAssessmentState = () => {
     handleFullAssessmentExit,
     handleReset,
     handleShowFullAssessmentIntro,
-    handleCloseFullAssessmentIntro
+    handleCloseFullAssessmentIntro,
+    handleStudentInfoSubmit
   };
 };

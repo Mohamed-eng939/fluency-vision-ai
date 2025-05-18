@@ -7,6 +7,7 @@ import {
   AssessmentResult 
 } from '../types/assessment';
 import { calculateRubricScore, generateAssessmentResult } from '../utils/scoring';
+import StudentInfoForm from './assessment/StudentInfoForm';
 
 // Import our new components
 import AssessmentHeader from './assessment/AssessmentHeader';
@@ -19,6 +20,13 @@ interface FullAssessmentProps {
   assessment: FullAssessment;
   onComplete: (result?: AssessmentResult) => void;
   onExit: () => void;
+}
+
+interface StudentInfo {
+  name: string;
+  email?: string;
+  institution?: string;
+  sessionId: string;
 }
 
 const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({ 
@@ -34,11 +42,16 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
   const [taskResults, setTaskResults] = useState<Record<string, { score: number; criteriaScores: Record<string, number> }>>({});
   const [finalResult, setFinalResult] = useState<AssessmentResult | null>(null);
   const [showReport, setShowReport] = useState(false);
+  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const { toast } = useToast();
   
   const currentSection = assessment.sections[currentSectionIndex];
   const currentTask = currentSection?.tasks[currentTaskIndex];
   const questions = currentTask?.questionsList || [];
+  
+  const handleStudentInfoComplete = (info: StudentInfo) => {
+    setStudentInfo(info);
+  };
   
   // Start the task timer
   const startTask = () => {
@@ -156,21 +169,32 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
     const result = generateAssessmentResult(averageCriteriaScores, totalScore);
     
     // Add additional metadata for the report
-    const enhancedResult = {
+    return {
       ...result,
-      sessionId: `F-${Date.now().toString(36)}`,
+      sessionId: studentInfo?.sessionId || `F-${Date.now().toString(36)}`,
       assessmentType: 'full' as const,
-      learnerName: "Anonymous Learner", // This would be replaced with actual user data
+      assessmentName: assessment.title || "Full Assessment",
+      learnerName: studentInfo?.name || "Anonymous Learner",
       dateOfTest: new Date().toLocaleDateString()
     };
-    
-    return enhancedResult;
   };
   
   // Calculate progress percentage
   const totalTasks = assessment.sections.reduce((acc, section) => acc + section.tasks.length, 0);
   const completedTasks = currentSectionIndex * currentSection.tasks.length + currentTaskIndex;
   const progressPercentage = (completedTasks / totalTasks) * 100;
+  
+  // Show student registration form if no student info
+  if (!studentInfo) {
+    return (
+      <div className="w-full max-w-4xl mx-auto my-8">
+        <StudentInfoForm 
+          onComplete={handleStudentInfoComplete} 
+          isFullAssessment={true}
+        />
+      </div>
+    );
+  }
   
   // Show the report view if assessment is complete
   if (showReport && finalResult) {
@@ -181,8 +205,8 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
           result={finalResult}
           isFullAssessment={true}
           fullAssessmentData={assessment}
-          learnerName={finalResult.learnerName || "Anonymous Learner"}
-          sessionId={finalResult.sessionId || `F-${Date.now().toString(36)}`}
+          learnerName={finalResult.learnerName}
+          sessionId={finalResult.sessionId}
         />
         <div className="flex justify-center mt-6">
           <Button onClick={onExit}>
