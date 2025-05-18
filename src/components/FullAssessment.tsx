@@ -133,7 +133,7 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
   };
   
   // Calculate final assessment result
-  const calculateFinalResult = (): AssessmentResult => {
+  const calculateFinalResult = () => {
     // Aggregate all criteria scores
     const allCriteriaScores: Record<string, number[]> = {};
     let totalScoreSum = 0;
@@ -166,17 +166,19 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
     });
     
     // Generate final assessment result
-    const result = generateAssessmentResult(averageCriteriaScores, totalScore);
+    const basicResult = generateAssessmentResult(averageCriteriaScores, totalScore);
     
     // Add additional metadata for the report
-    return {
-      ...result,
+    const fullResult = {
+      ...basicResult,
       sessionId: studentInfo?.sessionId || `F-${Date.now().toString(36)}`,
       assessmentType: 'full' as const,
-      assessmentName: assessment.title || "Full Assessment",
+      assessmentName: assessment.description || "Full Assessment",
       learnerName: studentInfo?.name || "Anonymous Learner",
       dateOfTest: new Date().toLocaleDateString()
     };
+    
+    return fullResult as AssessmentResult;
   };
   
   // Calculate progress percentage
@@ -205,8 +207,8 @@ const FullAssessmentComponent: React.FC<FullAssessmentProps> = ({
           result={finalResult}
           isFullAssessment={true}
           fullAssessmentData={assessment}
-          learnerName={finalResult.learnerName}
-          sessionId={finalResult.sessionId}
+          learnerName={finalResult.learnerName || "Anonymous Learner"}
+          sessionId={finalResult.sessionId || `F-${Date.now().toString(36)}`}
         />
         <div className="flex justify-center mt-6">
           <Button onClick={onExit}>

@@ -1,3 +1,4 @@
+
 // Basic Types
 export type QuestionType = 'multiple-choice' | 'image-selection' | 'heading-matching' | 'audio-recording' | 'essay-writing' | 'open-ended' | 'matching' | 'gap-fill' | 'short-answer' | 'paragraph-writing' | 'long-answer' | 'note-completion' | 'summary-completion';
 export type CEFRLevel = 'Pre-A1' | 'A1' | 'A1+' | 'A2' | 'A2+' | 'B1' | 'B1+' | 'B2' | 'B2+' | 'C1' | 'C1+' | 'C2' | 'Below Pre-A1' | 'N/A';
@@ -53,6 +54,10 @@ export interface AssessmentMetrics {
   vocabulary: number;
   syntax: number;
   coherence: number;
+  // Optional skill metrics for full assessments
+  listening?: number;
+  reading?: number;
+  writing?: number;
 }
 
 export interface AssessmentFeedback {
@@ -64,6 +69,10 @@ export interface AssessmentFeedback {
   syntax: string;
   coherence: string;
   overall: string;
+  // Optional skill feedback for full assessments
+  listening?: string;
+  reading?: string;
+  writing?: string;
 }
 
 export interface AssessmentResult {
@@ -76,6 +85,13 @@ export interface AssessmentResult {
   speechRate?: number;
   confidenceScore?: number;
   transcript?: string;
+  // Additional metadata for reports
+  audioAnalysis?: AudioAnalysisResult;
+  learnerName?: string;
+  sessionId?: string;
+  dateOfTest?: string;
+  assessmentType?: 'quick' | 'full';
+  assessmentName?: string;
 }
 
 // Test Structure Interfaces
@@ -108,7 +124,7 @@ export interface FullAssessment {
   sections: TestSection[];
 }
 
-// Add AudioAnalysisResult to be available in Assessment.tsx
+// AudioAnalysisResult interface with all required properties
 export interface AudioAnalysisResult {
   wpm: number;
   totalWords: number;
@@ -117,22 +133,47 @@ export interface AudioAnalysisResult {
   pauseRatio: number;
   speakingDuration: number;
   totalDuration: number;
-  // New fields for syllable-based analysis
   syllableCount?: number;
   syllablesPerMinute?: number;
-  // New fields for grammar and syntax analysis
+  // Enhanced speech analysis metrics
+  mlrScore?: number;            // Mean Length of Runs score
+  articulationRate?: number;    // Syllables per second of speech
+  speakingTime?: number;        // Time spent speaking (excluding pauses)
+  silenceTime?: number;         // Time spent in silence
+  pauseDurations?: any[];       // Detailed information about pauses
+  wordTimings?: any[];          // Word-level timing information
+  // Fluency analysis metrics
+  hesitationCount?: number;      // Number of hesitation markers detected
+  hesitationRatio?: number;      // Ratio of hesitation markers to total words
+  hesitationMarkers?: string[];  // List of detected hesitation markers
+  repetitionCount?: number;      // Number of repetitions detected
+  repetitions?: string[];        // List of detected repetitions
+  fluencyJustification?: string; // Explanation of fluency assessment
+  // Grammar and pronunciation analysis
   grammaticalErrors?: GrammaticalError[];
   syntaxComplexity?: SyntaxComplexity;
-  // New fields for CEFR evaluation
   grammarScore?: number;
   syntaxScore?: number;
   cefrGrammarLevel?: string;
   cefrSyntaxLevel?: string;
   grammarJustification?: string;
   syntaxJustification?: string;
-  promptCEFRLevel?: string;  // Added this property to resolve the error
-  levelDiscrepancy?: number;  // Added for storing prompt-response level difference
-  needsReview?: boolean;     // Added flag for responses needing review
+  promptCEFRLevel?: string;
+  levelDiscrepancy?: number;
+  needsReview?: boolean;
+  // Pronunciation data
+  pronunciationScore?: number;
+  cefrLevel?: string;
+  pronunciationDetails?: any;
+  // Vocabulary analysis
+  vocabularyScore?: number;
+  cefrVocabularyLevel?: string;
+  vocabularyJustification?: string;
+  vocabularyDistribution?: Record<string, number>;
+  // Pause quality analysis
+  pauseAnalysis?: any;
+  fluencyScore?: number;
+  cefrFluencyLevel?: string;
 }
 
 // New interfaces for enhanced grammar and syntax analysis

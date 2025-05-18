@@ -1,30 +1,20 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/components/ui/use-toast';
+import { Label } from '@/components/ui/label';
 import { generateUniqueId } from '@/utils/assessmentUtils';
 
-const studentInfoSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email").optional(),
-  institution: z.string().optional()
-});
-
-type StudentInfoFormValues = z.infer<typeof studentInfoSchema>;
+interface StudentInfo {
+  name: string;
+  email?: string;
+  institution?: string;
+  sessionId: string;
+}
 
 interface StudentInfoFormProps {
-  onComplete: (studentInfo: {
-    name: string;
-    email?: string;
-    institution?: string;
-    sessionId: string;
-  }) => void;
+  onComplete: (info: StudentInfo) => void;
   isFullAssessment?: boolean;
 }
 
@@ -32,113 +22,81 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({
   onComplete,
   isFullAssessment = false 
 }) => {
-  const { toast } = useToast();
-  const [sessionId] = useState(() => generateUniqueId(isFullAssessment ? 'F' : 'Q'));
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [institution, setInstitution] = useState('');
   
-  const form = useForm<StudentInfoFormValues>({
-    resolver: zodResolver(studentInfoSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      institution: ''
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim()) {
+      return; // Don't submit if name is empty
     }
-  });
-  
-  const onSubmit = (data: StudentInfoFormValues) => {
+    
+    // Generate a unique session ID with prefix Q for Quick or F for Full assessment
+    const prefix = isFullAssessment ? 'F' : 'Q';
+    const sessionId = generateUniqueId(prefix);
+    
     onComplete({
-      ...data,
+      name,
+      email: email || undefined,
+      institution: institution || undefined,
       sessionId
     });
-    
-    toast({
-      title: "Information Saved",
-      description: "Your assessment will begin now."
-    });
   };
-
+  
   return (
-    <Card className="max-w-md mx-auto">
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-xl text-assessment-blue">
-          {isFullAssessment ? 'Full Assessment' : 'Quick Assessment'} Registration
+        <CardTitle className="text-assessment-blue text-xl">
+          {isFullAssessment ? 'Full Assessment Registration' : 'Quick Assessment Registration'}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Your Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter your name" 
-                      {...field}
-                      autoFocus
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
+            <Input
+              id="name"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
             />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email (Optional)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="your.email@example.com" 
-                      type="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">Email (optional)</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            
-            <FormField
-              control={form.control}
-              name="institution"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Institution/Organization (Optional)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Your school or organization" 
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="institution">Institution (optional)</Label>
+            <Input
+              id="institution"
+              placeholder="School or institution name"
+              value={institution}
+              onChange={(e) => setInstitution(e.target.value)}
             />
-            
-            <div className="pt-2">
-              <p className="text-sm text-gray-500 mb-2">
-                Your unique session ID: <span className="font-mono">{sessionId}</span>
-              </p>
-              <p className="text-xs text-gray-500">
-                This ID will be associated with your assessment results
-              </p>
-            </div>
-            
-            <Button type="submit" className="w-full mt-4 bg-assessment-teal hover:bg-assessment-lightBlue text-white">
+          </div>
+          
+          <div className="pt-2">
+            <Button 
+              type="submit" 
+              className="w-full bg-assessment-teal hover:bg-assessment-lightBlue"
+              disabled={!name.trim()}
+            >
               Start Assessment
             </Button>
-          </form>
-        </Form>
+          </div>
+        </form>
       </CardContent>
-      <CardFooter className="flex justify-center border-t pt-4">
-        <p className="text-xs text-gray-500">
-          Your data is kept secure and only used for assessment purposes
-        </p>
-      </CardFooter>
     </Card>
   );
 };

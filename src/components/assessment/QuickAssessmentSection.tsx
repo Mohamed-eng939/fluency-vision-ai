@@ -6,6 +6,7 @@ import PromptSection from '@/components/PromptSection';
 import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment';
 import StudentInfoForm from './StudentInfoForm';
 import { useToast } from '@/components/ui/use-toast';
+import { generateUniqueId } from '@/utils/assessmentUtils';
 
 interface QuickAssessmentSectionProps {
   selectedPrompt: SpeakingPrompt | null;
@@ -60,10 +61,13 @@ const QuickAssessmentSection: React.FC<QuickAssessmentSectionProps> = ({
         </div>
         
         {!selectedPrompt ? (
-          <PromptSection onPromptSelect={onPromptSelect} />
+          <PromptSection 
+            selectedPrompt={null} 
+            onPromptSelect={onPromptSelect} 
+          />
         ) : (
           <RecordingFlowController 
-            prompt={selectedPrompt}
+            selectedPrompt={selectedPrompt}
             onComplete={onRecordingComplete}
             onCancel={() => onPromptSelect(selectedPrompt)}
             isProcessing={isProcessing}

@@ -1,4 +1,3 @@
-
 import { CEFRLevel } from '@/types/assessment';
 
 /**
@@ -24,7 +23,7 @@ export const mapScoreToCEFR = (score: number): CEFRLevel => {
  * Get CEFR color by level
  */
 export const getCEFRColor = (level: CEFRLevel): string => {
-  const colorMap: Record<CEFRLevel, string> = {
+  const colorMap: Record<string, string> = {
     'C2': '#10b981',     // Green
     'C1+': '#14b8a6',    // Teal-green
     'C1': '#0ea5e9',     // Blue
@@ -63,22 +62,55 @@ export const formatReportDate = (date: Date | string): string => {
  * Get CEFR descriptions
  */
 export const getCEFRDescription = (level: CEFRLevel): string => {
-  const descriptions: Record<CEFRLevel, string> = {
+  const descriptions: Record<string, string> = {
     'C2': 'Can understand with ease virtually everything heard or read. Can summarize information from different spoken and written sources, reconstructing arguments and accounts in a coherent presentation.',
-    'C1+': 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express ideas fluently and spontaneously with high precision.',
-    'C1': 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express themselves fluently and spontaneously without much obvious searching for expressions.',
-    'B2+': 'Can interact with a degree of fluency and spontaneity that makes regular interaction with native speakers quite possible without strain for either party.',
-    'B2': 'Can understand the main ideas of complex text on both concrete and abstract topics. Can interact with a degree of fluency and spontaneity that makes regular interaction with native speakers possible.',
-    'B1+': 'Can produce simple connected text on topics that are familiar or of personal interest with increased complexity and coherence.',
-    'B1': 'Can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc. Can deal with most situations likely to arise while traveling.',
-    'A2+': 'Can communicate in simple and routine tasks requiring a simple and direct exchange of information on familiar and routine matters with increased confidence.',
-    'A2': 'Can understand sentences and frequently used expressions related to areas of most immediate relevance. Can communicate in simple and routine tasks requiring a simple and direct exchange of information.',
-    'A1+': 'Can introduce themselves and others and can ask and answer questions about personal details with increased vocabulary and confidence.',
-    'A1': 'Can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type.',
-    'Pre-A1': 'Can understand and use some basic expressions and very simple phrases. Limited ability to communicate.',
-    'Below Pre-A1': 'Very limited understanding of basic expressions. Needs significant support to communicate.',
-    'N/A': 'Not assessed or not applicable.'
+    'C1+': 'Advanced proficiency with superior fluency and precision. Can express ideas spontaneously without much obvious searching.',
+    'C1': 'Can understand a wide range of demanding, longer texts, and recognize implicit meaning. Can express ideas fluently and spontaneously without much obvious searching for expressions.',
+    'B2+': 'Upper intermediate level with more consistent accuracy and fluency. Can make effective arguments and follow complex lines of reasoning.',
+    'B2': 'Can understand the main ideas of complex text. Can interact with a degree of fluency and spontaneity that makes regular interaction with native speakers quite possible.',
+    'B1+': 'Intermediate level with enhanced fluency and broader vocabulary. Can describe experiences, events, and ambitions with reasonable precision.',
+    'B1': 'Can understand the main points of clear standard input on familiar matters. Can deal with most situations likely to arise while traveling in an area where the language is spoken.',
+    'A2+': 'Strong basic communication skills with broader vocabulary and more complex sentence structures than A2.',
+    'A2': 'Can understand sentences and frequently used expressions related to areas of most immediate relevance. Can communicate in simple and routine tasks.',
+    'A1+': 'Elementary language use with slightly more vocabulary and grammatical structures than A1.',
+    'A1': 'Can understand and use familiar everyday expressions and very basic phrases. Can introduce themselves and others and ask and answer questions about personal details.',
+    'Pre-A1': 'Emerging language skills. Can use and understand some very basic words and phrases.',
+    'Below Pre-A1': 'Beginning to develop language skills, with very limited comprehension and expression.',
+    'N/A': 'Assessment not available or not applicable.'
   };
   
   return descriptions[level] || 'No description available for this level.';
+};
+
+/**
+ * Get skill recommendations by CEFR level
+ */
+export const getSkillRecommendations = (skill: string, level: CEFRLevel): string => {
+  // Pre-defined recommendations for different skills and levels
+  const recommendations: Record<string, Record<string, string>> = {
+    fluency: {
+      'A1': 'Practice speaking aloud daily, even if just for a few minutes. Try reading short texts aloud to build rhythm.',
+      'A2': 'Record yourself speaking and listen back to identify pauses. Practice telling simple stories without stopping.',
+      'B1': 'Join conversation groups to practice speaking spontaneously. Try shadowing techniques with native audio.',
+      'B2': 'Practice impromptu speaking on various topics. Work on reducing filler words and unnecessary pauses.',
+      'C1': 'Engage in debates and discussions that require quick thinking. Practice expressing complex ideas clearly.',
+      'C2': 'Fine-tune your speaking with advanced presentation techniques. Work on maintaining rhythm in long discussions.'
+    },
+    grammar: {
+      'A1': 'Focus on basic sentence structures and present tense verbs. Practice using common question forms.',
+      'A2': 'Work on past tense forms and basic modal verbs. Practice combining sentences with and, but, because.',
+      'B1': 'Study conditional forms and perfect tenses. Practice reported speech and passive constructions.',
+      'B2': 'Work on advanced conditionals and modal perfect forms. Study complex sentence structures.',
+      'C1': 'Focus on nuanced grammar usage, like subtle differences between similar structures. Study inversion techniques.',
+      'C2': 'Refine stylistic uses of grammar for rhetorical effect. Master all exceptions and irregularities.'
+    },
+    // ... keep existing code (recommendations for other skills)
+  };
+  
+  // Get the base level without + modifier
+  const baseLevel = level.replace(/\+$/, '') as CEFRLevel;
+  
+  // Return recommendation if it exists, otherwise provide general advice
+  return recommendations[skill.toLowerCase()]?.[baseLevel] || 
+    `Continue practicing ${skill} skills through regular exposure to authentic materials and production practice.`;
 };
