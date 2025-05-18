@@ -55,8 +55,10 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
       <CardContent>
         <PromptHeader
           prompt={prompt}
-          level={prompt.cefrLevel}
-          category={prompt.category}
+          promptInfo={{
+            cefrLevel: prompt.cefrLevel,
+            category: prompt.category
+          }}
         />
         
         <div className="mt-6">
