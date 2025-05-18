@@ -1,11 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { generateUniqueId } from '@/utils/assessmentUtils';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Flag } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -16,6 +15,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -32,6 +38,30 @@ interface StudentInfoFormProps {
   onComplete: (info: StudentInfo) => void;
   isFullAssessment?: boolean;
 }
+
+// Country codes with their flags
+const countryCodes = [
+  { code: "+1", country: "US", name: "United States" },
+  { code: "+44", country: "GB", name: "United Kingdom" },
+  { code: "+91", country: "IN", name: "India" },
+  { code: "+61", country: "AU", name: "Australia" },
+  { code: "+86", country: "CN", name: "China" },
+  { code: "+81", country: "JP", name: "Japan" },
+  { code: "+49", country: "DE", name: "Germany" },
+  { code: "+33", country: "FR", name: "France" },
+  { code: "+7", country: "RU", name: "Russia" },
+  { code: "+55", country: "BR", name: "Brazil" },
+  { code: "+52", country: "MX", name: "Mexico" },
+  { code: "+27", country: "ZA", name: "South Africa" },
+  { code: "+234", country: "NG", name: "Nigeria" },
+  { code: "+20", country: "EG", name: "Egypt" },
+  { code: "+966", country: "SA", name: "Saudi Arabia" },
+  { code: "+971", country: "AE", name: "United Arab Emirates" },
+  { code: "+65", country: "SG", name: "Singapore" },
+  { code: "+82", country: "KR", name: "South Korea" },
+  { code: "+39", country: "IT", name: "Italy" },
+  { code: "+34", country: "ES", name: "Spain" },
+];
 
 // Define the validation schema
 const formSchema = z.object({
@@ -129,37 +159,47 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({
                   control={form.control}
                   name="countryCode"
                   render={({ field }) => (
-                    <FormControl>
-                      <Input
-                        placeholder="+1"
-                        className="w-24"
-                        {...field}
-                      />
-                    </FormControl>
+                    <FormItem className="w-36">
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Code" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {countryCodes.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              <div className="flex items-center gap-2">
+                                <span className="opacity-75">{country.code}</span>
+                                <span>{country.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
                   name="phoneNumber"
                   render={({ field }) => (
-                    <FormControl>
-                      <Input
-                        placeholder="Phone number"
-                        className="flex-1"
-                        {...field}
-                      />
-                    </FormControl>
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input
+                          placeholder="Phone number"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
               </div>
-              {(form.formState.errors.countryCode || form.formState.errors.phoneNumber) && (
-                <div className="flex items-center text-sm text-destructive mt-1">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  <span>
-                    {form.formState.errors.countryCode?.message || form.formState.errors.phoneNumber?.message}
-                  </span>
-                </div>
-              )}
             </FormItem>
             
             <FormField
