@@ -7,19 +7,13 @@ import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment';
 import StudentInfoForm from './StudentInfoForm';
 import { useToast } from '@/components/ui/use-toast';
 import { generateUniqueId } from '@/utils/assessmentUtils';
+import { StudentInfo } from '@/hooks/assessment';
 
 interface QuickAssessmentSectionProps {
   selectedPrompt: SpeakingPrompt | null;
   onPromptSelect: (prompt: SpeakingPrompt) => void;
   onRecordingComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void;
   isProcessing: boolean;
-}
-
-interface StudentInfo {
-  name: string;
-  email?: string;
-  institution?: string;
-  sessionId: string;
 }
 
 const QuickAssessmentSection: React.FC<QuickAssessmentSectionProps> = ({
