@@ -5,6 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { generateUniqueId } from '@/utils/assessmentUtils';
+import { AlertCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface StudentInfo {
   name: string;
@@ -20,34 +33,54 @@ interface StudentInfoFormProps {
   isFullAssessment?: boolean;
 }
 
+// Define the validation schema
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Please enter a valid email").or(z.string().length(0)),
+  institution: z.string().optional(),
+  countryCode: z.string().min(1, "Country code is required"),
+  phoneNumber: z.string()
+    .min(6, "Phone number must be at least 6 digits")
+    .max(15, "Phone number cannot exceed 15 digits")
+    .regex(/^[0-9]+$/, "Phone number must contain only digits")
+});
+
 const StudentInfoForm: React.FC<StudentInfoFormProps> = ({ 
   onComplete,
   isFullAssessment = false 
 }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [institution, setInstitution] = useState('');
-  const [countryCode, setCountryCode] = useState('+1');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const { toast } = useToast();
   
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!name.trim() || !countryCode.trim() || !phoneNumber.trim()) {
-      return; // Don't submit if required fields are empty
+  // Initialize the form with react-hook-form and zod validation
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      institution: "",
+      countryCode: "+1",
+      phoneNumber: ""
     }
-    
+  });
+
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     // Generate a unique session ID with prefix Q for Quick or F for Full assessment
     const prefix = isFullAssessment ? 'F' : 'Q';
     const sessionId = generateUniqueId(prefix);
     
     onComplete({
-      name,
-      email: email || undefined,
-      institution: institution || undefined,
+      name: values.name,
+      email: values.email || undefined,
+      institution: values.institution || undefined,
       sessionId,
-      countryCode,
-      phoneNumber
+      countryCode: values.countryCode,
+      phoneNumber: values.phoneNumber
+    });
+    
+    // Show success toast
+    toast({
+      title: "Registration successful",
+      description: "Your assessment will begin shortly",
     });
   };
   
@@ -59,71 +92,100 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
-            <Input
-              id="name"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name <span className="text-red-500">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">Email (optional)</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+            
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email (optional)</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="Enter your email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number <span className="text-red-500">*</span></Label>
-            <div className="flex gap-2">
-              <Input
-                id="countryCode"
-                placeholder="+1"
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="w-24"
-                required
-              />
-              <Input
-                id="phoneNumber"
-                placeholder="Phone number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="flex-1"
-                required
-              />
+            
+            <FormItem className="space-y-2">
+              <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
+              <div className="flex gap-2">
+                <FormField
+                  control={form.control}
+                  name="countryCode"
+                  render={({ field }) => (
+                    <FormControl>
+                      <Input
+                        placeholder="+1"
+                        className="w-24"
+                        {...field}
+                      />
+                    </FormControl>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormControl>
+                      <Input
+                        placeholder="Phone number"
+                        className="flex-1"
+                        {...field}
+                      />
+                    </FormControl>
+                  )}
+                />
+              </div>
+              {(form.formState.errors.countryCode || form.formState.errors.phoneNumber) && (
+                <div className="flex items-center text-sm text-destructive mt-1">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  <span>
+                    {form.formState.errors.countryCode?.message || form.formState.errors.phoneNumber?.message}
+                  </span>
+                </div>
+              )}
+            </FormItem>
+            
+            <FormField
+              control={form.control}
+              name="institution"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Institution (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="School or institution name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="pt-2">
+              <Button 
+                type="submit" 
+                className="w-full bg-assessment-teal hover:bg-assessment-lightBlue"
+              >
+                Start Assessment
+              </Button>
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="institution">Institution (optional)</Label>
-            <Input
-              id="institution"
-              placeholder="School or institution name"
-              value={institution}
-              onChange={(e) => setInstitution(e.target.value)}
-            />
-          </div>
-          
-          <div className="pt-2">
-            <Button 
-              type="submit" 
-              className="w-full bg-assessment-teal hover:bg-assessment-lightBlue"
-              disabled={!name.trim() || !countryCode.trim() || !phoneNumber.trim()}
-            >
-              Start Assessment
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
