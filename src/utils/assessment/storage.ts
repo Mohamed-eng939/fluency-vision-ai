@@ -54,8 +54,10 @@ export const storeAssessmentData = async (
       type: 'quick',
       promptResponses: [
         {
-          promptId: result.promptId || 'unknown',
-          promptText: result.promptText || '',
+          // Use a unique ID or generate one if not available
+          promptId: 'prompt-' + Date.now(),
+          // Use transcript as prompt text if available, otherwise empty string
+          promptText: result.transcript || '',
           cefrLevel: result.cefrLevel || 'A1',
           audioUrl: audioBase64,
           transcript: result.transcript,
