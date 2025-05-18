@@ -1,5 +1,5 @@
 
-import { WhisperXResult } from './audio/types';
+import { WhisperXResult, PauseDuration, WordTiming } from './audio/types';
 
 const API_URL = import.meta.env.PROD 
   ? '/api'  // Production API path (assuming it's proxied)
@@ -34,7 +34,10 @@ export async function getWhisperXTranscription(
     }
     
     const result = await response.json();
-    return result as WhisperXResult;
+    
+    // Post-process the WhisperX result to add fluency metrics
+    const processedResult = processWhisperXResult(result);
+    return processedResult;
   } catch (error) {
     console.error('WhisperX transcription failed:', error);
     // Return a failed transcription result with error details
@@ -51,6 +54,59 @@ export async function getWhisperXTranscription(
       error: error instanceof Error ? error.message : String(error)
     };
   }
+}
+
+/**
+ * Process raw WhisperX result to add timing metrics
+ */
+function processWhisperXResult(result: any): WhisperXResult {
+  if (!result.word_segments || result.word_segments.length === 0) {
+    return {
+      ...result,
+      pause_durations: [],
+      speaking_time: 0,
+      silence_time: 0,
+      total_duration: result.segments?.[result.segments?.length - 1]?.end || 0
+    };
+  }
+
+  const wordSegments = result.word_segments as WordTiming[];
+  
+  // 1. Calculate pause durations between words
+  const pauseDurations: PauseDuration[] = [];
+  let totalSilenceTime = 0;
+  
+  for (let i = 1; i < wordSegments.length; i++) {
+    const previousWord = wordSegments[i - 1];
+    const currentWord = wordSegments[i];
+    const pauseDuration = currentWord.start - previousWord.end;
+    
+    // Only consider pauses ≥ 0.3 seconds as significant
+    if (pauseDuration >= 0.3) {
+      pauseDurations.push({
+        duration: pauseDuration,
+        position: i,
+        before_word: previousWord.word,
+        after_word: currentWord.word
+      });
+      totalSilenceTime += pauseDuration;
+    }
+  }
+  
+  // 2. Calculate speaking time and total duration
+  const firstWordStart = wordSegments[0].start;
+  const lastWordEnd = wordSegments[wordSegments.length - 1].end;
+  const totalDuration = lastWordEnd;
+  const speakingTime = lastWordEnd - firstWordStart - totalSilenceTime;
+  
+  // Return the processed result
+  return {
+    ...result,
+    pause_durations: pauseDurations,
+    speaking_time: speakingTime,
+    silence_time: totalSilenceTime,
+    total_duration: totalDuration
+  };
 }
 
 /**
