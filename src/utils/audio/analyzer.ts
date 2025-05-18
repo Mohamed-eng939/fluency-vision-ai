@@ -2,6 +2,7 @@
 import { calculateSpeakingRate } from './speechRate';
 import { detectHesitationMarkers } from './hesitationDetector';
 import { AudioAnalysisResult } from './types';
+import { calculateCompositeFluencyScore } from '../assessment/fluency/compositeScoring';
 
 /**
  * Analyze audio features from audio blob and transcript
@@ -84,6 +85,21 @@ export async function enhanceAudioAnalysisWithWhisperX(
       ? (whisperResult.word_segments.length / whisperResult.total_duration) * 60
       : basicAnalysis.wpm
   };
+  
+  // Calculate syllables per minute
+  const estimatedSyllableCount = enhancedAnalysis.totalWords * 1.5; // Average 1.5 syllables per word
+  const minutesDuration = enhancedAnalysis.totalDuration / 60;
+  enhancedAnalysis.syllablesPerMinute = minutesDuration > 0 
+    ? estimatedSyllableCount / minutesDuration 
+    : 0;
+  
+  // Calculate composite fluency score using our new scoring system
+  const fluencyAssessment = calculateCompositeFluencyScore(enhancedAnalysis);
+  
+  // Add fluency assessment results
+  enhancedAnalysis.fluencyScore = fluencyAssessment.fluencyScore;
+  enhancedAnalysis.cefrFluencyLevel = fluencyAssessment.cefrFluencyLevel;
+  enhancedAnalysis.fluencyJustification = fluencyAssessment.fluencyJustification;
   
   return enhancedAnalysis;
 }

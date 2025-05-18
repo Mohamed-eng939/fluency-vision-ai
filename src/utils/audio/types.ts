@@ -105,6 +105,9 @@ export interface AudioAnalysisResult {
   fluencyJustification?: string; // Explanation of fluency assessment
   // Pause quality analysis 
   pauseAnalysis?: PauseAnalysis; // Enhanced pause quality analysis
+  // New composite fluency scoring fields
+  fluencyScore?: number;         // Composite fluency score (1-10)
+  cefrFluencyLevel?: string;     // CEFR level for fluency
 }
 
 /**
