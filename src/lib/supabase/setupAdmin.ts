@@ -1,6 +1,7 @@
 
 import { supabase } from './client';
 import { generateSecurePassword } from '@/utils/authUtils';
+import { useToast } from '@/components/ui/use-toast';
 
 export const setupAdminUser = async (): Promise<{ success: boolean; password?: string; error?: any }> => {
   try {
@@ -15,11 +16,13 @@ export const setupAdminUser = async (): Promise<{ success: boolean; password?: s
     
     // If admin already exists, return success but no password
     if (existingUsers && existingUsers.length > 0) {
+      console.log('Admin user already exists');
       return { success: true };
     }
     
     // Generate a secure password
     const password = generateSecurePassword();
+    console.log('Generated admin password:', password); // Log the password for visibility
     
     // Create the admin user
     const { data, error } = await supabase.auth.signUp({
