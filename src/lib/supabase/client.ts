@@ -2,11 +2,16 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Try to get environment variables or use fallbacks
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-supabase-project-url.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key-placeholder';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+// For development purposes, let's make sure we have values, even if they're placeholders
+// Remove this condition in production and use proper environment variables
+if (!supabaseUrl.includes('your-supabase-project') && !supabaseAnonKey.includes('your-anon-key')) {
+  console.log('Using Supabase configuration:', { url: supabaseUrl.substring(0, 15) + '...', keyLength: supabaseAnonKey.length });
+} else {
+  console.warn('⚠️ Using placeholder Supabase values. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
