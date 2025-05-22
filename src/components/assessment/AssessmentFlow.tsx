@@ -6,12 +6,14 @@ import AuthButtons from './auth/AuthButtons';
 import LoginModal from './auth/LoginModal';
 import SignUpSheet from './auth/SignUpSheet';
 import AssessmentStepRenderer from './AssessmentStepRenderer';
+import { useAuth } from '@/contexts/auth';
 
 interface AssessmentFlowProps {
   onTakeFullAssessment: () => void;
 }
 
 const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment }) => {
+  const { user, loading: authLoading } = useAuth();
   const [showAdminControls, setShowAdminControls] = useState(false);
   const [showAssessmentOptions, setShowAssessmentOptions] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -64,6 +66,19 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showAdminControls]);
 
+  // Auto-populate student info if user is logged in
+  useEffect(() => {
+    if (user && !studentInfo) {
+      handleStudentInfoSubmit({
+        name: user.name || 'Anonymous User',
+        email: user.email || '',
+        sessionId: sessionId || `session-${Date.now()}`,
+        countryCode: user.country || '',
+        phoneNumber: user.phone || '',
+      });
+    }
+  }, [user, studentInfo, sessionId, handleStudentInfoSubmit]);
+
   const handleSelectQuickAssessment = () => {
     setShowAssessmentOptions(false);
   };
@@ -78,7 +93,13 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   };
 
   const handleLoginSuccess = (user: any) => {
-    handleStudentInfoSubmit(user);
+    handleStudentInfoSubmit({
+      name: user.name || 'Anonymous User',
+      email: user.email || '',
+      sessionId: sessionId || `session-${Date.now()}`,
+      countryCode: user.country || '',
+      phoneNumber: user.phone || '',
+    });
     setShowLoginModal(false);
     setShowAssessmentOptions(false);
     startAssessment();
@@ -88,6 +109,18 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     resetAssessment();
     setShowAssessmentOptions(true);
   };
+
+  // Show loading state while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-assessment-blue mx-auto mb-4"></div>
+          <p className="text-assessment-blue font-medium">Loading assessment...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 px-4">
