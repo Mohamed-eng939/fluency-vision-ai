@@ -16,6 +16,7 @@ const AssessmentPage: React.FC = () => {
   // Track if we should show the full assessment
   const [showFullAssessment, setShowFullAssessment] = useState(false);
   const [showFullAssessmentIntro, setShowFullAssessmentIntro] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   
   // Check URL parameters for login/signup
   useEffect(() => {
@@ -32,6 +33,14 @@ const AssessmentPage: React.FC = () => {
       // This will be handled by the AssessmentFlow component
       console.log('Signup requested via URL');
     }
+    
+    // Set the component as ready after a short delay to prevent flashing
+    // This gives auth time to initialize properly
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
   }, [searchParams]);
   
   const handleStartFullAssessment = () => {
@@ -52,8 +61,8 @@ const AssessmentPage: React.FC = () => {
     setShowFullAssessmentIntro(true);
   };
 
-  // Show loading state while auth is initializing
-  if (authLoading) {
+  // Show loading state while auth is initializing and component isn't ready
+  if (authLoading || !isReady) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

@@ -41,33 +41,44 @@ export const useStudentInfo = () => {
 
     setStudentInfo(info);
     
-    // If the user is authenticated, update their profile with this information
+    // Only update profile if user is authenticated
     const updateProfileIfAuthenticated = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const profileUpdate = {
-          name: info.name,
-          email: info.email,
-          country: info.countryCode || info.citizenshipCountry || info.residenceCountry,
-          phone: info.phoneNumber || info.phone,
-          native_language: info.firstLanguage
-        };
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
         
-        // Update the profile with the provided information
-        await supabase
-          .from('profiles')
-          .update(profileUpdate)
-          .eq('id', user.id)
-          .then(({ error }) => {
-            if (error) {
-              console.error('Failed to update profile:', error);
-            }
-          });
+        if (user) {
+          console.log("Updating profile for authenticated user:", user.id);
+          const profileUpdate = {
+            name: info.name,
+            email: info.email,
+            country: info.countryCode || info.citizenshipCountry || info.residenceCountry,
+            phone: info.phoneNumber || info.phone,
+            native_language: info.firstLanguage
+          };
+          
+          // Update the profile with the provided information
+          await supabase
+            .from('profiles')
+            .update(profileUpdate)
+            .eq('id', user.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error('Failed to update profile:', error);
+              } else {
+                console.log('Profile updated successfully');
+              }
+            });
+        } else {
+          console.log("User not authenticated, skipping profile update");
+        }
+      } catch (error) {
+        console.error("Error checking authentication status:", error);
       }
     };
     
     updateProfileIfAuthenticated();
+    
+    return info;
   }, []);
 
   return {
