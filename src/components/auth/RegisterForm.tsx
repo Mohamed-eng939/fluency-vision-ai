@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -52,23 +53,57 @@ const RegisterForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
+      // First, sign up using auth system
       const { error, data } = await signUp(values.email, values.password, {
         name: values.name,
         username: values.username,
         role: 'learner' // Default role for new registrations
       });
       
-      if (!error) {
+      if (error) {
         toast({
-          title: "Registration Successful",
-          description: "Please check your email for verification instructions.",
+          title: "Registration Failed",
+          description: error.message || "An error occurred during registration.",
+          variant: "destructive",
         });
-        navigate('/login');
+        setIsSubmitting(false);
+        return;
       }
-    } catch (error) {
+
+      // If signup was successful and we have a user, create their profile
+      if (data?.user) {
+        const { id, email } = data.user;
+        
+        // Create profile entry in the profiles table
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id, // MUST match auth UID
+          email,
+          name: values.name,
+          username: values.username,
+          role: 'learner', // Default role
+        });
+
+        if (profileError) {
+          console.error("Failed to create profile:", profileError.message);
+          toast({
+            title: "Profile Creation Failed",
+            description: "Your account was created but we couldn't set up your profile. Please contact support.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      toast({
+        title: "Registration Successful",
+        description: "Please check your email for verification instructions.",
+      });
+      navigate('/login');
+    } catch (error: any) {
       toast({
         title: "Registration Failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: error.message || "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {

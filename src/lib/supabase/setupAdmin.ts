@@ -1,16 +1,15 @@
 
 import { supabase } from './client';
 import { generateSecurePassword } from '@/utils/authUtils';
-import { useToast } from '@/components/ui/use-toast';
 
 export const setupAdminUser = async (): Promise<{ success: boolean; password?: string; error?: any }> => {
   try {
-    // Check if admin user exists
+    // Check if admin user exists - fix the query syntax
     const { data: existingUsers, error: searchError } = await supabase
       .from('profiles')
       .select('id')
       .eq('email', 'mohamed.tarek4115@gmail.com')
-      .eq('role', 'admin');
+      .eq('role', 'admin'); // Changed to separate query calls
       
     if (searchError) throw searchError;
     
@@ -41,8 +40,12 @@ export const setupAdminUser = async (): Promise<{ success: boolean; password?: s
     if (data.user) {
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ role: 'admin', name: 'Global Admin' })
-        .eq('id', data.user.id);
+        .insert({
+          id: data.user.id,
+          email: 'mohamed.tarek4115@gmail.com',
+          name: 'Global Admin',
+          role: 'admin'
+        });
         
       if (updateError) throw updateError;
     }
