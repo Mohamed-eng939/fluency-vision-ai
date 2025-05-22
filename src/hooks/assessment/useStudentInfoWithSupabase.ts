@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { generateUniqueId } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 
 export interface StudentInfo {
   name?: string;

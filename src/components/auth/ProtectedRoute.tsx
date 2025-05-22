@@ -1,38 +1,30 @@
 
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { useAuth, useIsAdmin, useIsAssessor } from '@/contexts/auth';
+import { UserRole } from '@/contexts/auth/types';
 
-interface ProtectedRouteProps {
+interface Props {
   children: React.ReactNode;
   allowedRoles?: UserRole[];
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  children,
-  allowedRoles = ['learner', 'assessor', 'admin']
-}) => {
+const ProtectedRoute: React.FC<Props> = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-assessment-blue" />
-        <span className="ml-2 text-lg">Loading...</span>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
-  // If not authenticated, redirect to login
+  // Check if user is authenticated
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check role-based access
-  if (!allowedRoles.includes(user.role)) {
+  // Check if user has an allowed role when roles are specified
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     // Redirect based on role
     if (user.role === 'admin') {
       return <Navigate to="/admin" replace />;
