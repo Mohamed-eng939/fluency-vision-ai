@@ -11,7 +11,7 @@ const AssessmentPage: React.FC = () => {
   // Get the enhanced full assessment tests
   const fullAssessmentTests = getFullAssessmentTests();
   const [searchParams] = useSearchParams();
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading, user } = useAuth();
   
   // Track if we should show the full assessment
   const [showFullAssessment, setShowFullAssessment] = useState(false);

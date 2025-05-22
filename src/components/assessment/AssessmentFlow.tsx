@@ -69,13 +69,17 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   // Auto-populate student info if user is logged in
   useEffect(() => {
     if (user && !studentInfo) {
-      handleStudentInfoSubmit({
+      // Create default student info from user profile
+      const defaultInfo = {
         name: user.name || 'Anonymous User',
         email: user.email || '',
         sessionId: sessionId || `session-${Date.now()}`,
         countryCode: user.country || '',
         phoneNumber: user.phone || '',
-      });
+      };
+      
+      console.log("Auto-populating student info from user profile:", defaultInfo);
+      handleStudentInfoSubmit(defaultInfo);
     }
   }, [user, studentInfo, sessionId, handleStudentInfoSubmit]);
 
@@ -93,6 +97,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   };
 
   const handleLoginSuccess = (user: any) => {
+    // Create student info from login data
     handleStudentInfoSubmit({
       name: user.name || 'Anonymous User',
       email: user.email || '',
@@ -110,7 +115,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     setShowAssessmentOptions(true);
   };
 
-  // Show loading state while auth is initializing
+  // Handle loading state during authentication
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -122,10 +127,14 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     );
   }
 
+  console.log("AssessmentFlow rendering with user:", user);
+  console.log("AssessmentFlow rendering with studentInfo:", studentInfo);
+  console.log("Current step:", currentStep);
+
   return (
     <div className="container mx-auto py-6 px-4">
       {/* Auth Buttons */}
-      {showAssessmentOptions && (
+      {showAssessmentOptions && !user && (
         <AuthButtons 
           onLoginClick={handleLoginClick} 
           onSignUpClick={handleSignUpClick} 
