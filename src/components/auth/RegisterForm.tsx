@@ -64,31 +64,6 @@ const RegisterForm: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-
-      // If signup was successful and we have a user, create their profile
-      if (data?.user) {
-        const { id, email } = data.user;
-        
-        // Create profile entry in the profiles table
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id, // MUST match auth UID
-          email,
-          name: values.name,
-          phone: null,
-          role: 'learner', // Default role
-        });
-
-        if (profileError) {
-          console.error("Failed to create profile:", profileError.message);
-          toast({
-            title: "Profile Creation Failed",
-            description: "Your account was created but we couldn't set up your profile. Please contact support.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-      }
       
       toast({
         title: "Registration Successful",

@@ -125,7 +125,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Sign up function
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
-      const { data, error } = await signUpWithEmail(email, password, userData);
+      // Create auth user
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: userData.name,
+            role: userData.role || 'learner'
+          }
+        }
+      });
       
       if (error) {
         toast({
@@ -135,6 +145,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         return { error, data: null };
       }
+      
+      // The function to create a profile in the public.profiles table is handled by a database trigger
+      // So we don't need to manually create the profile here
       
       toast({
         title: "Account Created",
