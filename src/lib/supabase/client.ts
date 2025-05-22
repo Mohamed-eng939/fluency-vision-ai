@@ -1,51 +1,20 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 
-// Check for Supabase environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// We're using environment variables from the code since the project is already connected to Supabase
+const supabaseUrl = "https://fjmiydniqxjqjbimgtjx.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqbWl5ZG5pcXhqcWpiaW1ndGp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NDM1MzIsImV4cCI6MjA2MzIxOTUzMn0.crxMN4RrcgF2ygzzo1mdw9vXvt8YFysujZsHIKZVm_0";
 
-// Create a mock client or real client based on environment variables
-let supabaseClient: any;
+// Create Supabase client
+const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    storage: localStorage
+  }
+});
 
-// Validate that both environment variables are present
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("⚠️ Supabase environment variables are missing! Please connect this project to Supabase.");
-  
-  // Instead of using placeholder values that will cause runtime errors,
-  // we'll create a mock client that logs errors when used but doesn't fail immediately
-  supabaseClient = {
-    auth: {
-      getUser: async () => ({ data: { user: null }, error: null }),
-      getSession: async () => ({ data: { session: null }, error: null }),
-      signUp: async () => ({ error: new Error("Supabase not configured"), data: null }),
-      signInWithPassword: async () => ({ error: new Error("Supabase not configured"), data: null }),
-      signOut: async () => ({ error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
-    },
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: () => ({ data: null, error: new Error("Supabase not configured") }),
-          update: () => ({ error: new Error("Supabase not configured") }),
-          delete: () => ({ error: new Error("Supabase not configured") })
-        }),
-        update: () => ({ error: new Error("Supabase not configured") })
-      })
-    }),
-    storage: {
-      from: () => ({
-        upload: () => ({ error: new Error("Supabase not configured") }),
-        getPublicUrl: () => ({ data: null })
-      })
-    }
-  };
-} else {
-  // Create real Supabase client if environment variables are available
-  supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
-  console.log("✅ Connected to Supabase");
-}
+console.log("✅ Connected to Supabase");
 
 // Export the client
 export const supabase = supabaseClient;
