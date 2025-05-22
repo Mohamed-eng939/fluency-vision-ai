@@ -2,19 +2,44 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 
-// Try to get environment variables or use fallbacks
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-supabase-project-url.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key-placeholder';
+// Check for Supabase environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// For development purposes, let's make sure we have values, even if they're placeholders
-// Remove this condition in production and use proper environment variables
-if (!supabaseUrl.includes('your-supabase-project') && !supabaseAnonKey.includes('your-anon-key')) {
-  console.log('Using Supabase configuration:', { url: supabaseUrl.substring(0, 15) + '...', keyLength: supabaseAnonKey.length });
+// Validate that both environment variables are present
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("⚠️ Supabase environment variables are missing! Please connect this project to Supabase.");
+  
+  // Instead of using placeholder values that will cause runtime errors,
+  // we'll create a mock client that logs errors when used but doesn't fail immediately
+  const mockSupabase = {
+    auth: {
+      getUser: async () => ({ data: { user: null }, error: null }),
+      getSession: async () => ({ data: { session: null }, error: null }),
+      signUp: async () => ({ error: new Error("Supabase not configured"), data: null }),
+      signInWithPassword: async () => ({ error: new Error("Supabase not configured"), data: null }),
+      signOut: async () => ({ error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => ({ data: null, error: new Error("Supabase not configured") }),
+          update: () => ({ error: new Error("Supabase not configured") }),
+          delete: () => ({ error: new Error("Supabase not configured") })
+        }),
+        update: () => ({ error: new Error("Supabase not configured") })
+      })
+    })
+  };
+  
+  // @ts-ignore - Use the mock client
+  export const supabase = mockSupabase;
 } else {
-  console.warn('⚠️ Using placeholder Supabase values. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+  // Create real Supabase client if environment variables are available
+  export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+  console.log("✅ Connected to Supabase");
 }
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export const getRole = async (): Promise<string | null> => {
   try {
