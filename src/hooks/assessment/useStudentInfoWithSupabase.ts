@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { generateUniqueId } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface StudentInfo {

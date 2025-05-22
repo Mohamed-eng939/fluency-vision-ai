@@ -1,5 +1,5 @@
 
-import { supabase } from './client';
+import { supabase } from '@/integrations/supabase/client';
 import { generateSecurePassword } from '@/utils/authUtils';
 
 export const setupAdminUser = async (): Promise<{ success: boolean; password?: string; error?: any }> => {
