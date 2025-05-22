@@ -21,9 +21,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
-  username: z.string().min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username cannot exceed 20 characters')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
@@ -42,7 +39,6 @@ const RegisterForm: React.FC = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -121,19 +117,6 @@ const RegisterForm: React.FC = () => {
               <FormLabel>Full Name</FormLabel>
               <FormControl>
                 <Input placeholder="Enter your full name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="Choose a username" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

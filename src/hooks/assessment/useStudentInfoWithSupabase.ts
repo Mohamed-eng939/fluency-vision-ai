@@ -14,7 +14,7 @@ export interface StudentInfo {
   native_language?: string;
   role?: string;
   sessionId?: string;
-  // Legacy fields - kept for backward compatibility but not used with Supabase
+  // Legacy fields - kept for backward compatibility
   username?: string;
   citizenshipCountry?: string;
   residenceCountry?: string;
