@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { generateUniqueId } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
@@ -8,13 +9,16 @@ export interface StudentInfo {
   name?: string;
   email?: string;
   phone?: string;
+  username?: string; // Added for compatibility
   password?: string;
   country?: string;
   native_language?: string;
   role?: string;
   sessionId?: string;
+  emailResults?: boolean; // Added for compatibility
   // Legacy fields - kept for backward compatibility
-  username?: string;
+  countryCode?: string;
+  phoneNumber?: string;
   citizenshipCountry?: string;
   residenceCountry?: string;
   dateOfBirth?: Date;
@@ -26,7 +30,6 @@ export interface StudentInfo {
   pronunciationPreference?: "british" | "american" | "neutral";
   promoCode?: string;
   dataConsent?: boolean;
-  emailResults?: boolean;
 }
 
 export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {}) => {
@@ -58,10 +61,17 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
             name: data.name,
             email: data.email,
             phone: data.phone,
+            username: data.name?.split(' ')[0].toLowerCase() + (data.phone?.slice(-4) || ''), // Generate username
             country: data.country,
             native_language: data.native_language,
             role: data.role,
-            sessionId
+            sessionId,
+            // Set compatibility fields
+            firstLanguage: data.native_language,
+            citizenshipCountry: data.country,
+            residenceCountry: data.country,
+            phoneNumber: data.phone,
+            countryCode: data.country
           });
         } else if (initialInfo.name || initialInfo.email) {
           setStudentInfo({
@@ -85,6 +95,14 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
     // Generate a session ID if none provided
     const sessionId = info.sessionId || generateUniqueId('ST');
     
+    // Generate username if not provided
+    if (!info.username && info.name && (info.phone || info.phoneNumber)) {
+      const firstName = info.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+      const phone = info.phone || info.phoneNumber || '';
+      const lastFourDigits = phone.slice(-4).replace(/[^0-9]/g, '');
+      info.username = `${firstName}${lastFourDigits}`;
+    }
+    
     // Store student info
     const updatedInfo = {
       ...info,
@@ -99,9 +117,9 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         .from('profiles')
         .update({
           name: info.name,
-          phone: info.phone,
-          country: info.country,
-          native_language: info.native_language,
+          phone: info.phone || info.phoneNumber,
+          country: info.country || info.countryCode || info.citizenshipCountry,
+          native_language: info.native_language || info.firstLanguage,
           role: info.role || 'learner',
           updated_at: new Date().toISOString()
         })
