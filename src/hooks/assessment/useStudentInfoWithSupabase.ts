@@ -7,10 +7,15 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface StudentInfo {
   name?: string;
-  username?: string;
   email?: string;
   phone?: string;
   password?: string;
+  country?: string;
+  native_language?: string;
+  role?: string;
+  sessionId?: string;
+  // Legacy fields - kept for backward compatibility but not used with Supabase
+  username?: string;
   citizenshipCountry?: string;
   residenceCountry?: string;
   dateOfBirth?: Date;
@@ -23,7 +28,6 @@ export interface StudentInfo {
   promoCode?: string;
   dataConsent?: boolean;
   emailResults?: boolean;
-  sessionId?: string;
 }
 
 export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {}) => {
@@ -50,22 +54,14 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         }
         
         if (data) {
+          // Map database fields to our StudentInfo interface
           setStudentInfo({
             name: data.name,
-            username: data.username,
             email: data.email,
             phone: data.phone,
-            citizenshipCountry: data.citizenship_country,
-            residenceCountry: data.residence_country,
-            dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth) : undefined,
-            firstLanguage: data.first_language,
-            testReason: data.test_reason,
-            otherReason: data.other_reason,
-            estimatedLevel: data.estimated_level,
-            preferredContact: data.preferred_contact as "email" | "whatsapp" | "phone" | undefined,
-            pronunciationPreference: data.pronunciation_preference as "british" | "american" | "neutral" | undefined,
-            promoCode: data.promo_code,
-            dataConsent: data.data_consent,
+            country: data.country,
+            native_language: data.native_language,
+            role: data.role,
             sessionId
           });
         } else if (initialInfo.name || initialInfo.email) {
@@ -90,25 +86,6 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
     // Generate a session ID if none provided
     const sessionId = info.sessionId || generateUniqueId('ST');
     
-    // Check if username is already taken
-    if (info.username) {
-      const { data: existingUsers, error: checkError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', info.username);
-        
-      if (checkError) {
-        console.warn('Could not check for duplicate usernames:', checkError);
-      } else if (existingUsers && existingUsers.length > 0) {
-        toast({
-          title: "Username already exists",
-          description: "This username is already taken. Please try a different one.",
-          variant: "destructive"
-        });
-        return null;
-      }
-    }
-    
     // Store student info
     const updatedInfo = {
       ...info,
@@ -123,19 +100,10 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         .from('profiles')
         .update({
           name: info.name,
-          username: info.username,
           phone: info.phone,
-          citizenship_country: info.citizenshipCountry,
-          residence_country: info.residenceCountry,
-          date_of_birth: info.dateOfBirth,
-          first_language: info.firstLanguage,
-          test_reason: info.testReason,
-          other_reason: info.otherReason,
-          estimated_level: info.estimatedLevel,
-          preferred_contact: info.preferredContact,
-          pronunciation_preference: info.pronunciationPreference,
-          promo_code: info.promoCode,
-          data_consent: info.dataConsent,
+          country: info.country,
+          native_language: info.native_language,
+          role: info.role || 'learner',
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);

@@ -56,7 +56,6 @@ const RegisterForm: React.FC = () => {
       // First, sign up using auth system
       const { error, data } = await signUp(values.email, values.password, {
         name: values.name,
-        username: values.username,
         role: 'learner' // Default role for new registrations
       });
       
@@ -79,7 +78,7 @@ const RegisterForm: React.FC = () => {
           id, // MUST match auth UID
           email,
           name: values.name,
-          username: values.username,
+          phone: null,
           role: 'learner', // Default role
         });
 

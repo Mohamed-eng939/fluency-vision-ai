@@ -11,10 +11,11 @@ export type UserRole = 'admin' | 'assessor' | 'learner';
 export interface UserProfile {
   id: string;
   name?: string | null;
-  username?: string | null;
   email?: string | null;
   role: UserRole;
   phone?: string | null;
+  country?: string | null;
+  native_language?: string | null;
 }
 
 // Auth context interface
@@ -62,10 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser({
               id: profile.id,
               name: profile.name,
-              username: profile.username,
               email: profile.email,
               role: (profile.role as UserRole) || 'learner',
-              phone: profile.phone
+              phone: profile.phone,
+              country: profile.country,
+              native_language: profile.native_language
             });
           }
         }
@@ -103,10 +105,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser({
               id: profile.id,
               name: profile.name,
-              username: profile.username,
               email: profile.email,
               role: (profile.role as UserRole) || 'learner',
-              phone: profile.phone
+              phone: profile.phone,
+              country: profile.country,
+              native_language: profile.native_language
             });
           }
         } catch (error) {
