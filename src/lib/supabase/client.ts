@@ -6,13 +6,16 @@ import type { Database } from './database.types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Create a mock client or real client based on environment variables
+let supabaseClient: any;
+
 // Validate that both environment variables are present
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("⚠️ Supabase environment variables are missing! Please connect this project to Supabase.");
   
   // Instead of using placeholder values that will cause runtime errors,
   // we'll create a mock client that logs errors when used but doesn't fail immediately
-  const mockSupabase = {
+  supabaseClient = {
     auth: {
       getUser: async () => ({ data: { user: null }, error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
@@ -30,16 +33,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
         }),
         update: () => ({ error: new Error("Supabase not configured") })
       })
-    })
+    }),
+    storage: {
+      from: () => ({
+        upload: () => ({ error: new Error("Supabase not configured") }),
+        getPublicUrl: () => ({ data: null })
+      })
+    }
   };
-  
-  // @ts-ignore - Use the mock client
-  export const supabase = mockSupabase;
 } else {
   // Create real Supabase client if environment variables are available
-  export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+  supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
   console.log("✅ Connected to Supabase");
 }
+
+// Export the client
+export const supabase = supabaseClient;
 
 export const getRole = async (): Promise<string | null> => {
   try {
