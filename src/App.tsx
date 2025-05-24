@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/auth/AuthContext";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
@@ -14,8 +13,7 @@ import { useEffect } from "react";
 import { setupAdminUser } from "./lib/supabase/setupAdmin";
 import { useToast } from "./components/ui/use-toast";
 
-// Import Dashboard pages that will be created
-// These will need to be created later
+// Import Dashboard pages
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
@@ -46,42 +44,13 @@ const AppContent = () => {
       <Toaster />
       <Sonner />
       <Routes>
-        {/* Public routes */}
+        {/* All routes are now public - no restrictions during testing */}
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
-        
-        {/* Assessment route - Now completely public */}
         <Route path="/assessment" element={<Assessment />} />
-        
-        {/* Protected routes */}
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Admin routes */}
-        <Route 
-          path="/admin/*" 
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminPanel />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Assessor routes */}
-        <Route 
-          path="/assessor/*" 
-          element={
-            <ProtectedRoute allowedRoles={['assessor']}>
-              <AssessorPanel />
-            </ProtectedRoute>
-          } 
-        />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin/*" element={<AdminPanel />} />
+        <Route path="/assessor/*" element={<AssessorPanel />} />
         
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />

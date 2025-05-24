@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
@@ -13,7 +13,7 @@ const AssessorPanel: React.FC = () => {
     // Simulate loading data
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000);
+    }, 500); // Reduced loading time for testing
     
     return () => clearTimeout(timer);
   }, []);
@@ -23,9 +23,12 @@ const AssessorPanel: React.FC = () => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-assessment-blue">Assessor Dashboard</h1>
-          <p className="text-muted-foreground">Welcome, {user?.name || 'Assessor'}</p>
+          <p className="text-muted-foreground">Welcome, {user?.name || 'Assessor'} (Testing Mode)</p>
         </div>
-        <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.location.href = '/'}>Home</Button>
+          {user && <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>}
+        </div>
       </div>
       
       {isLoading ? (
