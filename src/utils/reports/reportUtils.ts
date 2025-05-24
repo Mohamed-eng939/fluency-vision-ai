@@ -104,7 +104,62 @@ export const getSkillRecommendations = (skill: string, level: CEFRLevel): string
       'C1': 'Focus on nuanced grammar usage, like subtle differences between similar structures. Study inversion techniques.',
       'C2': 'Refine stylistic uses of grammar for rhetorical effect. Master all exceptions and irregularities.'
     },
-    // ... keep existing code (recommendations for other skills)
+    vocabulary: {
+      'A1': 'Learn 5 new words a day using flashcards. Focus on concrete nouns and action verbs.',
+      'A2': 'Read graded readers and note down new words. Practice using synonyms for common words.',
+      'B1': 'Read articles on topics of interest and look up unfamiliar words. Practice using collocations.',
+      'B2': 'Read academic texts and note down specialized vocabulary. Practice using idioms and phrasal verbs.',
+      'C1': 'Read literature and analyze the author\'s word choices. Practice using abstract and nuanced vocabulary.',
+      'C2': 'Read complex philosophical texts and master rare vocabulary. Practice using vocabulary for rhetorical effect.'
+    },
+    pronunciation: {
+      'A1': 'Listen to simple dialogues and repeat the phrases. Focus on stress and intonation.',
+      'A2': 'Practice minimal pairs and record yourself speaking. Focus on vowel sounds and consonant clusters.',
+      'B1': 'Use online tools to check your pronunciation. Focus on linking words and sentence stress.',
+      'B2': 'Shadow native speakers and record yourself. Focus on rhythm and intonation patterns.',
+      'C1': 'Analyze the pronunciation of different accents. Focus on subtle phonetic differences.',
+      'C2': 'Master the nuances of pronunciation in different contexts. Focus on using pronunciation for emphasis.'
+    },
+    coherence: {
+      'A1': 'Use simple connectors like "and" and "but" to link ideas. Practice sequencing events in a logical order.',
+      'A2': 'Use transition words like "however" and "therefore". Practice writing simple paragraphs with a clear topic sentence.',
+      'B1': 'Use a variety of transition words and phrases. Practice writing essays with a clear thesis statement.',
+      'B2': 'Use complex connectors to link ideas in a sophisticated way. Practice writing argumentative essays.',
+      'C1': 'Use rhetorical devices to enhance coherence. Practice writing persuasive essays with a clear line of reasoning.',
+      'C2': 'Master the art of creating seamless transitions between ideas. Practice writing complex academic papers.'
+    },
+    syntax: {
+      'A1': 'Focus on basic sentence structures (SVO). Practice forming simple questions.',
+      'A2': 'Practice using compound sentences with coordinating conjunctions. Learn to use relative clauses.',
+      'B1': 'Study complex sentence structures with subordinating conjunctions. Practice using passive voice.',
+      'B2': 'Work on advanced sentence structures, such as cleft sentences. Study inversion techniques.',
+      'C1': 'Focus on nuanced syntax usage, like subtle differences between similar structures. Study ellipsis techniques.',
+      'C2': 'Refine stylistic uses of syntax for rhetorical effect. Master all exceptions and irregularities.'
+    },
+    listening: {
+      'A1': 'Listen to simple dialogues and repeat the phrases. Focus on recognizing familiar words.',
+      'A2': 'Listen to short stories and answer simple questions. Focus on understanding the main idea.',
+      'B1': 'Listen to longer conversations and take notes. Focus on identifying key information.',
+      'B2': 'Listen to lectures and summarize the main points. Focus on understanding complex arguments.',
+      'C1': 'Listen to debates and analyze the speakers\' arguments. Focus on identifying bias and assumptions.',
+      'C2': 'Listen to complex academic discussions and evaluate the speakers\' claims. Focus on synthesizing information from multiple sources.'
+    },
+    reading: {
+      'A1': 'Read simple texts and match words to pictures. Focus on recognizing familiar words.',
+      'A2': 'Read short stories and answer simple questions. Focus on understanding the main idea.',
+      'B1': 'Read articles and take notes. Focus on identifying key information.',
+      'B2': 'Read academic texts and summarize the main points. Focus on understanding complex arguments.',
+      'C1': 'Read literature and analyze the author\'s style. Focus on identifying themes and motifs.',
+      'C2': 'Read complex philosophical texts and evaluate the author\'s claims. Focus on synthesizing information from multiple sources.'
+    },
+    writing: {
+      'A1': 'Write simple sentences about yourself. Focus on using correct grammar and spelling.',
+      'A2': 'Write short paragraphs about familiar topics. Focus on organizing your ideas.',
+      'B1': 'Write essays about your experiences and opinions. Focus on supporting your claims with evidence.',
+      'B2': 'Write argumentative essays on complex topics. Focus on using persuasive language.',
+      'C1': 'Write research papers and analyze complex issues. Focus on using academic style.',
+      'C2': 'Write dissertations and contribute to academic discourse. Focus on originality and critical thinking.'
+    }
   };
   
   // Get the base level without + modifier

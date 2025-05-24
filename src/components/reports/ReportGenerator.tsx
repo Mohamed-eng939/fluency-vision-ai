@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { AssessmentResult, AudioAnalysisResult, FullAssessment } from '@/types/assessment';
 import QuickAssessmentReport from './QuickAssessmentReport';
 import FullAssessmentReport from './FullAssessmentReport';
