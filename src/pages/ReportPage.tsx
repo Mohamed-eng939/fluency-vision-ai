@@ -116,10 +116,10 @@ const ReportPage: React.FC = () => {
     );
   }
 
-  // Prepare chart data
+  // Prepare chart data with proper typing
   const skillChartData = Object.entries(report.scores).map(([skill, score]) => ({
     skill,
-    score
+    score: Number(score)
   }));
 
   const radarChartData = skillChartData.map(item => ({
@@ -267,12 +267,12 @@ const ReportPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {Object.entries(report.scores).map(([skill, score]) => (
                 <div key={skill} className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg print:bg-gray-50">
-                  <div className="text-2xl font-bold text-assessment-blue mb-1">{score}%</div>
+                  <div className="text-2xl font-bold text-assessment-blue mb-1">{Number(score)}%</div>
                   <div className="text-sm font-medium text-gray-600">{skill}</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div 
                       className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full print:bg-gray-600" 
-                      style={{ width: `${score}%` }}
+                      style={{ width: `${Number(score)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -301,7 +301,18 @@ const ReportPage: React.FC = () => {
                       height={80}
                     />
                     <YAxis domain={[0, 100]} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip 
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white p-2 border rounded shadow">
+                              <p className="font-medium">{`${label}: ${payload[0].value}%`}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }} 
+                    />
                     <Bar dataKey="score" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -329,7 +340,18 @@ const ReportPage: React.FC = () => {
                       fillOpacity={0.3}
                       strokeWidth={2}
                     />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip 
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white p-2 border rounded shadow">
+                              <p className="font-medium">{`${payload[0].payload.skill}: ${payload[0].value}%`}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }} 
+                    />
                   </RadarChart>
                 </ResponsiveContainer>
               </ChartContainer>
