@@ -9,9 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 import { reportData } from '@/data/reportData';
 import ReportHeader from '@/components/reports/ReportHeader';
 import ReportInfo from '@/components/reports/ReportInfo';
-import PromptResponse from '@/components/reports/PromptResponse';
 import SkillsBreakdown from '@/components/reports/SkillsBreakdown';
 import ReportCharts from '@/components/reports/ReportCharts';
+import EnhancedFeedbackSection from '@/components/reports/EnhancedFeedbackSection';
 import FeedbackSection from '@/components/reports/FeedbackSection';
 import ReportFooter from '@/components/reports/ReportFooter';
 
@@ -99,11 +99,6 @@ const ReportPage: React.FC = () => {
       <div ref={reportRef} className="container mx-auto py-8 px-6 max-w-4xl">
         <ReportInfo report={report} />
         
-        <PromptResponse 
-          prompt={report.prompt}
-          transcript={report.transcript}
-        />
-
         <SkillsBreakdown scores={report.scores} />
 
         <ReportCharts 
@@ -111,7 +106,15 @@ const ReportPage: React.FC = () => {
           radarChartData={radarChartData}
         />
 
-        <FeedbackSection feedback={report.feedback} />
+        {isFullAssessment ? (
+          <FeedbackSection feedback={report.feedback} />
+        ) : (
+          <EnhancedFeedbackSection 
+            scores={report.scores}
+            cefrLevel={report.cefr}
+            name={report.name}
+          />
+        )}
 
         <ReportFooter reportId={report.id} />
       </div>
