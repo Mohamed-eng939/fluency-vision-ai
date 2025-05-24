@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import ReportPage from "./pages/ReportPage";
 import { useEffect } from "react";
 import { setupAdminUser } from "./lib/supabase/setupAdmin";
 import { useToast } from "./components/ui/use-toast";
@@ -51,6 +52,7 @@ const AppContent = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin/*" element={<AdminPanel />} />
         <Route path="/assessor/*" element={<AssessorPanel />} />
+        <Route path="/reports/:reportId" element={<ReportPage />} />
         
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
