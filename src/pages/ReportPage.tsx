@@ -1,177 +1,19 @@
 
 import React, { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, FileText } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { generateReportPdf } from '@/utils/reports/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
-
-// Enhanced dummy data with both quick and full assessment types
-const reportData: Record<string, any> = {
-  "A001": {
-    id: "A001",
-    name: "Sarah Martinez",
-    email: "sarah.martinez@email.com",
-    date: "2025-05-24",
-    testType: "Full Assessment",
-    assessmentType: "quick",
-    prompt: "Describe your ideal workplace environment and explain why it would help you be more productive. Include details about the physical space, team dynamics, and work culture.",
-    transcript: "My ideal workplace would be somewhere that has natural light and plants because I think that makes people feel more relaxed and creative. I would like to work with people who are collaborative and supportive, not competitive in a bad way. The culture should encourage learning and trying new things without being afraid of making mistakes. I believe when people feel comfortable, they can do their best work and be more innovative.",
-    cefr: "B2",
-    totalScore: 85,
-    scores: {
-      Fluency: 82,
-      Grammar: 78,
-      Vocabulary: 88,
-      Pronunciation: 90,
-      Prosody: 85,
-      Coherence: 87,
-      Structure: 80
-    },
-    feedback: "Excellent communication with clear ideas and good vocabulary range. Your pronunciation is very strong, and you maintain good coherence throughout your response. To improve further, focus on using more complex grammatical structures and varying your sentence patterns for enhanced fluency."
-  },
-  "A002": {
-    id: "A002", 
-    name: "Michael Chen",
-    email: "m.chen@company.com",
-    date: "2025-05-24",
-    testType: "Quick Assessment",
-    assessmentType: "quick",
-    prompt: "Tell me about a challenge you overcame recently and what you learned from the experience.",
-    transcript: "Recently I had to present to senior management about our quarterly results. I was very nervous because it was my first time presenting to such high-level executives. I prepared extensively, practiced my presentation multiple times, and asked my colleague for feedback. During the presentation, I spoke clearly and answered their questions confidently. I learned that preparation is key to success and that I'm more capable than I initially thought.",
-    cefr: "C1",
-    totalScore: 92,
-    scores: {
-      Fluency: 95,
-      Grammar: 88,
-      Vocabulary: 92,
-      Pronunciation: 94,
-      Prosody: 90,
-      Coherence: 96,
-      Structure: 89
-    },
-    feedback: "Outstanding performance with sophisticated vocabulary and excellent coherence. Your fluency is near-native level, and you demonstrate strong command of complex grammatical structures. Continue to challenge yourself with advanced topics to maintain this high level."
-  },
-  "A003": {
-    id: "A003",
-    name: "Emma Johnson", 
-    email: "emma.j@school.edu",
-    date: "2025-05-23",
-    testType: "Full Assessment",
-    assessmentType: "full",
-    prompt: "Discuss the impact of technology on education. What are the benefits and drawbacks?",
-    transcript: "Technology has changed education a lot. Students can learn online now and use computers for research. This is good because they can study at home and find information quickly. But sometimes students spend too much time on screens and don't talk to other students enough. Teachers also need to learn new technology which can be difficult for some.",
-    cefr: "A2", 
-    totalScore: 68,
-    overallCefr: "A2",
-    scores: {
-      Speaking: 65,
-      Listening: 72,
-      Reading: 70,
-      Writing: 64
-    },
-    speakingSkills: {
-      Fluency: 65,
-      Grammar: 60,
-      Vocabulary: 70,
-      Pronunciation: 75,
-      Prosody: 68,
-      Coherence: 72,
-      Structure: 66
-    },
-    feedback: "Good basic communication with clear pronunciation. You express your ideas well, but try to use more complex sentence structures and expand your vocabulary. Practice connecting your ideas with transition words to improve coherence.",
-    taskDetails: [
-      {
-        taskType: "speaking",
-        prompt: "Discuss the impact of technology on education",
-        response: "Technology has changed education a lot...",
-        score: 65
-      },
-      {
-        taskType: "listening",
-        prompt: "Listen to a lecture about climate change",
-        score: 72
-      },
-      {
-        taskType: "reading",
-        prompt: "Read an article about urban planning",
-        score: 70
-      },
-      {
-        taskType: "writing",
-        prompt: "Write an essay about renewable energy",
-        response: "Renewable energy is important for our future...",
-        score: 64
-      }
-    ]
-  },
-  "A004": {
-    id: "A004",
-    name: "Lisa Wang",
-    email: "lisa.wang@tech.com",
-    date: "2025-05-22",
-    testType: "Full Assessment",
-    assessmentType: "full",
-    overallCefr: "C2",
-    totalScore: 96,
-    scores: {
-      Speaking: 98,
-      Listening: 95,
-      Reading: 97,
-      Writing: 94
-    },
-    speakingSkills: {
-      Fluency: 98,
-      Grammar: 96,
-      Vocabulary: 99,
-      Pronunciation: 97,
-      Prosody: 95,
-      Coherence: 99,
-      Structure: 94
-    },
-    feedback: "Exceptional performance across all skills. Near-native proficiency with sophisticated language use and excellent task completion. Maintain this level through continued exposure to complex materials.",
-    taskDetails: [
-      {
-        taskType: "speaking",
-        prompt: "Present an argument about artificial intelligence in healthcare",
-        response: "The integration of artificial intelligence in healthcare represents a paradigm shift...",
-        score: 98
-      },
-      {
-        taskType: "listening",
-        prompt: "Academic lecture on quantum computing",
-        score: 95
-      },
-      {
-        taskType: "reading",
-        prompt: "Complex academic text on biotechnology",
-        score: 97
-      },
-      {
-        taskType: "writing",
-        prompt: "Academic essay on sustainable development",
-        response: "Sustainable development encompasses a multifaceted approach...",
-        score: 94
-      }
-    ]
-  }
-};
-
-const getCEFRColor = (level: string) => {
-  const colors: Record<string, string> = {
-    'A1': '#ef4444',
-    'A2': '#f97316', 
-    'B1': '#eab308',
-    'B2': '#22c55e',
-    'C1': '#3b82f6',
-    'C2': '#8b5cf6'
-  };
-  return colors[level] || '#9ca3af';
-};
+import { reportData } from '@/data/reportData';
+import ReportHeader from '@/components/reports/ReportHeader';
+import ReportInfo from '@/components/reports/ReportInfo';
+import PromptResponse from '@/components/reports/PromptResponse';
+import SkillsBreakdown from '@/components/reports/SkillsBreakdown';
+import ReportCharts from '@/components/reports/ReportCharts';
+import FeedbackSection from '@/components/reports/FeedbackSection';
+import ReportFooter from '@/components/reports/ReportFooter';
 
 const ReportPage: React.FC = () => {
   const { reportId } = useParams<{ reportId: string }>();
@@ -245,255 +87,33 @@ const ReportPage: React.FC = () => {
     }
   };
 
-  const chartConfig = {
-    score: {
-      label: "Score",
-    },
-  };
+  const reportType = isFullAssessment ? 'Full Assessment Report' : 'Quick Assessment Report';
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm print:shadow-none">
-        <div className="container mx-auto py-4 px-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/dashboard')}
-                className="print:hidden"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-assessment-blue">
-                  {isFullAssessment ? 'Full Assessment Report' : 'Quick Assessment Report'}
-                </h1>
-                <p className="text-gray-600">Detailed analysis and scoring breakdown</p>
-              </div>
-            </div>
-            <Button 
-              onClick={handleDownloadPDF}
-              className="bg-assessment-teal hover:bg-assessment-lightBlue print:hidden"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ReportHeader 
+        reportType={reportType}
+        onDownloadPDF={handleDownloadPDF}
+      />
 
-      {/* Report Content */}
       <div ref={reportRef} className="container mx-auto py-8 px-6 max-w-4xl">
-        {/* Header Information */}
-        <Card className="mb-6 shadow-lg print:shadow-none">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 print:bg-white">
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-xl text-assessment-blue mb-2">
-                  <FileText className="h-5 w-5 inline mr-2" />
-                  {report.name}
-                </CardTitle>
-                <CardDescription className="text-base">
-                  <span className="font-medium">Assessment Date:</span> {new Date(report.date).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </CardDescription>
-                <CardDescription className="text-base">
-                  <span className="font-medium">Assessment Type:</span> {report.testType}
-                </CardDescription>
-                <CardDescription className="text-base">
-                  <span className="font-medium">Email:</span> {report.email}
-                </CardDescription>
-              </div>
-              <div className="text-right">
-                <Badge 
-                  className="text-lg px-4 py-2 mb-2"
-                  style={{ 
-                    backgroundColor: getCEFRColor(report.cefr),
-                    color: 'white'
-                  }}
-                >
-                  CEFR Level: {report.cefr}
-                </Badge>
-                <div className="text-2xl font-bold text-assessment-blue">
-                  Total Score: {report.totalScore}%
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+        <ReportInfo report={report} />
+        
+        <PromptResponse 
+          prompt={report.prompt}
+          transcript={report.transcript}
+        />
 
-        {/* Prompt and Response */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card className="shadow-lg print:shadow-none">
-            <CardHeader>
-              <CardTitle className="text-assessment-blue">Assessment Prompt</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 italic bg-blue-50 p-4 rounded-lg print:bg-gray-50">
-                "{report.prompt}"
-              </p>
-            </CardContent>
-          </Card>
+        <SkillsBreakdown scores={report.scores} />
 
-          <Card className="shadow-lg print:shadow-none">
-            <CardHeader>
-              <CardTitle className="text-assessment-blue">Candidate Response</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 bg-gray-50 p-4 rounded-lg leading-relaxed">
-                {report.transcript}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <ReportCharts 
+          skillChartData={skillChartData}
+          radarChartData={radarChartData}
+        />
 
-        {/* Skills Overview */}
-        <Card className="mb-6 shadow-lg print:shadow-none">
-          <CardHeader>
-            <CardTitle className="text-assessment-blue">Skills Assessment Breakdown</CardTitle>
-            <CardDescription>Detailed scoring across all evaluated competencies</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {Object.entries(report.scores).map(([skill, score]) => (
-                <div key={skill} className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg print:bg-gray-50">
-                  <div className="text-2xl font-bold text-assessment-blue mb-1">{Number(score)}%</div>
-                  <div className="text-sm font-medium text-gray-600">{skill}</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full print:bg-gray-600" 
-                      style={{ width: `${Number(score)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <FeedbackSection feedback={report.feedback} />
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card className="shadow-lg print:shadow-none">
-            <CardHeader>
-              <CardTitle className="text-assessment-blue">Skills Performance</CardTitle>
-              <CardDescription>Bar chart showing individual skill scores</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={skillChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="skill" 
-                      fontSize={12}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis domain={[0, 100]} />
-                    <ChartTooltip 
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-white p-2 border rounded shadow">
-                              <p className="font-medium">{`${label}: ${payload[0].value}%`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }} 
-                    />
-                    <Bar dataKey="score" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg print:shadow-none">
-            <CardHeader>
-              <CardTitle className="text-assessment-blue">Skills Radar</CardTitle>
-              <CardDescription>Comprehensive skill profile visualization</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarChartData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="skill" fontSize={12} />
-                    <PolarRadiusAxis domain={[0, 100]} fontSize={10} />
-                    <Radar
-                      name="Score"
-                      dataKey="score"
-                      stroke="#3b82f6"
-                      fill="#3b82f6"
-                      fillOpacity={0.3}
-                      strokeWidth={2}
-                    />
-                    <ChartTooltip 
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-white p-2 border rounded shadow">
-                              <p className="font-medium">{`${payload[0].payload.skill}: ${payload[0].value}%`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }} 
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Feedback */}
-        <Card className="shadow-lg print:shadow-none">
-          <CardHeader>
-            <CardTitle className="text-assessment-blue">Assessment Feedback & Recommendations</CardTitle>
-            <CardDescription>Personalized insights for improvement</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg print:bg-gray-50">
-              <p className="text-gray-700 leading-relaxed text-base">
-                {report.feedback}
-              </p>
-            </div>
-            
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg print:bg-gray-50">
-                <h4 className="font-semibold text-assessment-blue mb-2">Strengths</h4>
-                <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• Clear pronunciation and articulation</li>
-                  <li>• Good vocabulary range for level</li>
-                  <li>• Coherent idea development</li>
-                </ul>
-              </div>
-              
-              <div className="bg-orange-50 p-4 rounded-lg print:bg-gray-50">
-                <h4 className="font-semibold text-orange-700 mb-2">Areas for Improvement</h4>
-                <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• Complex sentence structures</li>
-                  <li>• Grammatical accuracy</li>
-                  <li>• Advanced vocabulary usage</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-gray-500 text-sm print:text-black">
-          <p>Generated by LinguaSpeak AI Assessment Platform</p>
-          <p>Report ID: {report.id} | Generated on {new Date().toLocaleDateString()}</p>
-        </div>
+        <ReportFooter reportId={report.id} />
       </div>
     </div>
   );
