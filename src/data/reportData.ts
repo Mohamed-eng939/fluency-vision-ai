@@ -1,151 +1,128 @@
-
-// Enhanced dummy data with both quick and full assessment types
 export const reportData: Record<string, any> = {
-  "A001": {
-    id: "A001",
-    name: "Sarah Martinez",
-    email: "sarah.martinez@email.com",
-    date: "2025-05-24",
-    testType: "Full Assessment",
-    assessmentType: "quick",
-    prompt: "Describe your ideal workplace environment and explain why it would help you be more productive. Include details about the physical space, team dynamics, and work culture.",
-    transcript: "My ideal workplace would be somewhere that has natural light and plants because I think that makes people feel more relaxed and creative. I would like to work with people who are collaborative and supportive, not competitive in a bad way. The culture should encourage learning and trying new things without being afraid of making mistakes. I believe when people feel comfortable, they can do their best work and be more innovative.",
-    cefr: "B2",
-    totalScore: 85,
+  'A001': {
+    id: 'A001',
+    name: 'Alex Chen',
+    date: '2024-03-15',
+    assessmentType: 'quick',
+    cefr: 'B1',
+    totalScore: 67,
     scores: {
-      Fluency: 82,
-      Grammar: 78,
-      Vocabulary: 88,
-      Pronunciation: 90,
-      Prosody: 85,
-      Coherence: 87,
-      Structure: 80
+      fluency: 65,
+      grammar: 70,
+      vocabulary: 68,
+      pronunciation: 72,
+      prosody: 66,
+      coherence: 63,
+      structure: 65
     },
-    feedback: "Excellent communication with clear ideas and good vocabulary range. Your pronunciation is very strong, and you maintain good coherence throughout your response. To improve further, focus on using more complex grammatical structures and varying your sentence patterns for enhanced fluency."
+    feedback: {
+      overall: 'Good intermediate level performance with room for improvement in coherence and structure.',
+      fluency: 'Shows good rhythm and pace with occasional hesitations.',
+      grammar: 'Generally accurate with some complex structure errors.',
+      vocabulary: 'Appropriate range for level with some imprecision.',
+      pronunciation: 'Clear and generally accurate pronunciation.',
+      prosody: 'Natural stress and intonation patterns.',
+      coherence: 'Ideas connect but could be more logically organized.',
+      structure: 'Basic organization present but needs development.'
+    }
   },
-  "A002": {
-    id: "A002", 
-    name: "Michael Chen",
-    email: "m.chen@company.com",
-    date: "2025-05-24",
-    testType: "Quick Assessment",
-    assessmentType: "quick",
-    prompt: "Tell me about a challenge you overcame recently and what you learned from the experience.",
-    transcript: "Recently I had to present to senior management about our quarterly results. I was very nervous because it was my first time presenting to such high-level executives. I prepared extensively, practiced my presentation multiple times, and asked my colleague for feedback. During the presentation, I spoke clearly and answered their questions confidently. I learned that preparation is key to success and that I'm more capable than I initially thought.",
-    cefr: "C1",
-    totalScore: 92,
+  'A002': {
+    id: 'A002',
+    name: 'Maria Rodriguez',
+    date: '2024-03-16',
+    assessmentType: 'quick',
+    cefr: 'A2',
+    totalScore: 45,
     scores: {
-      Fluency: 95,
-      Grammar: 88,
-      Vocabulary: 92,
-      Pronunciation: 94,
-      Prosody: 90,
-      Coherence: 96,
-      Structure: 89
+      fluency: 42,
+      grammar: 48,
+      vocabulary: 45,
+      pronunciation: 50,
+      prosody: 40,
+      coherence: 38,
+      structure: 42
     },
-    feedback: "Outstanding performance with sophisticated vocabulary and excellent coherence. Your fluency is near-native level, and you demonstrate strong command of complex grammatical structures. Continue to challenge yourself with advanced topics to maintain this high level."
+    feedback: {
+      overall: 'Elementary level with good pronunciation but needs work on fluency and coherence.',
+      fluency: 'Frequent pauses and hesitations affect flow.',
+      grammar: 'Basic structures used with some accuracy.',
+      vocabulary: 'Limited range but appropriate for level.',
+      pronunciation: 'Good individual sound production.',
+      prosody: 'Somewhat flat intonation patterns.',
+      coherence: 'Struggles to connect ideas effectively.',
+      structure: 'Very basic organization of responses.'
+    }
   },
-  "A003": {
-    id: "A003",
-    name: "Emma Johnson", 
-    email: "emma.j@school.edu",
-    date: "2025-05-23",
-    testType: "Full Assessment",
-    assessmentType: "full",
-    prompt: "Discuss the impact of technology on education. What are the benefits and drawbacks?",
-    transcript: "Technology has changed education a lot. Students can learn online now and use computers for research. This is good because they can study at home and find information quickly. But sometimes students spend too much time on screens and don't talk to other students enough. Teachers also need to learn new technology which can be difficult for some.",
-    cefr: "A2", 
-    totalScore: 68,
-    overallCefr: "A2",
+  'F001': {
+    id: 'F001',
+    name: 'John Smith',
+    date: '2024-03-14',
+    assessmentType: 'full',
+    overallCefr: 'B2',
+    totalScore: 78,
     scores: {
-      Speaking: 65,
-      Listening: 72,
-      Reading: 70,
-      Writing: 64
+      // Speaking skills
+      fluency: 75,
+      grammar: 78,
+      vocabulary: 76,
+      pronunciation: 80,
+      prosody: 74,
+      coherence: 72,
+      structure: 73,
+      // Other skills
+      listening: 82,
+      reading: 85,
+      writing: 70
     },
-    speakingSkills: {
-      Fluency: 65,
-      Grammar: 60,
-      Vocabulary: 70,
-      Pronunciation: 75,
-      Prosody: 68,
-      Coherence: 72,
-      Structure: 66
-    },
-    feedback: "Good basic communication with clear pronunciation. You express your ideas well, but try to use more complex sentence structures and expand your vocabulary. Practice connecting your ideas with transition words to improve coherence.",
-    taskDetails: [
-      {
-        taskType: "speaking",
-        prompt: "Discuss the impact of technology on education",
-        response: "Technology has changed education a lot...",
-        score: 65
-      },
-      {
-        taskType: "listening",
-        prompt: "Listen to a lecture about climate change",
-        score: 72
-      },
-      {
-        taskType: "reading",
-        prompt: "Read an article about urban planning",
-        score: 70
-      },
-      {
-        taskType: "writing",
-        prompt: "Write an essay about renewable energy",
-        response: "Renewable energy is important for our future...",
-        score: 64
-      }
-    ]
+    feedback: {
+      overall: 'Strong B2 level performance across all skills with particular strength in receptive skills.',
+      speaking: 'Confident and fluent speaking with good range of vocabulary and structures.',
+      listening: 'Excellent comprehension of complex spoken texts.',
+      reading: 'Strong reading skills with good inference abilities.',
+      writing: 'Good writing ability but needs work on complex argumentation.',
+      fluency: 'Smooth and natural delivery with minimal hesitation.',
+      grammar: 'Good control of complex structures with minor errors.',
+      vocabulary: 'Wide range appropriate for level and context.',
+      pronunciation: 'Very clear with good stress and rhythm.',
+      prosody: 'Natural intonation enhancing communication.',
+      coherence: 'Well-organized ideas with good logical flow.',
+      structure: 'Clear organization with effective paragraphing.'
+    }
   },
-  "A004": {
-    id: "A004",
-    name: "Lisa Wang",
-    email: "lisa.wang@tech.com",
-    date: "2025-05-22",
-    testType: "Full Assessment",
-    assessmentType: "full",
-    overallCefr: "C2",
-    totalScore: 96,
+  'F002': {
+    id: 'F002',
+    name: 'Sarah Johnson',
+    date: '2024-03-13',
+    assessmentType: 'full',
+    overallCefr: 'C1',
+    totalScore: 88,
     scores: {
-      Speaking: 98,
-      Listening: 95,
-      Reading: 97,
-      Writing: 94
+      // Speaking skills
+      fluency: 85,
+      grammar: 88,
+      vocabulary: 90,
+      pronunciation: 87,
+      prosody: 85,
+      coherence: 89,
+      structure: 86,
+      // Other skills
+      listening: 92,
+      reading: 94,
+      writing: 82
     },
-    speakingSkills: {
-      Fluency: 98,
-      Grammar: 96,
-      Vocabulary: 99,
-      Pronunciation: 97,
-      Prosody: 95,
-      Coherence: 99,
-      Structure: 94
-    },
-    feedback: "Exceptional performance across all skills. Near-native proficiency with sophisticated language use and excellent task completion. Maintain this level through continued exposure to complex materials.",
-    taskDetails: [
-      {
-        taskType: "speaking",
-        prompt: "Present an argument about artificial intelligence in healthcare",
-        response: "The integration of artificial intelligence in healthcare represents a paradigm shift...",
-        score: 98
-      },
-      {
-        taskType: "listening",
-        prompt: "Academic lecture on quantum computing",
-        score: 95
-      },
-      {
-        taskType: "reading",
-        prompt: "Complex academic text on biotechnology",
-        score: 97
-      },
-      {
-        taskType: "writing",
-        prompt: "Academic essay on sustainable development",
-        response: "Sustainable development encompasses a multifaceted approach...",
-        score: 94
-      }
-    ]
+    feedback: {
+      overall: 'Excellent C1 level performance demonstrating advanced language proficiency.',
+      speaking: 'Highly fluent and articulate with sophisticated language use.',
+      listening: 'Outstanding comprehension even with complex academic content.',
+      reading: 'Excellent reading comprehension with nuanced understanding.',
+      writing: 'Good writing skills but occasional minor structural issues.',
+      fluency: 'Very smooth delivery with natural pace and rhythm.',
+      grammar: 'Excellent control of complex grammatical structures.',
+      vocabulary: 'Sophisticated and precise vocabulary choices.',
+      pronunciation: 'Native-like pronunciation with excellent clarity.',
+      prosody: 'Highly effective use of stress and intonation.',
+      coherence: 'Exceptionally well-organized and logical presentation.',
+      structure: 'Sophisticated organizational patterns.'
+    }
   }
 };

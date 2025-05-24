@@ -8,9 +8,10 @@ import { mapScoreToCEFR } from '@/utils/reports/reportUtils';
 interface ReportChartsProps {
   skillChartData: Array<{ skill: string; score: number }>;
   radarChartData: Array<{ skill: string; score: number; fullMark: number }>;
+  isFullAssessment?: boolean;
 }
 
-const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartData }) => {
+const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartData, isFullAssessment = false }) => {
   const chartConfig = {
     score: {
       label: "CEFR Level",
@@ -36,12 +37,15 @@ const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartD
     fullMark: 7 // Max CEFR level (C2)
   }));
 
+  const chartTitle = isFullAssessment ? 'All Skills Performance' : 'Speaking Skills Performance';
+  const chartDescription = isFullAssessment ? 'CEFR level assessment across all communication skills' : 'CEFR level assessment for speaking skills';
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <Card className="shadow-lg print:shadow-none">
         <CardHeader>
-          <CardTitle className="text-assessment-blue">Skills Performance</CardTitle>
-          <CardDescription>CEFR level assessment for each skill</CardDescription>
+          <CardTitle className="text-assessment-blue">{chartTitle}</CardTitle>
+          <CardDescription>{chartDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[350px] w-full">

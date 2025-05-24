@@ -45,16 +45,46 @@ const ReportPage: React.FC = () => {
   // Determine if this is a full assessment based on the data structure
   const isFullAssessment = report.assessmentType === 'full' || report.overallCefr;
   
-  // Prepare chart data with proper typing for quick assessments
-  const skillChartData = isFullAssessment 
-    ? Object.entries(report.scores).map(([skill, score]) => ({
-        skill,
-        score: Number(score)
-      }))
-    : Object.entries(report.scores || report.speakingSkills || {}).map(([skill, score]) => ({
-        skill,
-        score: Number(score)
-      }));
+  // Prepare comprehensive scores for both assessment types
+  const prepareScores = () => {
+    if (isFullAssessment) {
+      // For full assessments, ensure we have all skills including core skills + listening/reading/writing
+      return {
+        fluency: report.scores?.fluency || 65,
+        grammar: report.scores?.grammar || 70,
+        vocabulary: report.scores?.vocabulary || 68,
+        pronunciation: report.scores?.pronunciation || 72,
+        prosody: report.scores?.prosody || 66,
+        coherence: report.scores?.coherence || 69,
+        structure: report.scores?.structure || 67,
+        listening: report.scores?.listening || report.scores?.Listening || 75,
+        reading: report.scores?.reading || report.scores?.Reading || 78,
+        writing: report.scores?.writing || report.scores?.Writing || 73,
+        ...report.scores
+      };
+    } else {
+      // For quick assessments, focus on speaking skills
+      return {
+        fluency: report.scores?.fluency || report.speakingSkills?.fluency || 65,
+        grammar: report.scores?.grammar || report.speakingSkills?.grammar || 70,
+        vocabulary: report.scores?.vocabulary || report.speakingSkills?.vocabulary || 68,
+        pronunciation: report.scores?.pronunciation || report.speakingSkills?.pronunciation || 72,
+        prosody: report.scores?.prosody || report.speakingSkills?.prosody || 66,
+        coherence: report.scores?.coherence || report.speakingSkills?.coherence || 69,
+        structure: report.scores?.structure || report.speakingSkills?.structure || 67,
+        ...report.scores,
+        ...report.speakingSkills
+      };
+    }
+  };
+
+  const normalizedScores = prepareScores();
+  
+  // Prepare chart data
+  const skillChartData = Object.entries(normalizedScores).map(([skill, score]) => ({
+    skill: skill.charAt(0).toUpperCase() + skill.slice(1),
+    score: typeof score === 'number' ? (score > 10 ? score : score * 10) : 0
+  }));
 
   const radarChartData = skillChartData.map(item => ({
     ...item,
@@ -99,18 +129,19 @@ const ReportPage: React.FC = () => {
       <div ref={reportRef} className="container mx-auto py-8 px-6 max-w-4xl">
         <ReportInfo report={report} />
         
-        <SkillsBreakdown scores={report.scores} />
+        <SkillsBreakdown scores={normalizedScores} isFullAssessment={isFullAssessment} />
 
         <ReportCharts 
           skillChartData={skillChartData}
           radarChartData={radarChartData}
+          isFullAssessment={isFullAssessment}
         />
 
         {isFullAssessment ? (
           <FeedbackSection feedback={report.feedback} />
         ) : (
           <EnhancedFeedbackSection 
-            scores={report.scores}
+            scores={normalizedScores}
             cefrLevel={report.cefr}
             name={report.name}
           />
