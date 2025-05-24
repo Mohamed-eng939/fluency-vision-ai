@@ -17,19 +17,29 @@ const SkillsBreakdown: React.FC<SkillsBreakdownProps> = ({ scores, isFullAssessm
   
   const skillsToDisplay = isFullAssessment ? fullAssessmentSkills : speakingSkills;
 
+  // Determine the scoring scale based on the data
+  const maxScore = Math.max(...Object.values(scores).filter(score => score > 0));
+  const isPercentageScale = maxScore > 10; // If max score > 10, assume it's percentage scale
+
   // Create skill data with proper formatting
-  const skillData = skillsToDisplay.map(skill => {
-    const score = scores[skill] || scores[skill.toLowerCase()] || 0;
-    const normalizedScore = score > 10 ? score : score * 10; // Handle both 0-10 and 0-100 scales
-    const cefrLevel = mapScoreToCEFR(normalizedScore);
-    
-    return {
-      name: skill.charAt(0).toUpperCase() + skill.slice(1),
-      score: normalizedScore,
-      cefrLevel,
-      color: getCEFRColor(cefrLevel)
-    };
-  });
+  const skillData = skillsToDisplay
+    .filter(skill => scores[skill] !== undefined && scores[skill] > 0)
+    .map(skill => {
+      const rawScore = scores[skill];
+      // Convert to percentage for progress bar and CEFR mapping
+      const progressValue = isPercentageScale ? rawScore : (rawScore / 10) * 100;
+      const normalizedScore = isPercentageScale ? rawScore : rawScore * 10;
+      const cefrLevel = mapScoreToCEFR(normalizedScore);
+      
+      return {
+        name: skill.charAt(0).toUpperCase() + skill.slice(1),
+        score: rawScore,
+        progressValue,
+        cefrLevel,
+        color: getCEFRColor(cefrLevel),
+        displayScore: isPercentageScale ? `${rawScore}%` : `${rawScore}/10`
+      };
+    });
 
   return (
     <Card className="mb-6 shadow-lg print:shadow-none">
@@ -56,12 +66,12 @@ const SkillsBreakdown: React.FC<SkillsBreakdownProps> = ({ scores, isFullAssessm
               </div>
               <div className="mb-2">
                 <Progress 
-                  value={skill.score} 
+                  value={skill.progressValue} 
                   className="h-2" 
                 />
               </div>
               <p className="text-xs text-gray-600 text-right">
-                {Math.round(skill.score)}%
+                {skill.displayScore}
               </p>
             </div>
           ))}

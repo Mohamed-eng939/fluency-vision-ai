@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,55 +45,8 @@ const ReportPage: React.FC = () => {
   // Determine if this is a full assessment based on the data structure
   const isFullAssessment = report.assessmentType === 'full' || report.overallCefr;
   
-  // Prepare comprehensive scores ensuring all skills are present
-  const prepareScores = () => {
-    const baseScores = {
-      fluency: 0,
-      grammar: 0,
-      vocabulary: 0,
-      pronunciation: 0,
-      prosody: 0,
-      coherence: 0,
-      structure: 0,
-    };
-
-    if (isFullAssessment) {
-      return {
-        ...baseScores,
-        listening: 0,
-        reading: 0,
-        writing: 0,
-        ...report.scores
-      };
-    } else {
-      return {
-        ...baseScores,
-        ...report.scores,
-        ...report.speakingSkills
-      };
-    }
-  };
-
-  const normalizedScores = prepareScores();
-  
-  // Define skill order for consistent display
-  const speakingSkills = ['fluency', 'grammar', 'vocabulary', 'pronunciation', 'prosody', 'coherence', 'structure'];
-  const allSkills = [...speakingSkills, 'listening', 'reading', 'writing'];
-  const skillsToShow = isFullAssessment ? allSkills : speakingSkills;
-  
-  // Prepare chart data ensuring all skills are included
-  const skillChartData = skillsToShow
-    .filter(skill => normalizedScores[skill] !== undefined && normalizedScores[skill] > 0)
-    .map(skill => ({
-      skill: skill.charAt(0).toUpperCase() + skill.slice(1),
-      score: typeof normalizedScores[skill] === 'number' ? 
-        (normalizedScores[skill] > 10 ? normalizedScores[skill] : normalizedScores[skill] * 10) : 0
-    }));
-
-  const radarChartData = skillChartData.map(item => ({
-    ...item,
-    fullMark: 100
-  }));
+  // Use the scores directly from the report data
+  const reportScores = report.scores || {};
 
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return;
@@ -132,11 +86,10 @@ const ReportPage: React.FC = () => {
       <div ref={reportRef} className="container mx-auto py-8 px-6 max-w-4xl">
         <ReportInfo report={report} />
         
-        <SkillsBreakdown scores={normalizedScores} isFullAssessment={isFullAssessment} />
+        <SkillsBreakdown scores={reportScores} isFullAssessment={isFullAssessment} />
 
         <ReportCharts 
-          skillChartData={skillChartData}
-          radarChartData={radarChartData}
+          scores={reportScores}
           isFullAssessment={isFullAssessment}
         />
 
@@ -144,7 +97,7 @@ const ReportPage: React.FC = () => {
           <FeedbackSection feedback={report.feedback} />
         ) : (
           <EnhancedFeedbackSection 
-            scores={normalizedScores}
+            scores={reportScores}
             cefrLevel={report.cefr}
             name={report.name}
           />
