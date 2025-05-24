@@ -21,21 +21,35 @@ const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartD
   // Convert scores to CEFR levels for display
   const cefrLevels = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   const cefrToNumber = (level: string) => cefrLevels.indexOf(level) + 1;
-  const numberToCEFR = (num: number) => cefrLevels[Math.floor(num) - 1] || 'Pre-A1';
+  const numberToCEFR = (num: number) => cefrLevels[Math.max(0, Math.min(6, Math.floor(num) - 1))] || 'Pre-A1';
 
-  // Transform data to use CEFR levels
-  const transformedSkillData = skillChartData.map(item => ({
-    ...item,
-    cefrLevel: mapScoreToCEFR(item.score),
-    cefrNumeric: cefrToNumber(mapScoreToCEFR(item.score))
-  }));
+  // Transform data to use CEFR levels with proper validation
+  const transformedSkillData = skillChartData.map(item => {
+    const normalizedScore = Math.max(0, Math.min(100, item.score)); // Ensure score is between 0-100
+    const cefrLevel = mapScoreToCEFR(normalizedScore);
+    const cefrNumeric = cefrToNumber(cefrLevel);
+    
+    return {
+      ...item,
+      score: normalizedScore,
+      cefrLevel,
+      cefrNumeric: Math.max(1, cefrNumeric) // Ensure minimum value of 1 for display
+    };
+  });
 
-  const transformedRadarData = radarChartData.map(item => ({
-    ...item,
-    cefrLevel: mapScoreToCEFR(item.score),
-    cefrNumeric: cefrToNumber(mapScoreToCEFR(item.score)),
-    fullMark: 7 // Max CEFR level (C2)
-  }));
+  const transformedRadarData = radarChartData.map(item => {
+    const normalizedScore = Math.max(0, Math.min(100, item.score)); // Ensure score is between 0-100
+    const cefrLevel = mapScoreToCEFR(normalizedScore);
+    const cefrNumeric = cefrToNumber(cefrLevel);
+    
+    return {
+      ...item,
+      score: normalizedScore,
+      cefrLevel,
+      cefrNumeric: Math.max(1, cefrNumeric), // Ensure minimum value of 1 for display
+      fullMark: 7 // Max CEFR level (C2)
+    };
+  });
 
   const chartTitle = isFullAssessment ? 'All Skills Performance' : 'Speaking Skills Performance';
   const chartDescription = isFullAssessment ? 'CEFR level assessment across all communication skills' : 'CEFR level assessment for speaking skills';
@@ -48,26 +62,29 @@ const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartD
           <CardDescription>{chartDescription}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[350px] w-full">
+          <ChartContainer config={chartConfig} className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={transformedSkillData} 
-                margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                barCategoryGap="20%"
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
                 <XAxis 
                   dataKey="skill" 
-                  fontSize={11}
+                  fontSize={12}
                   angle={-45}
                   textAnchor="end"
-                  height={80}
+                  height={100}
                   interval={0}
+                  tick={{ fontSize: 11 }}
                 />
                 <YAxis 
                   domain={[1, 7]} 
                   tickFormatter={numberToCEFR}
                   ticks={[1, 2, 3, 4, 5, 6, 7]}
-                  fontSize={11}
+                  fontSize={12}
+                  tick={{ fontSize: 11 }}
                 />
                 <ChartTooltip 
                   content={({ active, payload, label }) => {
@@ -92,6 +109,7 @@ const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartD
                   dataKey="cefrNumeric" 
                   fill="#3b82f6" 
                   radius={[4, 4, 0, 0]}
+                  minPointSize={5}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -105,20 +123,24 @@ const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartD
           <CardDescription>Comprehensive CEFR skill profile</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[350px] w-full">
+          <ChartContainer config={chartConfig} className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={transformedRadarData} margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
-                <PolarGrid />
+              <RadarChart 
+                data={transformedRadarData} 
+                margin={{ top: 40, right: 80, bottom: 40, left: 80 }}
+              >
+                <PolarGrid stroke="#e0e7ff" />
                 <PolarAngleAxis 
                   dataKey="skill" 
-                  fontSize={11}
+                  fontSize={12}
                   tick={{ fontSize: 11 }}
                 />
                 <PolarRadiusAxis 
                   domain={[1, 7]} 
                   tickFormatter={numberToCEFR}
-                  fontSize={9}
+                  fontSize={10}
                   tick={{ fontSize: 9 }}
+                  angle={90}
                 />
                 <Radar
                   name="CEFR Level"
@@ -127,6 +149,7 @@ const ReportCharts: React.FC<ReportChartsProps> = ({ skillChartData, radarChartD
                   fill="#3b82f6"
                   fillOpacity={0.3}
                   strokeWidth={2}
+                  dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
                 />
                 <ChartTooltip 
                   content={({ active, payload }) => {
