@@ -50,7 +50,7 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         
-        {/* Assessment route - Allow public access but with auth features */}
+        {/* Assessment route - Now completely public */}
         <Route path="/assessment" element={<Assessment />} />
         
         {/* Protected routes */}

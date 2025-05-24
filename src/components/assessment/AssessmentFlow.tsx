@@ -13,7 +13,7 @@ interface AssessmentFlowProps {
 }
 
 const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment }) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [showAdminControls, setShowAdminControls] = useState(false);
   const [showAssessmentOptions, setShowAssessmentOptions] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -115,25 +115,13 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     setShowAssessmentOptions(true);
   };
 
-  // Handle loading state during authentication
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-assessment-blue mx-auto mb-4"></div>
-          <p className="text-assessment-blue font-medium">Loading assessment...</p>
-        </div>
-      </div>
-    );
-  }
-
   console.log("AssessmentFlow rendering with user:", user);
   console.log("AssessmentFlow rendering with studentInfo:", studentInfo);
   console.log("Current step:", currentStep);
 
   return (
     <div className="container mx-auto py-6 px-4">
-      {/* Auth Buttons */}
+      {/* Auth Buttons - Optional, shown for convenience */}
       {showAssessmentOptions && !user && (
         <AuthButtons 
           onLoginClick={handleLoginClick} 

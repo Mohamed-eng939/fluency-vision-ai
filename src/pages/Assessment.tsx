@@ -5,18 +5,15 @@ import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
 import AssessmentFlow from '@/components/assessment/AssessmentFlow';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
 
 const AssessmentPage: React.FC = () => {
   // Get the enhanced full assessment tests
   const fullAssessmentTests = getFullAssessmentTests();
   const [searchParams] = useSearchParams();
-  const { loading: authLoading, user } = useAuth();
   
   // Track if we should show the full assessment
   const [showFullAssessment, setShowFullAssessment] = useState(false);
   const [showFullAssessmentIntro, setShowFullAssessmentIntro] = useState(false);
-  const [isReady, setIsReady] = useState(false);
   
   // Check URL parameters for login/signup
   useEffect(() => {
@@ -24,23 +21,12 @@ const AssessmentPage: React.FC = () => {
     const signup = searchParams.get('signup');
     
     if (login === 'true') {
-      // This will be handled by the AssessmentFlow component
-      // which has access to these URL parameters
       console.log('Login requested via URL');
     }
     
     if (signup === 'true') {
-      // This will be handled by the AssessmentFlow component
       console.log('Signup requested via URL');
     }
-    
-    // Set the component as ready after a short delay to prevent flashing
-    // This gives auth time to initialize properly
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 300);
-    
-    return () => clearTimeout(timer);
   }, [searchParams]);
   
   const handleStartFullAssessment = () => {
@@ -60,18 +46,6 @@ const AssessmentPage: React.FC = () => {
   const handleShowFullAssessmentIntro = () => {
     setShowFullAssessmentIntro(true);
   };
-
-  // Show loading state while auth is initializing and component isn't ready
-  if (authLoading || !isReady) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-assessment-blue mx-auto mb-6"></div>
-          <p className="text-xl text-assessment-blue font-medium">Loading assessment...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (showFullAssessment) {
     return (
