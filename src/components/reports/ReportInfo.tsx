@@ -44,7 +44,7 @@ const ReportInfo: React.FC<ReportInfoProps> = ({ report }) => {
               CEFR Level: {report.cefr}
             </Badge>
             <div className="text-2xl font-bold text-assessment-blue">
-              Total Score: {report.totalScore}%
+              Level: {report.cefr}
             </div>
           </div>
         </div>
