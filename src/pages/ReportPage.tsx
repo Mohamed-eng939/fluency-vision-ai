@@ -94,7 +94,7 @@ const ReportPage: React.FC = () => {
         />
 
         {isFullAssessment ? (
-          <FeedbackSection feedback={report.feedback} />
+          <FeedbackSection feedback={report.feedback?.overall || 'No overall feedback available.'} />
         ) : (
           <EnhancedFeedbackSection 
             scores={reportScores}
