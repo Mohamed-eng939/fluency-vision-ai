@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -12,36 +11,56 @@ import { Search, Users, TrendingUp, BarChart3, Calendar, Filter } from 'lucide-r
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-// Dummy assessment data
+// Updated assessment data to match existing report IDs
 const assessments = [
   {
     id: "A001",
-    name: "Sarah Martinez",
-    email: "sarah.martinez@email.com",
-    testType: "Full",
+    name: "Alex Chen",
+    email: "alex.chen@email.com",
+    testType: "Quick",
     date: "2025-05-24",
-    cefr: "B2",
-    score: 85,
+    cefr: "B1",
+    score: 67,
     reportUrl: "/reports/A001"
   },
   {
     id: "A002",
-    name: "Michael Chen",
-    email: "m.chen@company.com",
+    name: "Maria Rodriguez",
+    email: "maria.rodriguez@email.com",
     testType: "Quick",
     date: "2025-05-24",
-    cefr: "C1",
-    score: 92,
+    cefr: "A2",
+    score: 45,
     reportUrl: "/reports/A002"
+  },
+  {
+    id: "F001",
+    name: "John Smith",
+    email: "john.smith@email.com",
+    testType: "Full",
+    date: "2025-05-23",
+    cefr: "B2",
+    score: 78,
+    reportUrl: "/reports/F001"
+  },
+  {
+    id: "F002",
+    name: "Sarah Johnson",
+    email: "sarah.johnson@email.com",
+    testType: "Full",
+    date: "2025-05-23",
+    cefr: "C1",
+    score: 88,
+    reportUrl: "/reports/F002"
   },
   {
     id: "A003",
     name: "Emma Johnson",
     email: "emma.j@school.edu",
-    testType: "Full",
-    date: "2025-05-23",
+    testType: "Quick",
+    date: "2025-05-22",
     cefr: "A2",
-    score: 68,
+    score: 55,
     reportUrl: "/reports/A003"
   },
   {
@@ -49,50 +68,30 @@ const assessments = [
     name: "David Rodriguez",
     email: "david.rod@example.com",
     testType: "Quick",
-    date: "2025-05-23",
+    date: "2025-05-22",
     cefr: "B1",
     score: 75,
     reportUrl: "/reports/A004"
   },
   {
-    id: "A005",
+    id: "F003",
     name: "Lisa Wang",
     email: "lisa.wang@tech.com",
     testType: "Full",
-    date: "2025-05-22",
+    date: "2025-05-21",
     cefr: "C2",
     score: 96,
-    reportUrl: "/reports/A005"
+    reportUrl: "/reports/F003"
   },
   {
-    id: "A006",
+    id: "A005",
     name: "James Wilson",
     email: "j.wilson@university.edu",
     testType: "Quick",
-    date: "2025-05-22",
+    date: "2025-05-21",
     cefr: "B2",
     score: 82,
-    reportUrl: "/reports/A006"
-  },
-  {
-    id: "A007",
-    name: "Maria Garcia",
-    email: "maria.g@instituto.es",
-    testType: "Full",
-    date: "2025-05-21",
-    cefr: "A1",
-    score: 45,
-    reportUrl: "/reports/A007"
-  },
-  {
-    id: "A008",
-    name: "Thomas Anderson",
-    email: "t.anderson@corp.com",
-    testType: "Quick",
-    date: "2025-05-21",
-    cefr: "B1",
-    score: 71,
-    reportUrl: "/reports/A008"
+    reportUrl: "/reports/A005"
   }
 ];
 

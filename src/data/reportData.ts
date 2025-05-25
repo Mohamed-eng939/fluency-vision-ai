@@ -53,6 +53,87 @@ export const reportData: Record<string, any> = {
       structure: 'Very basic organization of responses.'
     }
   },
+  'A003': {
+    id: 'A003',
+    name: 'Emma Johnson',
+    date: '2024-03-18',
+    assessmentType: 'quick',
+    cefr: 'A2',
+    totalScore: 55,
+    scores: {
+      fluency: 52,
+      grammar: 58,
+      vocabulary: 55,
+      pronunciation: 60,
+      prosody: 50,
+      coherence: 48,
+      structure: 52
+    },
+    feedback: {
+      overall: 'Elementary level with steady progress, showing improvement in grammar and pronunciation.',
+      fluency: 'Some hesitations but better flow than typical A2 level.',
+      grammar: 'Good grasp of basic structures with occasional errors.',
+      vocabulary: 'Adequate range for elementary level communication.',
+      pronunciation: 'Clear pronunciation with good sound recognition.',
+      prosody: 'Developing natural rhythm and stress patterns.',
+      coherence: 'Basic idea connection with some logical gaps.',
+      structure: 'Simple but effective organization of thoughts.'
+    }
+  },
+  'A004': {
+    id: 'A004',
+    name: 'David Rodriguez',
+    date: '2024-03-17',
+    assessmentType: 'quick',
+    cefr: 'B1',
+    totalScore: 75,
+    scores: {
+      fluency: 72,
+      grammar: 75,
+      vocabulary: 78,
+      pronunciation: 80,
+      prosody: 70,
+      coherence: 68,
+      structure: 72
+    },
+    feedback: {
+      overall: 'Strong intermediate level with excellent pronunciation and good vocabulary range.',
+      fluency: 'Good flow with minimal hesitations affecting communication.',
+      grammar: 'Solid control of intermediate structures with few errors.',
+      vocabulary: 'Good range and appropriate word choices for level.',
+      pronunciation: 'Excellent clarity and accuracy in sound production.',
+      prosody: 'Natural stress patterns enhancing communication.',
+      coherence: 'Ideas well-connected with logical progression.',
+      structure: 'Clear organization with effective use of discourse markers.'
+    }
+  },
+  'A005': {
+    id: 'A005',
+    name: 'James Wilson',
+    date: '2024-03-19',
+    assessmentType: 'quick',
+    cefr: 'B2',
+    totalScore: 82,
+    scores: {
+      fluency: 80,
+      grammar: 85,
+      vocabulary: 82,
+      pronunciation: 85,
+      prosody: 78,
+      coherence: 80,
+      structure: 84
+    },
+    feedback: {
+      overall: 'Strong upper-intermediate level with excellent grammar control and clear communication.',
+      fluency: 'Smooth delivery with natural pace and minimal hesitation.',
+      grammar: 'Excellent control of complex structures with rare errors.',
+      vocabulary: 'Wide range with precise and appropriate usage.',
+      pronunciation: 'Very clear with native-like features in many areas.',
+      prosody: 'Effective use of stress and intonation for meaning.',
+      coherence: 'Well-organized ideas with clear logical connections.',
+      structure: 'Sophisticated organization with varied discourse markers.'
+    }
+  },
   'F001': {
     id: 'F001',
     name: 'John Smith',
@@ -123,6 +204,42 @@ export const reportData: Record<string, any> = {
       prosody: 'Highly effective use of stress and intonation.',
       coherence: 'Exceptionally well-organized and logical presentation.',
       structure: 'Sophisticated organizational patterns.'
+    }
+  },
+  'F003': {
+    id: 'F003',
+    name: 'Lisa Wang',
+    date: '2024-03-12',
+    assessmentType: 'full',
+    overallCefr: 'C2',
+    totalScore: 96,
+    scores: {
+      // Speaking skills
+      fluency: 95,
+      grammar: 96,
+      vocabulary: 98,
+      pronunciation: 94,
+      prosody: 95,
+      coherence: 97,
+      structure: 95,
+      // Other skills
+      listening: 98,
+      reading: 99,
+      writing: 92
+    },
+    feedback: {
+      overall: 'Outstanding C2 level performance demonstrating near-native proficiency across all skills.',
+      speaking: 'Exceptional fluency and precision with sophisticated discourse management.',
+      listening: 'Perfect comprehension of complex and nuanced spoken language.',
+      reading: 'Excellent reading comprehension with full understanding of implicit meaning.',
+      writing: 'Highly sophisticated writing with excellent coherence and style.',
+      fluency: 'Effortless and natural delivery with perfect rhythm.',
+      grammar: 'Flawless control of all grammatical structures.',
+      vocabulary: 'Extensive and precise vocabulary with idiomatic usage.',
+      pronunciation: 'Native-like pronunciation with perfect intelligibility.',
+      prosody: 'Masterful use of stress, rhythm, and intonation.',
+      coherence: 'Perfectly organized with seamless logical connections.',
+      structure: 'Highly sophisticated organizational patterns and discourse management.'
     }
   }
 };
