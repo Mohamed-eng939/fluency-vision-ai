@@ -38,7 +38,7 @@ const Index = () => {
             <ul className="mb-8 space-y-2">
               <li className="flex items-center">
                 <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
-                Quick speaking assessment (10 minutes or less)
+                Quick speaking assessment (30 minutes or less)
               </li>
               <li className="flex items-center">
                 <span className="bg-assessment-teal/10 text-assessment-teal p-1 rounded-full mr-2">✓</span>
