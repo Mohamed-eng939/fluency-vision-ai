@@ -24,4 +24,5 @@ export interface SpeakingPrompt {
   topic?: string;
   audioUrl?: string;
   imageUrl?: string;
+  hint?: string;
 }
