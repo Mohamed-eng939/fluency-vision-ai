@@ -13,11 +13,12 @@ import {
 /**
  * Calculate a criterion score based on audio metrics and transcript
  */
-export const calculateCriterionScore = (
+export const calculateCriterionScore = async (
   criterion: string,
   audioMetrics: any,
-  transcript: string
-): number => {
+  transcript: string,
+  promptText?: string
+): Promise<number> => {
   switch (criterion) {
     case 'Fluency & Coherence':
     case 'Fluency':
@@ -35,7 +36,7 @@ export const calculateCriterionScore = (
     case 'Prosody':
       return calculateProsodyCriterion(audioMetrics);
     case 'Coherence':
-      return calculateCoherenceCriterion(audioMetrics, transcript);
+      return await calculateCoherenceCriterion(audioMetrics, transcript, promptText);
     default:
       // For other criteria, use the default scorer
       return calculateDefaultCriterion();

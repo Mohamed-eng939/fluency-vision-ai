@@ -1,3 +1,4 @@
+
 import { 
   CEFRLevel, 
   AssessmentQuestion 
@@ -40,26 +41,26 @@ export const scoreSpeakingResponse = async (
   
   // If we have a specific question with rubric, use that for more detailed scoring
   if (question?.rubric) {
-    return scoreWithRubric(question, enhancedMetrics, transcript);
+    return await scoreWithRubric(question, enhancedMetrics, transcript);
   }
   
   // Fallback to basic scoring if no rubric available
-  return basicScoring(processedAudio.metrics, enhancedMetrics, transcript);
+  return await basicScoring(processedAudio.metrics, enhancedMetrics, transcript);
 };
 
 /**
  * Score with a detailed rubric
  */
-const scoreWithRubric = (
+const scoreWithRubric = async (
   question: AssessmentQuestion,
   enhancedMetrics: any,
   transcript?: string
-): {
+): Promise<{
   score: number, 
   cefrLevel: CEFRLevel,
   detailedScores: Record<string, number>,
   feedback: Record<string, string>
-} => {
+}> => {
   // Extract CEFR level from question ID or context
   const level = question.id.substring(0, 2).toUpperCase();
   
@@ -71,19 +72,21 @@ const scoreWithRubric = (
   const feedback: Record<string, string> = {};
   
   if (enhancedRubric) {
-    enhancedRubric.criteria.forEach(criterion => {
+    // Process criteria sequentially to handle async coherence scoring
+    for (const criterion of enhancedRubric.criteria) {
       // Calculate a score based on audio metrics and transcript analysis
-      const score = calculateCriterionScore(
+      const score = await calculateCriterionScore(
         criterion, 
         enhancedMetrics, 
-        transcript || ''
+        transcript || '',
+        question.text // Pass the question text as prompt reference
       );
       
       detailedScores[criterion] = score;
       
       // Generate feedback for this criterion
       feedback[criterion] = getCriterionFeedback(criterion, score, level as any);
-    });
+    }
   }
   
   // Calculate overall score
@@ -107,27 +110,27 @@ const scoreWithRubric = (
 /**
  * Basic scoring when no rubric is available
  */
-const basicScoring = (
+const basicScoring = async (
   basicMetrics: any,
   enhancedMetrics: any,
   transcript?: string
-): {
+): Promise<{
   score: number, 
   cefrLevel: CEFRLevel,
   detailedScores: Record<string, number>,
   feedback: Record<string, string>
-} => {
+}> => {
   const metrics = {
     fluency: basicMetrics.fluency,
     // Use the updated pronunciation scoring logic
-    pronunciation: calculateCriterionScore('Pronunciation', basicMetrics, transcript || ''),
+    pronunciation: await calculateCriterionScore('Pronunciation', basicMetrics, transcript || ''),
     prosody: basicMetrics.prosody,
     // Use enhanced vocabulary scoring if transcript is available
-    vocabulary: transcript ? calculateCriterionScore('Vocabulary', enhancedMetrics, transcript) : 7.5,
+    vocabulary: transcript ? await calculateCriterionScore('Vocabulary', enhancedMetrics, transcript) : 7.5,
     // Basic estimates for other metrics
     grammar: 7.5,
     syntax: 7.5,
-    coherence: 7.5
+    coherence: transcript ? await calculateCriterionScore('Coherence', enhancedMetrics, transcript) : 7.5
   };
   
   const totalScore = Object.values(metrics).reduce((sum, score) => sum + score, 0) / 

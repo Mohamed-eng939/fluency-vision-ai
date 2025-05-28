@@ -1,7 +1,7 @@
 
 /**
  * Calculate coherence score
- * Enhanced version with semantic analysis and fallback methods
+ * Enhanced version with external API integration and fallback methods
  */
 
 import { countPropositions } from './textAnalysisUtils';
@@ -10,12 +10,14 @@ import { determineIfLowerLevel } from './coherence/levelDetection';
 import { splitIntoSentences, calculateTextMetrics } from './coherence/sentenceAnalysis';
 import { calculateSemanticSimilarity, scoreBasedOnSemanticSimilarity } from './coherence/semanticSimilarity';
 import { calculateTraditionalCoherenceScore } from './coherence/traditionalScoring';
+import { getCoherenceScore } from './coherence/externalCoherenceApi';
 import { hasSBERTSupport } from './embeddings';
 
-export const calculateCoherenceScore = (
+export const calculateCoherenceScore = async (
   audioMetrics: any,
-  transcript: string
-): number => {
+  transcript: string,
+  promptText?: string
+): Promise<number> => {
   if (!transcript) return 5;
   
   // Get text metrics
@@ -38,7 +40,52 @@ export const calculateCoherenceScore = (
   // Try to determine difficulty level from audioMetrics if available
   const isLowerLevel = determineIfLowerLevel(audioMetrics);
   
-  // Try semantic similarity scoring if available
+  // Try external coherence API if we have a prompt reference
+  if (promptText) {
+    try {
+      console.log('Using external coherence API for scoring...');
+      
+      const coherenceResult = await getCoherenceScore(promptText, transcript, 'both');
+      
+      console.log('External coherence API result:', coherenceResult);
+      
+      // Convert 0-1 similarity score to 1-10 scale
+      let score = 1 + (coherenceResult.averageScore * 9);
+      
+      // Apply discourse marker adjustments
+      if (markerCounts.total > 0) {
+        score += Math.min(markerTypeCount * 0.5, 2);
+      }
+      
+      // Apply proposition complexity bonus
+      if (propositionCount > 3) {
+        score += Math.min((propositionCount - 3) * 0.3, 1.5);
+      }
+      
+      // Average sentence length check
+      if (avgWordsPerSentence < 4) {
+        score = Math.min(score, 5.0);
+      }
+      
+      // Front-loaded discourse marker penalty
+      if (markerCounts.total === 1 && frontLoadedMarker) {
+        score = Math.max(1, score - 1);
+      }
+      
+      // Level-based adjustments
+      if (isLowerLevel && score > 7) {
+        score = Math.min(score, 7);
+      }
+      
+      return Math.max(1, Math.min(10, score));
+      
+    } catch (error) {
+      console.error("Error using external coherence API, falling back to local methods:", error);
+      // Fall through to local methods
+    }
+  }
+  
+  // Try semantic similarity scoring if available (local SBERT)
   if (hasSBERTSupport()) {
     try {
       // Calculate semantic similarity between adjacent sentences
@@ -68,7 +115,7 @@ export const calculateCoherenceScore = (
         return Math.max(1, Math.min(10, score));
       }
     } catch (error) {
-      console.error("Error in SBERT coherence analysis:", error);
+      console.error("Error in local SBERT coherence analysis:", error);
       // Fall back to traditional method if SBERT fails
     }
   }

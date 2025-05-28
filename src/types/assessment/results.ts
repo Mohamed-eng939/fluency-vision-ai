@@ -31,6 +31,15 @@ export interface AssessmentFeedback {
   writing?: string;
 }
 
+export interface CoherenceAnalysis {
+  method: 'external_api' | 'local_sbert' | 'traditional';
+  sbertScore?: number;
+  crossEncoderScore?: number;
+  averageScore?: number;
+  promptReference?: string;
+  apiLatency?: number;
+}
+
 export interface AssessmentResult {
   metrics: AssessmentMetrics;
   totalScore: number;
@@ -48,4 +57,6 @@ export interface AssessmentResult {
   dateOfTest?: string;
   assessmentType?: 'quick' | 'full';
   assessmentName?: string;
+  // New coherence analysis data
+  coherenceAnalysis?: CoherenceAnalysis;
 }
