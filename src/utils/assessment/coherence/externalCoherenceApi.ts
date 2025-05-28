@@ -29,7 +29,7 @@ export const getSBERTCoherenceScore = async (
       response
     };
 
-    const response = await fetch(`${API_BASE_URL}/coherence`, {
+    const apiResponse = await fetch(`${API_BASE_URL}/coherence`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,11 +37,11 @@ export const getSBERTCoherenceScore = async (
       body: JSON.stringify(requestBody)
     });
 
-    if (!response.ok) {
-      throw new Error(`SBERT API request failed: ${response.status}`);
+    if (!apiResponse.ok) {
+      throw new Error(`SBERT API request failed: ${apiResponse.status}`);
     }
 
-    const result: CoherenceApiResponse = await response.json();
+    const result: CoherenceApiResponse = await apiResponse.json();
     
     // Return similarity score (0-1 range)
     return result.similarity;
@@ -64,7 +64,7 @@ export const getCrossEncoderCoherenceScore = async (
       response
     };
 
-    const response = await fetch(`${API_BASE_URL}/coherence-cross`, {
+    const apiResponse = await fetch(`${API_BASE_URL}/coherence-cross`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -72,11 +72,11 @@ export const getCrossEncoderCoherenceScore = async (
       body: JSON.stringify(requestBody)
     });
 
-    if (!response.ok) {
-      throw new Error(`CrossEncoder API request failed: ${response.status}`);
+    if (!apiResponse.ok) {
+      throw new Error(`CrossEncoder API request failed: ${apiResponse.status}`);
     }
 
-    const result: CoherenceApiResponse = await response.json();
+    const result: CoherenceApiResponse = await apiResponse.json();
     
     // Return similarity score (0-1 range)
     return result.similarity;
