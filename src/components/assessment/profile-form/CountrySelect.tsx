@@ -19,7 +19,7 @@ import { ProfileFormValues } from './types';
 
 interface CountrySelectProps {
   form: UseFormReturn<ProfileFormValues>;
-  name: keyof ProfileFormValues;
+  name: 'citizenshipCountry' | 'residenceCountry';
   label: string;
   placeholder: string;
   countries: string[];
