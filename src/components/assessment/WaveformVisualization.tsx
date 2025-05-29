@@ -1,5 +1,4 @@
-
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Volume2 } from 'lucide-react';
@@ -17,14 +16,22 @@ interface WaveformVisualizationProps {
   errors: TimestampError[];
   duration?: number;
   onTimeUpdate?: (currentTime: number) => void;
+  onImageReady?: (imageData: string) => void;
+  forPDF?: boolean;
 }
 
-const WaveformVisualization: React.FC<WaveformVisualizationProps> = ({
+export interface WaveformVisualizationRef {
+  captureImage: () => string;
+}
+
+const WaveformVisualization = forwardRef<WaveformVisualizationRef, WaveformVisualizationProps>(({
   audioUrl,
   errors,
   duration = 10,
-  onTimeUpdate
-}) => {
+  onTimeUpdate,
+  onImageReady,
+  forPDF = false
+}, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,9 +39,26 @@ const WaveformVisualization: React.FC<WaveformVisualizationProps> = ({
   const [hoveredError, setHoveredError] = useState<TimestampError | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  useImperativeHandle(ref, () => ({
+    captureImage: () => {
+      if (canvasRef.current) {
+        return canvasRef.current.toDataURL('image/png');
+      }
+      return '';
+    }
+  }));
+
   useEffect(() => {
     drawWaveform();
-  }, [errors, currentTime, duration]);
+    
+    // If this is for PDF generation, capture image after drawing
+    if (forPDF && onImageReady) {
+      setTimeout(() => {
+        const imageData = canvasRef.current?.toDataURL('image/png') || '';
+        onImageReady(imageData);
+      }, 100);
+    }
+  }, [errors, currentTime, duration, forPDF]);
 
   const drawWaveform = () => {
     const canvas = canvasRef.current;
@@ -45,6 +69,12 @@ const WaveformVisualization: React.FC<WaveformVisualizationProps> = ({
 
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
+
+    // Fill white background for PDF
+    if (forPDF) {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, width, height);
+    }
 
     // Draw base waveform (simplified representation)
     ctx.strokeStyle = '#e5e7eb';
@@ -76,14 +106,16 @@ const WaveformVisualization: React.FC<WaveformVisualizationProps> = ({
       ctx.stroke();
     });
 
-    // Draw current time indicator
-    const currentX = (currentTime / duration) * width;
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(currentX, 0);
-    ctx.lineTo(currentX, height);
-    ctx.stroke();
+    // Draw current time indicator (only if not for PDF)
+    if (!forPDF) {
+      const currentX = (currentTime / duration) * width;
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(currentX, 0);
+      ctx.lineTo(currentX, height);
+      ctx.stroke();
+    }
   };
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -132,6 +164,20 @@ const WaveformVisualization: React.FC<WaveformVisualizationProps> = ({
       onTimeUpdate?.(time);
     }
   };
+
+  // For PDF mode, return simplified version
+  if (forPDF) {
+    return (
+      <div className="waveform-for-pdf">
+        <canvas
+          ref={canvasRef}
+          width={800}
+          height={120}
+          className="w-full h-30 border rounded"
+        />
+      </div>
+    );
+  }
 
   return (
     <Card className="w-full">
@@ -219,6 +265,8 @@ const WaveformVisualization: React.FC<WaveformVisualizationProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+WaveformVisualization.displayName = 'WaveformVisualization';
 
 export default WaveformVisualization;

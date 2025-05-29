@@ -1,9 +1,12 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { AssessmentResult, AudioAnalysisResult, FullAssessment } from '@/types/assessment';
 import QuickAssessmentReport from './QuickAssessmentReport';
 import FullAssessmentReport from './FullAssessmentReport';
-import { generateReportPdf } from '@/utils/reports/pdfGenerator';
+import PronunciationRadarChart from './PronunciationRadarChart';
+import WaveformVisualization, { WaveformVisualizationRef } from '../assessment/WaveformVisualization';
+import { generateReportPdf, captureVisualizationImages } from '@/utils/reports/pdfGenerator';
+import { generateWaveformImage } from '@/utils/reports/imageCapture';
 import { Button } from '../ui/button';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -26,19 +29,71 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   sessionId = `S-${Date.now().toString(36)}`
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
+  const waveformRef = useRef<WaveformVisualizationRef>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { toast } = useToast();
   const dateOfTest = new Date().toLocaleDateString();
+
+  // Convert pronunciation data to waveform errors
+  const waveformErrors = React.useMemo(() => {
+    const errors: Array<{ start: number; end: number; type: string; message: string; phoneme?: string }> = [];
+    
+    if (result.audioAnalysis?.pronunciationDetails?.problematic_phonemes) {
+      result.audioAnalysis.pronunciationDetails.problematic_phonemes.forEach(phoneme => {
+        if (phoneme.start !== undefined && phoneme.end !== undefined) {
+          errors.push({
+            start: phoneme.start,
+            end: phoneme.end,
+            type: 'phoneme',
+            message: `Pronunciation issue with /${phoneme.phone}/ sound`,
+            phoneme: phoneme.phone
+          });
+        }
+      });
+    }
+
+    return errors;
+  }, [result.audioAnalysis]);
 
   const handleDownloadReport = async () => {
     if (!reportRef.current) return;
     
+    setIsGeneratingPDF(true);
+    
     try {
+      // Generate waveform image
+      const waveformImage = generateWaveformImage(
+        waveformErrors,
+        result.duration || 10
+      );
+
+      // Capture radar chart image (we'll handle this via callback)
+      let radarChartImage = '';
+      
       const reportType = isFullAssessment ? 'full' : 'quick';
+      
+      // Add placeholders for images in the report before generating PDF
+      const pronunciationSection = reportRef.current.querySelector('.pronunciation-analysis-section');
+      if (pronunciationSection && !pronunciationSection.querySelector('.waveform-placeholder')) {
+        const waveformDiv = document.createElement('div');
+        waveformDiv.className = 'waveform-placeholder mb-4';
+        waveformDiv.innerHTML = '<div class="w-full h-30 bg-gray-100 rounded flex items-center justify-center">Waveform visualization</div>';
+        
+        const radarDiv = document.createElement('div');
+        radarDiv.className = 'radar-chart-placeholder';
+        radarDiv.innerHTML = '<div class="w-full h-64 bg-gray-100 rounded flex items-center justify-center">Pronunciation radar chart</div>';
+        
+        pronunciationSection.appendChild(waveformDiv);
+        pronunciationSection.appendChild(radarDiv);
+      }
+
       await generateReportPdf(reportRef.current, {
         fileName: `${reportType}-assessment-report-${sessionId}.pdf`,
         learnerName,
         sessionId,
         dateOfTest,
+        waveformImage,
+        radarChartImage
       });
       
       toast({
@@ -52,8 +107,24 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         description: 'There was a problem generating your report. Please try again.',
         variant: 'destructive'
       });
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
+
+  const pronunciationData = React.useMemo(() => {
+    const details = result.audioAnalysis?.pronunciationDetails;
+    if (!details) return null;
+
+    return {
+      wordAccuracy: details.word_accuracy || 0,
+      phonemeAccuracy: details.phoneme_accuracy || 0,
+      speechRate: details.speech_rate || 0,
+      targetSpeechRate: details.cefr_level ? `${details.cefr_level} level` : 'B1 level',
+      overallScore: details.pronunciation_score || 0,
+      cefrLevel: details.cefr_level || 'B1'
+    };
+  }, [result.audioAnalysis]);
 
   return (
     <div className="space-y-4">
@@ -63,10 +134,11 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         </h2>
         <Button 
           onClick={handleDownloadReport} 
+          disabled={isGeneratingPDF}
           className="bg-assessment-teal hover:bg-assessment-lightBlue"
         >
           <Download className="h-4 w-4 mr-2" />
-          Download Report
+          {isGeneratingPDF ? 'Generating...' : 'Download Report'}
         </Button>
       </div>
       
@@ -88,6 +160,34 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             sessionId={sessionId}
             dateOfTest={dateOfTest}
           />
+        )}
+
+        {/* Enhanced Pronunciation Analysis Section for PDF */}
+        {pronunciationData && (
+          <div className="pronunciation-analysis-section mt-8">
+            <h3 className="text-xl font-semibold mb-4 text-assessment-blue">Enhanced Pronunciation Analysis</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-lg font-medium mb-2">Audio Timeline Analysis</h4>
+                <WaveformVisualization
+                  ref={waveformRef}
+                  audioUrl={result.audioUrl}
+                  errors={waveformErrors}
+                  duration={result.duration || 10}
+                  forPDF={false}
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-lg font-medium mb-2">Pronunciation Profile</h4>
+                <PronunciationRadarChart
+                  pronunciationData={pronunciationData}
+                  forPDF={false}
+                />
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
