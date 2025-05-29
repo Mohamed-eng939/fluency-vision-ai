@@ -1,9 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Upload } from 'lucide-react';
-import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 interface ManualTranscriptEntryProps {
   onTranscriptSubmit: (transcript: string) => void;
@@ -16,20 +14,8 @@ const ManualTranscriptEntry: React.FC<ManualTranscriptEntryProps> = ({
   onAudioSubmit,
   supportedAudioFormats = ['.mp3', '.wav', '.m4a', '.aac', '.ogg']
 }) => {
-  const [transcript, setTranscript] = useState('');
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { isSupported } = useSpeechRecognition();
-  const [showWarning, setShowWarning] = useState(false);
-  
-  // Check speech recognition support on mount
-  useEffect(() => {
-    setShowWarning(!isSupported);
-  }, [isSupported]);
-
-  const handleTranscriptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTranscript(e.target.value);
-  };
 
   const handleAudioFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -38,22 +24,21 @@ const ManualTranscriptEntry: React.FC<ManualTranscriptEntryProps> = ({
   };
 
   const handleSubmit = async () => {
-    // Allow submission if either transcript is provided or audio file is uploaded
-    if (!transcript.trim() && !audioFile) {
+    if (!audioFile) {
       return;
     }
 
     setIsLoading(true);
     
     try {
-      // Submit transcript
-      onTranscriptSubmit(transcript);
-      
       // If audio file is provided and onAudioSubmit callback exists
       if (audioFile && onAudioSubmit) {
         const audioBlob = await convertFileToBlob(audioFile);
         onAudioSubmit(audioBlob);
       }
+      
+      // Submit empty transcript since this is audio-only mode
+      onTranscriptSubmit('');
     } catch (error) {
       console.error('Error processing submission:', error);
     } finally {
@@ -85,54 +70,50 @@ const ManualTranscriptEntry: React.FC<ManualTranscriptEntryProps> = ({
 
   return (
     <div className="space-y-4">
-      {showWarning && (
-        <div className="bg-amber-50 border border-amber-200 p-3 rounded-md">
-          <p className="text-amber-800 text-sm">
-            Speech recognition is not available in your browser. Please enter your response manually.
-          </p>
-        </div>
-      )}
+      <div className="bg-blue-50 border border-blue-200 p-4 rounded-md">
+        <p className="text-blue-800 text-sm mb-2">
+          <strong>Audio Upload Mode</strong>
+        </p>
+        <p className="text-blue-700 text-sm">
+          Please upload a pre-recorded audio file with your response to the prompt above.
+        </p>
+      </div>
       
-      <Textarea 
-        placeholder="Type your spoken response here..."
-        className="min-h-[120px]"
-        value={transcript}
-        onChange={handleTranscriptChange}
-      />
-
-      {onAudioSubmit && (
-        <div className="mt-4">
-          <p className="text-sm text-gray-600 mb-2">Optional: Upload a pre-recorded audio file</p>
-          <div className="flex items-center gap-2">
-            <label className="flex-1">
-              <div className="border rounded-md px-4 py-2 text-center cursor-pointer hover:bg-gray-50 transition-colors">
-                <Upload className="h-4 w-4 inline-block mr-2" />
-                <span className="text-sm">
-                  {audioFile ? audioFile.name : `Select audio file ${supportedAudioFormats.join(', ')}`}
-                </span>
+      <div className="mt-4">
+        <p className="text-sm text-gray-600 mb-2">Select your audio recording:</p>
+        <div className="flex items-center gap-2">
+          <label className="flex-1">
+            <div className="border-2 border-dashed border-gray-300 rounded-md px-6 py-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+              <Upload className="h-8 w-8 inline-block mr-2 text-gray-400" />
+              <div className="text-lg font-medium text-gray-700">
+                {audioFile ? audioFile.name : 'Choose audio file'}
               </div>
-              <input 
-                type="file"
-                accept={getAcceptString()}
-                className="hidden"
-                onChange={handleAudioFileChange}
-              />
-            </label>
-          </div>
-          {audioFile && (
-            <div className="mt-2">
-              <audio controls className="w-full" src={URL.createObjectURL(audioFile)}></audio>
+              <div className="text-sm text-gray-500 mt-1">
+                Supported formats: {supportedAudioFormats.join(', ')}
+              </div>
             </div>
-          )}
+            <input 
+              type="file"
+              accept={getAcceptString()}
+              className="hidden"
+              onChange={handleAudioFileChange}
+            />
+          </label>
         </div>
-      )}
+        {audioFile && (
+          <div className="mt-4">
+            <p className="text-sm text-gray-600 mb-2">Preview your audio:</p>
+            <audio controls className="w-full" src={URL.createObjectURL(audioFile)}></audio>
+          </div>
+        )}
+      </div>
 
       <Button
-        className="bg-assessment-teal text-white hover:bg-assessment-lightBlue"
+        className="bg-assessment-teal text-white hover:bg-assessment-lightBlue w-full"
         onClick={handleSubmit}
-        disabled={isLoading || (!transcript.trim() && !audioFile)}
+        disabled={isLoading || !audioFile}
       >
-        {isLoading ? 'Processing...' : 'Submit Response'}
+        {isLoading ? 'Processing...' : 'Submit Audio Response'}
       </Button>
     </div>
   );

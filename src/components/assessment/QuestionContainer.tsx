@@ -25,10 +25,15 @@ const QuestionContainer: React.FC<QuestionContainerProps> = ({
       </div>
     );
   }
+
+  // Remove duplicates by filtering questions with unique IDs
+  const uniqueQuestions = questions.filter((question, index, self) => 
+    index === self.findIndex(q => q.id === question.id)
+  );
   
   return (
     <div className="space-y-6">
-      {questions.map((question) => (
+      {uniqueQuestions.map((question) => (
         <div key={question.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="font-medium mb-3">{question.text}</h3>
           
