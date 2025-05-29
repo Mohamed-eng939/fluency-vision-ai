@@ -1,12 +1,14 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Download, ChevronDown, ChevronRight, AlertCircle, CheckCircle, Lightbulb, Volume2, Clock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Download, ChevronDown, ChevronRight, AlertCircle, CheckCircle, Lightbulb, Volume2, Clock, BookOpen } from 'lucide-react';
 import { AssessmentResult } from '@/types/assessment';
 import { analyzeMistakes } from '@/utils/assessment/mistakesAnalysis';
+import WaveformVisualization from './WaveformVisualization';
+import VocabularyEnhancements from './VocabularyEnhancements';
 
 interface MistakesAnalysisProps {
   result: AssessmentResult;
