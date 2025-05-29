@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Pause, Play } from 'lucide-react';
 import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment';
 import RecordingFlowController from './RecordingFlowController';
-import PromptHeader from './PromptHeader';
 
 interface RecordingStepProps {
   prompt: SpeakingPrompt;
@@ -53,8 +52,6 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
       </CardHeader>
       
       <CardContent>
-        <PromptHeader prompt={prompt} />
-        
         <div className="mt-6">
           <RecordingFlowController
             selectedPrompt={prompt}
