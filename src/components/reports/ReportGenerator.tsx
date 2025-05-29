@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { AssessmentResult, AudioAnalysisResult, FullAssessment } from '@/types/assessment';
 import QuickAssessmentReport from './QuickAssessmentReport';
@@ -20,6 +19,14 @@ interface ReportGeneratorProps {
   sessionId?: string;
 }
 
+interface TimestampError {
+  start: number;
+  end: number;
+  type: 'phoneme' | 'pause' | 'disfluency';
+  message: string;
+  phoneme?: string;
+}
+
 const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   result,
   audioAnalysis,
@@ -36,7 +43,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
 
   // Convert pronunciation data to waveform errors
   const waveformErrors = React.useMemo(() => {
-    const errors: Array<{ start: number; end: number; type: string; message: string; phoneme?: string }> = [];
+    const errors: TimestampError[] = [];
     
     if (result.audioAnalysis?.pronunciationDetails?.problematic_phonemes) {
       result.audioAnalysis.pronunciationDetails.problematic_phonemes.forEach(phoneme => {
@@ -44,7 +51,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
           errors.push({
             start: phoneme.start,
             end: phoneme.end,
-            type: 'phoneme',
+            type: 'phoneme' as const,
             message: `Pronunciation issue with /${phoneme.phone}/ sound`,
             phoneme: phoneme.phone
           });
