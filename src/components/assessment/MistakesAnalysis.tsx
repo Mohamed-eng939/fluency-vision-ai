@@ -1,45 +1,27 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, ChevronDown, ChevronRight, AlertCircle, CheckCircle, Lightbulb, Volume2, Clock, BookOpen } from 'lucide-react';
+import { Download, AlertCircle, CheckCircle, Volume2, BookOpen } from 'lucide-react';
 import { AssessmentResult } from '@/types/assessment';
 import { analyzeMistakes } from '@/utils/assessment/mistakesAnalysis';
 import WaveformVisualization from './WaveformVisualization';
 import VocabularyEnhancements from './VocabularyEnhancements';
+import MistakeCategory from './mistakes/MistakeCategory';
 
 interface MistakesAnalysisProps {
   result: AssessmentResult;
   onDownloadPDF?: () => void;
 }
 
-interface MistakeItem {
-  original: string;
-  correction: string;
-  suggestion: string;
-  cefrLevel?: string;
-  context?: string;
+interface TimestampError {
+  start: number;
+  end: number;
+  type: 'phoneme' | 'pause' | 'disfluency';
+  message: string;
   phoneme?: string;
-  issue?: string;
-  startTime?: number;
-  endTime?: number;
-}
-
-interface MistakeCategory {
-  name: string;
-  mistakes: MistakeItem[];
-  icon: React.ReactNode;
-  color: string;
-  summaryStats?: {
-    wordAccuracy?: number;
-    phonemeAccuracy?: number;
-    speechRate?: number;
-    targetSpeechRate?: string;
-    overallScore?: number;
-    cefrLevel?: string;
-  };
 }
 
 const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadPDF }) => {
@@ -59,9 +41,27 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
 
   const totalMistakes = mistakeCategories.reduce((total, category) => total + category.mistakes.length, 0);
 
-  const formatTime = (seconds: number) => {
-    return `${seconds.toFixed(1)}s`;
-  };
+  // Convert pronunciation data to waveform errors
+  const waveformErrors: TimestampError[] = useMemo(() => {
+    const errors: TimestampError[] = [];
+    
+    // Add pronunciation errors from MFA data
+    if (result.audioAnalysis?.pronunciationDetails?.problematic_phonemes) {
+      result.audioAnalysis.pronunciationDetails.problematic_phonemes.forEach(phoneme => {
+        if (phoneme.start !== undefined && phoneme.end !== undefined) {
+          errors.push({
+            start: phoneme.start,
+            end: phoneme.end,
+            type: 'phoneme',
+            message: `Pronunciation issue with /${phoneme.phone}/ sound`,
+            phoneme: phoneme.phone
+          });
+        }
+      });
+    }
+
+    return errors;
+  }, [result.audioAnalysis]);
 
   if (totalMistakes === 0) {
     return (
@@ -98,144 +98,46 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-4">
-          {mistakeCategories.map((category) => (
-            <Collapsible
-              key={category.name}
-              open={openSections[category.name]}
-              onOpenChange={() => toggleSection(category.name)}
-            >
-              <CollapsibleTrigger asChild>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center gap-3">
-                    {category.icon}
-                    <span className="font-medium">{category.name}</span>
-                    <Badge variant="secondary" className={category.color}>
-                      {category.mistakes.length} issue{category.mistakes.length !== 1 ? 's' : ''}
-                    </Badge>
-                  </div>
-                  {openSections[category.name] ? 
-                    <ChevronDown className="h-4 w-4" /> : 
-                    <ChevronRight className="h-4 w-4" />
-                  }
-                </div>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent>
-                <div className="mt-3 space-y-4">
-                  {/* Summary stats for pronunciation */}
-                  {category.summaryStats && (
-                    <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4 mb-4">
-                      <h4 className="font-medium text-blue-800 mb-3">Pronunciation Summary</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        {category.summaryStats.overallScore && (
-                          <div>
-                            <span className="text-gray-600">Overall Score:</span>
-                            <div className="font-semibold text-blue-700">
-                              {category.summaryStats.overallScore.toFixed(1)}/9 ({category.summaryStats.cefrLevel})
-                            </div>
-                          </div>
-                        )}
-                        {category.summaryStats.wordAccuracy && (
-                          <div>
-                            <span className="text-gray-600">Word Accuracy:</span>
-                            <div className="font-semibold text-blue-700">
-                              {(category.summaryStats.wordAccuracy * 100).toFixed(0)}%
-                            </div>
-                          </div>
-                        )}
-                        {category.summaryStats.phonemeAccuracy && (
-                          <div>
-                            <span className="text-gray-600">Sound Accuracy:</span>
-                            <div className="font-semibold text-blue-700">
-                              {(category.summaryStats.phonemeAccuracy * 100).toFixed(0)}%
-                            </div>
-                          </div>
-                        )}
-                        {category.summaryStats.speechRate && (
-                          <div>
-                            <span className="text-gray-600">Speech Rate:</span>
-                            <div className="font-semibold text-blue-700">
-                              {category.summaryStats.speechRate.toFixed(0)} wpm
-                              {category.summaryStats.targetSpeechRate && (
-                                <div className="text-xs text-gray-500">
-                                  Target: {category.summaryStats.targetSpeechRate}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {category.mistakes.map((mistake, index) => (
-                    <div key={index} className="border-l-4 border-red-200 pl-4 py-2 bg-red-50/50 rounded-r">
-                      <div className="space-y-2">
-                        <div className="flex items-start gap-2">
-                          <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />
-                          <div className="flex-1">
-                            {mistake.phoneme ? (
-                              <div>
-                                <span className="font-medium text-red-700">Sound Issue: </span>
-                                <span className="text-red-600 font-mono">/{mistake.phoneme}/</span>
-                                {mistake.issue && (
-                                  <span className="text-red-600 ml-2">({mistake.issue})</span>
-                                )}
-                                {mistake.startTime !== undefined && mistake.endTime !== undefined && (
-                                  <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                                    <Clock className="h-3 w-3" />
-                                    {formatTime(mistake.startTime)} - {formatTime(mistake.endTime)}
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div>
-                                <span className="font-medium text-red-700">Original: </span>
-                                <span className="text-red-600">"{mistake.original}"</span>
-                                {mistake.context && (
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    Context: {mistake.context}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                          <div>
-                            <span className="font-medium text-green-700">
-                              {mistake.phoneme ? 'Practice Tip: ' : 'Correction: '}
-                            </span>
-                            <span className="text-green-600">
-                              {mistake.phoneme ? mistake.suggestion : `"${mistake.correction}"`}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {!mistake.phoneme && (
-                          <div className="flex items-start gap-2">
-                            <Lightbulb className="h-4 w-4 text-blue-500 mt-0.5" />
-                            <div className="flex-1">
-                              <span className="font-medium text-blue-700">Suggestion: </span>
-                              <span className="text-blue-600">{mistake.suggestion}</span>
-                              {mistake.cefrLevel && (
-                                <Badge variant="outline" className="ml-2 text-xs">
-                                  {mistake.cefrLevel}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
+        <CardContent>
+          <Tabs defaultValue="mistakes" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="mistakes">Mistakes & Issues</TabsTrigger>
+              <TabsTrigger value="audio">
+                <Volume2 className="h-4 w-4 mr-2" />
+                Audio Timeline
+              </TabsTrigger>
+              <TabsTrigger value="vocabulary">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Vocabulary
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="mistakes" className="space-y-4 mt-4">
+              {mistakeCategories.map((category) => (
+                <MistakeCategory
+                  key={category.name}
+                  category={category}
+                  isOpen={openSections[category.name]}
+                  onToggle={() => toggleSection(category.name)}
+                />
+              ))}
+            </TabsContent>
+            
+            <TabsContent value="audio" className="mt-4">
+              <WaveformVisualization
+                audioUrl={result.audioUrl}
+                errors={waveformErrors}
+                duration={result.duration || 10}
+              />
+            </TabsContent>
+            
+            <TabsContent value="vocabulary" className="mt-4">
+              <VocabularyEnhancements
+                transcript={result.transcript || ''}
+                currentCefrLevel={result.cefrLevel}
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
       

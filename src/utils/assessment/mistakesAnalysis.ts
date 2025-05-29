@@ -3,33 +3,7 @@ import { AssessmentResult } from '@/types/assessment';
 import { detectRepetitions } from './fluency/repetitionDetector';
 import { detectHesitationMarkers } from '../audio/hesitationDetector';
 import { splitIntoSentences } from './coherence/sentenceAnalysis';
-
-interface MistakeItem {
-  original: string;
-  correction: string;
-  suggestion: string;
-  cefrLevel?: string;
-  context?: string;
-  phoneme?: string;
-  issue?: string;
-  startTime?: number;
-  endTime?: number;
-}
-
-interface MistakeCategory {
-  name: string;
-  mistakes: MistakeItem[];
-  icon: React.ReactNode;
-  color: string;
-  summaryStats?: {
-    wordAccuracy?: number;
-    phonemeAccuracy?: number;
-    speechRate?: number;
-    targetSpeechRate?: string;
-    overallScore?: number;
-    cefrLevel?: string;
-  };
-}
+import { MistakeItem, MistakeCategory } from '@/components/assessment/mistakes/types';
 
 /**
  * Analyze mistakes from assessment result using current detection capabilities
