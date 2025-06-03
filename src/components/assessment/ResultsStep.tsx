@@ -49,6 +49,17 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
     );
   }
 
+  // Convert AssessmentMetrics to Record<string, number>
+  const skillScores: Record<string, number> = {
+    grammar: result.metrics.grammar,
+    fluency: result.metrics.fluency,
+    vocabulary: result.metrics.vocabulary,
+    pronunciation: result.metrics.pronunciation,
+    prosody: result.metrics.prosody,
+    coherence: result.metrics.coherence,
+    syntax: result.metrics.syntax
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
@@ -62,7 +73,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
           {(result as any)?.cefrLevels && (
             <div className="mb-6">
               <CEFRSkillsBreakdown
-                skillScores={result.metrics}
+                skillScores={skillScores}
                 cefrLevels={(result as any).cefrLevels}
                 overallCEFR={(result as any).overallCEFR}
                 showRadarChart={true}

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import { useStudentInfo } from './useStudentInfo';
@@ -10,6 +9,7 @@ import { useAdminControls } from './useAdminControls';
 import { useSessionManagement } from './useSessionManagement';
 import { AssessmentStep, AssessmentFlowConfig, DEFAULT_CONFIG } from './types/assessmentTypes';
 import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
+import { CEFRLevel } from '@/utils/scoring/cefrUtils';
 
 export { AssessmentStep } from './types/assessmentTypes';
 export type { AssessmentFlowConfig } from './types/assessmentTypes';
@@ -117,8 +117,8 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
           // Add to history
           addToHistory(selectedPrompt!, enhancedResult);
           
-          // Check for consistency
-          const currentLevel = enhancedResult.overallCEFR;
+          // Check for consistency - use the overallCEFR from enhanced result
+          const currentLevel = enhancedResult.overallCEFR as CEFRLevel;
           const consistencyCount = checkConsistency(currentLevel);
           
           console.log("CEFR level:", currentLevel, "Consistency count:", consistencyCount);
