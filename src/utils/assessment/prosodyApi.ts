@@ -1,13 +1,6 @@
 
 import axios from 'axios';
-
-export interface ProsodyAnalysisResult {
-  pitch_mean: number;
-  pitch_std_dev: number;
-  tempo_bpm: number;
-  opensmile_features: string; // Raw text for now
-  cefr_level?: string; // Optional CEFR mapping
-}
+import { ProsodyAnalysisResult } from '@/types/assessment/audio';
 
 export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult> {
   try {

@@ -12,6 +12,16 @@ export interface SyntaxComplexity {
   subordinationIndex: number; // Average number of dependent clauses per sentence
 }
 
+// Prosody analysis interface
+export interface ProsodyAnalysisResult {
+  pitch_mean: number;
+  pitch_std_dev: number;
+  tempo_bpm: number;
+  opensmile_features: string;
+  cefr_level?: string;
+  analysisTimestamp?: number;
+}
+
 // Full audio analysis result
 export interface AudioAnalysisResult {
   wpm: number;
@@ -62,6 +72,8 @@ export interface AudioAnalysisResult {
   pauseAnalysis?: any;
   fluencyScore?: number;
   cefrFluencyLevel?: string;
+  // Prosody analysis
+  prosodyAnalysis?: ProsodyAnalysisResult;
 }
 
 // Pronunciation details structure
