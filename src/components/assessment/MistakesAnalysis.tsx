@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, AlertCircle, CheckCircle, Volume2, BookOpen } from 'lucide-react';
+import { Download, AlertCircle, CheckCircle, Volume2, BookOpen, Activity } from 'lucide-react';
 import { AssessmentResult } from '@/types/assessment';
 import { analyzeMistakes } from '@/utils/assessment/mistakesAnalysis';
 import WaveformVisualization from './WaveformVisualization';
 import VocabularyEnhancements from './VocabularyEnhancements';
+import ProsodyPanel from './ProsodyPanel';
 import MistakeCategory from './mistakes/MistakeCategory';
 
 interface MistakesAnalysisProps {
@@ -100,11 +101,15 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
         
         <CardContent>
           <Tabs defaultValue="mistakes" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="mistakes">Mistakes & Issues</TabsTrigger>
               <TabsTrigger value="audio">
                 <Volume2 className="h-4 w-4 mr-2" />
                 Audio Timeline
+              </TabsTrigger>
+              <TabsTrigger value="prosody">
+                <Activity className="h-4 w-4 mr-2" />
+                Prosody
               </TabsTrigger>
               <TabsTrigger value="vocabulary">
                 <BookOpen className="h-4 w-4 mr-2" />
@@ -131,6 +136,10 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
               />
             </TabsContent>
             
+            <TabsContent value="prosody" className="mt-4">
+              <ProsodyPanel audioAnalysis={result.audioAnalysis} />
+            </TabsContent>
+            
             <TabsContent value="vocabulary" className="mt-4">
               <VocabularyEnhancements
                 transcript={result.transcript || ''}
@@ -142,7 +151,7 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
       </Card>
       
       <div className="text-center text-sm text-gray-500">
-        <p>This analysis combines automated detection with MFA pronunciation analysis when available.</p>
+        <p>This analysis combines automated detection with MFA pronunciation analysis and prosody evaluation.</p>
         <p>Pronunciation scoring uses Montreal Forced Alignment for detailed phoneme-level feedback.</p>
       </div>
     </div>

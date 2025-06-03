@@ -1,4 +1,3 @@
-
 // Grammar and syntax analysis types
 export interface GrammaticalError {
   type: 'agreement' | 'tense' | 'article' | 'preposition' | 'other';
@@ -135,4 +134,20 @@ export interface WhisperXResult {
   total_duration: number;
   transcription_failed: boolean;
   error?: string;
+}
+
+export interface SpeechMetrics {
+  duration: number;
+  speechRate: number;
+  pauseCount: number;
+  averagePauseDuration: number;
+  silenceRatio: number;
+  wordsPerMinute: number;
+}
+
+export interface PronunciationMetrics {
+  overallScore: number;
+  wordAccuracy: number;
+  phonemeAccuracy: number;
+  problematicPhonemes: string[];
 }

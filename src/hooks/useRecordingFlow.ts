@@ -4,6 +4,7 @@ import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
 import { getPronunciationScore } from '@/utils/pronunciationScoreApi';
+import { analyzeProsody, ProsodyAnalysisResult } from '@/utils/assessment/prosodyApi';
 import { toast } from '@/hooks/use-toast';
 import { usePronunciationApi } from '@/hooks/usePronunciationApi';
 import { SpeakingPrompt } from '@/types/assessment';
@@ -14,6 +15,7 @@ export const useRecordingFlow = (
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState<boolean>(true);
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
   const [manualTranscript, setManualTranscript] = useState<string>('');
+  const [isProsodyAnalyzing, setIsProsodyAnalyzing] = useState<boolean>(false);
   const { isPronunciationApiAvailable } = usePronunciationApi();
   
   const {
@@ -49,6 +51,11 @@ export const useRecordingFlow = (
     }
   }, [isSupported]);
   
+  // Convert blob to file for prosody analysis
+  const blobToFile = (blob: Blob): File => {
+    return new File([blob], 'recording.wav', { type: 'audio/wav' });
+  };
+  
   // Handle start recording with speech recognition
   const handleStartRecording = async () => {
     const started = await startRecording();
@@ -63,54 +70,81 @@ export const useRecordingFlow = (
     stopListening();
   };
   
-  // Handle submit recording with enhanced pronunciation scoring
+  // Handle submit recording with enhanced pronunciation and prosody scoring
   const handleSubmit = async () => {
     if (audioBlob) {
       try {
+        let enhancedAnalysis = audioAnalysis || {} as AudioAnalysisResult;
+        
+        // Show processing toast
+        toast({
+          title: "Analyzing speech",
+          description: "Analyzing pronunciation and prosody...",
+        });
+        
+        // Run pronunciation analysis if available
         if (isPronunciationApiAvailable && transcript) {
-          // Show processing toast
-          toast({
-            title: "Analyzing pronunciation",
-            description: "This may take a few seconds...",
-          });
+          try {
+            const pronunciationResult = await getPronunciationScore(
+              audioBlob, 
+              transcript, 
+              audioAnalysis || {} as AudioAnalysisResult
+            );
+            
+            enhancedAnalysis = {
+              ...enhancedAnalysis,
+              pronunciationScore: pronunciationResult.score,
+              pronunciationDetails: {
+                ...enhancedAnalysis.pronunciationDetails,
+                pronunciation_score: pronunciationResult.score,
+                cefr_level: pronunciationResult.cefrLevel,
+                ...pronunciationResult.details
+              }
+            };
+          } catch (error) {
+            console.error("Pronunciation analysis error:", error);
+          }
+        }
+        
+        // Run prosody analysis
+        setIsProsodyAnalyzing(true);
+        try {
+          const audioFile = blobToFile(audioBlob);
+          const prosodyResult = await analyzeProsody(audioFile);
           
-          // Get enhanced pronunciation score from the API
-          const pronunciationResult = await getPronunciationScore(
-            audioBlob, 
-            transcript, 
-            audioAnalysis || {} as AudioAnalysisResult
-          );
-          
-          // Create enhanced audio analysis with pronunciation data
-          const enhancedAnalysis = {
-            ...(audioAnalysis || {}),
-            pronunciationScore: pronunciationResult.score,
-            cefrLevel: pronunciationResult.cefrLevel,
-            pronunciationDetails: pronunciationResult.details
+          enhancedAnalysis = {
+            ...enhancedAnalysis,
+            prosodyAnalysis: {
+              ...prosodyResult,
+              analysisTimestamp: Date.now()
+            }
           };
           
-          // Submit enhanced analysis
-          onRecordingComplete(audioBlob, transcript, enhancedAnalysis as any);
-          
-          // Show success toast
           toast({
-            title: "Pronunciation analysis complete",
-            description: `Score: ${pronunciationResult.score.toFixed(1)}/10 (${pronunciationResult.cefrLevel})`,
+            title: "Analysis complete",
+            description: `Prosody CEFR level: ${prosodyResult.cefr_level || 'Unknown'}`,
           });
-          
-        } else {
-          // Fallback to basic analysis
-          onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
+        } catch (error) {
+          console.error("Prosody analysis error:", error);
+          toast({
+            title: "Prosody analysis failed",
+            description: "Using fallback analysis methods.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsProsodyAnalyzing(false);
         }
+        
+        // Submit enhanced analysis
+        onRecordingComplete(audioBlob, transcript, enhancedAnalysis);
+        
       } catch (error) {
-        console.error("Pronunciation analysis error:", error);
-        // Fallback to basic analysis on error
+        console.error("Speech analysis error:", error);
         onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
         
-        // Show error toast
         toast({
-          title: "Pronunciation analysis failed",
-          description: "Using fallback scoring method instead.",
+          title: "Analysis failed",
+          description: "Using basic scoring method instead.",
           variant: "destructive"
         });
       }
@@ -126,6 +160,7 @@ export const useRecordingFlow = (
     resetRecording();
     resetTranscript();
     setManualTranscript('');
+    setIsProsodyAnalyzing(false);
   };
   
   // Toggle between recording and manual entry modes
@@ -140,11 +175,12 @@ export const useRecordingFlow = (
     recordingTime,
     audioBlob,
     audioAnalysis,
-    isProcessing,
+    isProcessing: isProcessing || isProsodyAnalyzing,
     transcript,
     isManualEntryMode,
     isSpeechRecognitionSupported,
     isPronunciationApiAvailable,
+    isProsodyAnalyzing,
     manualTranscript,
     
     // Actions
