@@ -9,6 +9,7 @@ import { useAssessmentScoring } from './useAssessmentScoring';
 import { useAdminControls } from './useAdminControls';
 import { useSessionManagement } from './useSessionManagement';
 import { AssessmentStep, AssessmentFlowConfig, DEFAULT_CONFIG } from './types/assessmentTypes';
+import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
 
 export { AssessmentStep } from './types/assessmentTypes';
 export type { AssessmentFlowConfig } from './types/assessmentTypes';
@@ -81,106 +82,117 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
   
   // Initialize the assessment
   const initializeAssessment = (withEmail: boolean = false) => {
-    // Generate session ID and set email preference
+    console.log("Initializing assessment with email:", withEmail);
     initializeSession(withEmail);
-    
-    // Initialize prompts queue
     initializePromptQueue();
-    
-    // Reset result and scoring
     resetScoring();
-    
-    // Move to welcome step
     setCurrentStep(AssessmentStep.WELCOME);
   };
   
   // Start the assessment
   const startAssessment = () => {
+    console.log("Starting assessment, prompts available:", promptQueue.length);
     if (promptQueue.length > 0) {
-      // Select first prompt
       handlePromptSelect(promptQueue[0]);
-      
-      // Move to recording step
       setCurrentStep(AssessmentStep.RECORDING);
     }
   };
   
   // Handle recording completion
-  const handleResponseComplete = (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
-    // Process the recording
-    handleRecordingComplete(audioBlob, transcript, audioAnalysis);
+  const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
+    console.log("Response completed, processing...");
     
-    // Wait for result to be processed
-    setTimeout(() => {
-      if (assessmentResult) {
-        // Add to history
-        const updatedHistory = addToHistory(selectedPrompt!, assessmentResult);
-        
-        // Check for consistency in CEFR level
-        const currentLevel = assessmentResult.cefrLevel;
-        const consistencyCount = checkConsistency(currentLevel);
-        
-        // Determine if we should continue or finish
-        const shouldFinish = shouldFinishAssessment(
-          consistencyCount, 
-          currentPromptIndex, 
-          promptQueue.length
-        );
-        
-        if (shouldFinish) {
-          finishAssessment(assessmentResult);
-        } else {
-          // Move to next prompt
-          const nextPrompt = moveToNextPrompt();
-          if (nextPrompt) {
-            handlePromptSelect(nextPrompt);
+    try {
+      // Process the recording
+      await handleRecordingComplete(audioBlob, transcript, audioAnalysis);
+      
+      // Wait a bit for processing to complete
+      setTimeout(() => {
+        if (assessmentResult) {
+          console.log("Assessment result received:", assessmentResult);
+          
+          // Apply CEFR calibration
+          const enhancedResult = applyCEFRCalibration(assessmentResult, audioAnalysis);
+          
+          // Add to history
+          addToHistory(selectedPrompt!, enhancedResult);
+          
+          // Check for consistency
+          const currentLevel = enhancedResult.overallCEFR;
+          const consistencyCount = checkConsistency(currentLevel);
+          
+          console.log("CEFR level:", currentLevel, "Consistency count:", consistencyCount);
+          
+          // Determine if we should continue or finish
+          const shouldFinish = shouldFinishAssessment(
+            consistencyCount, 
+            currentPromptIndex, 
+            promptQueue.length
+          );
+          
+          console.log("Should finish assessment:", shouldFinish);
+          
+          if (shouldFinish) {
+            finishAssessment(enhancedResult);
+          } else {
+            // Move to next prompt
+            const nextPrompt = moveToNextPrompt();
+            if (nextPrompt) {
+              console.log("Moving to next prompt:", nextPrompt.text);
+              handlePromptSelect(nextPrompt);
+              handleReset(); // Clear previous recording state
+            } else {
+              console.log("No more prompts, finishing assessment");
+              finishAssessment(enhancedResult);
+            }
           }
+        } else {
+          console.error("No assessment result received");
+          // If no result, try to finish with a basic result
+          finishAssessment(null);
         }
-        
-        // Reset for next recording
-        handleReset();
-      }
-    }, 500); // Small delay to ensure state updates
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Error in response completion:", error);
+      finishAssessment(null);
+    }
   };
   
   // Skip to next prompt
   const skipToNextPrompt = () => {
+    console.log("Skipping to next prompt");
     const nextPrompt = moveToNextPrompt();
     
     if (nextPrompt) {
       handlePromptSelect(nextPrompt);
       handleReset();
     } else {
-      // If no more prompts, finish with current result
       finishAssessment(assessmentResult || null);
     }
   };
   
   // Finish assessment
   const finishAssessment = (finalAssessmentResult: AssessmentResult | null) => {
+    console.log("Finishing assessment with result:", finalAssessmentResult);
     setFinalResult(finalAssessmentResult);
-    
-    if (emailResults && !bypassScoringDelay) {
-      // Show processing screen if email delivery is expected
-      setCurrentStep(AssessmentStep.PROCESSING);
-      
-      // In a real app, we would trigger email sending here
-      
-      // Simulate delay then show results
-      setTimeout(() => {
-        setCurrentStep(AssessmentStep.RESULTS);
-      }, bypassScoringDelay ? 0 : 3000); // Use a shorter delay for demo purposes
-    } else {
-      // Show results immediately
-      setCurrentStep(AssessmentStep.RESULTS);
-    }
     
     // Store assessment data
     storeAssessmentData(studentInfo, promptHistory, finalAssessmentResult);
+    
+    if (emailResults && !bypassScoringDelay) {
+      setCurrentStep(AssessmentStep.PROCESSING);
+      setTimeout(() => {
+        setCurrentStep(AssessmentStep.RESULTS);
+      }, 3000);
+    } else {
+      setCurrentStep(AssessmentStep.RESULTS);
+    }
   };
   
   // Reset the entire assessment
   const resetAssessment = () => {
+    console.log("Resetting assessment");
     handleReset();
     setCurrentStep(AssessmentStep.ENTRY);
     resetSession();

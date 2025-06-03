@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import AssessmentResults from './AssessmentResults';
+import CEFRSkillsBreakdown from '@/components/reports/sections/CEFRSkillsBreakdown';
 
 interface ResultsStepProps {
   result: AssessmentResult | null;
@@ -22,35 +23,71 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
   onReset,
   onTakeFullAssessment
 }) => {
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {result && (
+  console.log("ResultsStep rendering with result:", result);
+  
+  if (!result) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
         <Card>
           <CardHeader className="text-center">
-            <h2 className="text-2xl font-bold text-assessment-blue">Assessment Results</h2>
-            <p className="text-gray-600">Your English speaking proficiency level</p>
+            <h2 className="text-2xl font-bold text-assessment-blue">Assessment Complete</h2>
+            <p className="text-gray-600">Processing your results...</p>
           </CardHeader>
           
-          <CardContent>
-            <AssessmentResults
-              result={result}
-              isProcessing={false}
-              detailedFeedback={detailedFeedback}
-              onReset={() => {}}
-              onTakeFullAssessment={() => {}}
-            />
+          <CardContent className="text-center py-8">
+            <div className="animate-spin h-8 w-8 border-b-2 border-assessment-blue mx-auto mb-4"></div>
+            <p>Generating your assessment report...</p>
           </CardContent>
           
-          <CardFooter className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+          <CardFooter className="flex justify-center">
             <Button variant="outline" onClick={onReset}>
-              Take Another Assessment
-            </Button>
-            <Button onClick={onTakeFullAssessment}>
-              Take Full Assessment
+              Start New Assessment
             </Button>
           </CardFooter>
         </Card>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Card>
+        <CardHeader className="text-center">
+          <h2 className="text-2xl font-bold text-assessment-blue">Assessment Results</h2>
+          <p className="text-gray-600">Your English speaking proficiency level</p>
+        </CardHeader>
+        
+        <CardContent>
+          {/* Enhanced CEFR Skills Breakdown */}
+          {(result as any)?.cefrLevels && (
+            <div className="mb-6">
+              <CEFRSkillsBreakdown
+                skillScores={result.metrics}
+                cefrLevels={(result as any).cefrLevels}
+                overallCEFR={(result as any).overallCEFR}
+                showRadarChart={true}
+              />
+            </div>
+          )}
+          
+          <AssessmentResults
+            result={result}
+            isProcessing={false}
+            detailedFeedback={detailedFeedback}
+            onReset={() => {}}
+            onTakeFullAssessment={() => {}}
+          />
+        </CardContent>
+        
+        <CardFooter className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+          <Button variant="outline" onClick={onReset}>
+            Take Another Assessment
+          </Button>
+          <Button onClick={onTakeFullAssessment}>
+            Take Full Assessment
+          </Button>
+        </CardFooter>
+      </Card>
       
       {showRawScoring && promptHistory.length > 0 && (
         <Card className="mt-8">
@@ -72,7 +109,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
                   {item.result && (
                     <div className="text-right">
                       <span className="text-xs bg-assessment-blue/10 text-assessment-blue px-2 py-1 rounded-full">
-                        Scored as {item.result.cefrLevel}
+                        Scored as {(item.result as any).overallCEFR || item.result.cefrLevel}
                       </span>
                     </div>
                   )}
