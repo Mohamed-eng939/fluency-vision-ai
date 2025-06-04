@@ -76,11 +76,6 @@ export const useRecordingFlow = (
       try {
         let enhancedAnalysis = audioAnalysis || {} as AudioAnalysisResult;
         
-        toast({
-          title: "Analyzing speech",
-          description: "Processing your recording...",
-        });
-        
         // Run pronunciation analysis if available
         if (isPronunciationApiAvailable && transcript) {
           try {
@@ -120,10 +115,6 @@ export const useRecordingFlow = (
             }
           };
           
-          toast({
-            title: "Analysis complete",
-            description: `Assessment processed successfully`,
-          });
         } catch (error) {
           console.error("Prosody analysis error:", error);
           // Analysis failed but we continue with fallback
@@ -149,11 +140,6 @@ export const useRecordingFlow = (
       } catch (error) {
         console.error("Speech analysis error:", error);
         onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
-        
-        toast({
-          title: "Analysis completed",
-          description: "Using basic scoring method.",
-        });
       }
     } else if (isManualEntryMode && manualTranscript) {
       // Create an empty audio blob if none exists
