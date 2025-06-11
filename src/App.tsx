@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,7 +13,7 @@ import Login from "./pages/Login";
 import ReportPage from "./pages/ReportPage";
 import { useEffect } from "react";
 import { setupAdminUser } from "./lib/supabase/setupAdmin";
-import { useToast } from "./components/ui/use-toast";
+import { useToast } from "./hooks/use-toast";
 
 // Import Dashboard pages
 import Dashboard from "./pages/Dashboard";
@@ -21,7 +22,7 @@ import AssessorPanel from "./pages/assessor/AssessorPanel";
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
+const AppContent: React.FC = () => {
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,7 +62,7 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
+const App: React.FC = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrowserRouter>
