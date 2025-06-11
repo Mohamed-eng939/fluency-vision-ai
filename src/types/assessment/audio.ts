@@ -18,8 +18,9 @@ export interface ProsodyAnalysisResult {
   pitch_std_dev: number;
   tempo_bpm: number;
   opensmile_features: string;
-  cefr_level?: string;
-  analysisTimestamp?: number;
+  cefr_level: string;
+  analysisTimestamp: number;
+  failureReason?: string; // Add optional failureReason property
 }
 
 // Full audio analysis result

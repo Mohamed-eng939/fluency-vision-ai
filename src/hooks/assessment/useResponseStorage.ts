@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
+import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult, CEFRLevel } from '@/types/assessment';
 import { processRecordingForAssessment } from '@/utils/assessment/audioProcessingUtils';
 import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
 
@@ -145,6 +144,18 @@ export const useResponseStorage = () => {
     // Determine CEFR level from aggregated score
     const cefrLevel = determineCEFRFromScore(totalScore);
 
+    // Create aggregated feedback object
+    const aggregatedFeedback = {
+      fluency: `Fluency score: ${aggregatedMetrics.fluency.toFixed(1)}/10`,
+      grammar: `Grammar score: ${aggregatedMetrics.grammar.toFixed(1)}/10`,
+      pronunciation: `Pronunciation score: ${aggregatedMetrics.pronunciation.toFixed(1)}/10`,
+      prosody: `Prosody score: ${aggregatedMetrics.prosody.toFixed(1)}/10`,
+      vocabulary: `Vocabulary score: ${aggregatedMetrics.vocabulary.toFixed(1)}/10`,
+      syntax: `Syntax score: ${aggregatedMetrics.syntax.toFixed(1)}/10`,
+      coherence: `Coherence score: ${aggregatedMetrics.coherence.toFixed(1)}/10`,
+      overall: `Assessment based on ${results.length} speaking tasks`
+    };
+
     console.log("Aggregated metrics:", aggregatedMetrics);
     console.log("Aggregated total score:", totalScore);
     console.log("Final CEFR level:", cefrLevel);
@@ -155,10 +166,10 @@ export const useResponseStorage = () => {
       metrics: aggregatedMetrics,
       totalScore,
       cefrLevel,
+      feedback: aggregatedFeedback,
       audioAnalysis: aggregatedAudioAnalysis,
       transcript: results.map(r => r.transcript).filter(Boolean).join(' '),
-      duration: results.reduce((sum, r) => sum + (r.duration || 0), 0),
-      feedback: `Assessment based on ${results.length} speaking tasks`
+      duration: results.reduce((sum, r) => sum + (r.duration || 0), 0)
     };
   };
 
@@ -212,7 +223,7 @@ export const useResponseStorage = () => {
   };
 
   // Determine CEFR level from numerical score
-  const determineCEFRFromScore = (score: number): string => {
+  const determineCEFRFromScore = (score: number): CEFRLevel => {
     if (score >= 9) return 'C2';
     if (score >= 8) return 'C1';
     if (score >= 7) return 'B2';
