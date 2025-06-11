@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import AssessmentResults from './AssessmentResults';
+import ProcessingResults from './ProcessingResults';
 import CEFRSkillsBreakdown from '@/components/reports/sections/CEFRSkillsBreakdown';
 
 interface ResultsStepProps {
@@ -11,6 +12,8 @@ interface ResultsStepProps {
   detailedFeedback: Record<string, string> | null;
   promptHistory?: { prompt: any; result?: AssessmentResult }[];
   showRawScoring: boolean;
+  isProcessing: boolean;
+  processingProgress?: { current: number; total: number };
   onReset: () => void;
   onTakeFullAssessment: () => void;
 }
@@ -20,10 +23,23 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
   detailedFeedback,
   promptHistory = [],
   showRawScoring,
+  isProcessing,
+  processingProgress = { current: 0, total: 0 },
   onReset,
   onTakeFullAssessment
 }) => {
-  console.log("ResultsStep rendering with result:", result);
+  console.log("ResultsStep rendering with result:", result, "isProcessing:", isProcessing);
+  
+  // Show processing state if still processing
+  if (isProcessing) {
+    return (
+      <ProcessingResults
+        current={processingProgress.current}
+        total={processingProgress.total}
+        isProcessing={isProcessing}
+      />
+    );
+  }
   
   if (!result) {
     return (

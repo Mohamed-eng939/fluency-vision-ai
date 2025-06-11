@@ -33,7 +33,7 @@ export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult>
         headers: { 
           "Content-Type": "multipart/form-data"
         }, 
-        timeout: 15000 // Increased timeout
+        timeout: 20000 // Increased timeout to 20 seconds
       }
     );
     
@@ -56,30 +56,42 @@ export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult>
     console.error("Prosody analysis failed:", error);
     
     let failureReason = "Server unavailable";
+    let userFriendlyMessage = "Prosody analysis failed due to server unavailability";
     
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
         failureReason = "Request timeout";
+        userFriendlyMessage = "Prosody analysis failed due to timeout - server took too long to respond";
       } else if (error.response?.status === 413) {
         failureReason = "File too large";
+        userFriendlyMessage = "Audio file format not supported - file too large for prosody analysis";
       } else if (error.response?.status === 415) {
         failureReason = "Unsupported audio format";
+        userFriendlyMessage = "Audio file format not supported for prosody analysis";
       } else if (error.response?.status >= 500) {
         failureReason = "Server error";
+        userFriendlyMessage = "Prosody analysis failed due to server error";
       } else if (error.response?.status >= 400) {
         failureReason = "Invalid request";
+        userFriendlyMessage = "Prosody analysis failed due to invalid audio format";
+      } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+        failureReason = "Network error";
+        userFriendlyMessage = "Prosody analysis failed due to network connectivity issues";
       }
     } else if (error instanceof Error) {
       if (error.message.includes("size is 0")) {
         failureReason = "Invalid audio file";
+        userFriendlyMessage = "Audio file format not supported - invalid audio data";
       } else if (error.message.includes("too large")) {
         failureReason = "File too large";
+        userFriendlyMessage = "Audio file format not supported - file too large";
       }
     }
     
     console.log("Prosody analysis fallback reason:", failureReason);
+    console.log("User-friendly message:", userFriendlyMessage);
     
-    // Return fallback data with failure reason
+    // Return fallback data with detailed failure information
     return {
       pitch_mean: 150, // Default values
       pitch_std_dev: 25,
@@ -87,7 +99,8 @@ export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult>
       opensmile_features: `fallback - ${failureReason}`,
       cefr_level: "B1", // Default level
       analysisTimestamp: Date.now(),
-      failureReason
+      failureReason,
+      userFriendlyMessage
     };
   }
 }

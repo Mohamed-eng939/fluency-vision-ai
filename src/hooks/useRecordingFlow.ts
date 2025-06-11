@@ -1,10 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
-import { getPronunciationScore } from '@/utils/pronunciationScoreApi';
-import { analyzeProsody } from '@/utils/assessment/prosodyApi';
-import { ProsodyAnalysisResult } from '@/types/assessment/audio';
 import { toast } from '@/hooks/use-toast';
 import { usePronunciationApi } from '@/hooks/usePronunciationApi';
 import { SpeakingPrompt } from '@/types/assessment';
@@ -16,7 +14,7 @@ export const useRecordingFlow = (
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState<boolean>(true);
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
   const [manualTranscript, setManualTranscript] = useState<string>('');
-  const [isProsodyAnalyzing, setIsProsodyAnalyzing] = useState<boolean>(false);
+  const [isQuickSubmitting, setIsQuickSubmitting] = useState<boolean>(false);
   const { isPronunciationApiAvailable } = usePronunciationApi();
   
   const {
@@ -51,11 +49,6 @@ export const useRecordingFlow = (
     }
   }, [isSupported]);
   
-  // Convert blob to file for prosody analysis
-  const blobToFile = (blob: Blob): File => {
-    return new File([blob], 'recording.wav', { type: 'audio/wav' });
-  };
-  
   // Handle start recording with speech recognition
   const handleStartRecording = async () => {
     const started = await startRecording();
@@ -70,10 +63,10 @@ export const useRecordingFlow = (
     stopListening();
   };
   
-  // Handle submit recording - with improved validation
+  // Handle submit recording - improved for deferred analysis
   const handleSubmit = async () => {
     if (audioBlob) {
-      // Validate audio blob
+      // Enhanced validation with user feedback
       if (audioBlob.size === 0) {
         console.error("Audio blob is empty - cannot submit");
         toast({
@@ -84,13 +77,37 @@ export const useRecordingFlow = (
         return;
       }
       
+      // Minimum recording length check
+      if (audioBlob.size < 1000) { // Less than ~1KB indicates very short recording
+        toast({
+          title: "Recording Too Short",
+          description: "Please record a longer response (at least 3-5 seconds).",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       console.log(`Submitting audio: ${audioBlob.size} bytes, transcript: ${transcript?.length || 0} chars`);
       
       try {
         if (delayAnalysis) {
-          // Quick submission without analysis - just store the recording
-          console.log("Quick submit - storing recording without analysis");
-          onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
+          // Quick submission path - store immediately without analysis
+          setIsQuickSubmitting(true);
+          console.log("Quick submit - storing recording without analysis for batch processing");
+          
+          // Create minimal analysis object for storage
+          const minimalAnalysis: AudioAnalysisResult = {
+            wpm: 0, // Will be calculated during batch processing
+            totalWords: transcript ? transcript.trim().split(/\s+/).length : 0,
+            pauseCount: 0,
+            pauseDuration: 0,
+            pauseRatio: 0,
+            speakingDuration: recordingTime / 1000, // Convert to seconds
+            totalDuration: recordingTime / 1000
+          };
+          
+          onRecordingComplete(audioBlob, transcript, minimalAnalysis);
+          setIsQuickSubmitting(false);
           return;
         }
 
@@ -160,16 +177,26 @@ export const useRecordingFlow = (
         
       } catch (error) {
         console.error("Speech analysis error:", error);
+        setIsQuickSubmitting(false);
         onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
       }
     } else if (isManualEntryMode && manualTranscript) {
       // Create a minimal audio blob for manual entry
+      if (manualTranscript.trim().length < 10) {
+        toast({
+          title: "Response Too Short",
+          description: "Please provide a more detailed written response.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       const emptyBlob = new Blob([''], { type: 'audio/wav' });
       onRecordingComplete(emptyBlob, manualTranscript);
     } else {
       console.error("No audio or transcript to submit");
       toast({
-        title: "Submission Error", 
+        title: "No Response", 
         description: "Please record audio or enter text before submitting.",
         variant: "destructive"
       });
@@ -181,7 +208,7 @@ export const useRecordingFlow = (
     resetRecording();
     resetTranscript();
     setManualTranscript('');
-    setIsProsodyAnalyzing(false);
+    setIsQuickSubmitting(false);
   };
   
   // Toggle between recording and manual entry modes
@@ -196,13 +223,14 @@ export const useRecordingFlow = (
     recordingTime,
     audioBlob,
     audioAnalysis,
-    isProcessing: isProcessing || isProsodyAnalyzing,
+    isProcessing: isProcessing || isQuickSubmitting,
     transcript,
     isManualEntryMode,
     isSpeechRecognitionSupported,
     isPronunciationApiAvailable,
-    isProsodyAnalyzing,
+    isProsodyAnalyzing: false, // No longer needed for deferred analysis
     manualTranscript,
+    isQuickSubmitting,
     
     // Actions
     handleStartRecording,

@@ -15,8 +15,9 @@ interface StoredResponse {
 export const useResponseStorage = () => {
   const [storedResponses, setStoredResponses] = useState<StoredResponse[]>([]);
   const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
 
-  // Store a response for later processing with validation
+  // Store a response for later processing with enhanced validation
   const storeResponse = (
     prompt: SpeakingPrompt,
     audioBlob: Blob,
@@ -24,13 +25,19 @@ export const useResponseStorage = () => {
     audioAnalysis?: AudioAnalysisResult,
     questionIndex?: number
   ) => {
-    // Validate audio blob before storing
+    // Enhanced validation with size and content checks
     if (!audioBlob || audioBlob.size === 0) {
       console.error("Invalid audio blob - size is 0 or null");
       return false;
     }
 
-    console.log(`Storing response for question ${questionIndex}: Audio size=${audioBlob.size} bytes`);
+    // Check for minimum recording size (prevent very short recordings)
+    if (audioBlob.size < 1000) {
+      console.error("Audio blob too small - likely invalid recording");
+      return false;
+    }
+
+    console.log(`Storing response for question ${questionIndex}: Audio size=${audioBlob.size} bytes, transcript=${transcript?.length || 0} chars`);
     
     const newResponse: StoredResponse = {
       prompt,
@@ -51,23 +58,25 @@ export const useResponseStorage = () => {
     return true;
   };
 
-  // Process all stored responses with aggregated scoring
+  // Process all stored responses with enhanced progress tracking
   const processAllStoredResponses = async (
     sessionId: string,
     studentName?: string,
     setPromptHistory?: (history: { prompt: SpeakingPrompt; result: AssessmentResult }[]) => void
   ): Promise<AssessmentResult | null> => {
-    console.log("Processing all stored responses:", storedResponses.length);
+    console.log("Starting batch processing of all stored responses:", storedResponses.length);
     setIsProcessingAllResponses(true);
+    setProcessingProgress({ current: 0, total: storedResponses.length });
     
     try {
       const processedHistory: { prompt: SpeakingPrompt; result: AssessmentResult }[] = [];
       const allResults: AssessmentResult[] = [];
       
-      // Process each response individually
+      // Process each response individually with progress updates
       for (const [index, response] of storedResponses.entries()) {
         try {
           console.log(`Processing response ${index + 1}/${storedResponses.length} for prompt:`, response.prompt.text.substring(0, 50));
+          setProcessingProgress({ current: index + 1, total: storedResponses.length });
           
           const result = await processRecordingForAssessment(
             response.audioBlob,
@@ -111,10 +120,11 @@ export const useResponseStorage = () => {
       return null;
     } finally {
       setIsProcessingAllResponses(false);
+      setProcessingProgress({ current: 0, total: 0 });
     }
   };
 
-  // Calculate aggregated result from all individual results
+  // Calculate aggregated result from all individual results with improved feedback
   const calculateAggregatedResult = (
     results: AssessmentResult[],
     sessionId: string,
@@ -122,7 +132,7 @@ export const useResponseStorage = () => {
   ): AssessmentResult | null => {
     if (results.length === 0) return null;
 
-    console.log(`Aggregating ${results.length} results`);
+    console.log(`Aggregating ${results.length} results for comprehensive assessment`);
 
     // Aggregate metrics by averaging
     const aggregatedMetrics = {
@@ -144,17 +154,8 @@ export const useResponseStorage = () => {
     // Determine CEFR level from aggregated score
     const cefrLevel = determineCEFRFromScore(totalScore);
 
-    // Create aggregated feedback object
-    const aggregatedFeedback = {
-      fluency: `Fluency score: ${aggregatedMetrics.fluency.toFixed(1)}/10`,
-      grammar: `Grammar score: ${aggregatedMetrics.grammar.toFixed(1)}/10`,
-      pronunciation: `Pronunciation score: ${aggregatedMetrics.pronunciation.toFixed(1)}/10`,
-      prosody: `Prosody score: ${aggregatedMetrics.prosody.toFixed(1)}/10`,
-      vocabulary: `Vocabulary score: ${aggregatedMetrics.vocabulary.toFixed(1)}/10`,
-      syntax: `Syntax score: ${aggregatedMetrics.syntax.toFixed(1)}/10`,
-      coherence: `Coherence score: ${aggregatedMetrics.coherence.toFixed(1)}/10`,
-      overall: `Assessment based on ${results.length} speaking tasks`
-    };
+    // Generate smart feedback based on actual performance metrics
+    const aggregatedFeedback = generateSmartFeedback(aggregatedMetrics, aggregatedAudioAnalysis, cefrLevel, results.length);
 
     console.log("Aggregated metrics:", aggregatedMetrics);
     console.log("Aggregated total score:", totalScore);
@@ -170,6 +171,69 @@ export const useResponseStorage = () => {
       audioAnalysis: aggregatedAudioAnalysis,
       transcript: results.map(r => r.transcript).filter(Boolean).join(' '),
       duration: results.reduce((sum, r) => sum + (r.duration || 0), 0)
+    };
+  };
+
+  // Generate smart feedback based on actual performance metrics
+  const generateSmartFeedback = (metrics: any, audioAnalysis: AudioAnalysisResult, cefrLevel: CEFRLevel, taskCount: number) => {
+    const fluencyScore = metrics.fluency * 10;
+    const grammarScore = metrics.grammar * 10;
+    const vocabularyScore = metrics.vocabulary * 10;
+    const pronunciationScore = metrics.pronunciation * 10;
+    
+    // Smart fluency feedback based on actual metrics
+    let fluencyFeedback = "";
+    if (audioAnalysis.wpm === 0 || audioAnalysis.wpm < 60) {
+      fluencyFeedback = `Work on increasing speech tempo and reducing hesitation. Current speaking rate needs improvement for ${cefrLevel} level.`;
+    } else if (fluencyScore > 70) {
+      fluencyFeedback = `Excellent fluency for ${cefrLevel} level. Natural speaking rhythm with minimal hesitation.`;
+    } else if (fluencyScore > 50) {
+      fluencyFeedback = `Good fluency for ${cefrLevel} level, with some areas for improvement in speech flow.`;
+    } else {
+      fluencyFeedback = `Work on reducing hesitation and increasing speech tempo to reach ${cefrLevel} level standards.`;
+    }
+
+    // Smart grammar feedback
+    let grammarFeedback = "";
+    if (grammarScore > 70) {
+      grammarFeedback = `Strong grammatical accuracy for ${cefrLevel} level with minimal errors.`;
+    } else if (grammarScore > 50) {
+      grammarFeedback = `Adequate grammar control for ${cefrLevel} level with some areas for improvement.`;
+    } else {
+      grammarFeedback = `Focus on improving grammatical accuracy to meet ${cefrLevel} level standards.`;
+    }
+
+    // Smart vocabulary feedback
+    let vocabularyFeedback = "";
+    if (vocabularyScore > 70) {
+      vocabularyFeedback = `Strong vocabulary range appropriate for ${cefrLevel} level.`;
+    } else if (vocabularyScore > 50) {
+      vocabularyFeedback = `Good vocabulary usage for ${cefrLevel} level - consider expanding range.`;
+    } else {
+      vocabularyFeedback = `Work on expanding vocabulary range to meet ${cefrLevel} level expectations.`;
+    }
+
+    // Smart pronunciation feedback
+    let pronunciationFeedback = "";
+    if (pronunciationScore > 70) {
+      pronunciationFeedback = `Clear pronunciation suitable for ${cefrLevel} level.`;
+    } else if (pronunciationScore > 50) {
+      pronunciationFeedback = `Generally clear pronunciation with some areas for improvement at ${cefrLevel} level.`;
+    } else {
+      pronunciationFeedback = `Focus on pronunciation clarity to improve comprehensibility at ${cefrLevel} level.`;
+    }
+
+    return {
+      fluency: fluencyFeedback,
+      grammar: grammarFeedback,
+      vocabulary: vocabularyFeedback,
+      pronunciation: pronunciationFeedback,
+      prosody: `Prosody analysis ${audioAnalysis.prosodyAnalysis?.failureReason ? 
+        `not available (${audioAnalysis.prosodyAnalysis.userFriendlyMessage || audioAnalysis.prosodyAnalysis.failureReason})` : 
+        `completed successfully for ${cefrLevel} level`}`,
+      coherence: `Coherence and organization appropriate for ${cefrLevel} level based on ${taskCount} speaking tasks.`,
+      syntax: `Sentence complexity suitable for ${cefrLevel} level.`,
+      overall: `Comprehensive assessment based on ${taskCount} speaking tasks demonstrates ${cefrLevel} level proficiency.`
     };
   };
 
@@ -237,11 +301,13 @@ export const useResponseStorage = () => {
     console.log("Resetting stored responses");
     setStoredResponses([]);
     setIsProcessingAllResponses(false);
+    setProcessingProgress({ current: 0, total: 0 });
   };
 
   return {
     storedResponses,
     isProcessingAllResponses,
+    processingProgress,
     storeResponse,
     processAllStoredResponses,
     resetStoredResponses,
