@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import { useStudentInfo } from './useStudentInfo';
@@ -95,17 +94,34 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     }
   });
 
-  // Handle recording completion - now just stores the response
+  // Handle recording completion - now stores with question index
   const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
     console.log("Response completed, storing for later analysis...");
     
-    // Store the response without processing
-    storeResponse(selectedPrompt!, audioBlob, transcript, audioAnalysis);
+    // Validate audio before storing
+    if (!audioBlob || audioBlob.size === 0) {
+      console.error("Cannot proceed - invalid audio blob");
+      return;
+    }
+    
+    // Store the response with current question index
+    const success = storeResponse(
+      selectedPrompt!, 
+      audioBlob, 
+      transcript, 
+      audioAnalysis, 
+      currentPromptIndex
+    );
+    
+    if (!success) {
+      console.error("Failed to store response, not proceeding to next question");
+      return;
+    }
     
     // Move to next prompt immediately
     const nextPrompt = moveToNextPrompt();
     if (nextPrompt) {
-      console.log("Moving to next prompt:", nextPrompt.text);
+      console.log(`Moving to next prompt (${currentPromptIndex + 1}/${totalPrompts}):`, nextPrompt.text.substring(0, 50));
       handlePromptSelect(nextPrompt);
       handleReset(); // Clear previous recording state
     } else {
@@ -190,6 +206,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     isProcessing: isProcessing || isProcessingAllResponses,
     detailedFeedback,
     storedResponses,
+    storedResponsesCount: storedResponses.length,
     
     // Assessment result state
     assessmentResult,

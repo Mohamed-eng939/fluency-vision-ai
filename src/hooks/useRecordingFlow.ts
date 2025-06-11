@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
@@ -71,9 +70,22 @@ export const useRecordingFlow = (
     stopListening();
   };
   
-  // Handle submit recording - with optional delayed analysis
+  // Handle submit recording - with improved validation
   const handleSubmit = async () => {
     if (audioBlob) {
+      // Validate audio blob
+      if (audioBlob.size === 0) {
+        console.error("Audio blob is empty - cannot submit");
+        toast({
+          title: "Recording Error",
+          description: "The audio recording is empty. Please try recording again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      console.log(`Submitting audio: ${audioBlob.size} bytes, transcript: ${transcript?.length || 0} chars`);
+      
       try {
         if (delayAnalysis) {
           // Quick submission without analysis - just store the recording
@@ -151,9 +163,16 @@ export const useRecordingFlow = (
         onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
       }
     } else if (isManualEntryMode && manualTranscript) {
-      // Create an empty audio blob if none exists
-      const emptyBlob = new Blob([], { type: 'audio/wav' });
+      // Create a minimal audio blob for manual entry
+      const emptyBlob = new Blob([''], { type: 'audio/wav' });
       onRecordingComplete(emptyBlob, manualTranscript);
+    } else {
+      console.error("No audio or transcript to submit");
+      toast({
+        title: "Submission Error", 
+        description: "Please record audio or enter text before submitting.",
+        variant: "destructive"
+      });
     }
   };
   
