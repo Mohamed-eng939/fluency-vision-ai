@@ -8,33 +8,14 @@ import { usePromptManagement } from './usePromptManagement';
 import { useAssessmentScoring } from './useAssessmentScoring';
 import { useAdminControls } from './useAdminControls';
 import { useSessionManagement } from './useSessionManagement';
-import { AssessmentStep, AssessmentFlowConfig, DEFAULT_CONFIG } from './types/assessmentTypes';
-import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
-import { CEFRLevel } from '@/utils/scoring/cefrUtils';
-import { processRecordingForAssessment } from '@/utils/assessment/audioProcessingUtils';
+import { useResponseStorage } from './useResponseStorage';
+import { useAssessmentControl } from './useAssessmentControl';
+import { AssessmentStep, AssessmentFlowConfig } from './types/assessmentTypes';
 
 export { AssessmentStep } from './types/assessmentTypes';
 export type { AssessmentFlowConfig } from './types/assessmentTypes';
 
-interface StoredResponse {
-  prompt: SpeakingPrompt;
-  audioBlob: Blob;
-  transcript?: string;
-  audioAnalysis?: AudioAnalysisResult;
-  timestamp: number;
-}
-
 export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) => {
-  // Merge provided config with defaults
-  const flowConfig = { ...DEFAULT_CONFIG, ...config };
-  
-  // Assessment step state
-  const [currentStep, setCurrentStep] = useState<AssessmentStep>(AssessmentStep.ENTRY);
-  
-  // Store responses for delayed processing
-  const [storedResponses, setStoredResponses] = useState<StoredResponse[]>([]);
-  const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
-  
   // Student information state
   const { studentInfo, handleStudentInfoSubmit } = useStudentInfo();
   
@@ -58,7 +39,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     addToHistory,
     moveToNextPrompt,
     setPromptHistory
-  } = usePromptManagement(flowConfig.promptsCount);
+  } = usePromptManagement(config.promptsCount || 10);
   
   // Assessment scoring
   const { 
@@ -68,7 +49,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     checkConsistency,
     shouldFinishAssessment,
     resetScoring
-  } = useAssessmentScoring(flowConfig.requiredConsistentScores);
+  } = useAssessmentScoring(config.requiredConsistentScores || 4);
   
   // Admin controls
   const {
@@ -77,6 +58,26 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     toggleAdminReviewMode,
     resetAdminControls
   } = useAdminControls();
+
+  // Response storage and processing
+  const {
+    storedResponses,
+    isProcessingAllResponses,
+    storeResponse,
+    processAllStoredResponses,
+    resetStoredResponses
+  } = useResponseStorage();
+
+  // Assessment control
+  const {
+    currentStep,
+    setCurrentStep,
+    flowConfig,
+    initializeAssessment,
+    startAssessment,
+    finishAssessment,
+    resetAssessment
+  } = useAssessmentControl(config);
   
   // Prompt selection and assessment result hooks
   const { selectedPrompt, handlePromptSelect } = usePromptSelection();
@@ -93,40 +94,13 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
       name: studentInfo?.name,
     }
   });
-  
-  // Initialize the assessment
-  const initializeAssessment = (withEmail: boolean = false) => {
-    console.log("Initializing assessment with email:", withEmail);
-    initializeSession(withEmail);
-    initializePromptQueue();
-    resetScoring();
-    setStoredResponses([]);
-    setCurrentStep(AssessmentStep.WELCOME);
-  };
-  
-  // Start the assessment
-  const startAssessment = () => {
-    console.log("Starting assessment, prompts available:", promptQueue.length);
-    if (promptQueue.length > 0) {
-      handlePromptSelect(promptQueue[0]);
-      setCurrentStep(AssessmentStep.RECORDING);
-    }
-  };
-  
+
   // Handle recording completion - now just stores the response
   const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
     console.log("Response completed, storing for later analysis...");
     
     // Store the response without processing
-    const newResponse: StoredResponse = {
-      prompt: selectedPrompt!,
-      audioBlob,
-      transcript,
-      audioAnalysis,
-      timestamp: Date.now()
-    };
-    
-    setStoredResponses(prev => [...prev, newResponse]);
+    storeResponse(selectedPrompt!, audioBlob, transcript, audioAnalysis);
     
     // Move to next prompt immediately
     const nextPrompt = moveToNextPrompt();
@@ -136,63 +110,29 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
       handleReset(); // Clear previous recording state
     } else {
       console.log("No more prompts, processing all responses");
-      await processAllStoredResponses();
+      await processAllStoredResponsesAndFinish();
     }
   };
-  
-  // Process all stored responses at the end of the test
-  const processAllStoredResponses = async () => {
-    console.log("Processing all stored responses:", storedResponses.length);
-    setIsProcessingAllResponses(true);
+
+  // Process all stored responses and finish assessment
+  const processAllStoredResponsesAndFinish = async () => {
     setCurrentStep(AssessmentStep.PROCESSING);
     
-    try {
-      const processedHistory: { prompt: SpeakingPrompt; result: AssessmentResult }[] = [];
-      let lastResult: AssessmentResult | null = null;
-      
-      for (const response of storedResponses) {
-        try {
-          console.log("Processing response for prompt:", response.prompt.text);
-          
-          const result = await processRecordingForAssessment(
-            response.audioBlob,
-            response.transcript,
-            response.audioAnalysis,
-            response.prompt,
-            {
-              sessionId,
-              name: studentInfo?.name,
-            }
-          );
-          
-          // Apply CEFR calibration
-          const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis);
-          
-          processedHistory.push({
-            prompt: response.prompt,
-            result: enhancedResult
-          });
-          
-          lastResult = enhancedResult;
-          
-        } catch (error) {
-          console.error("Error processing response:", error);
-          // Continue with next response even if one fails
-        }
-      }
-      
-      // Update prompt history with processed results
-      setPromptHistory(processedHistory);
-      
-      // Finish assessment with the last result
-      finishAssessment(lastResult);
-      
-    } catch (error) {
-      console.error("Error processing stored responses:", error);
-      finishAssessment(null);
-    } finally {
-      setIsProcessingAllResponses(false);
-    }
+    const lastResult = await processAllStoredResponses(
+      sessionId,
+      studentInfo?.name,
+      setPromptHistory
+    );
+    
+    finishAssessment(
+      lastResult,
+      setFinalResult,
+      storeAssessmentData,
+      studentInfo,
+      promptHistory,
+      emailResults,
+      bypassScoringDelay
+    );
   };
   
   // Skip to next prompt
@@ -204,37 +144,33 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
       handlePromptSelect(nextPrompt);
       handleReset();
     } else {
-      processAllStoredResponses();
+      processAllStoredResponsesAndFinish();
     }
   };
-  
-  // Finish assessment
-  const finishAssessment = (finalAssessmentResult: AssessmentResult | null) => {
-    console.log("Finishing assessment with result:", finalAssessmentResult);
-    setFinalResult(finalAssessmentResult);
-    
-    // Store assessment data
-    storeAssessmentData(studentInfo, promptHistory, finalAssessmentResult);
-    
-    if (emailResults && !bypassScoringDelay) {
-      setCurrentStep(AssessmentStep.PROCESSING);
-      setTimeout(() => {
-        setCurrentStep(AssessmentStep.RESULTS);
-      }, 3000);
-    } else {
-      setCurrentStep(AssessmentStep.RESULTS);
-    }
+
+  // Wrapper functions for control hooks
+  const initializeAssessmentFlow = (withEmail: boolean = false) => {
+    initializeAssessment(
+      initializeSession,
+      initializePromptQueue,
+      resetScoring,
+      resetStoredResponses,
+      withEmail
+    );
   };
-  
-  // Reset the entire assessment
-  const resetAssessment = () => {
-    console.log("Resetting assessment");
-    handleReset();
-    setCurrentStep(AssessmentStep.ENTRY);
-    resetSession();
-    resetScoring();
-    setPromptHistory([]);
-    setStoredResponses([]);
+
+  const startAssessmentFlow = () => {
+    startAssessment(promptQueue, handlePromptSelect);
+  };
+
+  const resetAssessmentFlow = () => {
+    resetAssessment(
+      handleReset,
+      resetSession,
+      resetScoring,
+      setPromptHistory,
+      resetStoredResponses
+    );
   };
   
   return {
@@ -260,15 +196,15 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     
     // Methods
     setCurrentStep,
-    initializeAssessment,
-    startAssessment,
+    initializeAssessment: initializeAssessmentFlow,
+    startAssessment: startAssessmentFlow,
     handleResponseComplete,
     skipToNextPrompt,
-    finishAssessment,
-    resetAssessment,
+    finishAssessment: processAllStoredResponsesAndFinish,
+    resetAssessment: resetAssessmentFlow,
     toggleAdminReviewMode,
     handleStudentInfoSubmit,
-    processAllStoredResponses,
+    processAllStoredResponses: processAllStoredResponsesAndFinish,
     
     // Configuration
     flowConfig,

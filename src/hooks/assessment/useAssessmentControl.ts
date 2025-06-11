@@ -1,0 +1,93 @@
+
+import { useState } from 'react';
+import { AssessmentStep, AssessmentFlowConfig, DEFAULT_CONFIG } from './types/assessmentTypes';
+import { AssessmentResult } from '@/types/assessment';
+
+export const useAssessmentControl = (config: Partial<AssessmentFlowConfig> = {}) => {
+  // Merge provided config with defaults
+  const flowConfig = { ...DEFAULT_CONFIG, ...config };
+  
+  // Assessment step state
+  const [currentStep, setCurrentStep] = useState<AssessmentStep>(AssessmentStep.ENTRY);
+
+  // Initialize the assessment
+  const initializeAssessment = (
+    initializeSession: (withEmail: boolean) => string,
+    initializePromptQueue: () => void,
+    resetScoring: () => void,
+    resetStoredResponses: () => void,
+    withEmail: boolean = false
+  ) => {
+    console.log("Initializing assessment with email:", withEmail);
+    initializeSession(withEmail);
+    initializePromptQueue();
+    resetScoring();
+    resetStoredResponses();
+    setCurrentStep(AssessmentStep.WELCOME);
+  };
+
+  // Start the assessment
+  const startAssessment = (
+    promptQueue: any[],
+    handlePromptSelect: (prompt: any) => void
+  ) => {
+    console.log("Starting assessment, prompts available:", promptQueue.length);
+    if (promptQueue.length > 0) {
+      handlePromptSelect(promptQueue[0]);
+      setCurrentStep(AssessmentStep.RECORDING);
+    }
+  };
+
+  // Finish assessment
+  const finishAssessment = (
+    finalAssessmentResult: AssessmentResult | null,
+    setFinalResult: (result: AssessmentResult | null) => void,
+    storeAssessmentData: (studentInfo: any, promptHistory: any[], finalResult: any) => void,
+    studentInfo: any,
+    promptHistory: any[],
+    emailResults: boolean,
+    bypassScoringDelay: boolean
+  ) => {
+    console.log("Finishing assessment with result:", finalAssessmentResult);
+    setFinalResult(finalAssessmentResult);
+    
+    // Store assessment data
+    storeAssessmentData(studentInfo, promptHistory, finalAssessmentResult);
+    
+    if (emailResults && !bypassScoringDelay) {
+      setCurrentStep(AssessmentStep.PROCESSING);
+      setTimeout(() => {
+        setCurrentStep(AssessmentStep.RESULTS);
+      }, 3000);
+    } else {
+      setCurrentStep(AssessmentStep.RESULTS);
+    }
+  };
+
+  // Reset the entire assessment
+  const resetAssessment = (
+    handleReset: () => void,
+    resetSession: () => void,
+    resetScoring: () => void,
+    setPromptHistory: (history: any[]) => void,
+    resetStoredResponses: () => void
+  ) => {
+    console.log("Resetting assessment");
+    handleReset();
+    setCurrentStep(AssessmentStep.ENTRY);
+    resetSession();
+    resetScoring();
+    setPromptHistory([]);
+    resetStoredResponses();
+  };
+
+  return {
+    currentStep,
+    setCurrentStep,
+    flowConfig,
+    initializeAssessment,
+    startAssessment,
+    finishAssessment,
+    resetAssessment
+  };
+};
