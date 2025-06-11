@@ -6,6 +6,13 @@ import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
 import { toast } from '@/hooks/use-toast';
 import { usePronunciationApi } from '@/hooks/usePronunciationApi';
 import { SpeakingPrompt } from '@/types/assessment';
+import { getPronunciationScore } from '@/utils/pronunciationScoreApi';
+import { analyzeProsody } from '@/utils/assessment/prosodyApi';
+
+// Helper function to convert blob to file
+const blobToFile = (blob: Blob, fileName: string = 'audio.wav'): File => {
+  return new File([blob], fileName, { type: blob.type });
+};
 
 export const useRecordingFlow = (
   onRecordingComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void,
@@ -15,6 +22,7 @@ export const useRecordingFlow = (
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
   const [manualTranscript, setManualTranscript] = useState<string>('');
   const [isQuickSubmitting, setIsQuickSubmitting] = useState<boolean>(false);
+  const [isProsodyAnalyzing, setIsProsodyAnalyzing] = useState<boolean>(false);
   const { isPronunciationApiAvailable } = usePronunciationApi();
   
   const {
@@ -228,7 +236,7 @@ export const useRecordingFlow = (
     isManualEntryMode,
     isSpeechRecognitionSupported,
     isPronunciationApiAvailable,
-    isProsodyAnalyzing: false, // No longer needed for deferred analysis
+    isProsodyAnalyzing,
     manualTranscript,
     isQuickSubmitting,
     

@@ -21,6 +21,7 @@ export interface ProsodyAnalysisResult {
   cefr_level: string;
   analysisTimestamp: number;
   failureReason?: string; // Add optional failureReason property
+  userFriendlyMessage?: string; // Add optional userFriendlyMessage property
 }
 
 // Full audio analysis result

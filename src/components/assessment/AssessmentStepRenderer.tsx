@@ -121,6 +121,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
           detailedFeedback={detailedFeedback}
           promptHistory={promptHistory}
           showRawScoring={showRawScoring && showAdminControls}
+          isProcessing={isProcessing}
           onReset={() => {
             resetAssessment();
           }}
