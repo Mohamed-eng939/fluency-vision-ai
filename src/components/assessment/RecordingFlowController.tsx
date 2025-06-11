@@ -15,13 +15,15 @@ export interface RecordingFlowControllerProps {
   onComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void;
   onCancel: () => void;
   isProcessing: boolean;
+  delayAnalysis?: boolean; // New prop to control analysis behavior
 }
 
 const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
   selectedPrompt,
   onComplete,
   onCancel,
-  isProcessing
+  isProcessing,
+  delayAnalysis = true // Default to delayed analysis for better UX
 }) => {
   const { isPronunciationApiAvailable } = usePronunciationApi();
   
@@ -44,7 +46,7 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
     if (audioBlob) {
       onComplete(audioBlob, transcript, audioAnalysis);
     }
-  });
+  }, delayAnalysis);
 
   return (
     <RecordingContainer 

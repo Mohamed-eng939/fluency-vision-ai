@@ -11,7 +11,8 @@ import { usePronunciationApi } from '@/hooks/usePronunciationApi';
 import { SpeakingPrompt } from '@/types/assessment';
 
 export const useRecordingFlow = (
-  onRecordingComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void
+  onRecordingComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void,
+  delayAnalysis: boolean = false
 ) => {
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState<boolean>(true);
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
@@ -70,10 +71,18 @@ export const useRecordingFlow = (
     stopListening();
   };
   
-  // Handle submit recording with enhanced pronunciation and prosody scoring
+  // Handle submit recording - with optional delayed analysis
   const handleSubmit = async () => {
     if (audioBlob) {
       try {
+        if (delayAnalysis) {
+          // Quick submission without analysis - just store the recording
+          console.log("Quick submit - storing recording without analysis");
+          onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
+          return;
+        }
+
+        // Full analysis path (for when delayAnalysis is false)
         let enhancedAnalysis = audioAnalysis || {} as AudioAnalysisResult;
         
         // Run pronunciation analysis if available

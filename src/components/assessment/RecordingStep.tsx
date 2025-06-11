@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Pause, Play } from 'lucide-react';
+import { ArrowRight, Pause, Play, CheckCircle } from 'lucide-react';
 import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment';
 import RecordingFlowController from './RecordingFlowController';
 
@@ -28,11 +28,30 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
   isProcessing
 }) => {
   const [hasRecorded, setHasRecorded] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleRecordingComplete = (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
     setHasRecorded(true);
-    onRecordingComplete(audioBlob, transcript, audioAnalysis);
+    setShowConfirmation(true);
+    
+    // Hide confirmation after 1 second and proceed to next
+    setTimeout(() => {
+      setShowConfirmation(false);
+      onRecordingComplete(audioBlob, transcript, audioAnalysis);
+    }, 1000);
   };
+
+  if (showConfirmation) {
+    return (
+      <Card className="max-w-3xl mx-auto">
+        <CardContent className="p-12 text-center">
+          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Answer Recorded!</h3>
+          <p className="text-gray-600">Moving to next question...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-3xl mx-auto">
@@ -58,16 +77,9 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
             onComplete={handleRecordingComplete}
             onCancel={() => {}}
             isProcessing={isProcessing}
+            delayAnalysis={true}
           />
         </div>
-        
-        {hasRecorded && (
-          <div className="mt-6 flex justify-end">
-            <Button onClick={onNext} className="ml-2">
-              Next Question <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
       </CardContent>
       
       <CardFooter className="flex justify-between border-t pt-4">

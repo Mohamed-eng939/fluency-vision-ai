@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import { useStudentInfo } from './useStudentInfo';
@@ -10,9 +11,18 @@ import { useSessionManagement } from './useSessionManagement';
 import { AssessmentStep, AssessmentFlowConfig, DEFAULT_CONFIG } from './types/assessmentTypes';
 import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
 import { CEFRLevel } from '@/utils/scoring/cefrUtils';
+import { processRecordingForAssessment } from '@/utils/assessment/audioProcessingUtils';
 
 export { AssessmentStep } from './types/assessmentTypes';
 export type { AssessmentFlowConfig } from './types/assessmentTypes';
+
+interface StoredResponse {
+  prompt: SpeakingPrompt;
+  audioBlob: Blob;
+  transcript?: string;
+  audioAnalysis?: AudioAnalysisResult;
+  timestamp: number;
+}
 
 export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) => {
   // Merge provided config with defaults
@@ -20,6 +30,10 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
   
   // Assessment step state
   const [currentStep, setCurrentStep] = useState<AssessmentStep>(AssessmentStep.ENTRY);
+  
+  // Store responses for delayed processing
+  const [storedResponses, setStoredResponses] = useState<StoredResponse[]>([]);
+  const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
   
   // Student information state
   const { studentInfo, handleStudentInfoSubmit } = useStudentInfo();
@@ -86,6 +100,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     initializeSession(withEmail);
     initializePromptQueue();
     resetScoring();
+    setStoredResponses([]);
     setCurrentStep(AssessmentStep.WELCOME);
   };
   
@@ -98,64 +113,85 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     }
   };
   
-  // Handle recording completion
+  // Handle recording completion - now just stores the response
   const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
-    console.log("Response completed, processing...");
+    console.log("Response completed, storing for later analysis...");
+    
+    // Store the response without processing
+    const newResponse: StoredResponse = {
+      prompt: selectedPrompt!,
+      audioBlob,
+      transcript,
+      audioAnalysis,
+      timestamp: Date.now()
+    };
+    
+    setStoredResponses(prev => [...prev, newResponse]);
+    
+    // Move to next prompt immediately
+    const nextPrompt = moveToNextPrompt();
+    if (nextPrompt) {
+      console.log("Moving to next prompt:", nextPrompt.text);
+      handlePromptSelect(nextPrompt);
+      handleReset(); // Clear previous recording state
+    } else {
+      console.log("No more prompts, processing all responses");
+      await processAllStoredResponses();
+    }
+  };
+  
+  // Process all stored responses at the end of the test
+  const processAllStoredResponses = async () => {
+    console.log("Processing all stored responses:", storedResponses.length);
+    setIsProcessingAllResponses(true);
+    setCurrentStep(AssessmentStep.PROCESSING);
     
     try {
-      // Process the recording
-      await handleRecordingComplete(audioBlob, transcript, audioAnalysis);
+      const processedHistory: { prompt: SpeakingPrompt; result: AssessmentResult }[] = [];
+      let lastResult: AssessmentResult | null = null;
       
-      // Wait a bit for processing to complete
-      setTimeout(() => {
-        if (assessmentResult) {
-          console.log("Assessment result received:", assessmentResult);
+      for (const response of storedResponses) {
+        try {
+          console.log("Processing response for prompt:", response.prompt.text);
           
-          // Apply CEFR calibration
-          const enhancedResult = applyCEFRCalibration(assessmentResult, audioAnalysis);
-          
-          // Add to history
-          addToHistory(selectedPrompt!, enhancedResult);
-          
-          // Check for consistency - use the overallCEFR from enhanced result
-          const currentLevel = enhancedResult.overallCEFR as CEFRLevel;
-          const consistencyCount = checkConsistency(currentLevel);
-          
-          console.log("CEFR level:", currentLevel, "Consistency count:", consistencyCount);
-          
-          // Determine if we should continue or finish
-          const shouldFinish = shouldFinishAssessment(
-            consistencyCount, 
-            currentPromptIndex, 
-            promptQueue.length
+          const result = await processRecordingForAssessment(
+            response.audioBlob,
+            response.transcript,
+            response.audioAnalysis,
+            response.prompt,
+            {
+              sessionId,
+              name: studentInfo?.name,
+            }
           );
           
-          console.log("Should finish assessment:", shouldFinish);
+          // Apply CEFR calibration
+          const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis);
           
-          if (shouldFinish) {
-            finishAssessment(enhancedResult);
-          } else {
-            // Move to next prompt
-            const nextPrompt = moveToNextPrompt();
-            if (nextPrompt) {
-              console.log("Moving to next prompt:", nextPrompt.text);
-              handlePromptSelect(nextPrompt);
-              handleReset(); // Clear previous recording state
-            } else {
-              console.log("No more prompts, finishing assessment");
-              finishAssessment(enhancedResult);
-            }
-          }
-        } else {
-          console.error("No assessment result received");
-          // If no result, try to finish with a basic result
-          finishAssessment(null);
+          processedHistory.push({
+            prompt: response.prompt,
+            result: enhancedResult
+          });
+          
+          lastResult = enhancedResult;
+          
+        } catch (error) {
+          console.error("Error processing response:", error);
+          // Continue with next response even if one fails
         }
-      }, 1000);
+      }
+      
+      // Update prompt history with processed results
+      setPromptHistory(processedHistory);
+      
+      // Finish assessment with the last result
+      finishAssessment(lastResult);
       
     } catch (error) {
-      console.error("Error in response completion:", error);
+      console.error("Error processing stored responses:", error);
       finishAssessment(null);
+    } finally {
+      setIsProcessingAllResponses(false);
     }
   };
   
@@ -168,7 +204,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
       handlePromptSelect(nextPrompt);
       handleReset();
     } else {
-      finishAssessment(assessmentResult || null);
+      processAllStoredResponses();
     }
   };
   
@@ -198,6 +234,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     resetSession();
     resetScoring();
     setPromptHistory([]);
+    setStoredResponses([]);
   };
   
   return {
@@ -214,8 +251,9 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     consistentScores,
     bypassScoringDelay,
     showRawScoring,
-    isProcessing,
+    isProcessing: isProcessing || isProcessingAllResponses,
     detailedFeedback,
+    storedResponses,
     
     // Assessment result state
     assessmentResult,
@@ -230,6 +268,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     resetAssessment,
     toggleAdminReviewMode,
     handleStudentInfoSubmit,
+    processAllStoredResponses,
     
     // Configuration
     flowConfig,
