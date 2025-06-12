@@ -1,234 +1,96 @@
 
-import { useState } from 'react';
-import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
-import { useStudentInfo } from './useStudentInfo';
-import { usePromptSelection } from './usePromptSelection';
-import { useAssessmentResult } from './useAssessmentResult';
-import { usePromptManagement } from './usePromptManagement';
-import { useAssessmentScoring } from './useAssessmentScoring';
-import { useAdminControls } from './useAdminControls';
-import { useSessionManagement } from './useSessionManagement';
-import { useResponseStorage } from './useResponseStorage';
-import { useAssessmentControl } from './useAssessmentControl';
+import { useAssessmentFlowState } from './useAssessmentFlowState';
+import { useAssessmentFlowActions } from './useAssessmentFlowActions';
+import { useAssessmentFlowHandlers } from './useAssessmentFlowHandlers';
 import { AssessmentStep, AssessmentFlowConfig } from './types/assessmentTypes';
 
 export { AssessmentStep } from './types/assessmentTypes';
 export type { AssessmentFlowConfig } from './types/assessmentTypes';
 
 export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) => {
-  // Student information state
-  const { studentInfo, handleStudentInfoSubmit } = useStudentInfo();
+  // Get all state and actions from the state hook
+  const state = useAssessmentFlowState(config);
   
-  // Session management
-  const { 
-    sessionId, 
-    emailResults, 
-    initializeSession, 
-    storeAssessmentData,
-    resetSession 
-  } = useSessionManagement();
-  
-  // Prompt management
-  const { 
-    promptQueue, 
-    promptHistory, 
-    currentPromptIndex, 
-    currentPrompt,
-    totalPrompts,
-    initializePromptQueue,
-    addToHistory,
-    moveToNextPrompt,
-    setPromptHistory
-  } = usePromptManagement(config.promptsCount || 10);
-  
-  // Assessment scoring
-  const { 
-    finalResult, 
-    setFinalResult,
-    consistentScores,
-    checkConsistency,
-    shouldFinishAssessment,
-    resetScoring
-  } = useAssessmentScoring(config.requiredConsistentScores || 4);
-  
-  // Admin controls
+  // Get assessment flow actions
   const {
-    bypassScoringDelay,
-    showRawScoring,
-    toggleAdminReviewMode,
-    resetAdminControls
-  } = useAdminControls();
-
-  // Response storage and batch processing
-  const {
-    storedResponses,
-    isProcessingAllResponses,
-    processingProgress,
-    storeResponse,
-    processAllStoredResponses,
-    resetStoredResponses
-  } = useResponseStorage();
-
-  // Assessment control
-  const {
-    currentStep,
-    setCurrentStep,
-    flowConfig,
-    initializeAssessment,
-    startAssessment,
-    finishAssessment,
-    resetAssessment
-  } = useAssessmentControl(config);
-  
-  // Prompt selection and assessment result hooks
-  const { selectedPrompt, handlePromptSelect } = usePromptSelection();
-  const { 
-    assessmentResult, 
-    isProcessing, 
-    detailedFeedback, 
-    handleRecordingComplete, 
-    handleReset 
-  } = useAssessmentResult({ 
-    selectedPrompt, 
-    studentInfo: {
-      sessionId,
-      name: studentInfo?.name,
-    }
+    initializeAssessmentFlow,
+    startAssessmentFlow,
+    resetAssessmentFlow
+  } = useAssessmentFlowActions({
+    initializeSession: state.initializeSession,
+    initializePromptQueue: state.initializePromptQueue,
+    resetScoring: state.resetScoring,
+    resetStoredResponses: state.resetStoredResponses,
+    promptQueue: state.promptQueue,
+    handlePromptSelect: state.handlePromptSelect,
+    setCurrentStep: state.setCurrentStep,
+    handleReset: state.handleReset,
+    resetSession: state.resetSession,
+    setPromptHistory: state.setPromptHistory
   });
 
-  // Handle recording completion - immediate storage without scoring
-  const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
-    console.log("Response completed, storing immediately without scoring...");
-    
-    // Validate audio before storing
-    if (!audioBlob || audioBlob.size === 0) {
-      console.error("Cannot proceed - invalid audio blob");
-      return;
-    }
-    
-    // Store the response immediately without analysis
-    const success = storeResponse(
-      selectedPrompt!, 
-      audioBlob, 
-      transcript, 
-      audioAnalysis, 
-      currentPromptIndex
-    );
-    
-    if (!success) {
-      console.error("Failed to store response, not proceeding to next question");
-      return;
-    }
-    
-    // Move to next prompt immediately
-    const nextPrompt = moveToNextPrompt();
-    if (nextPrompt) {
-      console.log(`Moving to next prompt (${currentPromptIndex + 1}/${totalPrompts}):`, nextPrompt.text.substring(0, 50));
-      handlePromptSelect(nextPrompt);
-      handleReset(); // Clear previous recording state
-    } else {
-      console.log("No more prompts, starting batch processing of all responses");
-      await processBatchAndFinish();
-    }
-  };
-
-  // Process all stored responses and finish assessment
-  const processBatchAndFinish = async () => {
-    console.log("Starting batch processing phase for all stored responses");
-    setCurrentStep(AssessmentStep.PROCESSING);
-    
-    const lastResult = await processAllStoredResponses(
-      sessionId,
-      studentInfo?.name,
-      setPromptHistory
-    );
-    
-    finishAssessment(
-      lastResult,
-      setFinalResult,
-      storeAssessmentData,
-      studentInfo,
-      promptHistory,
-      emailResults,
-      bypassScoringDelay
-    );
-  };
-  
-  // Skip to next prompt
-  const skipToNextPrompt = () => {
-    console.log("Skipping to next prompt");
-    const nextPrompt = moveToNextPrompt();
-    
-    if (nextPrompt) {
-      handlePromptSelect(nextPrompt);
-      handleReset();
-    } else {
-      processBatchAndFinish();
-    }
-  };
-
-  // Wrapper functions for control hooks
-  const initializeAssessmentFlow = (withEmail: boolean = false) => {
-    initializeAssessment(
-      initializeSession,
-      initializePromptQueue,
-      resetScoring,
-      resetStoredResponses,
-      withEmail
-    );
-  };
-
-  const startAssessmentFlow = () => {
-    startAssessment(promptQueue, handlePromptSelect);
-  };
-
-  const resetAssessmentFlow = () => {
-    resetAssessment(
-      handleReset,
-      resetSession,
-      resetScoring,
-      setPromptHistory,
-      resetStoredResponses
-    );
-  };
+  // Get assessment flow handlers
+  const {
+    handleResponseComplete,
+    processBatchAndFinish,
+    skipToNextPrompt
+  } = useAssessmentFlowHandlers({
+    selectedPrompt: state.selectedPrompt,
+    storeResponse: state.storeResponse,
+    currentPromptIndex: state.currentPromptIndex,
+    totalPrompts: state.totalPrompts,
+    moveToNextPrompt: state.moveToNextPrompt,
+    handlePromptSelect: state.handlePromptSelect,
+    handleReset: state.handleReset,
+    processAllStoredResponses: state.processAllStoredResponses,
+    setCurrentStep: state.setCurrentStep,
+    finishAssessment: state.finishAssessment,
+    setFinalResult: state.setFinalResult,
+    storeAssessmentData: state.storeAssessmentData,
+    studentInfo: state.studentInfo,
+    promptHistory: state.promptHistory,
+    emailResults: state.emailResults,
+    bypassScoringDelay: state.bypassScoringDelay,
+    sessionId: state.sessionId
+  });
   
   return {
     // State
-    currentStep,
-    studentInfo,
-    emailResults,
-    sessionId,
-    promptQueue,
-    promptHistory,
-    currentPromptIndex,
-    currentPrompt,
-    finalResult,
-    consistentScores,
-    bypassScoringDelay,
-    showRawScoring,
-    isProcessing: isProcessing || isProcessingAllResponses,
-    detailedFeedback,
-    storedResponses,
-    storedResponsesCount: storedResponses.length,
-    processingProgress,
+    currentStep: state.currentStep,
+    studentInfo: state.studentInfo,
+    emailResults: state.emailResults,
+    sessionId: state.sessionId,
+    promptQueue: state.promptQueue,
+    promptHistory: state.promptHistory,
+    currentPromptIndex: state.currentPromptIndex,
+    currentPrompt: state.currentPrompt,
+    finalResult: state.finalResult,
+    consistentScores: state.consistentScores,
+    bypassScoringDelay: state.bypassScoringDelay,
+    showRawScoring: state.showRawScoring,
+    isProcessing: state.isProcessing || state.isProcessingAllResponses,
+    detailedFeedback: state.detailedFeedback,
+    storedResponses: state.storedResponses,
+    storedResponsesCount: state.storedResponses.length,
+    processingProgress: state.processingProgress,
     
     // Assessment result state
-    assessmentResult,
+    assessmentResult: state.assessmentResult,
     
     // Methods
-    setCurrentStep,
+    setCurrentStep: state.setCurrentStep,
     initializeAssessment: initializeAssessmentFlow,
     startAssessment: startAssessmentFlow,
     handleResponseComplete,
     skipToNextPrompt,
     finishAssessment: processBatchAndFinish,
     resetAssessment: resetAssessmentFlow,
-    toggleAdminReviewMode,
-    handleStudentInfoSubmit,
+    toggleAdminReviewMode: state.toggleAdminReviewMode,
+    handleStudentInfoSubmit: state.handleStudentInfoSubmit,
     processAllStoredResponses: processBatchAndFinish,
     
     // Configuration
-    flowConfig,
-    totalPrompts
+    flowConfig: state.flowConfig,
+    totalPrompts: state.totalPrompts
   };
 };

@@ -9,5 +9,8 @@ export { useAdminControls } from './useAdminControls';
 export { useSessionManagement } from './useSessionManagement';
 export { useAssessmentFlow, AssessmentStep } from './useAssessmentFlow';
 export { useFullAssessmentState } from './useFullAssessmentState';
+export { useAssessmentFlowState } from './useAssessmentFlowState';
+export { useAssessmentFlowActions } from './useAssessmentFlowActions';
+export { useAssessmentFlowHandlers } from './useAssessmentFlowHandlers';
 export type { StudentInfo } from './useStudentInfo';
 export type { AssessmentFlowConfig } from './types/assessmentTypes';
