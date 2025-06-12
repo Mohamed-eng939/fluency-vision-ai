@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { AssessmentResult, AudioAnalysisResult, FullAssessment } from '@/types/assessment';
 import QuickAssessmentReport from './QuickAssessmentReport';
@@ -17,6 +18,7 @@ interface ReportGeneratorProps {
   fullAssessmentData?: FullAssessment;
   learnerName?: string;
   sessionId?: string;
+  promptHistory?: { prompt: any; result?: AssessmentResult }[];
 }
 
 interface TimestampError {
@@ -33,7 +35,8 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   isFullAssessment = false,
   fullAssessmentData,
   learnerName = 'Anonymous Learner',
-  sessionId = `S-${Date.now().toString(36)}`
+  sessionId = `S-${Date.now().toString(36)}`,
+  promptHistory = []
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
   const waveformRef = useRef<WaveformVisualizationRef>(null);
@@ -74,11 +77,38 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         result.duration || 10
       );
 
-      // Capture radar chart image (we'll handle this via callback)
-      let radarChartImage = '';
-      
       const reportType = isFullAssessment ? 'full' : 'quick';
       
+      // Add all prompt history content to the report before PDF generation
+      const reportContent = reportRef.current;
+      
+      // Add prompt history section if available
+      if (promptHistory.length > 0) {
+        const historySection = document.createElement('div');
+        historySection.className = 'prompt-history-section pdf-page-break';
+        historySection.innerHTML = `
+          <h2 class="text-xl font-bold mb-4 text-assessment-blue border-b pb-2">Question & Answer History</h2>
+          ${promptHistory.map((item, index) => `
+            <div class="mb-6 p-4 border rounded-lg">
+              <h3 class="font-semibold mb-2">Question ${index + 1}: ${item.prompt.cefrLevel} Level</h3>
+              <p class="text-sm text-gray-600 mb-2">${item.prompt.text}</p>
+              ${item.result?.transcript ? `
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm">Your Response:</h4>
+                  <p class="text-sm bg-gray-50 p-2 rounded">${item.result.transcript}</p>
+                </div>
+              ` : ''}
+              ${item.result ? `
+                <div class="mt-2 text-xs text-gray-500">
+                  Score: ${Math.round(item.result.totalScore)}% | CEFR: ${item.result.cefrLevel}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        `;
+        reportContent.appendChild(historySection);
+      }
+
       // Add placeholders for images in the report before generating PDF
       const pronunciationSection = reportRef.current.querySelector('.pronunciation-analysis-section');
       if (pronunciationSection && !pronunciationSection.querySelector('.waveform-placeholder')) {
@@ -100,8 +130,14 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         sessionId,
         dateOfTest,
         waveformImage,
-        radarChartImage
+        radarChartImage: ''
       });
+      
+      // Clean up added content
+      const addedSection = reportRef.current.querySelector('.prompt-history-section');
+      if (addedSection) {
+        addedSection.remove();
+      }
       
       toast({
         title: 'Report Downloaded',

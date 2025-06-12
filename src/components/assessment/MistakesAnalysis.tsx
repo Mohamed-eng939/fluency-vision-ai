@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, AlertCircle, CheckCircle, Volume2, BookOpen, Activity } from 'lucide-react';
+import { Download, AlertCircle, CheckCircle, Volume2, BookOpen, Activity, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AssessmentResult } from '@/types/assessment';
 import { analyzeMistakes } from '@/utils/assessment/mistakesAnalysis';
 import WaveformVisualization from './WaveformVisualization';
@@ -14,6 +15,7 @@ import MistakeCategory from './mistakes/MistakeCategory';
 
 interface MistakesAnalysisProps {
   result: AssessmentResult;
+  promptHistory?: { prompt: any; result?: AssessmentResult }[];
   onDownloadPDF?: () => void;
 }
 
@@ -25,13 +27,44 @@ interface TimestampError {
   phoneme?: string;
 }
 
-const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadPDF }) => {
+const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ 
+  result, 
+  promptHistory = [], 
+  onDownloadPDF 
+}) => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
+  // Aggregate mistakes from all responses in prompt history
   const mistakeCategories = useMemo(() => {
-    if (!result.transcript) return [];
-    return analyzeMistakes(result);
-  }, [result]);
+    const allMistakes: any[] = [];
+    
+    // Include current result
+    if (result.transcript) {
+      const currentMistakes = analyzeMistakes(result);
+      allMistakes.push(...currentMistakes);
+    }
+    
+    // Include all historical results
+    promptHistory.forEach((item) => {
+      if (item.result?.transcript) {
+        const historicalMistakes = analyzeMistakes(item.result);
+        allMistakes.push(...historicalMistakes);
+      }
+    });
+
+    // Merge mistakes by category
+    const mergedCategories: Record<string, any> = {};
+    
+    allMistakes.forEach(category => {
+      if (mergedCategories[category.name]) {
+        mergedCategories[category.name].mistakes.push(...category.mistakes);
+      } else {
+        mergedCategories[category.name] = { ...category };
+      }
+    });
+
+    return Object.values(mergedCategories);
+  }, [result, promptHistory]);
 
   const toggleSection = (sectionName: string) => {
     setOpenSections(prev => ({
@@ -41,6 +74,10 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
   };
 
   const totalMistakes = mistakeCategories.reduce((total, category) => total + category.mistakes.length, 0);
+  const totalResponses = 1 + promptHistory.length;
+
+  // Check if this is a fallback CEFR level (default B1 when scoring fails)
+  const isFallbackCEFR = result.cefrLevel === 'B1' && result.totalScore < 50;
 
   // Convert pronunciation data to waveform errors
   const waveformErrors: TimestampError[] = useMemo(() => {
@@ -70,7 +107,9 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
         <CardContent className="p-6 text-center">
           <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Great Job!</h3>
-          <p className="text-gray-600">No significant mistakes were detected in your response.</p>
+          <p className="text-gray-600">
+            No significant mistakes were detected across your {totalResponses} response{totalResponses !== 1 ? 's' : ''}.
+          </p>
         </CardContent>
       </Card>
     );
@@ -85,9 +124,22 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-orange-500" />
                 Check My Mistakes
+                {isFallbackCEFR && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="h-4 w-4 text-blue-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Some scores were estimated due to technical limitations</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </CardTitle>
               <p className="text-sm text-gray-600 mt-1">
-                Found {totalMistakes} areas for improvement across {mistakeCategories.length} categories
+                Found {totalMistakes} areas for improvement across {mistakeCategories.length} categories 
+                from {totalResponses} response{totalResponses !== 1 ? 's' : ''}
               </p>
             </div>
             {onDownloadPDF && (
@@ -153,6 +205,11 @@ const MistakesAnalysis: React.FC<MistakesAnalysisProps> = ({ result, onDownloadP
       <div className="text-center text-sm text-gray-500">
         <p>This analysis combines automated detection with MFA pronunciation analysis and prosody evaluation.</p>
         <p>Pronunciation scoring uses Montreal Forced Alignment for detailed phoneme-level feedback.</p>
+        {isFallbackCEFR && (
+          <p className="text-blue-600 mt-1">
+            ⓘ Some scores were estimated using fallback methods due to technical limitations.
+          </p>
+        )}
       </div>
     </div>
   );

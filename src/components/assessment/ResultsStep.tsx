@@ -101,6 +101,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
             result={result}
             isProcessing={false}
             detailedFeedback={detailedFeedback}
+            promptHistory={promptHistory}
             onReset={() => {}}
             onTakeFullAssessment={() => {}}
           />

@@ -12,6 +12,7 @@ interface AssessmentResultsProps {
   result: AssessmentResult;
   isProcessing: boolean;
   detailedFeedback: Record<string, string> | null;
+  promptHistory?: { prompt: any; result?: AssessmentResult }[];
   onReset: () => void;
   onTakeFullAssessment: () => void;
 }
@@ -20,6 +21,7 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
   result,
   isProcessing,
   detailedFeedback,
+  promptHistory = [],
   onReset,
   onTakeFullAssessment
 }) => {
@@ -64,6 +66,7 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
       <TabsContent value="mistakes">
         <MistakesAnalysis 
           result={result}
+          promptHistory={promptHistory}
           onDownloadPDF={() => {
             // TODO: Implement PDF download for mistakes analysis
             console.log('PDF download for mistakes analysis - to be implemented');
@@ -93,6 +96,7 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
           audioAnalysis={result.audioAnalysis}
           learnerName={result.learnerName || "Anonymous Learner"}
           sessionId={result.sessionId || `S-${Date.now().toString(36)}`}
+          promptHistory={promptHistory}
         />
         
         <div className="mt-6 flex justify-center">
