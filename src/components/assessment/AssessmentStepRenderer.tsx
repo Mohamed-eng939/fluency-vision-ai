@@ -4,7 +4,7 @@ import { AssessmentStep } from '@/hooks/assessment/useAssessmentFlow';
 import TestEntryStep from './TestEntryStep';
 import WelcomeStep from './WelcomeStep';
 import RecordingStep from './RecordingStep';
-import ProcessingStep from './ProcessingStep';
+import ProcessingResults from './ProcessingResults';
 import ResultsStep from './ResultsStep';
 import AssessmentOptions from './AssessmentOptions';
 import { StudentInfo } from '@/hooks/assessment';
@@ -24,6 +24,7 @@ interface AssessmentStepRendererProps {
   promptHistory: any[];
   showRawScoring: boolean;
   showAdminControls: boolean;
+  processingProgress?: { current: number; total: number };
 
   // Methods
   onSelectQuickAssessment: () => void;
@@ -52,6 +53,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
   promptHistory,
   showRawScoring,
   showAdminControls,
+  processingProgress,
   onSelectQuickAssessment,
   initializeAssessment,
   onStudentInfoSubmit,
@@ -106,11 +108,10 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
     
     case AssessmentStep.PROCESSING:
       return (
-        <ProcessingStep 
-          hasEmail={emailResults}
-          email={studentInfo?.email}
-          onBypassProcessing={toggleAdminReviewMode}
-          isAdmin={showAdminControls}
+        <ProcessingResults 
+          current={processingProgress?.current || 0}
+          total={processingProgress?.total || 0}
+          isProcessing={isProcessing}
         />
       );
     

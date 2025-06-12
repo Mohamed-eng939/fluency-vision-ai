@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Pause, Play, CheckCircle } from 'lucide-react';
+import { ArrowRight, Pause, Play, CheckCircle, Clock } from 'lucide-react';
 import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment';
 import RecordingFlowController from './RecordingFlowController';
 
@@ -34,11 +34,11 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
     setHasRecorded(true);
     setShowConfirmation(true);
     
-    // Hide confirmation after 1 second and proceed to next
+    // Hide confirmation after 800ms and proceed to next
     setTimeout(() => {
       setShowConfirmation(false);
       onRecordingComplete(audioBlob, transcript, audioAnalysis);
-    }, 1000);
+    }, 800);
   };
 
   if (showConfirmation) {
@@ -46,8 +46,11 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
       <Card className="max-w-3xl mx-auto">
         <CardContent className="p-12 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Answer Recorded!</h3>
-          <p className="text-gray-600">Moving to next question...</p>
+          <h3 className="text-xl font-semibold mb-2">Response Saved!</h3>
+          <p className="text-gray-600 flex items-center justify-center gap-2">
+            <Clock className="h-4 w-4" />
+            Analysis will run when test is complete
+          </p>
         </CardContent>
       </Card>
     );
@@ -64,7 +67,7 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
         </div>
         <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
           <div 
-            className="bg-assessment-blue h-2 rounded-full" 
+            className="bg-assessment-blue h-2 rounded-full transition-all duration-300" 
             style={{ width: `${((currentIndex + 1) / totalPrompts) * 100}%` }}
           ></div>
         </div>
@@ -87,7 +90,7 @@ const RecordingStep: React.FC<RecordingStepProps> = ({
           <Pause className="mr-2 h-4 w-4" /> Pause Test
         </Button>
         <Button variant="ghost" onClick={onFinishNow}>
-          Finish Now
+          Finish & Process Now
         </Button>
       </CardFooter>
     </Card>

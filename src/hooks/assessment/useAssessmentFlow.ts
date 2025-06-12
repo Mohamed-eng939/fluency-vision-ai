@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import { useStudentInfo } from './useStudentInfo';
@@ -58,10 +59,11 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     resetAdminControls
   } = useAdminControls();
 
-  // Response storage and processing
+  // Response storage and batch processing
   const {
     storedResponses,
     isProcessingAllResponses,
+    processingProgress,
     storeResponse,
     processAllStoredResponses,
     resetStoredResponses
@@ -94,9 +96,9 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     }
   });
 
-  // Handle recording completion - now stores with question index
+  // Handle recording completion - immediate storage without scoring
   const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
-    console.log("Response completed, storing for later analysis...");
+    console.log("Response completed, storing immediately without scoring...");
     
     // Validate audio before storing
     if (!audioBlob || audioBlob.size === 0) {
@@ -104,7 +106,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
       return;
     }
     
-    // Store the response with current question index
+    // Store the response immediately without analysis
     const success = storeResponse(
       selectedPrompt!, 
       audioBlob, 
@@ -125,13 +127,14 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
       handlePromptSelect(nextPrompt);
       handleReset(); // Clear previous recording state
     } else {
-      console.log("No more prompts, processing all responses");
-      await processAllStoredResponsesAndFinish();
+      console.log("No more prompts, starting batch processing of all responses");
+      await processBatchAndFinish();
     }
   };
 
   // Process all stored responses and finish assessment
-  const processAllStoredResponsesAndFinish = async () => {
+  const processBatchAndFinish = async () => {
+    console.log("Starting batch processing phase for all stored responses");
     setCurrentStep(AssessmentStep.PROCESSING);
     
     const lastResult = await processAllStoredResponses(
@@ -160,7 +163,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
       handlePromptSelect(nextPrompt);
       handleReset();
     } else {
-      processAllStoredResponsesAndFinish();
+      processBatchAndFinish();
     }
   };
 
@@ -207,6 +210,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     detailedFeedback,
     storedResponses,
     storedResponsesCount: storedResponses.length,
+    processingProgress,
     
     // Assessment result state
     assessmentResult,
@@ -217,11 +221,11 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     startAssessment: startAssessmentFlow,
     handleResponseComplete,
     skipToNextPrompt,
-    finishAssessment: processAllStoredResponsesAndFinish,
+    finishAssessment: processBatchAndFinish,
     resetAssessment: resetAssessmentFlow,
     toggleAdminReviewMode,
     handleStudentInfoSubmit,
-    processAllStoredResponses: processAllStoredResponsesAndFinish,
+    processAllStoredResponses: processBatchAndFinish,
     
     // Configuration
     flowConfig,

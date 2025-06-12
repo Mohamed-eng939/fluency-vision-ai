@@ -6,8 +6,6 @@ import { AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
 import { toast } from '@/hooks/use-toast';
 import { usePronunciationApi } from '@/hooks/usePronunciationApi';
 import { SpeakingPrompt } from '@/types/assessment';
-import { getPronunciationScore } from '@/utils/pronunciationScoreApi';
-import { analyzeProsody } from '@/utils/assessment/prosodyApi';
 
 // Helper function to convert blob to file
 const blobToFile = (blob: Blob, fileName: string = 'audio.wav'): File => {
@@ -16,13 +14,12 @@ const blobToFile = (blob: Blob, fileName: string = 'audio.wav'): File => {
 
 export const useRecordingFlow = (
   onRecordingComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void,
-  delayAnalysis: boolean = false
+  delayAnalysis: boolean = true // Always defer analysis for assessment flow
 ) => {
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState<boolean>(true);
   const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
   const [manualTranscript, setManualTranscript] = useState<string>('');
   const [isQuickSubmitting, setIsQuickSubmitting] = useState<boolean>(false);
-  const [isProsodyAnalyzing, setIsProsodyAnalyzing] = useState<boolean>(false);
   const { isPronunciationApiAvailable } = usePronunciationApi();
   
   const {
@@ -71,7 +68,7 @@ export const useRecordingFlow = (
     stopListening();
   };
   
-  // Handle submit recording - improved for deferred analysis
+  // Handle submit recording - immediate storage without analysis
   const handleSubmit = async () => {
     if (audioBlob) {
       // Enhanced validation with user feedback
@@ -95,98 +92,35 @@ export const useRecordingFlow = (
         return;
       }
       
-      console.log(`Submitting audio: ${audioBlob.size} bytes, transcript: ${transcript?.length || 0} chars`);
+      console.log(`Submitting audio for immediate storage: ${audioBlob.size} bytes, transcript: ${transcript?.length || 0} chars`);
       
       try {
-        if (delayAnalysis) {
-          // Quick submission path - store immediately without analysis
-          setIsQuickSubmitting(true);
-          console.log("Quick submit - storing recording without analysis for batch processing");
-          
-          // Create minimal analysis object for storage
-          const minimalAnalysis: AudioAnalysisResult = {
-            wpm: 0, // Will be calculated during batch processing
-            totalWords: transcript ? transcript.trim().split(/\s+/).length : 0,
-            pauseCount: 0,
-            pauseDuration: 0,
-            pauseRatio: 0,
-            speakingDuration: recordingTime / 1000, // Convert to seconds
-            totalDuration: recordingTime / 1000
-          };
-          
-          onRecordingComplete(audioBlob, transcript, minimalAnalysis);
-          setIsQuickSubmitting(false);
-          return;
-        }
-
-        // Full analysis path (for when delayAnalysis is false)
-        let enhancedAnalysis = audioAnalysis || {} as AudioAnalysisResult;
+        // Always use immediate storage for assessment flow
+        setIsQuickSubmitting(true);
+        console.log("Storing recording without analysis for batch processing at test completion");
         
-        // Run pronunciation analysis if available
-        if (isPronunciationApiAvailable && transcript) {
-          try {
-            const pronunciationResult = await getPronunciationScore(
-              audioBlob, 
-              transcript, 
-              audioAnalysis || {} as AudioAnalysisResult
-            );
-            
-            enhancedAnalysis = {
-              ...enhancedAnalysis,
-              pronunciationScore: pronunciationResult.score,
-              pronunciationDetails: {
-                ...enhancedAnalysis.pronunciationDetails,
-                pronunciation_score: pronunciationResult.score,
-                cefr_level: pronunciationResult.cefrLevel,
-                ...pronunciationResult.details
-              }
-            };
-          } catch (error) {
-            console.error("Pronunciation analysis error:", error);
-            // Continue with fallback analysis
-          }
-        }
+        // Create minimal analysis object for storage
+        const minimalAnalysis: AudioAnalysisResult = {
+          wpm: 0, // Will be calculated during batch processing
+          totalWords: transcript ? transcript.trim().split(/\s+/).length : 0,
+          pauseCount: 0,
+          pauseDuration: 0,
+          pauseRatio: 0,
+          speakingDuration: recordingTime / 1000, // Convert to seconds
+          totalDuration: recordingTime / 1000
+        };
         
-        // Run prosody analysis with improved error handling
-        setIsProsodyAnalyzing(true);
-        try {
-          const audioFile = blobToFile(audioBlob);
-          const prosodyResult = await analyzeProsody(audioFile);
-          
-          enhancedAnalysis = {
-            ...enhancedAnalysis,
-            prosodyAnalysis: {
-              ...prosodyResult,
-              analysisTimestamp: Date.now()
-            }
-          };
-          
-        } catch (error) {
-          console.error("Prosody analysis error:", error);
-          // Analysis failed but we continue with fallback
-          enhancedAnalysis = {
-            ...enhancedAnalysis,
-            prosodyAnalysis: {
-              pitch_mean: 150,
-              pitch_std_dev: 25,
-              tempo_bpm: 120,
-              opensmile_features: "fallback",
-              cefr_level: "B1",
-              analysisTimestamp: Date.now()
-            }
-          };
-        } finally {
-          setIsProsodyAnalyzing(false);
-        }
-        
-        // Submit enhanced analysis
-        console.log("Submitting recording with analysis:", enhancedAnalysis);
-        onRecordingComplete(audioBlob, transcript, enhancedAnalysis);
+        onRecordingComplete(audioBlob, transcript, minimalAnalysis);
+        setIsQuickSubmitting(false);
         
       } catch (error) {
-        console.error("Speech analysis error:", error);
+        console.error("Storage error:", error);
         setIsQuickSubmitting(false);
-        onRecordingComplete(audioBlob, transcript, audioAnalysis || undefined);
+        toast({
+          title: "Storage Error",
+          description: "Failed to save recording. Please try again.",
+          variant: "destructive"
+        });
       }
     } else if (isManualEntryMode && manualTranscript) {
       // Create a minimal audio blob for manual entry
@@ -236,7 +170,6 @@ export const useRecordingFlow = (
     isManualEntryMode,
     isSpeechRecognitionSupported,
     isPronunciationApiAvailable,
-    isProsodyAnalyzing,
     manualTranscript,
     isQuickSubmitting,
     

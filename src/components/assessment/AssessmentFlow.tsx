@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AssessmentStep, useAssessmentFlow } from '@/hooks/assessment/useAssessmentFlow';
 import AdminControls from './AdminControls';
@@ -34,6 +33,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     isProcessing,
     detailedFeedback,
     promptHistory,
+    processingProgress,
     
     // Methods
     initializeAssessment,
@@ -144,6 +144,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         promptHistory={promptHistory}
         showRawScoring={showRawScoring}
         showAdminControls={showAdminControls}
+        processingProgress={processingProgress}
         onSelectQuickAssessment={handleSelectQuickAssessment}
         initializeAssessment={initializeAssessment}
         onStudentInfoSubmit={handleStudentInfoSubmit}

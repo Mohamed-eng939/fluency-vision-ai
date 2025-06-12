@@ -17,7 +17,7 @@ export const useResponseStorage = () => {
   const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
 
-  // Store a response for later processing with enhanced validation
+  // Store a response for immediate storage without scoring
   const storeResponse = (
     prompt: SpeakingPrompt,
     audioBlob: Blob,
@@ -37,7 +37,7 @@ export const useResponseStorage = () => {
       return false;
     }
 
-    console.log(`Storing response for question ${questionIndex}: Audio size=${audioBlob.size} bytes, transcript=${transcript?.length || 0} chars`);
+    console.log(`Storing response for immediate save - Question ${questionIndex}: Audio size=${audioBlob.size} bytes, transcript=${transcript?.length || 0} chars`);
     
     const newResponse: StoredResponse = {
       prompt,
@@ -48,23 +48,23 @@ export const useResponseStorage = () => {
       questionIndex: questionIndex || storedResponses.length
     };
     
-    // Prevent overwriting - add to array instead of replacing
+    // Add to storage array
     setStoredResponses(prev => {
       const updated = [...prev, newResponse];
-      console.log(`Total stored responses: ${updated.length}`);
+      console.log(`Total stored responses: ${updated.length} (ready for batch processing)`);
       return updated;
     });
     
     return true;
   };
 
-  // Process all stored responses with enhanced progress tracking
+  // Process all stored responses in batch at test completion
   const processAllStoredResponses = async (
     sessionId: string,
     studentName?: string,
     setPromptHistory?: (history: { prompt: SpeakingPrompt; result: AssessmentResult }[]) => void
   ): Promise<AssessmentResult | null> => {
-    console.log("Starting batch processing of all stored responses:", storedResponses.length);
+    console.log("Starting batch scoring of all stored responses:", storedResponses.length);
     setIsProcessingAllResponses(true);
     setProcessingProgress({ current: 0, total: storedResponses.length });
     
@@ -72,12 +72,13 @@ export const useResponseStorage = () => {
       const processedHistory: { prompt: SpeakingPrompt; result: AssessmentResult }[] = [];
       const allResults: AssessmentResult[] = [];
       
-      // Process each response individually with progress updates
+      // Process each response with full scoring pipeline
       for (const [index, response] of storedResponses.entries()) {
         try {
-          console.log(`Processing response ${index + 1}/${storedResponses.length} for prompt:`, response.prompt.text.substring(0, 50));
+          console.log(`Batch processing response ${index + 1}/${storedResponses.length} for prompt:`, response.prompt.text.substring(0, 50));
           setProcessingProgress({ current: index + 1, total: storedResponses.length });
           
+          // Now run full scoring for this response
           const result = await processRecordingForAssessment(
             response.audioBlob,
             response.transcript,
@@ -100,7 +101,7 @@ export const useResponseStorage = () => {
           allResults.push(enhancedResult);
           
         } catch (error) {
-          console.error(`Error processing response ${index + 1}:`, error);
+          console.error(`Error batch processing response ${index + 1}:`, error);
           // Continue with next response even if one fails
         }
       }
@@ -113,10 +114,11 @@ export const useResponseStorage = () => {
         setPromptHistory(processedHistory);
       }
       
+      console.log("Batch processing completed. Final aggregated result:", aggregatedResult);
       return aggregatedResult;
       
     } catch (error) {
-      console.error("Error processing stored responses:", error);
+      console.error("Error in batch processing:", error);
       return null;
     } finally {
       setIsProcessingAllResponses(false);

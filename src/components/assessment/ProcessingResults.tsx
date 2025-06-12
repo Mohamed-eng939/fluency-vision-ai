@@ -18,10 +18,10 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
   const progress = total > 0 ? (current / total) * 100 : 0;
   
   const processingSteps = [
-    { icon: Mic, label: "Analyzing audio quality", step: 1 },
-    { icon: FileText, label: "Processing transcripts", step: 2 },
-    { icon: Brain, label: "Evaluating language skills", step: 3 },
-    { icon: BarChart, label: "Generating final report", step: 4 }
+    { icon: Mic, label: "Analyzing audio quality and speech metrics", step: 1 },
+    { icon: FileText, label: "Processing transcripts and pronunciation", step: 2 },
+    { icon: Brain, label: "Evaluating fluency, grammar, and vocabulary", step: 3 },
+    { icon: BarChart, label: "Generating comprehensive CEFR assessment", step: 4 }
   ];
   
   const currentStepIndex = Math.floor((current / total) * processingSteps.length);
@@ -35,7 +35,7 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
           </div>
           <h2 className="text-2xl font-bold text-assessment-blue">Processing Your Assessment</h2>
           <p className="text-gray-600">
-            Analyzing your responses to generate comprehensive results...
+            Running comprehensive analysis on all {total} responses...
           </p>
         </CardHeader>
         
@@ -46,7 +46,7 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
               <span>Processing response {current} of {total}</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-3" />
           </div>
           
           {/* Processing steps */}
@@ -88,8 +88,8 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
           
           {/* Estimated time */}
           <div className="text-center text-sm text-gray-500 pt-4 border-t">
-            <p>This usually takes 30-60 seconds per response</p>
-            <p>Please don't close this window while processing</p>
+            <p>Batch processing all responses for optimal accuracy</p>
+            <p>This usually takes 30-90 seconds total • Please don't close this window</p>
           </div>
         </CardContent>
       </Card>
