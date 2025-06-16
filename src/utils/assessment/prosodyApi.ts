@@ -1,6 +1,6 @@
-
 import axios from 'axios';
 import { ProsodyAnalysisResult } from '@/types/assessment/audio';
+import { generateLocalProsodyEstimate, isProsodyFallback } from './prosodyFallback';
 
 export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult> {
   console.log("Starting prosody analysis for file:", file.name, file.size, "bytes");
@@ -33,7 +33,7 @@ export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult>
         headers: { 
           "Content-Type": "multipart/form-data"
         }, 
-        timeout: 20000 // Increased timeout to 20 seconds
+        timeout: 20000 // 20 seconds timeout
       }
     );
     
@@ -50,57 +50,36 @@ export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult>
     return {
       ...response.data,
       cefr_level: cefrLevel,
-      analysisTimestamp: Date.now()
+      analysisTimestamp: Date.now(),
+      isFallback: false
     };
   } catch (error) {
-    console.error("Prosody analysis failed:", error);
+    console.error("Prosody analysis failed, using local fallback:", error);
     
-    let failureReason = "Server unavailable";
-    let userFriendlyMessage = "Prosody analysis failed due to server unavailability";
+    let failureReason = "External API unavailable";
     
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
-        failureReason = "Request timeout";
-        userFriendlyMessage = "Prosody analysis failed due to timeout - server took too long to respond";
+        failureReason = "API timeout - server took too long to respond";
       } else if (error.response?.status === 413) {
-        failureReason = "File too large";
-        userFriendlyMessage = "Audio file format not supported - file too large for prosody analysis";
+        failureReason = "File too large for external analysis";
       } else if (error.response?.status === 415) {
-        failureReason = "Unsupported audio format";
-        userFriendlyMessage = "Audio file format not supported for prosody analysis";
+        failureReason = "Audio format not supported by external API";
       } else if (error.response?.status >= 500) {
-        failureReason = "Server error";
-        userFriendlyMessage = "Prosody analysis failed due to server error";
-      } else if (error.response?.status >= 400) {
-        failureReason = "Invalid request";
-        userFriendlyMessage = "Prosody analysis failed due to invalid audio format";
+        failureReason = "External API server error";
       } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-        failureReason = "Network error";
-        userFriendlyMessage = "Prosody analysis failed due to network connectivity issues";
-      }
-    } else if (error instanceof Error) {
-      if (error.message.includes("size is 0")) {
-        failureReason = "Invalid audio file";
-        userFriendlyMessage = "Audio file format not supported - invalid audio data";
-      } else if (error.message.includes("too large")) {
-        failureReason = "File too large";
-        userFriendlyMessage = "Audio file format not supported - file too large";
+        failureReason = "Network connectivity issues";
       }
     }
     
-    console.log("Prosody analysis fallback reason:", failureReason);
-    console.log("User-friendly message:", userFriendlyMessage);
+    // Generate local fallback estimate
+    const fallbackResult = generateLocalProsodyEstimate(file, undefined, failureReason);
     
-    // Return fallback data with detailed failure information
+    console.log("Using prosody fallback with reason:", failureReason);
+    
     return {
-      pitch_mean: 150, // Default values
-      pitch_std_dev: 25,
-      tempo_bpm: 120,
-      opensmile_features: `fallback - ${failureReason}`,
-      cefr_level: "B1", // Default level
-      analysisTimestamp: Date.now(),
-      failureReason,
-      userFriendlyMessage
+      ...fallbackResult,
+      userFriendlyMessage: `Prosody analysis used local estimation - ${failureReason}`
     };
   }
 }

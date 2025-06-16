@@ -1,7 +1,7 @@
 
 /**
  * Calculate coherence score
- * Enhanced version with external API integration and fallback methods
+ * Enhanced version with external API integration and reliable fallback methods
  */
 
 import { countPropositions } from './textAnalysisUtils';
@@ -11,6 +11,7 @@ import { splitIntoSentences, calculateTextMetrics } from './coherence/sentenceAn
 import { calculateSemanticSimilarity, scoreBasedOnSemanticSimilarity } from './coherence/semanticSimilarity';
 import { calculateTraditionalCoherenceScore } from './coherence/traditionalScoring';
 import { getCoherenceScore } from './coherence/externalCoherenceApi';
+import { generateLocalCoherenceEstimate, isCoherenceFallback } from './coherenceFallback';
 import { hasSBERTSupport } from './embeddings';
 
 export const calculateCoherenceScore = async (
@@ -80,8 +81,35 @@ export const calculateCoherenceScore = async (
       return Math.max(1, Math.min(10, score));
       
     } catch (error) {
-      console.error("Error using external coherence API, falling back to local methods:", error);
-      // Fall through to local methods
+      console.error("External coherence API failed, using local fallback:", error);
+      
+      // Use local fallback
+      const fallbackResult = generateLocalCoherenceEstimate(promptText, transcript, 'External coherence API failed');
+      let score = 1 + (fallbackResult.score * 9); // Convert 0-1 to 1-10 scale
+      
+      // Apply same adjustments as above
+      if (markerCounts.total > 0) {
+        score += Math.min(markerTypeCount * 0.5, 2);
+      }
+      
+      if (propositionCount > 3) {
+        score += Math.min((propositionCount - 3) * 0.3, 1.5);
+      }
+      
+      if (avgWordsPerSentence < 4) {
+        score = Math.min(score, 5.0);
+      }
+      
+      if (markerCounts.total === 1 && frontLoadedMarker) {
+        score = Math.max(1, score - 1);
+      }
+      
+      if (isLowerLevel && score > 7) {
+        score = Math.min(score, 7);
+      }
+      
+      console.log('Using coherence fallback score:', score);
+      return Math.max(1, Math.min(10, score));
     }
   }
   

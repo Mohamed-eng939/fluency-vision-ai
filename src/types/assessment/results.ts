@@ -32,12 +32,21 @@ export interface AssessmentFeedback {
 }
 
 export interface CoherenceAnalysis {
-  method: 'external_api' | 'local_sbert' | 'traditional';
+  method: 'external_api' | 'local_sbert' | 'traditional' | 'local_fallback';
   sbertScore?: number;
   crossEncoderScore?: number;
   averageScore?: number;
   promptReference?: string;
   apiLatency?: number;
+  isFallback?: boolean;
+  fallbackReason?: string;
+}
+
+export interface FallbackInfo {
+  prosodyFallback?: boolean;
+  prosodyFallbackReason?: string;
+  coherenceFallback?: boolean;
+  coherenceFallbackReason?: string;
 }
 
 export interface AssessmentResult {
@@ -57,6 +66,8 @@ export interface AssessmentResult {
   dateOfTest?: string;
   assessmentType?: 'quick' | 'full';
   assessmentName?: string;
-  // New coherence analysis data
+  // Enhanced coherence analysis data
   coherenceAnalysis?: CoherenceAnalysis;
+  // Fallback detection flags
+  fallbackInfo?: FallbackInfo;
 }

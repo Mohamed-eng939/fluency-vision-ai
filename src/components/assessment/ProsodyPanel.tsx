@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AudioAnalysisResult } from '@/types/assessment';
 import { Activity, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import FallbackWarning from '@/components/ui/FallbackWarning';
+import { isProsodyFallback } from '@/utils/assessment/prosodyFallback';
 
 interface ProsodyPanelProps {
   audioAnalysis?: AudioAnalysisResult;
@@ -31,6 +33,8 @@ const ProsodyPanel: React.FC<ProsodyPanelProps> = ({ audioAnalysis }) => {
       </Card>
     );
   }
+  
+  const isFallback = isProsodyFallback(prosodyData);
   
   // Calculate relative scores for visualization
   const pitchVariationScore = Math.min(100, (prosodyData.pitch_std_dev / 40) * 100);
@@ -63,6 +67,12 @@ const ProsodyPanel: React.FC<ProsodyPanelProps> = ({ audioAnalysis }) => {
             <Badge className={getCEFRColor(prosodyData.cefr_level)}>
               {prosodyData.cefr_level}
             </Badge>
+          )}
+          {isFallback && (
+            <FallbackWarning 
+              type="prosody" 
+              reason={prosodyData.fallbackReason || 'External API unavailable'} 
+            />
           )}
         </CardTitle>
       </CardHeader>
@@ -101,11 +111,13 @@ const ProsodyPanel: React.FC<ProsodyPanelProps> = ({ audioAnalysis }) => {
           </p>
         </div>
         
-        {/* OpenSMILE Features */}
+        {/* OpenSMILE Features or Fallback Message */}
         <div>
-          <h4 className="font-medium mb-2">Advanced Acoustic Features</h4>
-          <div className="bg-gray-50 p-3 rounded-md">
-            <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+          <h4 className="font-medium mb-2">
+            {isFallback ? 'Analysis Method' : 'Advanced Acoustic Features'}
+          </h4>
+          <div className={`p-3 rounded-md ${isFallback ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50'}`}>
+            <pre className={`text-xs whitespace-pre-wrap ${isFallback ? 'text-amber-700' : 'text-gray-600'}`}>
               {prosodyData.opensmile_features}
             </pre>
           </div>
@@ -116,6 +128,7 @@ const ProsodyPanel: React.FC<ProsodyPanelProps> = ({ audioAnalysis }) => {
           <div className="bg-blue-50 border border-blue-200 p-3 rounded-md">
             <h4 className="font-medium text-blue-800 mb-1">
               Prosody CEFR Level: {prosodyData.cefr_level}
+              {isFallback && <span className="text-xs ml-2">(Estimated)</span>}
             </h4>
             <p className="text-sm text-blue-700">
               {getProsodyExplanation(prosodyData.cefr_level)}
