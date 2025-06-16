@@ -2,299 +2,245 @@
 import { SpeakingPrompt } from '../../types/assessment';
 
 /**
- * Finalized set of 28 CEFR-aligned speaking prompts for quick assessments
- * Ordered from A1 to C2 for adaptive testing
+ * Updated CEFR-aligned speaking prompts for quick assessments
+ * Organized by difficulty level from A1 to C1
  */
 export const speakingPrompts: SpeakingPrompt[] = [
   // A1 - Elementary
   {
     id: 'Q1_A1',
-    text: 'Introduce yourself.',
+    text: 'Introduce yourself. (Name and spelling– Age – Country – Residence– Job – Study – Marital status)',
     category: 'describe',
     difficulty: 'beginner',
     timeLimit: 60,
     cefrLevel: 'A1',
     topic: 'Personal Info',
-    hint: 'Mention your name, where you live, and how people can contact you.'
+    hint: 'Share your basic personal information including name, age, where you live, and what you do.'
   },
   {
     id: 'Q2_A1',
-    text: 'Can you describe your daily routine?',
+    text: "What's your phone number?",
+    category: 'describe',
+    difficulty: 'beginner',
+    timeLimit: 30,
+    cefrLevel: 'A1',
+    topic: 'Personal Info',
+    hint: 'Say your phone number clearly and you can also mention when people can call you.'
+  },
+  {
+    id: 'Q3_A1',
+    text: 'Introduce your family? (Parents / Siblings / Children)',
+    category: 'describe',
+    difficulty: 'beginner',
+    timeLimit: 60,
+    cefrLevel: 'A1',
+    topic: 'Family',
+    hint: 'Tell about your family members - parents, brothers, sisters, or children if you have any.'
+  },
+  {
+    id: 'Q4_A1',
+    text: "What's your daily routine?",
     category: 'describe',
     difficulty: 'beginner',
     timeLimit: 60,
     cefrLevel: 'A1',
     topic: 'Routine',
-    hint: 'Talk about when you wake up, go to school or work, and what you do in the evening.'
-  },
-  {
-    id: 'Q3_A1',
-    text: 'What do you usually do on weekends?',
-    category: 'describe',
-    difficulty: 'beginner',
-    timeLimit: 60,
-    cefrLevel: 'A1',
-    topic: 'Weekends',
-    hint: 'Mention activities like shopping, visiting family, relaxing, or studying.'
-  },
-  
-  // A2 - Pre-Intermediate
-  {
-    id: 'Q4_A2',
-    text: 'Can you describe your home or your neighborhood?',
-    category: 'describe',
-    difficulty: 'beginner',
-    timeLimit: 60,
-    cefrLevel: 'A2',
-    topic: 'Home',
-    hint: 'Talk about the size, rooms, people, or places nearby.'
+    hint: 'Describe what you do every day from morning to evening.'
   },
   {
     id: 'Q5_A2',
-    text: 'What do you usually do after work or school?',
-    category: 'describe',
-    difficulty: 'beginner',
-    timeLimit: 60,
-    cefrLevel: 'A2',
-    topic: 'After School',
-    hint: 'Mention hobbies, meals, or rest routines.'
-  },
-  {
-    id: 'Q6_A2',
-    text: 'Tell me about your favorite place to visit.',
-    category: 'describe',
-    difficulty: 'beginner',
-    timeLimit: 60,
-    cefrLevel: 'A2',
-    topic: 'Travel',
-    hint: 'Explain what it looks like and why you like it.'
-  },
-  {
-    id: 'Q7_A2',
-    text: 'What did you do last weekend?',
+    text: 'What did you do yesterday or on your last day off?',
     category: 'narrate',
     difficulty: 'beginner',
     timeLimit: 60,
     cefrLevel: 'A2',
     topic: 'Past Activities',
-    hint: 'Include places you went or people you saw.'
+    hint: 'Talk about activities you did recently, where you went, and who you were with.'
   },
+
+  // A2-B1 - Pre-intermediate
   {
-    id: 'Q8_A2',
-    text: 'What do you normally eat for breakfast, lunch, and dinner?',
+    id: 'Q6_A2',
+    text: 'What are you going to do this week?',
     category: 'describe',
     difficulty: 'beginner',
     timeLimit: 60,
     cefrLevel: 'A2',
-    topic: 'Food',
-    hint: 'Give examples of foods and times.'
-  },
-  
-  // B1 - Intermediate
-  {
-    id: 'Q9_B1',
-    text: 'What kind of job do you have or would you like to have?',
-    category: 'describe',
-    difficulty: 'intermediate',
-    timeLimit: 90,
-    cefrLevel: 'B1',
-    topic: 'Work',
-    hint: 'Describe the job and explain why it suits you.'
+    topic: 'Future Plans',
+    hint: 'Share your plans and activities for the coming week.'
   },
   {
-    id: 'Q10_B1',
-    text: 'Do you enjoy traveling? Tell me about a trip you liked.',
-    category: 'narrate',
-    difficulty: 'intermediate',
-    timeLimit: 90,
-    cefrLevel: 'B1',
-    topic: 'Travel',
-    hint: 'Include where, when, and what you did.'
-  },
-  {
-    id: 'Q11_B1',
-    text: 'What do you usually do to stay healthy?',
+    id: 'Q7_B1',
+    text: 'How will your life be different in the next 10 years?',
     category: 'explain',
     difficulty: 'intermediate',
     timeLimit: 90,
     cefrLevel: 'B1',
-    topic: 'Health',
-    hint: 'Talk about food, exercise, or sleep habits.'
+    topic: 'Future',
+    hint: 'Talk about your expectations and goals for the future.'
   },
   {
-    id: 'Q12_B1',
-    text: 'Describe your best friend. Why are you close?',
+    id: 'Q8_B1',
+    text: 'Describe the appearance and personality of your best friend.',
     category: 'describe',
     difficulty: 'intermediate',
     timeLimit: 90,
     cefrLevel: 'B1',
     topic: 'Relationships',
-    hint: 'Share personality traits or shared experiences.'
+    hint: 'Describe what your friend looks like and what kind of person they are.'
   },
   {
-    id: 'Q13_B1',
-    text: 'Tell me about a typical day at work or school.',
-    category: 'describe',
+    id: 'Q9_B1',
+    text: 'Have you ever borrowed money from someone? Why?',
+    category: 'narrate',
     difficulty: 'intermediate',
     timeLimit: 90,
     cefrLevel: 'B1',
-    topic: 'Routine',
-    hint: 'Explain your schedule and responsibilities.'
+    topic: 'Money',
+    hint: 'Share an experience about borrowing money and explain the reason.'
   },
-  
-  // B2 - Upper Intermediate
   {
-    id: 'Q14_B2',
-    text: 'What are the advantages and disadvantages of living in your country?',
-    category: 'argue',
+    id: 'Q10_B1',
+    text: 'Have you ever heard about a crime?',
+    category: 'narrate',
     difficulty: 'intermediate',
     timeLimit: 90,
-    cefrLevel: 'B2',
-    topic: 'Culture',
-    hint: 'Give one or two points for each.'
+    cefrLevel: 'B1',
+    topic: 'Society',
+    hint: 'Talk about a crime you heard about in the news or from someone.'
   },
   {
-    id: 'Q15_B2',
-    text: 'How do people in your culture celebrate holidays or special events?',
+    id: 'Q11_B1',
+    text: 'How long have you been using the internet? And how?',
     category: 'explain',
     difficulty: 'intermediate',
     timeLimit: 90,
-    cefrLevel: 'B2',
-    topic: 'Traditions',
-    hint: 'Mention traditional food, clothes, or activities.'
-  },
-  {
-    id: 'Q16_B2',
-    text: 'What do you think makes a good leader?',
-    category: 'argue',
-    difficulty: 'intermediate',
-    timeLimit: 90,
-    cefrLevel: 'B2',
-    topic: 'Leadership',
-    hint: 'Talk about qualities like honesty or communication.'
-  },
-  {
-    id: 'Q17_B2',
-    text: "What's your opinion about using social media every day?",
-    category: 'argue',
-    difficulty: 'intermediate',
-    timeLimit: 90,
-    cefrLevel: 'B2',
+    cefrLevel: 'B1',
     topic: 'Technology',
-    hint: 'Mention both positive and negative sides.'
+    hint: 'Discuss your internet usage history and how you use it in daily life.'
   },
+
+  // B1-B2 - Intermediate
   {
-    id: 'Q18_B2',
-    text: 'Can you describe a personal achievement you are proud of?',
+    id: 'Q12_B2',
+    text: 'Talk about the best experience you have ever gained.',
     category: 'narrate',
     difficulty: 'intermediate',
     timeLimit: 90,
     cefrLevel: 'B2',
-    topic: 'Personal Achievement',
-    hint: 'Say what you did, how, and why it mattered.'
+    topic: 'Personal Experience',
+    hint: 'Share a meaningful experience and explain why it was significant for you.'
   },
-  
-  // C1 - Advanced
   {
-    id: 'Q19_C1',
-    text: 'What career would you like to pursue and why?',
+    id: 'Q13_B2',
+    text: 'Why do some people say that social media is a double-edged weapon?',
+    category: 'argue',
+    difficulty: 'intermediate',
+    timeLimit: 90,
+    cefrLevel: 'B2',
+    topic: 'Technology',
+    hint: 'Discuss both positive and negative aspects of social media.'
+  },
+  {
+    id: 'Q14_B2',
+    text: 'What are the roots of terrorism?',
+    category: 'explain',
+    difficulty: 'intermediate',
+    timeLimit: 120,
+    cefrLevel: 'B2',
+    topic: 'Society',
+    hint: 'Analyze the underlying causes and factors that lead to terrorism.'
+  },
+  {
+    id: 'Q15_B2',
+    text: "Is there something you think you shouldn't have done when you were younger?",
+    category: 'narrate',
+    difficulty: 'intermediate',
+    timeLimit: 90,
+    cefrLevel: 'B2',
+    topic: 'Personal Reflection',
+    hint: 'Reflect on past decisions and explain what you would do differently.'
+  },
+  {
+    id: 'Q16_B2',
+    text: 'How is it possible to maintain stable relationships in life?',
+    category: 'explain',
+    difficulty: 'intermediate',
+    timeLimit: 90,
+    cefrLevel: 'B2',
+    topic: 'Relationships',
+    hint: 'Give advice on building and maintaining good relationships.'
+  },
+  {
+    id: 'Q17_B2',
+    text: 'How do you get your motivation? What goals are you motivated to achieve?',
+    category: 'explain',
+    difficulty: 'intermediate',
+    timeLimit: 90,
+    cefrLevel: 'B2',
+    topic: 'Personal Development',
+    hint: 'Discuss your sources of motivation and personal aspirations.'
+  },
+
+  // B2-C1 - Upper Intermediate
+  {
+    id: 'Q18_C1',
+    text: 'If you could start your own business, what would it be? (Sector – Market – Target – Pricing)',
     category: 'explain',
     difficulty: 'advanced',
     timeLimit: 120,
     cefrLevel: 'C1',
-    topic: 'Careers',
-    hint: 'Explain your motivation and future goals.'
+    topic: 'Business',
+    hint: 'Present a detailed business concept including industry, target market, and pricing strategy.'
+  },
+  {
+    id: 'Q19_C1',
+    text: 'What solutions can alleviate the suffering of the destitute?',
+    category: 'argue',
+    difficulty: 'advanced',
+    timeLimit: 120,
+    cefrLevel: 'C1',
+    topic: 'Social Issues',
+    hint: 'Propose concrete solutions to address poverty and social inequality.'
   },
   {
     id: 'Q20_C1',
-    text: "What's your opinion on the education system in your country?",
-    category: 'argue',
+    text: 'What features and qualities should be in a good leader?',
+    category: 'explain',
     difficulty: 'advanced',
     timeLimit: 120,
     cefrLevel: 'C1',
-    topic: 'Education',
-    hint: 'Discuss strengths and areas for improvement.'
+    topic: 'Leadership',
+    hint: 'Analyze the essential characteristics and skills of effective leadership.'
   },
   {
     id: 'Q21_C1',
-    text: 'How can governments encourage people to live healthier lives?',
-    category: 'argue',
+    text: 'To what extent are you interested in fashion?',
+    category: 'explain',
     difficulty: 'advanced',
     timeLimit: 120,
     cefrLevel: 'C1',
-    topic: 'Health',
-    hint: 'Suggest policies, education, or support.'
+    topic: 'Fashion',
+    hint: 'Discuss your relationship with fashion and its role in society and personal expression.'
   },
   {
     id: 'Q22_C1',
-    text: 'Do you think technology is improving or harming communication?',
+    text: 'How can we approach world peace?',
     category: 'argue',
     difficulty: 'advanced',
     timeLimit: 120,
     cefrLevel: 'C1',
-    topic: 'Technology',
-    hint: 'Give examples and your reasoning.'
+    topic: 'Global Issues',
+    hint: 'Present strategies and approaches for achieving international peace and cooperation.'
   },
   {
     id: 'Q23_C1',
-    text: "What's your view on the importance of preserving the environment?",
+    text: 'Reflect on this quote: "Technology owes ecology an apology."',
     category: 'argue',
     difficulty: 'advanced',
     timeLimit: 120,
     cefrLevel: 'C1',
     topic: 'Environment',
-    hint: 'Mention practical actions or consequences.'
-  },
-  
-  // C2 - Proficient
-  {
-    id: 'Q24_C2',
-    text: "Do you agree or disagree with this statement: 'Money can't buy happiness'? Explain your view.",
-    category: 'argue',
-    difficulty: 'advanced',
-    timeLimit: 150,
-    cefrLevel: 'C2',
-    topic: 'Philosophy',
-    hint: 'Use real-life or philosophical examples.'
-  },
-  {
-    id: 'Q25_C2',
-    text: 'How has globalization impacted your country socially and economically?',
-    category: 'explain',
-    difficulty: 'advanced',
-    timeLimit: 150,
-    cefrLevel: 'C2',
-    topic: 'Globalization',
-    hint: 'Give positive and/or negative impacts.'
-  },
-  {
-    id: 'Q26_C2',
-    text: 'In what ways can art or culture influence political change?',
-    category: 'explain',
-    difficulty: 'advanced',
-    timeLimit: 150,
-    cefrLevel: 'C2',
-    topic: 'Culture & Politics',
-    hint: 'Share examples from history or current events.'
-  },
-  {
-    id: 'Q27_C2',
-    text: 'Should governments limit access to certain types of information online?',
-    category: 'argue',
-    difficulty: 'advanced',
-    timeLimit: 150,
-    cefrLevel: 'C2',
-    topic: 'Media',
-    hint: 'Debate the pros and cons.'
-  },
-  {
-    id: 'Q28_C2',
-    text: "What's your perspective on how artificial intelligence may change the future of work?",
-    category: 'explain',
-    difficulty: 'advanced',
-    timeLimit: 150,
-    cefrLevel: 'C2',
-    topic: 'Artificial Intelligence',
-    hint: 'Include opportunities and challenges.'
+    hint: 'Analyze the relationship between technological advancement and environmental impact.'
   }
 ];
