@@ -95,3 +95,48 @@ export const generateWaveformImage = (
 
   return canvas.toDataURL('image/png');
 };
+
+/**
+ * Capture radar chart as image (placeholder for actual implementation)
+ */
+export const captureRadarChartImage = async (element: HTMLElement): Promise<string> => {
+  try {
+    // This would use html2canvas in a real implementation
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+
+    canvas.width = 400;
+    canvas.height = 400;
+
+    // Fill white background
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, 400, 400);
+
+    // Draw placeholder radar chart
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    
+    // Draw circles
+    for (let i = 1; i <= 5; i++) {
+      ctx.beginPath();
+      ctx.arc(200, 200, i * 30, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
+
+    // Draw axes
+    const axes = 6;
+    for (let i = 0; i < axes; i++) {
+      const angle = (i * 2 * Math.PI) / axes;
+      ctx.beginPath();
+      ctx.moveTo(200, 200);
+      ctx.lineTo(200 + Math.cos(angle) * 150, 200 + Math.sin(angle) * 150);
+      ctx.stroke();
+    }
+
+    return canvas.toDataURL('image/png');
+  } catch (error) {
+    console.error('Error capturing radar chart image:', error);
+    return '';
+  }
+};
