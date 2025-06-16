@@ -60,7 +60,7 @@ export const generateLocalProsodyEstimate = (
     cefr_level: estimatedCEFR,
     analysisTimestamp: Date.now(),
     isFallback: true,
-    fallbackReason
+    fallbackReason: failureReason
   };
 };
 
