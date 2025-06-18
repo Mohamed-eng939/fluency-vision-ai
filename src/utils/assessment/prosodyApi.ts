@@ -1,26 +1,29 @@
+
 import axios from 'axios';
 import { ProsodyAnalysisResult } from '@/types/assessment/audio';
 import { generateLocalProsodyEstimate, isProsodyFallback } from './prosodyFallback';
+import { callWithRetry } from './apiRetryUtils';
 
 export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult> {
   console.log("Starting prosody analysis for file:", file.name, file.size, "bytes");
   
-  try {
-    // Validate file before sending
-    if (!file || file.size === 0) {
-      throw new Error("Invalid audio file - size is 0 or null");
-    }
-    
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      throw new Error("Audio file too large (>10MB)");
-    }
-    
-    // Ensure file is in correct format
-    const validTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/webm'];
-    if (!validTypes.includes(file.type)) {
-      console.warn("File type not explicitly supported:", file.type, "- attempting anyway");
-    }
+  // Validate file before sending
+  if (!file || file.size === 0) {
+    throw new Error("Invalid audio file - size is 0 or null");
+  }
+  
+  if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    throw new Error("Audio file too large (>10MB)");
+  }
+  
+  // Ensure file is in correct format
+  const validTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/webm'];
+  if (!validTypes.includes(file.type)) {
+    console.warn("File type not explicitly supported:", file.type, "- attempting anyway");
+  }
 
+  // Define the API call function
+  const makeApiCall = async () => {
     const formData = new FormData();
     formData.append("audio", file);
     
@@ -33,7 +36,7 @@ export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult>
         headers: { 
           "Content-Type": "multipart/form-data"
         }, 
-        timeout: 20000 // 20 seconds timeout
+        timeout: 40000 // 40 seconds timeout
       }
     );
     
@@ -53,35 +56,25 @@ export async function analyzeProsody(file: File): Promise<ProsodyAnalysisResult>
       analysisTimestamp: Date.now(),
       isFallback: false
     };
-  } catch (error) {
-    console.error("Prosody analysis failed, using local fallback:", error);
-    
-    let failureReason = "External API unavailable";
-    
-    if (axios.isAxiosError(error)) {
-      if (error.code === 'ECONNABORTED') {
-        failureReason = "API timeout - server took too long to respond";
-      } else if (error.response?.status === 413) {
-        failureReason = "File too large for external analysis";
-      } else if (error.response?.status === 415) {
-        failureReason = "Audio format not supported by external API";
-      } else if (error.response?.status >= 500) {
-        failureReason = "External API server error";
-      } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-        failureReason = "Network connectivity issues";
-      }
-    }
-    
-    // Generate local fallback estimate
-    const fallbackResult = generateLocalProsodyEstimate(file, undefined, failureReason);
-    
-    console.log("Using prosody fallback with reason:", failureReason);
-    
+  };
+
+  // Define the fallback function
+  const fallbackFn = (reason: string) => {
+    console.log("Using prosody fallback with reason:", reason);
+    return generateLocalProsodyEstimate(file, undefined, reason);
+  };
+
+  // Use the retry wrapper
+  const result = await callWithRetry(makeApiCall, fallbackFn);
+  
+  if (result.isFallback) {
     return {
-      ...fallbackResult,
-      userFriendlyMessage: `Prosody analysis used local estimation - ${failureReason}`
+      ...result.data!,
+      userFriendlyMessage: `Prosody analysis used local estimation - ${result.fallbackReason}`
     };
   }
+  
+  return result.data!;
 }
 
 /**

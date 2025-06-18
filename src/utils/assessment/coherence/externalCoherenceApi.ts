@@ -4,6 +4,9 @@
  * Integrates with FastAPI backend for SBERT and CrossEncoder coherence scoring
  */
 
+import { callWithRetry } from '../apiRetryUtils';
+import { generateLocalCoherenceEstimate } from '../coherenceFallback';
+
 export interface CoherenceApiRequest {
   reference: string;
   response: string;
@@ -17,13 +20,13 @@ export interface CoherenceApiResponse {
 const API_BASE_URL = 'https://Mohamed-eng939-lingua-coherence-api.hf.space';
 
 /**
- * Call SBERT coherence scoring endpoint
+ * Call SBERT coherence scoring endpoint with retry logic
  */
 export const getSBERTCoherenceScore = async (
   reference: string,
   response: string
 ): Promise<number> => {
-  try {
+  const makeApiCall = async () => {
     const requestBody: CoherenceApiRequest = {
       reference,
       response
@@ -34,7 +37,8 @@ export const getSBERTCoherenceScore = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(40000) // 40 second timeout
     });
 
     if (!apiResponse.ok) {
@@ -42,23 +46,26 @@ export const getSBERTCoherenceScore = async (
     }
 
     const result: CoherenceApiResponse = await apiResponse.json();
-    
-    // Return similarity score (0-1 range)
     return result.similarity;
-  } catch (error) {
-    console.error('Error calling SBERT coherence API:', error);
-    throw error;
-  }
+  };
+
+  const fallbackFn = (reason: string) => {
+    const fallbackResult = generateLocalCoherenceEstimate(reference, response, reason);
+    return fallbackResult.score;
+  };
+
+  const result = await callWithRetry(makeApiCall, fallbackFn);
+  return result.data!;
 };
 
 /**
- * Call CrossEncoder coherence scoring endpoint
+ * Call CrossEncoder coherence scoring endpoint with retry logic
  */
 export const getCrossEncoderCoherenceScore = async (
   reference: string,
   response: string
 ): Promise<number> => {
-  try {
+  const makeApiCall = async () => {
     const requestBody: CoherenceApiRequest = {
       reference,
       response
@@ -69,7 +76,8 @@ export const getCrossEncoderCoherenceScore = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(40000) // 40 second timeout
     });
 
     if (!apiResponse.ok) {
@@ -77,13 +85,16 @@ export const getCrossEncoderCoherenceScore = async (
     }
 
     const result: CoherenceApiResponse = await apiResponse.json();
-    
-    // Return similarity score (0-1 range)
     return result.similarity;
-  } catch (error) {
-    console.error('Error calling CrossEncoder coherence API:', error);
-    throw error;
-  }
+  };
+
+  const fallbackFn = (reason: string) => {
+    const fallbackResult = generateLocalCoherenceEstimate(reference, response, reason);
+    return fallbackResult.score;
+  };
+
+  const result = await callWithRetry(makeApiCall, fallbackFn);
+  return result.data!;
 };
 
 /**
@@ -98,6 +109,8 @@ export const getCoherenceScore = async (
   crossScore?: number;
   averageScore: number;
   method: string;
+  isFallback?: boolean;
+  fallbackReason?: string;
 }> => {
   try {
     const results: {
@@ -105,6 +118,8 @@ export const getCoherenceScore = async (
       crossScore?: number;
       averageScore: number;
       method: string;
+      isFallback?: boolean;
+      fallbackReason?: string;
     } = {
       averageScore: 0,
       method: method
