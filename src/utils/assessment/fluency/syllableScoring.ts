@@ -1,3 +1,4 @@
+
 /**
  * Calculate fluency score based on syllables per minute (SPM)
  * Maintains the established SPM ranges but with more balanced fallback logic
@@ -11,7 +12,7 @@ export const calculateFluencyScoreFromSyllables = (spm: number, pauseRatio: numb
     score = 9.0;
   } else if (spm >= 150) {
     score = 8.5;
-  } else if (smp >= 140) {
+  } else if (spm >= 140) {
     score = 8.0;
   } else if (spm >= 130) {
     score = 7.5;
