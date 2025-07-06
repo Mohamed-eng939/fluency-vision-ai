@@ -10,6 +10,7 @@ import { applyPauseQualityPenalties } from "./pauseQualityScoring";
 
 /**
  * Calculate fluency score with fallback for missing metrics
+ * Updated with more balanced fallback SPM estimation
  */
 export const calculateFluencyScore = (
   audioMetrics: any,
@@ -56,9 +57,16 @@ export const calculateFluencyScore = (
         syllablesPerMinute
       });
     } else {
-      // Default fallback for completely missing data
-      syllablesPerMinute = 120; // Average speaking rate
-      console.log("Using default fallback SPM:", syllablesPerMinute);
+      // Adaptive default fallback based on transcript length
+      const wordCount = transcript ? transcript.trim().split(/\s+/).length : 0;
+      if (wordCount > 80) {
+        syllablesPerMinute = 125; // Higher base for longer responses
+      } else if (wordCount > 50) {
+        syllablesPerMinute = 120; // Standard base
+      } else {
+        syllablesPerMinute = 115; // Lower base for shorter responses
+      }
+      console.log("Using adaptive default fallback SPM:", syllablesPerMinute, "for word count:", wordCount);
     }
     
     // Store the calculated value back to metrics
@@ -99,7 +107,7 @@ export const calculateFluencyScore = (
       audioMetrics.repetitions = repetitionAnalysis.repetitions;
       
       // Add repetition justification to fluency justification
-      if (repetitionAnalysis.count > 0) {
+      if (repetitionAnalysis.count > 4) { // Updated threshold
         const repetitionImpact = calculateRepetitionPenalty(repetitionAnalysis.count);
         const repetitionJustification = 
           `Detected ${repetitionAnalysis.count} repeated words/phrases` + 
