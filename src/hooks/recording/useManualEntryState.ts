@@ -1,23 +1,21 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export const useManualEntryState = (isSpeechRecognitionSupported: boolean) => {
-  const [isManualEntryMode, setIsManualEntryMode] = useState<boolean>(false);
-  const [manualTranscript, setManualTranscript] = useState<string>('');
-
-  // Check browser compatibility on mount
-  useEffect(() => {
-    if (!isSpeechRecognitionSupported) {
-      setIsManualEntryMode(true);
-    }
-  }, [isSpeechRecognitionSupported]);
+  // Always start with recording mode (false = recording, true = manual)
+  const [isManualEntryMode, setIsManualEntryMode] = useState(false);
+  const [manualTranscript, setManualTranscript] = useState('');
 
   const toggleEntryMode = () => {
     setIsManualEntryMode(!isManualEntryMode);
-    setManualTranscript('');
+    // Clear manual transcript when switching modes
+    if (isManualEntryMode) {
+      setManualTranscript('');
+    }
   };
 
   const resetManualEntry = () => {
+    setIsManualEntryMode(false); // Reset to recording mode
     setManualTranscript('');
   };
 

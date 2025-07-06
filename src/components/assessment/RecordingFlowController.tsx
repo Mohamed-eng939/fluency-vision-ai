@@ -15,7 +15,7 @@ export interface RecordingFlowControllerProps {
   onComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void;
   onCancel: () => void;
   isProcessing: boolean;
-  delayAnalysis?: boolean; // New prop to control analysis behavior
+  delayAnalysis?: boolean;
 }
 
 const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
@@ -23,7 +23,7 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
   onComplete,
   onCancel,
   isProcessing,
-  delayAnalysis = true // Default to delayed analysis for better UX
+  delayAnalysis = true
 }) => {
   const { isPronunciationApiAvailable } = usePronunciationApi();
   
@@ -53,18 +53,8 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
       prompt={selectedPrompt} 
       isPronunciationApiAvailable={isPronunciationApiAvailable}
     >
-      {isManualEntryMode ? (
-        <ManualEntryController
-          isManualEntryMode={isManualEntryMode}
-          isSpeechRecognitionSupported={isSpeechRecognitionSupported}
-          onTranscriptSubmit={(manualText) => {
-            setManualTranscript(manualText);
-            handleSubmit();
-          }}
-          onAudioSubmit={(audioBlob) => onComplete(audioBlob, manualTranscript)}
-          onToggleEntryMode={toggleEntryMode}
-        />
-      ) : (
+      {/* Always show recording interface first, manual entry as secondary option */}
+      {!isManualEntryMode ? (
         <>
           {!isRecording && !audioBlob && (
             <div className="space-y-4">
@@ -105,6 +95,17 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
             />
           )}
         </>
+      ) : (
+        <ManualEntryController
+          isManualEntryMode={isManualEntryMode}
+          isSpeechRecognitionSupported={isSpeechRecognitionSupported}
+          onTranscriptSubmit={(manualText) => {
+            setManualTranscript(manualText);
+            handleSubmit();
+          }}
+          onAudioSubmit={(audioBlob) => onComplete(audioBlob, manualTranscript)}
+          onToggleEntryMode={toggleEntryMode}
+        />
       )}
     </RecordingContainer>
   );
