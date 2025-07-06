@@ -19,19 +19,19 @@ export const getPdfOptions = (options: PDFOptions = {}) => {
   const fileName = options.fileName || `assessment-report-${Date.now()}.pdf`;
   
   return {
-    margin: [15, 15, 20, 15], // Top, Right, Bottom, Left margins
+    margin: [10, 10, 15, 10], // Top, Right, Bottom, Left margins
     filename: fileName,
-    image: { type: 'jpeg', quality: 0.95 },
+    image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { 
-      scale: 1.5, // Reduced scale for better performance
+      scale: 2, // Higher scale for better quality
       useCORS: true, 
       letterRendering: true,
-      allowTaint: true,
+      allowTaint: false,
       foreignObjectRendering: true,
       scrollX: 0,
       scrollY: 0,
-      height: window.innerHeight,
-      width: window.innerWidth
+      backgroundColor: '#ffffff',
+      removeContainer: true
     },
     jsPDF: { 
       unit: 'mm', 
@@ -40,9 +40,8 @@ export const getPdfOptions = (options: PDFOptions = {}) => {
       compress: true
     },
     pagebreak: { 
-      mode: ['avoid-all', 'css', 'legacy'],
-      before: '.pdf-page-break',
-      after: '.pdf-page-break'
+      mode: ['avoid-all', 'css'],
+      before: '.pdf-page-break'
     }
   };
 };
@@ -62,28 +61,14 @@ export const addPageElements = (pdf: any, options: PDFOptions) => {
     const pageText = `Page ${i} of ${totalPages}`;
     const pageWidth = pdf.internal.pageSize.getWidth();
     const textWidth = pdf.getTextWidth(pageText);
-    pdf.text(pageText, (pageWidth - textWidth) / 2, pdf.internal.pageSize.getHeight() - 10);
+    pdf.text(pageText, (pageWidth - textWidth) / 2, pdf.internal.pageSize.getHeight() - 5);
     
     // Add header with session info
     if (options.sessionId && options.dateOfTest) {
       pdf.setFontSize(8);
-      pdf.text(`Session: ${options.sessionId}`, 15, 10);
-      pdf.text(`Date: ${options.dateOfTest}`, pageWidth - 40, 10);
-    }
-    
-    // Add section headers based on page content
-    if (i === 1) {
-      pdf.setFontSize(8);
-      pdf.setTextColor(70, 130, 180);
-      pdf.text('Assessment Overview', 15, 20);
-    } else if (i === 2) {
-      pdf.setFontSize(8);
-      pdf.setTextColor(70, 130, 180);
-      pdf.text('Skills Analysis', 15, 20);
-    } else if (i >= 3) {
-      pdf.setFontSize(8);
-      pdf.setTextColor(70, 130, 180);
-      pdf.text('Detailed Results & History', 15, 20);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Session: ${options.sessionId}`, 10, 8);
+      pdf.text(`Date: ${options.dateOfTest}`, pageWidth - 50, 8);
     }
   }
   

@@ -9,6 +9,8 @@ import { PDFOptions } from './pdfOptions';
  * Embed images into placeholders for PDF generation
  */
 export const embedImages = (element: HTMLElement, options: PDFOptions): void => {
+  console.log('Embedding images for PDF');
+  
   // Embed waveform image if provided
   if (options.waveformImage) {
     const waveformPlaceholder = element.querySelector('.waveform-placeholder');
@@ -49,8 +51,10 @@ export const addPromptHistorySection = (
 ): void => {
   if (promptHistory.length === 0) return;
 
+  console.log('Adding prompt history section');
+  
   const historySection = document.createElement('div');
-  historySection.className = 'prompt-history-section pdf-page-break';
+  historySection.className = 'prompt-history-section pdf-page-break p-6';
   historySection.innerHTML = `
     <h2 class="text-xl font-bold mb-4 text-assessment-blue border-b pb-2">Question & Answer History</h2>
     ${promptHistory.map((item, index) => `
@@ -78,9 +82,11 @@ export const addPromptHistorySection = (
  * Add strategic page breaks to improve PDF layout
  */
 export const addPageBreaks = (element: HTMLElement): void => {
-  const sections = element.querySelectorAll('.card, .pronunciation-analysis-section, .prompt-history-section');
+  console.log('Adding page breaks');
+  
+  const sections = element.querySelectorAll('.card');
   sections.forEach((section, index) => {
-    if (index > 0 && index % 3 === 0) { // Add page break every 3 sections
+    if (index > 0 && index % 2 === 0) { // Add page break every 2 sections
       section.classList.add('pdf-page-break');
     }
   });
@@ -90,10 +96,22 @@ export const addPageBreaks = (element: HTMLElement): void => {
  * Make all tab content visible for PDF generation
  */
 export const makeAllTabsVisible = (element: HTMLElement): void => {
+  console.log('Making all tabs visible');
+  
+  // Show all tab content
   const tabContents = element.querySelectorAll('[data-state="inactive"]');
   tabContents.forEach(content => {
     (content as HTMLElement).style.display = 'block';
+    (content as HTMLElement).style.visibility = 'visible';
     content.setAttribute('data-state', 'active');
+  });
+  
+  // Show hidden elements
+  const hiddenElements = element.querySelectorAll('.hidden, [style*="display: none"]');
+  hiddenElements.forEach(el => {
+    (el as HTMLElement).style.display = 'block';
+    (el as HTMLElement).style.visibility = 'visible';
+    el.classList.remove('hidden');
   });
 };
 
@@ -101,34 +119,20 @@ export const makeAllTabsVisible = (element: HTMLElement): void => {
  * Restore tab states after PDF generation
  */
 export const restoreTabStates = (element: HTMLElement): void => {
-  const tabContents = element.querySelectorAll('[data-state="active"]');
-  tabContents.forEach((content, index) => {
-    if (index > 0) { // Keep first tab active, hide others
-      (content as HTMLElement).style.display = '';
-      content.setAttribute('data-state', 'inactive');
-    }
-  });
+  // Note: This function doesn't need to do much since we're working with a clone
+  console.log('Restoring tab states');
 };
 
 /**
  * Clean up added content after PDF generation
  */
 export const cleanupAddedContent = (element: HTMLElement): void => {
+  console.log('Cleaning up added content');
+  
   // Remove prompt history section
   const addedSection = element.querySelector('.prompt-history-section');
   if (addedSection) {
     addedSection.remove();
-  }
-
-  // Remove embedded images and restore placeholders
-  const waveformPlaceholder = element.querySelector('.waveform-placeholder');
-  if (waveformPlaceholder) {
-    waveformPlaceholder.innerHTML = '<div class="w-full h-30 bg-gray-100 rounded flex items-center justify-center">Waveform visualization</div>';
-  }
-
-  const radarPlaceholder = element.querySelector('.radar-chart-placeholder');
-  if (radarPlaceholder) {
-    radarPlaceholder.innerHTML = '<div class="w-full h-64 bg-gray-100 rounded flex items-center justify-center">Pronunciation radar chart</div>';
   }
 
   // Remove page break classes

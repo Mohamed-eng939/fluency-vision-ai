@@ -22,32 +22,48 @@ export const generateReportPdf = async (
   element: HTMLElement, 
   options: PDFOptions = {}
 ): Promise<void> => {
-  // Apply print-specific styles and prepare content
-  await prepareContentForPdf(element, options);
+  console.log('Starting PDF generation with element:', element);
   
-  const pdfOptions = getPdfOptions(options);
+  if (!element) {
+    throw new Error('No element provided for PDF generation');
+  }
+
+  // Clone the element to avoid modifying the original
+  const clonedElement = element.cloneNode(true) as HTMLElement;
+  document.body.appendChild(clonedElement);
   
   try {
-    // Generate PDF with page numbers and section headers
+    // Apply print-specific styles and prepare content
+    await prepareContentForPdf(clonedElement, options);
+    
+    const pdfOptions = getPdfOptions(options);
+    console.log('PDF options:', pdfOptions);
+    
+    // Generate PDF with enhanced options
     const pdf = html2pdf()
       .set(pdfOptions)
-      .from(element)
+      .from(clonedElement)
       .toPdf()
       .get('pdf')
       .then((pdf: any) => {
-        // Add page numbers and headers
+        console.log('PDF generated, adding page elements');
         return addPageElements(pdf, options);
       })
       .save();
     
     // Clean up after generating PDF
-    cleanupAfterPdf(element);
+    cleanupAfterPdf(clonedElement);
     
     return pdf;
   } catch (error) {
     console.error('Error generating PDF:', error);
-    cleanupAfterPdf(element);
+    cleanupAfterPdf(clonedElement);
     throw error;
+  } finally {
+    // Remove cloned element
+    if (document.body.contains(clonedElement)) {
+      document.body.removeChild(clonedElement);
+    }
   }
 };
 
@@ -55,11 +71,23 @@ export const generateReportPdf = async (
  * Prepare content for PDF generation
  */
 const prepareContentForPdf = async (element: HTMLElement, options: PDFOptions): Promise<void> => {
+  console.log('Preparing content for PDF');
+  
   // Add PDF generation class
   element.classList.add('generating-pdf');
   
   // Apply print styles
   applyPrintStyles();
+  
+  // Make all tabs visible first
+  makeAllTabsVisible(element);
+  
+  // Force display of all hidden content
+  const hiddenElements = element.querySelectorAll('[style*="display: none"], [data-state="inactive"]');
+  hiddenElements.forEach(el => {
+    (el as HTMLElement).style.display = 'block';
+    (el as HTMLElement).style.visibility = 'visible';
+  });
   
   // Embed images
   embedImages(element, options);
@@ -72,14 +100,16 @@ const prepareContentForPdf = async (element: HTMLElement, options: PDFOptions): 
   // Add strategic page breaks
   addPageBreaks(element);
   
-  // Make all tabs visible
-  makeAllTabsVisible(element);
+  // Wait for any dynamic content to render
+  await new Promise(resolve => setTimeout(resolve, 500));
 };
 
 /**
  * Clean up after PDF generation
  */
 const cleanupAfterPdf = (element: HTMLElement): void => {
+  console.log('Cleaning up after PDF generation');
+  
   // Remove print styles
   removePrintStyles();
   
