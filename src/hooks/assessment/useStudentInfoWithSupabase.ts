@@ -9,13 +9,13 @@ export interface StudentInfo {
   name?: string;
   email?: string;
   phone?: string;
-  username?: string; // Added for compatibility
+  username?: string;
   password?: string;
   country?: string;
   native_language?: string;
   role?: string;
   sessionId?: string;
-  emailResults?: boolean; // Added for compatibility
+  emailResults?: boolean;
   // Legacy fields - kept for backward compatibility
   countryCode?: string;
   phoneNumber?: string;
@@ -58,10 +58,10 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         if (data) {
           // Map database fields to our StudentInfo interface
           setStudentInfo({
-            name: data.name,
+            name: data.name || data.full_name,
             email: data.email,
             phone: data.phone,
-            username: data.name?.split(' ')[0].toLowerCase() + (data.phone?.slice(-4) || ''), // Generate username
+            username: (data.name || data.full_name)?.split(' ')[0].toLowerCase() + (data.phone?.slice(-4) || ''),
             country: data.country,
             native_language: data.native_language,
             role: data.role,
@@ -117,6 +117,7 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         .from('profiles')
         .update({
           name: info.name,
+          full_name: info.name,
           phone: info.phone || info.phoneNumber,
           country: info.country || info.countryCode || info.citizenshipCountry,
           native_language: info.native_language || info.firstLanguage,

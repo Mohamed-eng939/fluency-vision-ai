@@ -16,7 +16,6 @@ export interface UserProfile {
   phone?: string | null;
   country?: string | null;
   native_language?: string | null;
-  // username?: string | null; - Removing this since it doesn't exist in the database
 }
 
 // Auth context interface
@@ -63,13 +62,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (profile) {
             setUser({
               id: profile.id,
-              name: profile.name,
+              name: profile.name || profile.full_name,
               email: profile.email,
               role: (profile.role as UserRole) || 'learner',
               phone: profile.phone,
               country: profile.country,
               native_language: profile.native_language
-              // username removed
             });
           }
         }
@@ -106,13 +104,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (profile) {
             setUser({
               id: profile.id,
-              name: profile.name,
+              name: profile.name || profile.full_name,
               email: profile.email,
               role: (profile.role as UserRole) || 'learner',
               phone: profile.phone,
               country: profile.country,
               native_language: profile.native_language
-              // username removed
             });
           }
         } catch (error) {
@@ -226,9 +223,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     try {
+      // Map name to both name and full_name for consistency
+      const profileUpdate = {
+        ...updates,
+        full_name: updates.name || updates.name,
+        updated_at: new Date().toISOString()
+      };
+      
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(profileUpdate)
         .eq('id', user.id);
       
       if (error) {

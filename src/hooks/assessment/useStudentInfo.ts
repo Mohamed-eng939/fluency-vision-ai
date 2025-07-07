@@ -50,10 +50,12 @@ export const useStudentInfo = () => {
           console.log("Updating profile for authenticated user:", user.id);
           const profileUpdate = {
             name: info.name,
+            full_name: info.name,
             email: info.email,
             country: info.countryCode || info.citizenshipCountry || info.residenceCountry,
             phone: info.phoneNumber || info.phone,
-            native_language: info.firstLanguage
+            native_language: info.firstLanguage,
+            updated_at: new Date().toISOString()
           };
           
           // Update the profile with the provided information
