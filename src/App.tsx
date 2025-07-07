@@ -11,9 +11,6 @@ import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import ReportPage from "./pages/ReportPage";
-import { useEffect } from "react";
-import { setupAdminUser } from "./lib/supabase/setupAdmin";
-import { useToast } from "./hooks/use-toast";
 
 // Import Dashboard pages
 import Dashboard from "./pages/Dashboard";
@@ -23,24 +20,6 @@ import AssessorPanel from "./pages/assessor/AssessorPanel";
 const queryClient = new QueryClient();
 
 const AppContent: React.FC = () => {
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const initializeAdmin = async () => {
-      const result = await setupAdminUser();
-      if (result.success && result.password) {
-        toast({
-          title: "Admin Account Created",
-          description: `Email: mohamed.tarek4115@gmail.com\nPassword: ${result.password}\n\nPlease save this password!`,
-          duration: 0, // Never auto-dismiss
-        });
-        console.log("Admin account created with password:", result.password);
-      }
-    };
-    
-    initializeAdmin();
-  }, [toast]);
-  
   return (
     <>
       <Toaster />

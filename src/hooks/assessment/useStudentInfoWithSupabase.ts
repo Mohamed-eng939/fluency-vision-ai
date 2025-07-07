@@ -1,9 +1,25 @@
-
 import { useState, useEffect } from 'react';
 import { generateUniqueId } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
+
+// Extended profile type that includes the new fields
+interface ExtendedProfile {
+  id: string;
+  full_name: string | null;
+  role: string | null;
+  organization_id: string | null;
+  created_at: string | null;
+  // Extended fields that we added
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  country?: string | null;
+  native_language?: string | null;
+  username?: string | null;
+  updated_at?: string | null;
+}
 
 export interface StudentInfo {
   name?: string;
@@ -56,22 +72,25 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         }
         
         if (data) {
+          // Use type assertion to handle extended fields
+          const extendedProfile = data as ExtendedProfile;
+          
           // Map database fields to our StudentInfo interface
           setStudentInfo({
-            name: data.name || data.full_name,
-            email: data.email,
-            phone: data.phone,
-            username: (data.name || data.full_name)?.split(' ')[0].toLowerCase() + (data.phone?.slice(-4) || ''),
-            country: data.country,
-            native_language: data.native_language,
-            role: data.role,
+            name: extendedProfile.name || extendedProfile.full_name,
+            email: extendedProfile.email,
+            phone: extendedProfile.phone,
+            username: (extendedProfile.name || extendedProfile.full_name)?.split(' ')[0].toLowerCase() + (extendedProfile.phone?.slice(-4) || ''),
+            country: extendedProfile.country,
+            native_language: extendedProfile.native_language,
+            role: extendedProfile.role,
             sessionId,
             // Set compatibility fields
-            firstLanguage: data.native_language,
-            citizenshipCountry: data.country,
-            residenceCountry: data.country,
-            phoneNumber: data.phone,
-            countryCode: data.country
+            firstLanguage: extendedProfile.native_language,
+            citizenshipCountry: extendedProfile.country,
+            residenceCountry: extendedProfile.country,
+            phoneNumber: extendedProfile.phone,
+            countryCode: extendedProfile.country
           });
         } else if (initialInfo.name || initialInfo.email) {
           setStudentInfo({

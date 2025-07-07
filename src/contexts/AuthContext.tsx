@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,23 @@ import { useNavigate } from 'react-router-dom';
 
 // User role types
 export type UserRole = 'admin' | 'assessor' | 'learner';
+
+// Extended profile type that includes the new fields
+interface ExtendedProfile {
+  id: string;
+  full_name: string | null;
+  role: string | null;
+  organization_id: string | null;
+  created_at: string | null;
+  // Extended fields that we added
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  country?: string | null;
+  native_language?: string | null;
+  username?: string | null;
+  updated_at?: string | null;
+}
 
 // User profile types
 export interface UserProfile {
@@ -52,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentSession) {
           setSession(currentSession);
           
-          // Fetch user profile
+          // Fetch user profile - use type assertion to handle extended fields
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
@@ -60,14 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
             
           if (profile) {
+            const extendedProfile = profile as ExtendedProfile;
             setUser({
-              id: profile.id,
-              name: profile.name || profile.full_name,
-              email: profile.email,
-              role: (profile.role as UserRole) || 'learner',
-              phone: profile.phone,
-              country: profile.country,
-              native_language: profile.native_language
+              id: extendedProfile.id,
+              name: extendedProfile.name || extendedProfile.full_name,
+              email: extendedProfile.email,
+              role: (extendedProfile.role as UserRole) || 'learner',
+              phone: extendedProfile.phone,
+              country: extendedProfile.country,
+              native_language: extendedProfile.native_language
             });
           }
         }
@@ -102,14 +119,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
             
           if (profile) {
+            const extendedProfile = profile as ExtendedProfile;
             setUser({
-              id: profile.id,
-              name: profile.name || profile.full_name,
-              email: profile.email,
-              role: (profile.role as UserRole) || 'learner',
-              phone: profile.phone,
-              country: profile.country,
-              native_language: profile.native_language
+              id: extendedProfile.id,
+              name: extendedProfile.name || extendedProfile.full_name,
+              email: extendedProfile.email,
+              role: (extendedProfile.role as UserRole) || 'learner',
+              phone: extendedProfile.phone,
+              country: extendedProfile.country,
+              native_language: extendedProfile.native_language
             });
           }
         } catch (error) {
