@@ -5,10 +5,12 @@ import { processRecordingForAssessment } from '@/utils/assessment/audioProcessin
 import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
 import { StoredResponse, ProcessingProgress } from './types';
 import { calculateAggregatedResult } from './responseAggregation';
+import { useSupabaseStorage } from '../useSupabaseStorage';
 
 export const useResponseBatchProcessor = () => {
   const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress>({ current: 0, total: 0 });
+  const { storePromptResponse, storeFinalAssessment } = useSupabaseStorage();
 
   /**
    * Process all stored responses in batch at test completion
@@ -48,6 +50,16 @@ export const useResponseBatchProcessor = () => {
           // Apply CEFR calibration
           const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis);
           
+          // Store individual response in database
+          await storePromptResponse(
+            sessionId,
+            response.prompt,
+            enhancedResult,
+            index,
+            response.transcript,
+            response.audioBlob ? URL.createObjectURL(response.audioBlob) : undefined
+          );
+          
           processedHistory.push({
             prompt: response.prompt,
             result: enhancedResult
@@ -63,6 +75,16 @@ export const useResponseBatchProcessor = () => {
       
       // Calculate aggregated final result
       const aggregatedResult = calculateAggregatedResult(allResults, sessionId, studentName);
+      
+      // Store final assessment result in database
+      if (aggregatedResult) {
+        await storeFinalAssessment(
+          sessionId,
+          aggregatedResult,
+          { name: studentName },
+          processedHistory
+        );
+      }
       
       // Update prompt history with processed results
       if (setPromptHistory) {

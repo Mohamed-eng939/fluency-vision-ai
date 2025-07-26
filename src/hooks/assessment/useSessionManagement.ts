@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
 import { generateUniqueId } from '@/utils/assessmentUtils';
+import { useSupabaseStorage } from './useSupabaseStorage';
 
 export const useSessionManagement = () => {
   // Track assessment session
   const [sessionId, setSessionId] = useState<string>('');
   const [emailResults, setEmailResults] = useState(false);
+  const { storeFinalAssessment, isStoring } = useSupabaseStorage();
   
   // Initialize session
   const initializeSession = (withEmail: boolean = false) => {
@@ -16,23 +18,37 @@ export const useSessionManagement = () => {
   };
   
   // Store assessment data
-  const storeAssessmentData = (studentInfo: any, promptHistory: any[], finalResult: any) => {
-    // In a real implementation, this would save to a database
-    console.log('Storing assessment data', {
+  const storeAssessmentData = async (studentInfo: any, promptHistory: any[], finalResult: any) => {
+    console.log('Storing assessment data to Supabase', {
       sessionId,
       studentInfo,
       promptHistory,
       finalResult
     });
     
-    // For now, we're just returning exportable data
+    // Store in Supabase database
+    const success = await storeFinalAssessment(
+      sessionId,
+      finalResult,
+      studentInfo,
+      promptHistory
+    );
+    
+    if (success) {
+      console.log('✅ Assessment data stored successfully in Supabase');
+    } else {
+      console.error('❌ Failed to store assessment data in Supabase');
+    }
+    
+    // Return exportable data for UI usage
     return {
       sessionId,
       studentInfo,
       promptHistory,
       finalResult,
       date: new Date().toISOString(),
-      testType: 'quick'
+      testType: 'quick',
+      stored: success
     };
   };
   
@@ -47,6 +63,7 @@ export const useSessionManagement = () => {
     emailResults,
     initializeSession,
     storeAssessmentData,
-    resetSession
+    resetSession,
+    isStoring
   };
 };

@@ -4,6 +4,7 @@ import { getFullAssessmentTests } from '@/utils/assessmentUtils';
 import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
 import AssessmentFlow from '@/components/assessment/AssessmentFlow';
+import { AssessmentStorageDemo } from '@/components/assessment/AssessmentStorageDemo';
 import { useSearchParams } from 'react-router-dom';
 
 const AssessmentPage: React.FC = () => {
@@ -76,6 +77,10 @@ const AssessmentPage: React.FC = () => {
       <AssessmentFlow 
         onTakeFullAssessment={handleShowFullAssessmentIntro}
       />
+      
+      <div className="mt-8">
+        <AssessmentStorageDemo />
+      </div>
     </div>
   );
 };
