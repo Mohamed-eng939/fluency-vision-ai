@@ -24,6 +24,19 @@ export const scoreSpeakingResponse = async (
   detailedScores: Record<string, number>,
   feedback: Record<string, string>
 }> => {
+  // Quality control checks
+  if (!transcript || transcript.trim().split(/\s+/).length < 10) {
+    // Special case for Q2 (phone number) - allow shorter responses
+    if (question.id !== 'Q2_A1') {
+      throw new Error('Insufficient data for reliable scoring. Please provide a more detailed response (at least 10 words).');
+    }
+  }
+  
+  // Special case for Q2 - phone number pronunciation assessment
+  if (question.id === 'Q2_A1') {
+    return await scorePhoneNumberResponse(audioBlob, transcript);
+  }
+  
   // Process audio to get basic metrics
   const processedAudio = await processAudioForAssessment(audioBlob);
   
@@ -46,6 +59,65 @@ export const scoreSpeakingResponse = async (
   
   // Fallback to basic scoring if no rubric available
   return await basicScoring(processedAudio.metrics, enhancedMetrics, transcript);
+};
+
+/**
+ * Special scoring for Q2 - phone number pronunciation
+ */
+const scorePhoneNumberResponse = async (
+  audioBlob: Blob,
+  transcript?: string
+): Promise<{
+  score: number, 
+  cefrLevel: CEFRLevel,
+  detailedScores: Record<string, number>,
+  feedback: Record<string, string>
+}> => {
+  // Process audio to get pronunciation metrics
+  const processedAudio = await processAudioForAssessment(audioBlob);
+  
+  // For phone numbers, focus primarily on pronunciation clarity
+  const pronunciationScore = await calculateCriterionScore('Pronunciation', processedAudio.metrics, transcript || '');
+  
+  // Check if transcript contains digits/numbers
+  const hasNumbers = transcript && /\d/.test(transcript);
+  const numberClarity = hasNumbers ? 8.5 : 6.0; // Bonus for clear number pronunciation
+  
+  // Simple scoring focused on pronunciation and clarity
+  const detailedScores = {
+    pronunciation: pronunciationScore,
+    clarity: numberClarity,
+    task_completion: transcript && transcript.length > 5 ? 8.0 : 6.0
+  };
+  
+  // Calculate average score
+  const averageScore = Object.values(detailedScores).reduce((sum, score) => sum + score, 0) / 
+                       Object.values(detailedScores).length;
+  
+  // Convert to 0-100 scale
+  const finalScore = Math.round((averageScore / 10) * 100);
+  
+  // Phone number responses are typically A1 level with focus on pronunciation
+  const cefrLevel: CEFRLevel = finalScore >= 80 ? 'A2' : 'A1';
+  
+  const feedback = {
+    pronunciation: finalScore >= 80 
+      ? "Clear pronunciation of numbers. Well done!" 
+      : "Practice pronouncing numbers more clearly.",
+    clarity: hasNumbers 
+      ? "Numbers were recognized in your response." 
+      : "Try to include clear digit pronunciation.",
+    task_completion: transcript && transcript.length > 5
+      ? "Task completed appropriately."
+      : "Response could be more complete."
+  };
+  
+  return {
+    score: finalScore,
+    cefrLevel,
+    detailedScores,
+    feedback
+  };
 };
 
 /**
