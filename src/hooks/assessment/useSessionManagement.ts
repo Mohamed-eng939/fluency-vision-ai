@@ -19,8 +19,8 @@ export const useSessionManagement = () => {
       return response.sessionId;
     } else {
       console.error('Failed to initialize session:', response.error);
-      // Fallback to local session ID generation
-      const fallbackId = `QA_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Generate proper UUID fallback
+      const fallbackId = crypto.randomUUID();
       setSessionId(fallbackId);
       setEmailResults(withEmail);
       return fallbackId;
