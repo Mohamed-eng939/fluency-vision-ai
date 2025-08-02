@@ -11,15 +11,15 @@ export const useAssessmentControl = (config: Partial<AssessmentFlowConfig> = {})
   const [currentStep, setCurrentStep] = useState<AssessmentStep>(AssessmentStep.ENTRY);
 
   // Initialize the assessment
-  const initializeAssessment = (
-    initializeSession: (withEmail: boolean) => string,
+  const initializeAssessment = async (
+    initializeSession: (withEmail: boolean) => Promise<string>,
     initializePromptQueue: () => void,
     resetScoring: () => void,
     resetStoredResponses: () => void,
     withEmail: boolean = false
   ) => {
     console.log("Initializing assessment with email:", withEmail);
-    initializeSession(withEmail);
+    await initializeSession(withEmail);
     initializePromptQueue();
     resetScoring();
     resetStoredResponses();

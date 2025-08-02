@@ -2,7 +2,7 @@
 import { AssessmentStep } from './types/assessmentTypes';
 
 interface AssessmentFlowActionsProps {
-  initializeSession: (withEmail: boolean) => string;
+  initializeSession: (withEmail: boolean) => Promise<string>;
   initializePromptQueue: () => void;
   resetScoring: () => void;
   resetStoredResponses: () => void;
@@ -28,9 +28,9 @@ export const useAssessmentFlowActions = ({
 }: AssessmentFlowActionsProps) => {
   
   // Initialize the assessment
-  const initializeAssessmentFlow = (withEmail: boolean = false) => {
+  const initializeAssessmentFlow = async (withEmail: boolean = false) => {
     console.log("Initializing assessment with email:", withEmail);
-    initializeSession(withEmail);
+    await initializeSession(withEmail);
     initializePromptQueue();
     resetScoring();
     resetStoredResponses();

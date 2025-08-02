@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { generateUniqueId } from '@/utils/assessmentUtils';
+import { sessionService } from '@/services/sessionService';
 import { useSupabaseStorage } from './useSupabaseStorage';
 
 export const useSessionManagement = () => {
@@ -10,34 +10,58 @@ export const useSessionManagement = () => {
   const { storeFinalAssessment, isStoring } = useSupabaseStorage();
   
   // Initialize session
-  const initializeSession = (withEmail: boolean = false) => {
-    const newSessionId = generateUniqueId('QA');
-    setSessionId(newSessionId);
-    setEmailResults(withEmail);
-    return newSessionId;
+  const initializeSession = async (withEmail: boolean = false) => {
+    const response = await sessionService.initializeSession(withEmail);
+    
+    if (response.success && response.sessionId) {
+      setSessionId(response.sessionId);
+      setEmailResults(withEmail);
+      return response.sessionId;
+    } else {
+      console.error('Failed to initialize session:', response.error);
+      // Fallback to local session ID generation
+      const fallbackId = `QA_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setSessionId(fallbackId);
+      setEmailResults(withEmail);
+      return fallbackId;
+    }
   };
   
   // Store assessment data
   const storeAssessmentData = async (studentInfo: any, promptHistory: any[], finalResult: any) => {
-    console.log('Storing assessment data to Supabase', {
+    console.log('Storing assessment data via session-manager', {
       sessionId,
       studentInfo,
       promptHistory,
       finalResult
     });
     
-    // Store in Supabase database
-    const success = await storeFinalAssessment(
+    // Store via Edge Function
+    const response = await sessionService.storeAssessmentData({
       sessionId,
-      finalResult,
       studentInfo,
-      promptHistory
-    );
+      promptHistory,
+      finalResult,
+      emailResults
+    });
+    
+    let success = response.success;
+    
+    // Fallback to direct database storage if Edge Function fails
+    if (!success) {
+      console.warn('Edge Function failed, falling back to direct storage:', response.error);
+      success = await storeFinalAssessment(
+        sessionId,
+        finalResult,
+        studentInfo,
+        promptHistory
+      );
+    }
     
     if (success) {
-      console.log('✅ Assessment data stored successfully in Supabase');
+      console.log('✅ Assessment data stored successfully');
     } else {
-      console.error('❌ Failed to store assessment data in Supabase');
+      console.error('❌ Failed to store assessment data');
     }
     
     // Return exportable data for UI usage

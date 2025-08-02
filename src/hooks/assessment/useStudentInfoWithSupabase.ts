@@ -3,6 +3,7 @@ import { generateUniqueId } from '@/utils/assessmentUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
+import { profileService } from '@/services/profileService';
 
 // Extended profile type that includes the new fields
 interface ExtendedProfile {
@@ -60,20 +61,11 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
       
       // If we have a logged-in user, fetch their profile
       const fetchProfile = async () => {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-          
-        if (error) {
-          console.error('Error fetching profile:', error);
-          return;
-        }
+        // Try Edge Function first
+        const response = await profileService.getProfile(user.id);
         
-        if (data) {
-          // Use type assertion to handle extended fields
-          const extendedProfile = data as ExtendedProfile;
+        if (response.success && response.data) {
+          const extendedProfile = response.data as ExtendedProfile;
           
           // Map database fields to our StudentInfo interface
           setStudentInfo({
@@ -92,11 +84,46 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
             phoneNumber: extendedProfile.phone,
             countryCode: extendedProfile.country
           });
-        } else if (initialInfo.name || initialInfo.email) {
-          setStudentInfo({
-            ...initialInfo,
-            sessionId
-          });
+        } else {
+          // Fallback to direct database query
+          console.warn('Edge Function failed, falling back to direct query:', response.error);
+          
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+            
+          if (error) {
+            console.error('Error fetching profile:', error);
+            return;
+          }
+          
+          if (data) {
+            const extendedProfile = data as ExtendedProfile;
+            
+            setStudentInfo({
+              name: extendedProfile.name || extendedProfile.full_name,
+              email: extendedProfile.email,
+              phone: extendedProfile.phone,
+              username: (extendedProfile.name || extendedProfile.full_name)?.split(' ')[0].toLowerCase() + (extendedProfile.phone?.slice(-4) || ''),
+              country: extendedProfile.country,
+              native_language: extendedProfile.native_language,
+              role: extendedProfile.role,
+              sessionId,
+              // Set compatibility fields
+              firstLanguage: extendedProfile.native_language,
+              citizenshipCountry: extendedProfile.country,
+              residenceCountry: extendedProfile.country,
+              phoneNumber: extendedProfile.phone,
+              countryCode: extendedProfile.country
+            });
+          } else if (initialInfo.name || initialInfo.email) {
+            setStudentInfo({
+              ...initialInfo,
+              sessionId
+            });
+          }
         }
       };
       
@@ -130,29 +157,43 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
     
     setStudentInfo(updatedInfo);
     
-    // If user is authenticated, update profile in Supabase
+    // If user is authenticated, update profile via Edge Function
     if (user) {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          name: info.name,
-          full_name: info.name,
-          phone: info.phone || info.phoneNumber,
-          country: info.country || info.countryCode || info.citizenshipCountry,
-          native_language: info.native_language || info.firstLanguage,
-          role: info.role || 'learner',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+      const response = await profileService.upsertProfile({
+        name: info.name,
+        full_name: info.name,
+        phone: info.phone || info.phoneNumber,
+        country: info.country || info.countryCode || info.citizenshipCountry,
+        native_language: info.native_language || info.firstLanguage,
+        role: info.role || 'learner'
+      });
+      
+      if (!response.success) {
+        // Fallback to direct database update
+        console.warn('Edge Function failed, falling back to direct update:', response.error);
         
-      if (updateError) {
-        console.error('Error updating profile:', updateError);
-        toast({
-          title: "Failed to update profile",
-          description: updateError.message,
-          variant: "destructive"
-        });
-        return null;
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            name: info.name,
+            full_name: info.name,
+            phone: info.phone || info.phoneNumber,
+            country: info.country || info.countryCode || info.citizenshipCountry,
+            native_language: info.native_language || info.firstLanguage,
+            role: info.role || 'learner',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+          
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          toast({
+            title: "Failed to update profile",
+            description: updateError.message,
+            variant: "destructive"
+          });
+          return null;
+        }
       }
     } else {
       // For non-authenticated users (should be rare with Supabase auth)
