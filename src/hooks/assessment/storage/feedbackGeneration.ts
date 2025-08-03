@@ -10,6 +10,6 @@ export const generateSmartFeedback = (
   cefrLevel: CEFRLevel, 
   taskCount: number
 ) => {
-  // Generate targeted feedback using the new feedback generator
-  return generateResponseFeedback(metrics, "", cefrLevel);
+  // Generate targeted feedback using the AI-powered feedback generator
+  return generateResponseFeedback(metrics, "", cefrLevel, audioAnalysis);
 };

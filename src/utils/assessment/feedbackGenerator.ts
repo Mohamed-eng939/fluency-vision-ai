@@ -1,4 +1,5 @@
-import { AssessmentMetrics, CEFRLevel } from '@/types/assessment';
+import { AssessmentMetrics, CEFRLevel, AudioAnalysisResult } from '@/types/assessment';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ResponseFeedback {
   fluency: string;
@@ -19,32 +20,67 @@ export interface SkillDescriptor {
 }
 
 /**
- * Generate targeted feedback for each skill based on score thresholds
+ * Generate personalized, AI-powered feedback based on actual performance
  */
-export const generateResponseFeedback = (
+export const generateResponseFeedback = async (
   metrics: AssessmentMetrics,
   transcript: string = "",
-  cefrLevel: CEFRLevel = "B1"
-): ResponseFeedback => {
+  cefrLevel: CEFRLevel = "B1",
+  audioAnalysis?: AudioAnalysisResult,
+  promptText?: string
+): Promise<ResponseFeedback> => {
   
-  const feedback: ResponseFeedback = {
-    fluency: generateFluentFeedback(metrics.fluency, transcript),
-    grammar: generateGrammarFeedback(metrics.grammar, transcript),
-    vocabulary: generateVocabularyFeedback(metrics.vocabulary, transcript),
-    coherence: generateCoherenceFeedback(metrics.coherence, transcript),
-    pronunciation: generatePronunciationFeedback(metrics.pronunciation),
-    prosody: generateProsodyFeedback(metrics.prosody),
-    syntax: generateSyntaxFeedback(metrics.syntax, transcript),
-    overall: generateOverallFeedback(metrics, cefrLevel)
-  };
+  try {
+    // Call the AI-powered feedback generation
+    const { data, error } = await supabase.functions.invoke('personalized-feedback', {
+      body: {
+        transcript,
+        metrics,
+        audioAnalysis,
+        promptText,
+        cefrLevel
+      }
+    });
 
-  return feedback;
+    if (error) {
+      console.error('AI feedback generation failed:', error);
+      return generateFallbackFeedback(metrics, cefrLevel);
+    }
+
+    if (data?.success && data?.feedback) {
+      return data.feedback;
+    }
+
+    return generateFallbackFeedback(metrics, cefrLevel);
+  } catch (error) {
+    console.error('Error generating personalized feedback:', error);
+    return generateFallbackFeedback(metrics, cefrLevel);
+  }
 };
 
 /**
- * Generate fluency-specific feedback
+ * Fallback feedback generation for when AI service is unavailable
  */
-const generateFluentFeedback = (score: number, transcript: string): string => {
+const generateFallbackFeedback = (
+  metrics: AssessmentMetrics,
+  cefrLevel: CEFRLevel
+): ResponseFeedback => {
+  return {
+    fluency: generateFluentFeedback(metrics.fluency),
+    grammar: generateGrammarFeedback(metrics.grammar),
+    vocabulary: generateVocabularyFeedback(metrics.vocabulary),
+    coherence: generateCoherenceFeedback(metrics.coherence),
+    pronunciation: generatePronunciationFeedback(metrics.pronunciation),
+    prosody: generateProsodyFeedback(metrics.prosody),
+    syntax: generateSyntaxFeedback(metrics.syntax),
+    overall: generateOverallFeedback(metrics, cefrLevel)
+  };
+};
+
+/**
+ * Simplified fallback feedback functions (used when AI is unavailable)
+ */
+const generateFluentFeedback = (score: number): string => {
   if (score < 3) {
     return "Practice speaking in complete sentences and try to reduce long pauses between words.";
   }
@@ -60,10 +96,7 @@ const generateFluentFeedback = (score: number, transcript: string): string => {
   return "Excellent fluency with natural pace and minimal hesitation.";
 };
 
-/**
- * Generate grammar-specific feedback
- */
-const generateGrammarFeedback = (score: number, transcript: string): string => {
+const generateGrammarFeedback = (score: number): string => {
   if (score < 3) {
     return "Focus on basic sentence structure and subject-verb agreement.";
   }
@@ -79,10 +112,7 @@ const generateGrammarFeedback = (score: number, transcript: string): string => {
   return "Excellent grammatical control with complex structures used accurately.";
 };
 
-/**
- * Generate vocabulary-specific feedback
- */
-const generateVocabularyFeedback = (score: number, transcript: string): string => {
+const generateVocabularyFeedback = (score: number): string => {
   if (score < 3) {
     return "Learn everyday words related to common topics like family, work, and daily activities.";
   }
@@ -98,10 +128,7 @@ const generateVocabularyFeedback = (score: number, transcript: string): string =
   return "Excellent vocabulary range with precise and sophisticated word choices.";
 };
 
-/**
- * Generate coherence-specific feedback
- */
-const generateCoherenceFeedback = (score: number, transcript: string): string => {
+const generateCoherenceFeedback = (score: number): string => {
   if (score < 3) {
     return "Practice organizing simple ideas in logical order with basic connecting words.";
   }
@@ -155,10 +182,7 @@ const generateProsodyFeedback = (score: number): string => {
   return "Excellent prosodic control with natural rhythm and expressive intonation.";
 };
 
-/**
- * Generate syntax-specific feedback
- */
-const generateSyntaxFeedback = (score: number, transcript: string): string => {
+const generateSyntaxFeedback = (score: number): string => {
   if (score < 3) {
     return "Practice forming complete sentences with proper word order.";
   }
