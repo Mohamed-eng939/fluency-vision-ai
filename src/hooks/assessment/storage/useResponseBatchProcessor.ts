@@ -74,7 +74,7 @@ export const useResponseBatchProcessor = () => {
       }
       
       // Calculate aggregated final result
-      const aggregatedResult = calculateAggregatedResult(allResults, sessionId, studentName);
+      const aggregatedResult = await calculateAggregatedResult(allResults, sessionId, studentName);
       
       // Store final assessment result in database
       if (aggregatedResult) {

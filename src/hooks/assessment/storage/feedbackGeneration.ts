@@ -4,12 +4,12 @@ import { generateResponseFeedback } from '@/utils/assessment/feedbackGenerator';
 /**
  * Generate enhanced smart feedback based on actual performance metrics
  */
-export const generateSmartFeedback = (
+export const generateSmartFeedback = async (
   metrics: any, 
   audioAnalysis: AudioAnalysisResult, 
   cefrLevel: CEFRLevel, 
   taskCount: number
 ) => {
   // Generate targeted feedback using the AI-powered feedback generator
-  return generateResponseFeedback(metrics, "", cefrLevel, audioAnalysis);
+  return await generateResponseFeedback(metrics, "", cefrLevel, audioAnalysis);
 };

@@ -47,11 +47,11 @@ const detectFallbackUsage = (results: AssessmentResult[]) => {
 /**
  * Calculate aggregated result with difficulty weighting and improved feedback
  */
-export const calculateAggregatedResult = (
+export const calculateAggregatedResult = async (
   results: AssessmentResult[],
   sessionId: string,
   studentName?: string
-): AssessmentResult | null => {
+): Promise<AssessmentResult | null> => {
   if (results.length === 0) return null;
 
   console.log(`Aggregating ${results.length} results for comprehensive assessment`);
@@ -115,7 +115,7 @@ export const calculateAggregatedResult = (
   const cefrLevel = determineCEFRFromScore(totalScore);
 
   // Generate smart feedback based on actual performance metrics
-  const aggregatedFeedback = generateSmartFeedback(aggregatedMetrics, aggregatedAudioAnalysis, cefrLevel, results.length);
+  const aggregatedFeedback = await generateSmartFeedback(aggregatedMetrics, aggregatedAudioAnalysis, cefrLevel, results.length);
 
   console.log("Aggregated metrics:", aggregatedMetrics);
   console.log("Difficulty-weighted aggregation:", {
