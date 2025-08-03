@@ -12,10 +12,7 @@ export const applyRepetitionPenalties = (baseScore: number, repetitionCount: num
   // Apply penalty
   penaltyScore -= penalty;
   
-  // Apply CEFR alignment ceiling: cap at 7.0 (B2+ level) for excessive repetition
-  if (repetitionCount >= 12) {
-    penaltyScore = Math.min(penaltyScore, 7.0);
-  }
+  // Note: Capping is now handled in main function with smart logic
   
   // Ensure score doesn't go below 1.0
   return Math.max(1.0, penaltyScore);

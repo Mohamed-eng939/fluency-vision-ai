@@ -9,8 +9,31 @@ import { applyRepetitionPenalties, calculateRepetitionPenalty } from "./repetiti
 import { applyPauseQualityPenalties } from "./pauseQualityScoring";
 
 /**
- * Calculate fluency score with fallback for missing metrics
- * Updated with more balanced fallback SPM estimation
+ * Detect discourse markers that improve flow and cohesion
+ */
+const detectDiscourseMarkers = (transcript: string): string[] => {
+  const markers = [
+    'because', 'but', 'however', 'so', 'even though', 'in addition',
+    'therefore', 'moreover', 'furthermore', 'although', 'nevertheless',
+    'consequently', 'on the other hand', 'for example', 'in contrast',
+    'meanwhile', 'subsequently', 'thus', 'hence', 'whereas'
+  ];
+  
+  const found: string[] = [];
+  const lowerTranscript = transcript.toLowerCase();
+  
+  markers.forEach(marker => {
+    if (lowerTranscript.includes(marker)) {
+      found.push(marker);
+    }
+  });
+  
+  return found;
+};
+
+/**
+ * Calculate fluency score with CEFR-aligned assessment
+ * Updated to reflect human assessment patterns from IELTS/PTE
  */
 export const calculateFluencyScore = (
   audioMetrics: any,
@@ -96,6 +119,15 @@ export const calculateFluencyScore = (
   
   console.log("Base fluency score from SPM:", score);
 
+  // Apply clarity buffer for slow but clear speakers
+  if (syllablesPerMinute < 90 && transcript) {
+    const discourseMarkers = detectDiscourseMarkers(transcript);
+    if (discourseMarkers.length > 0) {
+      score = Math.min(6.0, score + 0.5); // Clarity buffer up to 6.0
+      console.log("Applied clarity buffer for slow but clear speech:", score);
+    }
+  }
+
   // Apply penalties if transcript is available
   if (transcript) {
     // Analyze repetitions in the transcript with improved detection
@@ -121,11 +153,20 @@ export const calculateFluencyScore = (
       }
     }
     
-    // Apply repetition penalties
+    // Store penalty flags for smart capping
+    let repetitionPenaltyApplied = false;
+    let hesitationPenaltyApplied = false;
+    let pausePenaltyApplied = false;
+
+    // Apply repetition penalties with updated logic
+    const originalScore = score;
     score = applyRepetitionPenalties(score, repetitionAnalysis.count);
+    repetitionPenaltyApplied = score < originalScore;
     
-    // Apply hesitation marker penalties
+    // Apply hesitation marker penalties with updated logic
+    const scoreBeforeHesitation = score;
     score = applyHesitationPenalties(score, transcript);
+    hesitationPenaltyApplied = score < scoreBeforeHesitation;
     
     // Store the hesitation analysis in audioMetrics for feedback generation
     const hesitationAnalysis = detectHesitationMarkers(transcript);
@@ -135,11 +176,40 @@ export const calculateFluencyScore = (
       audioMetrics.hesitationMarkers = hesitationAnalysis.markers;
     }
     
-    // Apply pause quality penalties
+    // Apply pause quality penalties with updated logic
+    const scoreBeforePause = score;
     score = applyPauseQualityPenalties(score, audioMetrics, transcript);
+    pausePenaltyApplied = score < scoreBeforePause;
+
+    // Apply discourse marker bonus (cohesion recognition)
+    const discourseMarkers = detectDiscourseMarkers(transcript);
+    if (discourseMarkers.length >= 2) {
+      score += 0.5;
+      console.log(`Applied +0.5 discourse marker bonus for ${discourseMarkers.length} markers:`, discourseMarkers.slice(0, 3));
+    }
+
+    // Apply smart capping only when multiple severe penalties are triggered
+    const multiplePenalties = [repetitionPenaltyApplied, hesitationPenaltyApplied, pausePenaltyApplied].filter(Boolean).length;
+    if (multiplePenalties >= 2) {
+      const pauseRatio = audioMetrics.pauseRatio || 0;
+      const repetitionCount = repetitionAnalysis.count;
+      const hesitationCount = hesitationAnalysis.count;
+
+      // Cap at 7.5 only if both hesitation and pause issues are severe
+      if (hesitationCount >= 13 && pauseRatio > 0.3) {
+        score = Math.min(score, 7.5);
+        console.log("Applied severe fluency cap at 7.5 due to multiple severe issues");
+      }
+      // Cap at 7.0 only if repetition + other severe issues
+      else if (repetitionCount >= 12 && (hesitationCount >= 8 || pauseRatio > 0.3)) {
+        score = Math.min(score, 7.0);
+        console.log("Applied repetition cap at 7.0 due to multiple issues");
+      }
+    }
   }
   
-  console.log("Final fluency score after penalties:", score);
+  console.log("Final fluency score after penalties and bonuses:", score);
   
-  return Math.max(1.0, Math.min(10.0, score));
+  // Ensure minimum score is 3.0 (updated from 1.0)
+  return Math.max(3.0, Math.min(10.0, score));
 };

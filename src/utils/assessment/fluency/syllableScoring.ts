@@ -7,7 +7,7 @@ export const calculateFluencyScoreFromSyllables = (spm: number, pauseRatio: numb
   // Base score based on syllables per minute - keeping existing ranges
   let score = 0;
   
-  // Apply the established scoring criteria
+  // Apply the updated CEFR-aligned scoring criteria
   if (spm >= 160) {
     score = 9.0;
   } else if (spm >= 150) {
@@ -23,13 +23,13 @@ export const calculateFluencyScoreFromSyllables = (spm: number, pauseRatio: numb
   } else if (spm >= 100) {
     score = 6.0;
   } else if (spm >= 90) {
-    score = 5.0;
+    score = 5.5; // Updated from 5.0
   } else if (spm >= 80) {
-    score = 4.0;
+    score = 5.0; // Updated from 4.0
   } else if (spm >= 70) {
-    score = 3.5;
+    score = 4.0; // Updated from 3.5
   } else {
-    score = 3.0; // Default for slow, hesitant speech
+    score = 3.5; // Updated from 3.0 - minimum raised
   }
   
   // Apply penalties for excessive pausing more selectively
