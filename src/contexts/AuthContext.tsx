@@ -9,12 +9,12 @@ export type UserRole = 'admin' | 'assessor' | 'learner';
 // Extended profile type that includes the new fields
 interface ExtendedProfile {
   id: string;
-  full_name: string | null;
+  name: string | null;
+  full_name?: string | null;
   role: string | null;
   organization_id: string | null;
   created_at: string | null;
   // Extended fields that we added
-  name?: string | null;
   email?: string | null;
   phone?: string | null;
   country?: string | null;
