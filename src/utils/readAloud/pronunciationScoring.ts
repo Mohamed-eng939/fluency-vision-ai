@@ -18,6 +18,12 @@ export interface ScoringConfig {
   hesitationPenalty: number;
 }
 
+export interface RegionalErrorPattern {
+  pattern: RegExp;
+  errorType: string;
+  feedback: string;
+}
+
 const DEFAULT_SCORING_CONFIG: ScoringConfig = {
   hesitationThreshold: 800, // 800ms pause threshold
   minConfidenceThreshold: 0.6,
@@ -26,6 +32,55 @@ const DEFAULT_SCORING_CONFIG: ScoringConfig = {
   insertionPenalty: 0.3,
   hesitationPenalty: 0.2
 };
+
+// Regional error patterns for Middle East/GCC learners
+const REGIONAL_ERROR_PATTERNS: RegionalErrorPattern[] = [
+  {
+    pattern: /\b(sink|sank|srough|sree|sank|sought)\b/g,
+    errorType: 'th_voiceless_substitution',
+    feedback: "Practice the /θ/ sound — it's often confused with /s/ in words like 'think' or 'through'."
+  },
+  {
+    pattern: /\b(zat|zis|zose|zen|zere)\b/g,
+    errorType: 'th_voiced_substitution',
+    feedback: "The voiced /ð/ sound is often replaced by /z/ — focus on 'this', 'that', and 'those'."
+  },
+  {
+    pattern: /\b(beople|bebble|baper|bopcorn)\b/g,
+    errorType: 'p_to_b_substitution',
+    feedback: "The /p/ sound should be voiceless. Watch for substitutions like 'beople' instead of 'people'."
+  },
+  {
+    pattern: /\b\w+(e|u|i|o|a)$/g,
+    errorType: 'vowel_insertion',
+    feedback: "Avoid adding extra vowels at the end of words — say 'friend', not 'friende'."
+  },
+  {
+    pattern: /\b(fery|bery|fideo|bideo|fital)\b/g,
+    errorType: 'v_substitution',
+    feedback: "Practice the voiced /v/ sound. Common errors include 'fery' or 'bery' for 'very'."
+  },
+  {
+    pattern: /\b(sinificant|arument|recornize|sinle)\b/g,
+    errorType: 'g_dropping',
+    feedback: "Make sure to pronounce the /g/ sound clearly in words like 'significant' or 'argue'."
+  },
+  {
+    pattern: /\b(sochial|fashchion|nachional|stachion)\b/g,
+    errorType: 'sh_ch_confusion',
+    feedback: "The /ʃ/ sound ('sh') should not become 'ch' — say 'social', not 'sochial'."
+  },
+  {
+    pattern: /\b(im|por|tant|com|pu|ter|de|ve|lop)\b/g,
+    errorType: 'stress_misplacement',
+    feedback: "Be aware of word stress — it's IM-portant, not im-POR-tant."
+  },
+  {
+    pattern: /(um|uh|er|ah|mm|hmm)/g,
+    errorType: 'excessive_hesitation',
+    feedback: "Minimize filler sounds like 'um' — try to keep fluency smooth and confident."
+  }
+];
 
 export const scoreReadAloudSentence = (
   referenceSentence: string,
@@ -103,7 +158,14 @@ export const scoreReadAloudSentence = (
     });
   });
   
-  // 4. Analyze hesitations and fluency
+  // 4. Detect regional pronunciation patterns
+  const regionalErrors = detectRegionalErrors(transcription, referenceSentence);
+  regionalErrors.forEach(error => {
+    errors.push(error);
+    score -= 0.3; // Penalty for each regional error
+  });
+
+  // 5. Analyze hesitations and fluency
   if (audioAnalysis) {
     const hesitationCount = analyzeHesitations(transcription, audioAnalysis, config);
     const hesitationPenalty = hesitationCount * config.hesitationPenalty;
@@ -115,6 +177,15 @@ export const scoreReadAloudSentence = (
         description: `${hesitationCount} hesitation(s) detected (pauses > ${config.hesitationThreshold}ms or filler words)`
       });
     }
+  }
+
+  // 6. Check for robotic/flat delivery (word-by-word spacing)
+  if (isRoboticDelivery(transcription)) {
+    errors.push({
+      type: 'rhythm',
+      description: "Use natural intonation and connect words — avoid reading word-by-word in a robotic tone."
+    });
+    score -= 0.2;
   }
   
   // 5. Apply confidence-based adjustments
@@ -265,6 +336,41 @@ const analyzeHesitations = (
   }
   
   return hesitationCount;
+};
+
+const detectRegionalErrors = (transcription: string, referenceSentence: string): ReadAloudError[] => {
+  const errors: ReadAloudError[] = [];
+  const normalizedTranscription = transcription.toLowerCase();
+  
+  REGIONAL_ERROR_PATTERNS.forEach(pattern => {
+    const matches = normalizedTranscription.match(pattern.pattern);
+    if (matches) {
+      matches.forEach(match => {
+        errors.push({
+          type: 'regional_error',
+          errorType: pattern.errorType,
+          description: pattern.feedback,
+          feedback: pattern.feedback,
+          actual: match
+        });
+      });
+    }
+  });
+  
+  return errors;
+};
+
+const isRoboticDelivery = (transcription: string): boolean => {
+  // Check for excessive word spacing or unnatural pauses
+  const words = transcription.split(/\s+/);
+  const avgWordLength = words.join('').length / words.length;
+  
+  // If transcript has very short words on average, it might indicate robotic delivery
+  // Also check for excessive punctuation or spacing markers
+  const hasRoboticMarkers = /\.\.\.|…|\s{2,}/.test(transcription);
+  const hasVeryShortWords = avgWordLength < 3 && words.length > 5;
+  
+  return hasRoboticMarkers || hasVeryShortWords;
 };
 
 export const aggregateReadAloudScores = (results: ReadAloudResult[]): {

@@ -7,11 +7,13 @@ export interface ReadAloudSentence {
 }
 
 export interface ReadAloudError {
-  type: 'substitution' | 'omission' | 'insertion' | 'hesitation';
+  type: 'substitution' | 'omission' | 'insertion' | 'hesitation' | 'rhythm' | 'regional_error';
   position?: number;
   expected?: string;
   actual?: string;
   description?: string;
+  errorType?: string;
+  feedback?: string;
 }
 
 export interface ReadAloudResult {
