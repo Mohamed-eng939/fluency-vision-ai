@@ -8,6 +8,7 @@ import SpeechAnalysis from './sections/SpeechAnalysis';
 import SpeakerConsistency from './sections/SpeakerConsistency';
 import LearningRecommendations from './sections/LearningRecommendations';
 import CEFRBadge from './elements/CEFRBadge';
+import FallbackWarning from './FallbackWarning';
 import { Card } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import SkillScoresOverview from './sections/SkillScoresOverview';
@@ -48,6 +49,8 @@ const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
   return (
     <div className="report-container space-y-8 print:text-black">
       <ReportHeader title="Full Assessment Report" />
+      
+      <FallbackWarning fallbackInfo={result.fallbackInfo} />
       
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">

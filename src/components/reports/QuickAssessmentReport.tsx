@@ -8,6 +8,7 @@ import SpeechAnalysis from './sections/SpeechAnalysis';
 import SpeakerConsistency from './sections/SpeakerConsistency';
 import LearningRecommendations from './sections/LearningRecommendations';
 import CEFRBadge from './elements/CEFRBadge';
+import FallbackWarning from './FallbackWarning';
 import { Card } from '../ui/card';
 
 interface QuickAssessmentReportProps {
@@ -40,6 +41,8 @@ const QuickAssessmentReport: React.FC<QuickAssessmentReportProps> = ({
   return (
     <div className="report-container space-y-8 print:text-black">
       <ReportHeader title="Quick Assessment Report" />
+      
+      <FallbackWarning fallbackInfo={result.fallbackInfo} />
       
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">

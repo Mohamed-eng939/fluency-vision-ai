@@ -12,7 +12,8 @@ export const calculateTotalScore = (metrics: AssessmentMetrics): number => {
 };
 
 /**
- * Determine CEFR level based on total score
+ * Determine CEFR level based on percentage score (0-100)
+ * Enhanced thresholds aligned with human assessment standards
  */
 export const determineCEFRLevel = (score: number): CEFRLevel => {
   if (score >= 95) return 'C2';
