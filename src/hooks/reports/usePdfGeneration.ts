@@ -47,20 +47,31 @@ export const usePdfGeneration = ({
         const historySection = document.createElement('div');
         historySection.className = 'prompt-history-section pdf-page-break';
         historySection.innerHTML = `
-          <h2 class="text-xl font-bold mb-4 text-assessment-blue border-b pb-2">Question & Answer History</h2>
+          <div class="page-break-before"></div>
+          <h2 class="text-xl font-bold mb-4 text-assessment-blue border-b pb-2">Transcript History - All Responses</h2>
+          <p class="text-sm text-gray-600 mb-4">Below are all your responses to the assessment questions, organized by difficulty level.</p>
           ${promptHistory.map((item, index) => `
-            <div class="mb-6 p-4 border rounded-lg">
-              <h3 class="font-semibold mb-2">Question ${index + 1}: ${item.prompt.cefrLevel} Level</h3>
-              <p class="text-sm text-gray-600 mb-2">${item.prompt.text}</p>
+            <div class="mb-6 p-4 border rounded-lg break-inside-avoid">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-semibold">Q${index + 1}: ${item.prompt.category || 'Speaking'} Task</h3>
+                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${item.prompt.cefrLevel || 'B1'} Level</span>
+              </div>
+              <div class="mb-3 p-3 bg-gray-50 rounded">
+                <p class="text-sm font-medium text-gray-700">${item.prompt.text}</p>
+              </div>
               ${item.result?.transcript ? `
                 <div class="mt-2">
-                  <h4 class="font-medium text-sm">Your Response:</h4>
-                  <p class="text-sm bg-gray-50 p-2 rounded">${item.result.transcript}</p>
+                  <h4 class="font-medium text-sm mb-1">Your Response:</h4>
+                  <div class="text-sm bg-white p-3 border-l-4 border-blue-200 rounded-r">
+                    "${item.result.transcript}"
+                  </div>
                 </div>
-              ` : ''}
+              ` : '<p class="text-sm text-gray-500 italic">No transcript available</p>'}
               ${item.result ? `
-                <div class="mt-2 text-xs text-gray-500">
-                  Score: ${Math.round(item.result.totalScore)}% | CEFR: ${item.result.cefrLevel}
+                <div class="mt-3 flex gap-4 text-xs text-gray-600 border-t pt-2">
+                  <span>Overall Score: <strong>${Math.round(item.result.totalScore)}%</strong></span>
+                  <span>CEFR Level: <strong>${item.result.cefrLevel}</strong></span>
+                  <span>Duration: <strong>${item.result.duration ? Math.round(item.result.duration) + 's' : 'N/A'}</strong></span>
                 </div>
               ` : ''}
             </div>

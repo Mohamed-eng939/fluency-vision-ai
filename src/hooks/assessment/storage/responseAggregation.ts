@@ -45,7 +45,7 @@ const detectFallbackUsage = (results: AssessmentResult[]) => {
 };
 
 /**
- * Calculate aggregated result from all individual results with improved feedback
+ * Calculate aggregated result with difficulty weighting and improved feedback
  */
 export const calculateAggregatedResult = (
   results: AssessmentResult[],
@@ -56,18 +56,42 @@ export const calculateAggregatedResult = (
 
   console.log(`Aggregating ${results.length} results for comprehensive assessment`);
 
-  // Aggregate metrics by averaging
+  // Calculate difficulty-weighted metrics
+  const skillSums = {
+    fluency: 0, grammar: 0, vocabulary: 0, pronunciation: 0,
+    prosody: 0, coherence: 0, syntax: 0
+  };
+  let totalWeight = 0;
+
+  // Apply difficulty weighting for each response
+  results.forEach(result => {
+    // Get difficulty weight (default to 1.0 if not provided)
+    const difficultyWeight = getDifficultyWeight(result);
+    
+    // Add weighted scores
+    skillSums.fluency += result.metrics.fluency * difficultyWeight;
+    skillSums.grammar += result.metrics.grammar * difficultyWeight;
+    skillSums.vocabulary += result.metrics.vocabulary * difficultyWeight;
+    skillSums.pronunciation += result.metrics.pronunciation * difficultyWeight;
+    skillSums.prosody += result.metrics.prosody * difficultyWeight;
+    skillSums.coherence += result.metrics.coherence * difficultyWeight;
+    skillSums.syntax += result.metrics.syntax * difficultyWeight;
+    
+    totalWeight += difficultyWeight;
+  });
+
+  // Calculate difficulty-weighted averages
   const aggregatedMetrics = {
-    fluency: results.reduce((sum, r) => sum + r.metrics.fluency, 0) / results.length,
-    grammar: results.reduce((sum, r) => sum + r.metrics.grammar, 0) / results.length,
-    vocabulary: results.reduce((sum, r) => sum + r.metrics.vocabulary, 0) / results.length,
-    pronunciation: results.reduce((sum, r) => sum + r.metrics.pronunciation, 0) / results.length,
-    prosody: results.reduce((sum, r) => sum + r.metrics.prosody, 0) / results.length,
-    coherence: results.reduce((sum, r) => sum + r.metrics.coherence, 0) / results.length,
-    syntax: results.reduce((sum, r) => sum + r.metrics.syntax, 0) / results.length
+    fluency: skillSums.fluency / totalWeight,
+    grammar: skillSums.grammar / totalWeight,
+    vocabulary: skillSums.vocabulary / totalWeight,
+    pronunciation: skillSums.pronunciation / totalWeight,
+    prosody: skillSums.prosody / totalWeight,
+    coherence: skillSums.coherence / totalWeight,
+    syntax: skillSums.syntax / totalWeight
   };
 
-  // Calculate weighted total score using CEFR-aligned skill weights
+  // Apply final skill importance weights
   const weightedScore = (
     aggregatedMetrics.fluency * SKILL_WEIGHTS.fluency +
     aggregatedMetrics.grammar * SKILL_WEIGHTS.grammar +
@@ -94,10 +118,11 @@ export const calculateAggregatedResult = (
   const aggregatedFeedback = generateSmartFeedback(aggregatedMetrics, aggregatedAudioAnalysis, cefrLevel, results.length);
 
   console.log("Aggregated metrics:", aggregatedMetrics);
-  console.log("Weighted score calculation:", {
+  console.log("Difficulty-weighted aggregation:", {
     individual: aggregatedMetrics,
-    weights: SKILL_WEIGHTS,
-    weightedScore,
+    skillWeights: SKILL_WEIGHTS,
+    totalDifficultyWeight: totalWeight,
+    finalWeightedScore: weightedScore,
     totalScore,
     fallbackFlags
   });
@@ -188,4 +213,24 @@ export const determineCEFRFromScore = (score: number): CEFRLevel => {
   if (score >= 25) return 'A1+';
   if (score >= 15) return 'A1';
   return 'Pre-A1';
+};
+
+/**
+ * Get difficulty weight based on prompt CEFR level or response metadata
+ */
+const getDifficultyWeight = (result: AssessmentResult): number => {
+  // Try to get CEFR level from the result metadata
+  const cefrLevel = result.cefrLevel || 'B1'; // Default to B1 if not specified
+  
+  // Map CEFR levels to difficulty weights
+  const difficultyWeights: Record<string, number> = {
+    'A1': 0.8,
+    'A2': 0.9, 
+    'B1': 1.0,
+    'B2': 1.1,
+    'C1': 1.2,
+    'C2': 1.2 // Treat C2 same as C1
+  };
+  
+  return difficultyWeights[cefrLevel] || 1.0;
 };

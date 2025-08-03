@@ -217,9 +217,11 @@ export type Database = {
           completed_at: string | null
           confidence_score: number | null
           created_at: string | null
+          has_score_override: boolean | null
           id: string
           organization_id: string | null
           overall_score: number | null
+          override_summary: Json | null
           session_type: string
           started_at: string | null
           status: string | null
@@ -238,9 +240,11 @@ export type Database = {
           completed_at?: string | null
           confidence_score?: number | null
           created_at?: string | null
+          has_score_override?: boolean | null
           id?: string
           organization_id?: string | null
           overall_score?: number | null
+          override_summary?: Json | null
           session_type: string
           started_at?: string | null
           status?: string | null
@@ -259,9 +263,11 @@ export type Database = {
           completed_at?: string | null
           confidence_score?: number | null
           created_at?: string | null
+          has_score_override?: boolean | null
           id?: string
           organization_id?: string | null
           overall_score?: number | null
+          override_summary?: Json | null
           session_type?: string
           started_at?: string | null
           status?: string | null
@@ -587,9 +593,11 @@ export type Database = {
         Row: {
           category: string
           cefr_level: string
+          cefr_weight_mapping: Json | null
           created_at: string | null
           created_by: string | null
           difficulty: string
+          difficulty_weight: number | null
           hint: string | null
           id: string
           is_active: boolean | null
@@ -604,9 +612,11 @@ export type Database = {
         Insert: {
           category: string
           cefr_level: string
+          cefr_weight_mapping?: Json | null
           created_at?: string | null
           created_by?: string | null
           difficulty: string
+          difficulty_weight?: number | null
           hint?: string | null
           id: string
           is_active?: boolean | null
@@ -621,9 +631,11 @@ export type Database = {
         Update: {
           category?: string
           cefr_level?: string
+          cefr_weight_mapping?: Json | null
           created_at?: string | null
           created_by?: string | null
           difficulty?: string
+          difficulty_weight?: number | null
           hint?: string | null
           id?: string
           is_active?: boolean | null
@@ -678,6 +690,51 @@ export type Database = {
           reviewer_notes?: string | null
           scores?: Json | null
           transcript?: string | null
+        }
+        Relationships: []
+      }
+      score_overrides: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          original_scores: Json
+          overridden_at: string
+          overridden_by: string
+          override_notes: Json
+          override_reason: string | null
+          override_scores: Json
+          response_id: string | null
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          original_scores?: Json
+          overridden_at?: string
+          overridden_by: string
+          override_notes?: Json
+          override_reason?: string | null
+          override_scores?: Json
+          response_id?: string | null
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          original_scores?: Json
+          overridden_at?: string
+          overridden_by?: string
+          override_notes?: Json
+          override_reason?: string | null
+          override_scores?: Json
+          response_id?: string | null
+          session_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
