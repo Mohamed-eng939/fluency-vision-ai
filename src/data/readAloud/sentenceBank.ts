@@ -321,10 +321,111 @@ export const b2Sentences: ReadAloudSentence[] = [
 ];
 
 export const c1Sentences: ReadAloudSentence[] = [
-  { id: 'C1-001', sentence: 'The unprecedented technological advancements have fundamentally transformed contemporary society.', band: 'C1' },
-  { id: 'C1-002', sentence: 'Researchers are investigating the correlation between social media usage and psychological well-being.', band: 'C1' },
-  { id: 'C1-003', sentence: 'The intricate relationship between economic policy and environmental sustainability requires careful consideration.', band: 'C1' },
-  // Add more C1 sentences...
+  {
+    id: 'C1-001',
+    sentence: 'Despite the initial resistance from the management team, the proposal gained traction after it demonstrated measurable improvements in both efficiency and morale.',
+    band: 'C1',
+    exampleErrors: ['Despite team no like idea, they accept it when show better work', 'Despite initial resistanse from manajement, the proposal gain traction...'],
+    feedback: ['Work on collocations: "gained traction," "measurable improvements."', 'Intonation shift after "efficiency and morale" signals end of thought.', 'Avoid chunking phrases into word-by-word delivery.']
+  },
+  {
+    id: 'C1-002',
+    sentence: 'While the technology promises to revolutionize how we interact with information, concerns about privacy and data misuse remain a major obstacle to widespread adoption.',
+    band: 'C1',
+    exampleErrors: ['Tech is good but privacy is bad thing', 'While tech promises revolutionize how we interact, concern still there'],
+    feedback: ['Sustain phrasing across "revolutionize how we interact…"', 'Pronounce abstract nouns clearly: "privacy," "adoption."', 'Practice prosody: stress "remains a major obstacle."']
+  },
+  {
+    id: 'C1-003',
+    sentence: 'Contrary to popular belief, multitasking often leads to reduced productivity, as the brain struggles to switch effectively between competing tasks.',
+    band: 'C1',
+    exampleErrors: ['People think multitask good, but it not', 'Contrary to belief, multitasking reduce productivity cause brain tired'],
+    feedback: ['Opening phrase "Contrary to popular belief" = idiomatic expression, deliver smoothly.', 'Link "struggles to switch effectively" as one speech unit.', 'Avoid stress flattening in "competing tasks."']
+  },
+  {
+    id: 'C1-004',
+    sentence: 'If employees were given greater autonomy over their schedules, it\'s likely that both job satisfaction and overall performance would improve significantly.',
+    band: 'C1',
+    exampleErrors: ['If workers have more time control, they feel better at work', 'If employees given more autony… schedules…'],
+    feedback: ['Conditionals at C1 should be fluent and confident: "If X, it\'s likely Y."', 'Emphasize dual subjects: "job satisfaction and overall performance."', 'Reduce pauses between clauses — keep logic flowing.']
+  },
+  {
+    id: 'C1-005',
+    sentence: 'What sets truly effective leaders apart is not just their ability to delegate, but their willingness to listen, adapt, and support others under pressure.',
+    band: 'C1',
+    exampleErrors: ['Good leaders give tasks and help', 'What set leaders apart is ability listen adapt'],
+    feedback: ['"What sets… apart" = inverted subject focus — stress "truly effective leaders."', 'List structure "listen, adapt, and support" should rise-fall smoothly.', 'Pronounce "delegate" with stress on the first syllable (DEL-e-gate).']
+  },
+  {
+    id: 'C1-006',
+    sentence: 'Although the evidence was largely circumstantial, the investigator managed to construct a coherent narrative that persuaded even the most skeptical jurors.',
+    band: 'C1',
+    exampleErrors: ['Investigator made story with little proof, but people believe', 'Although evidence was circusmental… investiga-tor make story'],
+    feedback: ['Stress and articulate "coherent narrative" carefully.', 'Handle clause flow: "Although… the investigator managed…"', 'Avoid dropping consonants in "persuaded" and "skeptical."']
+  },
+  {
+    id: 'C1-007',
+    sentence: 'Having faced repeated setbacks during the early stages of the project, the team displayed remarkable resilience and a renewed sense of purpose.',
+    band: 'C1',
+    exampleErrors: ['Team had problems early, but they kept going', 'Having face problems early, the team show good strong'],
+    feedback: ['Master participle clause "Having faced…" — smooth lead-in.', '"Displayed remarkable resilience" = formal phrase; stress appropriately.', 'Connect "a renewed sense of purpose" as one flowing idea.']
+  },
+  {
+    id: 'C1-008',
+    sentence: 'In a rapidly changing world, the ability to learn continuously and adapt to new situations has become more valuable than any fixed set of skills.',
+    band: 'C1',
+    exampleErrors: ['Now change fast, learning always and adapt important', 'In a rapid world, learn and adapt is more value than skills'],
+    feedback: ['"Continuously" and "situations" demand vowel clarity.', 'Highlight contrast: "more valuable than…"', 'Phrase as one breath unit: "the ability to learn… has become more valuable…"']
+  },
+  {
+    id: 'C1-009',
+    sentence: 'The speaker\'s argument was compelling not because it was flawless, but because it acknowledged complexity and invited genuine dialogue.',
+    band: 'C1',
+    exampleErrors: ['The speech good because it show real things', 'Speaker\'s argument compelling because it admit complex things'],
+    feedback: ['"Not because it was flawless, but because…" = advanced contrast; speak smoothly.', 'Stress "acknowledged complexity" and "genuine dialogue."', 'Tone should carry confidence and reflection.']
+  },
+  {
+    id: 'C1-010',
+    sentence: 'Whether or not you agree with the policy, it\'s essential to understand the rationale behind it before forming a strong opinion.',
+    band: 'C1',
+    exampleErrors: ['You maybe like or not policy, but you should know reason', 'Whether or not agree with policy, need to understand rational'],
+    feedback: ['"Whether or not you agree…" = C1 discourse opener; needs balanced rhythm.', '"Rationale" must be pronounced /ˌræʃəˈnæl/ clearly.', 'Link final clause: "before forming a strong opinion" with rising-falling intonation.']
+  },
+  {
+    id: 'C1-011',
+    sentence: 'Instead of offering a simplistic solution, the report emphasized the importance of long-term strategies grounded in thorough research and stakeholder input.',
+    band: 'C1',
+    exampleErrors: ['The report say we need good plan, not just easy fix', 'Instead of simple solution, report emphsize long term strategy'],
+    feedback: ['Emphasize "simplistic solution" as a contrastive phrase.', 'Speak "grounded in thorough research and stakeholder input" as one flowing segment.', '"Stakeholder" should have clean /s/–/t/ cluster and full final syllable.']
+  },
+  {
+    id: 'C1-012',
+    sentence: 'What many people fail to realize is that sustainable progress often involves compromise, patience, and a willingness to challenge existing assumptions.',
+    band: 'C1',
+    exampleErrors: ['People think change is fast, but need time', 'What people not realize that real progress need compromiss'],
+    feedback: ['"What many people fail to realize…" = strong opener, keep flow smooth.', 'Pause slightly after "progress often involves…" to signal listing.', 'Deliver "challenge existing assumptions" with final descent in tone.']
+  },
+  {
+    id: 'C1-013',
+    sentence: 'Although the candidate lacked political experience, her clarity of vision and ability to connect with voters quickly became her defining strengths.',
+    band: 'C1',
+    exampleErrors: ['She no work in politics but talk good and people like', 'Although candidate not expernced, she have clear vision'],
+    feedback: ['Use natural contrast: "Although… her clarity… quickly became…"', '"Defining strengths" should rise together with final stress on "strengths."', 'Be careful with /kl/ and /k/ blends in "clarity," "connect," and "quickly."']
+  },
+  {
+    id: 'C1-014',
+    sentence: 'The decision to downsize the department was met with resistance, particularly because it came without consultation or adequate explanation.',
+    band: 'C1',
+    exampleErrors: ['They remove workers but no one agree and no explain', 'The decision downsizing… meet resistance because no consulting'],
+    feedback: ['Say "was met with resistance" fluently — it\'s a common passive phrase.', 'Keep flow smooth across "without consultation or adequate explanation."', 'Intonation should drop firmly at the end for finality.']
+  },
+  {
+    id: 'C1-015',
+    sentence: 'By the time the full implications became clear, it was already too late to implement the changes needed to avoid the negative outcomes.',
+    band: 'C1',
+    exampleErrors: ['When they understand problem, it too late to change', 'By time full implications clear, already too late'],
+    feedback: ['"By the time…" is a conditional timing phrase — must be spoken without a pause.', '"Implications became clear" should carry primary stress mid-sentence.', 'Final clause: "to avoid the negative outcomes" = descending cadence.']
+  }
 ];
 
 export const allSentences: ReadAloudSentence[] = [

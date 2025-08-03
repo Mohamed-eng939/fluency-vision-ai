@@ -289,12 +289,13 @@ export const aggregateReadAloudScores = (results: ReadAloudResult[]): {
   const maxPossibleScore = results.length * 5;
   const percentageScore = (totalScore / maxPossibleScore) * 100;
   
-  // Map to CEFR level
+  // Map to CEFR level with updated thresholds
   let cefrLevel = 'A1';
-  if (percentageScore >= 90) cefrLevel = 'C1';
-  else if (percentageScore >= 80) cefrLevel = 'B2';
-  else if (percentageScore >= 65) cefrLevel = 'B1';
-  else if (percentageScore >= 50) cefrLevel = 'A2';
+  if (averageScore >= 4.3) cefrLevel = 'C1';
+  else if (averageScore >= 3.6) cefrLevel = 'B2';
+  else if (averageScore >= 2.6) cefrLevel = 'B1';
+  else if (averageScore >= 1.6) cefrLevel = 'A2';
+  else if (averageScore >= 0) cefrLevel = 'A1';
   
   // Count error types
   const errorSummary: Record<string, number> = {};
