@@ -48,7 +48,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     // Configuration
     totalPrompts
   } = useAssessmentFlow({
-    promptsCount: 10,
+    promptsCount: 23, // Use all 23 CEFR-aligned questions
     requiredConsistentScores: 4,
     showAdminControls: true
   });

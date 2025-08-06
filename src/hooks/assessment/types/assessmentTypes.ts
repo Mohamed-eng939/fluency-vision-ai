@@ -19,7 +19,7 @@ export interface AssessmentFlowConfig {
 
 // Default configuration
 export const DEFAULT_CONFIG: AssessmentFlowConfig = {
-  promptsCount: 10,
+  promptsCount: 23, // Use all 23 CEFR-aligned questions
   requiredConsistentScores: 4,
   emailDelay: 15 * 60 * 1000, // 15 minutes
   showAdminControls: false
