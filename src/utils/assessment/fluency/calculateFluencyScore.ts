@@ -47,6 +47,17 @@ export const calculateFluencyScore = (
     totalDuration: audioMetrics.totalDuration
   });
 
+  // FIX: Ensure durations are in seconds, not milliseconds
+  if (audioMetrics.speakingDuration && audioMetrics.speakingDuration > 0 && audioMetrics.speakingDuration < 1) {
+    console.log("DURATION BUG DETECTED: speakingDuration appears to be in fractional seconds, converting...");
+    audioMetrics.speakingDuration = audioMetrics.speakingDuration * 1000; // Assume it was in milliseconds
+  }
+  
+  if (audioMetrics.totalDuration && audioMetrics.totalDuration > 0 && audioMetrics.totalDuration < 1) {
+    console.log("DURATION BUG DETECTED: totalDuration appears to be in fractional seconds, converting...");
+    audioMetrics.totalDuration = audioMetrics.totalDuration * 1000;
+  }
+
   // Fallback calculation if syllablesPerMinute is missing or zero
   let syllablesPerMinute = audioMetrics.syllablesPerMinute;
   

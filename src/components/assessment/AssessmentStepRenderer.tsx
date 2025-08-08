@@ -7,6 +7,7 @@ import RecordingStep from './RecordingStep';
 import ProcessingResults from './ProcessingResults';
 import ResultsStep from './ResultsStep';
 import AssessmentOptions from './AssessmentOptions';
+import ReadAloudAssessmentStep from './ReadAloudAssessmentStep';
 import { StudentInfo } from '@/hooks/assessment';
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 
@@ -25,6 +26,7 @@ interface AssessmentStepRendererProps {
   showRawScoring: boolean;
   showAdminControls: boolean;
   processingProgress?: { current: number; total: number };
+  sessionId?: string;
 
   // Methods
   onSelectQuickAssessment: () => void;
@@ -54,6 +56,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
   showRawScoring,
   showAdminControls,
   processingProgress,
+  sessionId,
   onSelectQuickAssessment,
   initializeAssessment,
   onStudentInfoSubmit,
@@ -103,6 +106,34 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
           onFinishNow={() => finishAssessment(finalResult)}
           onNext={skipToNextPrompt}
           isProcessing={isProcessing}
+        />
+      );
+
+    case AssessmentStep.READ_ALOUD:
+      if (!sessionId) return null;
+      
+      return (
+        <ReadAloudAssessmentStep
+          sessionId={sessionId}
+          currentIndex={currentPromptIndex}
+          totalTasks={15} // 3 sentences × 5 CEFR levels
+          onComplete={(result) => {
+            // Store Read Aloud result with complete AudioAnalysisResult structure
+            handleResponseComplete(result.audioBlob, result.transcript, {
+              wpm: 0,
+              totalWords: 0,
+              pauseCount: 0,
+              pauseDuration: 0,
+              pauseRatio: 0,
+              speakingDuration: 0,
+              totalDuration: 0,
+              readAloudScore: result.score,
+              pronunciationScore: result.score,
+              band: result.band
+            });
+          }}
+          onNext={skipToNextPrompt}
+          onFinish={() => finishAssessment(finalResult)}
         />
       );
     

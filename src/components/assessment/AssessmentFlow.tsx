@@ -145,6 +145,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         showRawScoring={showRawScoring}
         showAdminControls={showAdminControls}
         processingProgress={processingProgress}
+        sessionId={sessionId}
         onSelectQuickAssessment={handleSelectQuickAssessment}
         initializeAssessment={initializeAssessment}
         onStudentInfoSubmit={handleStudentInfoSubmit}

@@ -76,6 +76,9 @@ export interface AudioAnalysisResult {
   cefrFluencyLevel?: string;
   // Prosody analysis
   prosodyAnalysis?: ProsodyAnalysisResult;
+  // Read Aloud specific scores
+  readAloudScore?: number;
+  band?: string;
 }
 
 // Pronunciation details structure

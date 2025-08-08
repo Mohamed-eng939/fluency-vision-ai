@@ -4,6 +4,7 @@ export enum AssessmentStep {
   ENTRY = 'entry',
   WELCOME = 'welcome',
   RECORDING = 'recording',
+  READ_ALOUD = 'read_aloud',
   PROCESSING = 'processing',
   RESULTS = 'results',
   ADMIN_REVIEW = 'admin_review'
