@@ -103,7 +103,28 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     }
 
     console.log("Profile saved successfully:", result);
-     onSubmit(values);
+    
+    // Convert ProfileFormValues to StudentInfo with proper types
+    const studentInfoData: StudentInfo = {
+      name: values.name,
+      email: values.email,
+      username: values.username,
+      phone: values.phone,
+      citizenshipCountry: values.citizenshipCountry,
+      residenceCountry: values.residenceCountry,
+      dateOfBirth: values.dateOfBirth,
+      firstLanguage: values.firstLanguage,
+      testReason: values.testReason,
+      otherReason: values.otherReason,
+      estimatedLevel: values.estimatedLevel,
+      preferredContact: values.preferredContact,
+      pronunciationPreference: values.pronunciationPreference,
+      promoCode: values.promoCode,
+      dataConsent: values.dataConsent,
+      emailResults: values.emailResults,
+    };
+    
+    onSubmit(studentInfoData);
 
   } catch (err) {
     console.error("Error submitting profile:", err);
