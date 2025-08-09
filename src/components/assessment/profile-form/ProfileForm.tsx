@@ -80,53 +80,60 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
 
    
 
-    // Send request to the edge function
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Sign in to get access token
+const { data, error } = await supabase.auth.signInWithPassword({
   email: '1khaledmohamedmagdy@gmail.com',
   password: '12345678'
 });
 
-if (data?.session) {
-  const accessToken = data.session.access_token;
-  // Then call the Edge Function
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/profile-manager`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`
-    },
-    body: JSON.stringify(payload)
-  });
+if (error) {
+  throw new Error(`Sign-in failed: ${error.message}`);
 }
 
+if (!data?.session) {
+  throw new Error("No session returned from Supabase");
+}
 
-    const result = await res.json();
-    if (!res.ok) {
-      throw new Error(result.error || "Profile submission failed");
-    }
+const accessToken = data.session.access_token;
 
-    console.log("Profile saved successfully:", result);
-    
-    // Convert ProfileFormValues to StudentInfo with proper types
-    const studentInfoData: StudentInfo = {
-      name: values.name,
-      email: values.email,
-      username: values.username,
-      phone: values.phone,
-      citizenshipCountry: values.citizenshipCountry,
-      residenceCountry: values.residenceCountry,
-      dateOfBirth: values.dateOfBirth,
-      firstLanguage: values.firstLanguage,
-      testReason: values.testReason,
-      otherReason: values.otherReason,
-      estimatedLevel: values.estimatedLevel,
-      preferredContact: values.preferredContact,
-      pronunciationPreference: values.pronunciationPreference,
-      promoCode: values.promoCode,
-      dataConsent: values.dataConsent,
-      emailResults: values.emailResults,
-    };
-    
+// Call the Edge Function
+const res = await fetch(`${SUPABASE_URL}/functions/v1/profile-manager`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${accessToken}`
+  },
+  body: JSON.stringify(payload)
+});
+
+const result = await res.json();
+
+if (!res.ok) {
+  throw new Error(result.error || "Profile submission failed");
+}
+
+console.log("Profile saved successfully:", result);
+
+// Convert ProfileFormValues to StudentInfo
+const studentInfoData: StudentInfo = {
+  name: values.name,
+  email: values.email,
+  username: values.username,
+  phone: values.phone,
+  citizenshipCountry: values.citizenshipCountry,
+  residenceCountry: values.residenceCountry,
+  dateOfBirth: values.dateOfBirth,
+  firstLanguage: values.firstLanguage,
+  testReason: values.testReason,
+  otherReason: values.otherReason,
+  estimatedLevel: values.estimatedLevel,
+  preferredContact: values.preferredContact,
+  pronunciationPreference: values.pronunciationPreference,
+  promoCode: values.promoCode,
+  dataConsent: values.dataConsent,
+  emailResults: values.emailResults,
+};
+
     onSubmit(studentInfoData);
 
   } catch (err) {
