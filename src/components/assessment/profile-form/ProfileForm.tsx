@@ -12,7 +12,7 @@ import { ConsentSection } from './ConsentSection';
 import { profileFormSchema, ProfileFormValues } from './types';
 import { countries, languages, cefrLevels, testReasons } from './constants';
 import { StudentInfo } from '@/hooks/assessment';
-import { supabase } from '@/lib/client';
+import { supabase } from '@/lib/supabase/client';
 
 interface ProfileFormProps {
   onSubmit: (data: StudentInfo) => void;
