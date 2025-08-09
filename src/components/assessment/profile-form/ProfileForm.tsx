@@ -78,49 +78,36 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       dataConsent: values.dataConsent,
     };
 
-    // Get the Supabase auth session token
-    // Step 1 — Sign in a test user
-const { data, error } = await supabase.auth.signInWithPassword({
-  email: "1khaledmohamedmagdy@gmail.com", // must exist in your Supabase Auth
-  password: "12345678"
-});
+   const { data, error } = await supabase.auth.signInWithPassword({
+      email: "1khaledmohamedmagdy@gmail.com",
+      password: "12345678"
+    });
 
-if (error || !data.session) {
-  throw new Error("Failed to sign in test user");
-}
+    if (error || !data.session) {
+      throw new Error("Failed to sign in");
+    }
 
-// Step 2 — Use their token
-const token = data.session.access_token;
+    const token = data.session.access_token;
 
-// Step 3 — Call the Edge Function
-const res = await fetch(
-  "https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  }
-);
-
-if (!res.ok) {
-  const errText = await res.text();
-  throw new Error(`Edge Function error: ${errText}`);
-}
-
-const result = await res.json();
-console.log("✅ Success:", result);
-
+     const res = await fetch(
+      "https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     const result = await res.json();
+
     if (!res.ok) {
       throw new Error(result.error || "Profile submission failed");
     }
 
     console.log("Profile saved successfully:", result);
-    // Optionally trigger onSubmit to parent
     onSubmit(values);
 
   } catch (err) {
@@ -128,7 +115,6 @@ console.log("✅ Success:", result);
     alert(err.message);
   }
 };
-
 
   return (
     <Form {...form}>
