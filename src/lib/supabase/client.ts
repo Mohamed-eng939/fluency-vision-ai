@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 
 // We're using environment variables from the code since the project is already connected to Supabase
-const supabaseUrl = "https://fjmiydniqxjqjbimgtjx.supabase.co";
+const supabaseUrl = "https://rrslhxigqtfllunmowcy.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqbWl5ZG5pcXhqcWpiaW1ndGp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NDM1MzIsImV4cCI6MjA2MzIxOTUzMn0.crxMN4RrcgF2ygzzo1mdw9vXvt8YFysujZsHIKZVm_0";
 
 // Create Supabase client
