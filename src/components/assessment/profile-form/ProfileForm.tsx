@@ -85,7 +85,8 @@ const { data, error } = await supabase.auth.signInWithPassword({
   email: '1khaledmohamedmagdy@gmail.com',
   password: '12345678'
 });
-
+console.log('Sign-in data:', data);
+console.log('Sign-in error:', error);
 if (error) {
   throw new Error(`Sign-in failed: ${error.message}`);
 }
