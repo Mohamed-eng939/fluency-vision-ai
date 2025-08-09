@@ -59,15 +59,86 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
   
   const handleSubmit = async (values: ProfileFormValues) => {
   try {
-    // Build the payload based on your API's expected fields
+    // 1. Sign up the user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: {
+        data: {
+          name: values.name,
+          phone: values.phone
+        }
+      }
+    });
+
+    if (authError) {
+      // If user exists, try signing in
+      if (authError.message.includes('User already registered')) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password
+        });
+
+        if (signInError) throw signInError;
+        if (!signInData.session) throw new Error("No session after sign in");
+        
+        var session = signInData.session;
+      } else {
+        throw authError;
+      }
+    } else {
+      if (!authData.session) throw new Error("No session after sign up");
+      var session = authData.session;
+    }
+
+    // 2. Prepare the payload matching your profiles table
     const payload = {
+      id: session.user.id, // Important: link to auth user
       name: values.name,
       username: values.username,
       email: values.email,
-      phone_number: values.phone,
+      phone: values.phone,
       date_of_birth: values.dateOfBirth,
       country_of_citizenship: values.citizenshipCountry,
       country_of_residence: values.residenceCountry,
+      first_language: values.firstLanguage,
+      test_reason: values.testReason,
+      other_reason: values.otherReason,
+      estimated_level: values.estimatedLevel,
+      preferred_contact: values.preferredContact,
+      pronunciation_preference: values.pronunciationPreference,
+      promo_code: values.promoCode,
+      data_consent: values.dataConsent,
+      email_results: values.emailResults,
+    };
+
+    // 3. Call Edge Function
+    const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || "Profile submission failed");
+    }
+
+    const result = await res.json();
+    console.log("Profile saved successfully:", result);
+
+    // 4. Convert and submit
+    const studentInfoData: StudentInfo = {
+      name: values.name,
+      email: values.email,
+      username: values.username,
+      phone: values.phone,
+      citizenshipCountry: values.citizenshipCountry,
+      residenceCountry: values.residenceCountry,
+      dateOfBirth: values.dateOfBirth,
       firstLanguage: values.firstLanguage,
       testReason: values.testReason,
       otherReason: values.otherReason,
@@ -76,61 +147,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       pronunciationPreference: values.pronunciationPreference,
       promoCode: values.promoCode,
       dataConsent: values.dataConsent,
+      emailResults: values.emailResults,
     };
-
-   
-
- const { data, error } = await supabase.auth.signInWithPassword({
-  email: '1khaledmohamedmagdy@gmail.com',
-  password: '12345678'
-});
-console.log('Sign-in data:', data);
-console.log('Sign-in error:', error);
-if (error) {
-  throw new Error(`Sign-in failed: ${error.message}`);
-}
-
-if (!data?.session) {
-  throw new Error("No session returned from Supabase");
-}
-
-const accessToken = data.session.access_token;
-
- const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${accessToken}`
-  },
-  body: JSON.stringify(payload)
-});
-
-const result = await res.json();
-
-if (!res.ok) {
-  throw new Error(result.error || "Profile submission failed");
-}
-
-console.log("Profile saved successfully:", result);
-
- const studentInfoData: StudentInfo = {
-  name: values.name,
-  email: values.email,
-  username: values.username,
-  phone: values.phone,
-  citizenshipCountry: values.citizenshipCountry,
-  residenceCountry: values.residenceCountry,
-  dateOfBirth: values.dateOfBirth,
-  firstLanguage: values.firstLanguage,
-  testReason: values.testReason,
-  otherReason: values.otherReason,
-  estimatedLevel: values.estimatedLevel,
-  preferredContact: values.preferredContact,
-  pronunciationPreference: values.pronunciationPreference,
-  promoCode: values.promoCode,
-  dataConsent: values.dataConsent,
-  emailResults: values.emailResults,
-};
 
     onSubmit(studentInfoData);
 
@@ -139,7 +157,6 @@ console.log("Profile saved successfully:", result);
     alert(err.message);
   }
 };
-
 
   return (
     <Form {...form}>
