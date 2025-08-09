@@ -3,7 +3,7 @@ import type { Database } from './database.types';
 
 // We're using environment variables from the code since the project is already connected to Supabase
 const supabaseUrl = "https://rrslhxigqtfllunmowcy.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqbWl5ZG5pcXhqcWpiaW1ndGp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NDM1MzIsImV4cCI6MjA2MzIxOTUzMn0.crxMN4RrcgF2ygzzo1mdw9vXvt8YFysujZsHIKZVm_0";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyc2xoeGlncXRmbGx1bm1vd2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTI0NDUsImV4cCI6MjA2NjUyODQ0NX0.k3wjgHGU3d_k0vzSMP2jeKaXMs85zrhu_vb4Ym2Sq9c";
 
 // Create Supabase client
 const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
