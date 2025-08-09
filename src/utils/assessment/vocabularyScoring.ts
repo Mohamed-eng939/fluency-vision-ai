@@ -23,7 +23,7 @@ export const calculateVocabularyScore = (
     
     // ENHANCEMENT: Use CEFR sample bank for calibration if prompt ID available
     if (promptId) {
-      const { calibrateScoreWithSample } = require('../data/assessment/cefrSampleBank');
+      const { calibrateScoreWithSample } = require('../../data/assessment/cefrSampleBank');
       const calibration = calibrateScoreWithSample(transcript, promptId, { vocabulary: analysis.vocabularyScore });
       
       if (calibration.referenceSample) {

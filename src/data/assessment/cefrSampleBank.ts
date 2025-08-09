@@ -260,6 +260,700 @@ export const sampleResponses: CEFRSampleResponse[] = [
     lexicalFeatures: ['achieving', 'arguably', 'unprecedented', 'multilateral institutions', 'simultaneously', 'root causes', 'resource scarcity', 'pivotal role', 'cross-cultural empathy', 'diplomatic engagement', 'intervention', 'peacekeeping', 'mechanisms'],
     grammarFeatures: ['complex conditional', 'abstract nominalizations', 'participial phrases'],
     discourseMarkers: ['while simultaneously', 'moreover', 'ultimately', 'when']
+  },
+  
+  // Added benchmark samples for Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10 (A1–C1)
+  // Q1 – Introduce Yourself
+  {
+    id: 'Q1-A1-ali',
+    promptId: 'Q1',
+    cefrLevel: 'A1',
+    transcript: 'My name is Ali. A-L-I. I am 20 years. I live Egypt. I student. I not married.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Covers most points briefly'],
+      improvements: ['Articles and be-verb usage', 'Add prepositions (live in Egypt)', 'Connect ideas'],
+      justification: 'Sentence-level attempts with significant grammatical and lexical gaps. Basic meaning conveyed but low control.'
+    },
+    lexicalFeatures: ['name', 'age', 'live', 'student', 'married'],
+    grammarFeatures: ['be-verb errors', 'article omission', 'prepositions missing'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q1-A2-ali',
+    promptId: 'Q1',
+    cefrLevel: 'A2',
+    transcript: 'Hello, my name is Ali, spelled A-L-I. I\'m 20 years old and I come from Egypt. Now I live in Cairo with my family. I study economics at university and I am single.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Clear, simple sequencing', 'All points addressed'],
+      improvements: ['More varied connectors', 'Wider vocabulary'],
+      justification: 'Solid A2 production. Accurate, slightly robotic, full coverage of expected content.'
+    },
+    lexicalFeatures: ['study at university', 'come from', 'live in'],
+    grammarFeatures: ['present simple control', 'contractions'],
+    discourseMarkers: ['now', 'and']
+  },
+  {
+    id: 'Q1-B1-ali',
+    promptId: 'Q1',
+    cefrLevel: 'B1',
+    transcript: 'Hi, my name is Ali — that\'s A-L-I. I\'m 20 years old and I\'m originally from Egypt, but I currently live in Cairo. I\'m studying economics at the university and I\'m single at the moment. I also work part-time in a bookstore.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Well-sequenced', 'Natural linking words', 'Additional detail'],
+      improvements: ['More lexical variety'],
+      justification: 'Adequate development and accurate forms. Appropriate B1 fluency.'
+    },
+    lexicalFeatures: ['originally', 'currently', 'part-time'],
+    grammarFeatures: ['present continuous', 'compound sentences'],
+    discourseMarkers: ['but', 'also']
+  },
+  {
+    id: 'Q1-B2-ali',
+    promptId: 'Q1',
+    cefrLevel: 'B2',
+    transcript: 'My full name is Ali Mansour, spelled A-L-I M-A-N-S-O-U-R. I\'m 20 years old and I\'m from Alexandria, Egypt, where I\'ve lived all my life. I\'m currently an undergraduate student majoring in economics, and I work part-time in a local bookstore. As for my marital status, I\'m single.',
+    scores: { fluency: 8, grammar: 9, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 9 },
+    feedback: {
+      strengths: ['Formal register', 'Cohesive structure', 'Precise phrasing'],
+      improvements: ['Slightly rehearsed tone'],
+      justification: 'Excellent clarity and command; structurally accurate and appropriate.'
+    },
+    lexicalFeatures: ['undergraduate', 'majoring in', 'marital status'],
+    grammarFeatures: ['embedded clauses', 'mix of tenses'],
+    discourseMarkers: ['as for']
+  },
+  {
+    id: 'Q1-C1-ali',
+    promptId: 'Q1',
+    cefrLevel: 'C1',
+    transcript: 'Let me introduce myself — I\'m Ali Mansour, that\'s spelled A-L-I M-A-N-S-O-U-R. I\'m a 20-year-old Egyptian currently residing in Cairo. I\'m pursuing a degree in economics at the American University and balancing my studies with part-time work in retail. I\'m unmarried at this stage of my life.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated phrasing', 'Excellent flow', 'Varied structures'],
+      improvements: [],
+      justification: 'Advanced command with native-like phrasing and strong discourse.'
+    },
+    lexicalFeatures: ['residing', 'pursuing a degree', 'balancing studies'],
+    grammarFeatures: ['compound-complex structures', 'participial phrases'],
+    discourseMarkers: ['at this stage']
+  },
+  
+  // Q3 – Introduce Your Family
+  {
+    id: 'Q3-A1-family',
+    promptId: 'Q3',
+    cefrLevel: 'A1',
+    transcript: 'I have mother and father. My mother is nice. My father work. I have one sister. No children.',
+    scores: { fluency: 3, grammar: 2, vocabulary: 3, pronunciation: 3, prosody: 3, syntax: 2, coherence: 3 },
+    feedback: {
+      strengths: ['Mentions required members'],
+      improvements: ['Plural forms', 'Be-verb agreement', 'Add transitions'],
+      justification: 'Meets bare minimum with unconnected ideas and multiple grammatical gaps.'
+    },
+    lexicalFeatures: ['mother', 'father', 'sister', 'children'],
+    grammarFeatures: ['plural -s', 'third person -s', 'articles'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q3-A2-family',
+    promptId: 'Q3',
+    cefrLevel: 'A2',
+    transcript: 'My family is small. I live with my mother and father. My mother is a teacher and my father is retired. I also have one brother. He is 10 years old. I don\'t have children.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Clear coverage', 'Accurate present simple'],
+      improvements: ['Reduce repetition', 'Add variety'],
+      justification: 'A2 control of structures; simple but clear.'
+    },
+    lexicalFeatures: ['retired', 'years old', 'live with'],
+    grammarFeatures: ['present simple', 'articles'],
+    discourseMarkers: ['also']
+  },
+  {
+    id: 'Q3-B1-family',
+    promptId: 'Q3',
+    cefrLevel: 'B1',
+    transcript: 'I come from a small family. My parents both live in Cairo — my mother is a teacher and my father works in IT. I also have an older sister who is studying medicine. I don\'t have any children, but I love spending time with my niece.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Varied structure', 'Natural phrasing'],
+      improvements: ['More detail in roles'],
+      justification: 'Well-rounded response with natural speech patterns at B1.'
+    },
+    lexicalFeatures: ['works in IT', 'studying medicine', 'niece'],
+    grammarFeatures: ['relative clauses', 'present continuous'],
+    discourseMarkers: ['also', 'but']
+  },
+  {
+    id: 'Q3-B2-family',
+    promptId: 'Q3',
+    cefrLevel: 'B2',
+    transcript: 'My family consists of four people. My father works as a systems engineer, and my mother manages a small clothing store. I also have one younger brother who\'s in high school. I don\'t have children myself, but I\'m very close to my cousins and often help babysit their kids.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Good variety and cohesion', 'Accurate collocations'],
+      improvements: ['Could add anecdotes'],
+      justification: 'Strong lexical control and full development of task elements.'
+    },
+    lexicalFeatures: ['systems engineer', 'manage a store', 'babysit'],
+    grammarFeatures: ['complex sentences', 'participles'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q3-C1-family',
+    promptId: 'Q3',
+    cefrLevel: 'C1',
+    transcript: 'I come from a tight-knit nuclear family. My mother is a retired lecturer and my father, who used to work in finance, now spends most of his time volunteering. I have two siblings — a younger brother who\'s an engineer and a sister currently pursuing her master\'s degree abroad. I\'m not a parent myself, but I\'m actively involved in my godson\'s upbringing.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated structure', 'Idiomatic phrasing'],
+      improvements: [],
+      justification: 'Clearly above B2 in development and control.'
+    },
+    lexicalFeatures: ['tight-knit', 'retired lecturer', 'pursuing her degree', 'involved in upbringing'],
+    grammarFeatures: ['embedded clauses', 'modifier control'],
+    discourseMarkers: []
+  },
+  
+  // Q4 – Daily Routine
+  {
+    id: 'Q4-A1-routine',
+    promptId: 'Q4',
+    cefrLevel: 'A1',
+    transcript: 'I wake up. I eat. I go work. I sleep. I watch TV. Every day same.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Basic actions conveyed'],
+      improvements: ['Prepositions', 'Transitions', 'Articles'],
+      justification: 'Minimal communication with major accuracy issues.'
+    },
+    lexicalFeatures: ['wake up', 'eat', 'watch TV'],
+    grammarFeatures: ['verb patterns', 'articles', 'prepositions'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q4-A2-routine',
+    promptId: 'Q4',
+    cefrLevel: 'A2',
+    transcript: 'I usually wake up at 7. I eat breakfast, then I go to work at 8. After work, I go home and have dinner. I watch TV and sleep at 10.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Logical sequence', 'Correct present simple'],
+      improvements: ['Reduce repetition', 'Add variety of connectors'],
+      justification: 'Logical sequence with basic variety; limited but full information.'
+    },
+    lexicalFeatures: ['go to work', 'have dinner'],
+    grammarFeatures: ['present simple', 'time expressions'],
+    discourseMarkers: ['then', 'after']
+  },
+  {
+    id: 'Q4-B1-routine',
+    promptId: 'Q4',
+    cefrLevel: 'B1',
+    transcript: 'On weekdays, I usually wake up around 6:30 and go for a short run. I take a shower, have a quick breakfast, and head to work by 8. In the evening, I cook dinner and relax by watching a movie or reading. I usually go to bed by 11.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Time flow', 'Natural phrasing'],
+      improvements: ['More complex variety'],
+      justification: 'Good B1 fluency and structure; all steps stated.'
+    },
+    lexicalFeatures: ['head to work', 'quick breakfast'],
+    grammarFeatures: ['adverbs of frequency', 'present simple/continuous'],
+    discourseMarkers: ['in the evening']
+  },
+  {
+    id: 'Q4-B2-routine',
+    promptId: 'Q4',
+    cefrLevel: 'B2',
+    transcript: 'My daily routine starts early. I get up at 6:30 and usually go for a run if the weather is nice. After showering, I make breakfast and catch up on the news while eating. I leave for the office at 8:30. Evenings are more relaxed — I either cook dinner, meet friends, or unwind with a book. I aim to be in bed by 11.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Varied structures', 'Idiomatic collocations'],
+      improvements: ['Minor style refinements'],
+      justification: 'Fluent, organized, enriched with lexical variety.'
+    },
+    lexicalFeatures: ['catch up on the news', 'unwind with a book', 'aim to'],
+    grammarFeatures: ['conditionals', 'participial phrases'],
+    discourseMarkers: ['while']
+  },
+  {
+    id: 'Q4-C1-routine',
+    promptId: 'Q4',
+    cefrLevel: 'C1',
+    transcript: 'Typically, I start my day around 6:30 with some light stretching or a quick jog, depending on my energy level. I prepare a healthy breakfast and skim through a few headlines before heading to work by 8:30. My workday is packed, but I try to take a walk during lunch. In the evening, I either meet friends, catch up on reading, or work on personal projects. I wind down by journaling and go to bed around 11.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Nuanced modifiers', 'Excellent cohesion'],
+      improvements: [],
+      justification: 'C1-level control with embedded nuance and balance.'
+    },
+    lexicalFeatures: ['skim through', 'wind down', 'work on personal projects'],
+    grammarFeatures: ['adverbials', 'clause embedding'],
+    discourseMarkers: ['depending on']
+  },
+  
+  // Q5 – Yesterday / Last day off
+  {
+    id: 'Q5-A1-yesterday',
+    promptId: 'Q5',
+    cefrLevel: 'A1',
+    transcript: 'I go shopping. I eat pizza. I sleep. I happy.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Basic ideas communicated'],
+      improvements: ['Past tense forms', 'Articles', 'Time sequencing'],
+      justification: 'Functional at word/phrase level; lacks tense and structure.'
+    },
+    lexicalFeatures: ['shopping', 'pizza'],
+    grammarFeatures: ['past simple errors', 'be-verb missing'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q5-A2-yesterday',
+    promptId: 'Q5',
+    cefrLevel: 'A2',
+    transcript: 'Yesterday, I went to the mall with my sister. We bought some clothes and had lunch there. After that, I came home and watched TV. It was a nice day.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Correct past simple', 'Clear sequencing'],
+      improvements: ['More detail and variety'],
+      justification: 'A2 control with ability to sequence events.'
+    },
+    lexicalFeatures: ['went to the mall', 'had lunch', 'came home'],
+    grammarFeatures: ['past simple'],
+    discourseMarkers: ['after that']
+  },
+  {
+    id: 'Q5-B1-yesterday',
+    promptId: 'Q5',
+    cefrLevel: 'B1',
+    transcript: 'On my last day off, I visited my grandparents in the countryside. We spent the afternoon cooking together and talking about old memories. In the evening, I helped them clean the garden, then I took the train back home. It was tiring but very rewarding.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Clear time flow', 'Varied actions'],
+      improvements: ['More complex linking'],
+      justification: 'Well-organized and fluent; fully relevant to task.'
+    },
+    lexicalFeatures: ['countryside', 'took the train', 'rewarding'],
+    grammarFeatures: ['past simple/continuous'],
+    discourseMarkers: ['in the evening', 'then']
+  },
+  {
+    id: 'Q5-B2-yesterday',
+    promptId: 'Q5',
+    cefrLevel: 'B2',
+    transcript: 'Yesterday, I took the opportunity to completely unplug from work. I went for a hike in the nearby hills, had lunch at a small café, and then spent the rest of the afternoon reading. In the evening, I watched a documentary and prepared for the upcoming week. It was a refreshing break.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Nuanced vocabulary', 'Consistent tone'],
+      improvements: ['Minor stylistic variation'],
+      justification: 'Highly coherent with nuanced vocabulary and tense accuracy.'
+    },
+    lexicalFeatures: ['unplug', 'refreshing break', 'upcoming week'],
+    grammarFeatures: ['past narration'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q5-C1-yesterday',
+    promptId: 'Q5',
+    cefrLevel: 'C1',
+    transcript: 'On my most recent day off, I deliberately avoided digital distractions. I started my morning with some journaling and meditation, followed by a long walk in the park. In the afternoon, I attended a virtual seminar on behavioral psychology, then wrapped up the day by cooking dinner for my family. It was a calm but intellectually fulfilling day.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated language', 'Excellent structure'],
+      improvements: [],
+      justification: 'Sophisticated and expressive with precise language and discourse.'
+    },
+    lexicalFeatures: ['deliberately', 'intellectually fulfilling', 'wrapped up the day'],
+    grammarFeatures: ['complex clauses', 'perfect tenses'],
+    discourseMarkers: []
+  },
+  
+  // Q6 – Plans this week
+  {
+    id: 'Q6-A1-plans',
+    promptId: 'Q6',
+    cefrLevel: 'A1',
+    transcript: 'I go school. I going to work. I meet my friend. I eat pizza.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Intentions partly clear'],
+      improvements: ['Be going to structure', 'Prepositions', 'Articles'],
+      justification: 'Intentions expressed at word level; very limited control.'
+    },
+    lexicalFeatures: ['go to school', 'meet friend'],
+    grammarFeatures: ['future forms errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q6-A2-plans',
+    promptId: 'Q6',
+    cefrLevel: 'A2',
+    transcript: 'This week I\'m going to work every day. On Wednesday, I\'m going to visit my cousin. I also want to go shopping on the weekend.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Appropriate future forms', 'Clear time markers'],
+      improvements: ['Add more events'],
+      justification: 'Future plans stated clearly using appropriate tenses.'
+    },
+    lexicalFeatures: ['visit my cousin', 'go shopping'],
+    grammarFeatures: ['be going to', 'present continuous'],
+    discourseMarkers: ['on Wednesday', 'also']
+  },
+  {
+    id: 'Q6-B1-plans',
+    promptId: 'Q6',
+    cefrLevel: 'B1',
+    transcript: 'This week is going to be quite busy. I\'m working full-time from Monday to Friday, but I\'m planning to visit my grandparents on Saturday. On Sunday, I\'ll probably stay home and clean the apartment or watch a movie.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Mixed future structures', 'Good organization'],
+      improvements: ['Reduce repetition'],
+      justification: 'Well-rounded B1 response with accurate grammar and structure.'
+    },
+    lexicalFeatures: ['probably', 'clean the apartment'],
+    grammarFeatures: ['going to', 'will', 'present continuous'],
+    discourseMarkers: ['but']
+  },
+  {
+    id: 'Q6-B2-plans',
+    promptId: 'Q6',
+    cefrLevel: 'B2',
+    transcript: 'This week, I\'ve got several commitments lined up. I\'m going to start a new online course on marketing, and I\'ve scheduled a few client meetings for midweek. I\'m also planning to meet some friends on Friday night. Over the weekend, I\'ll try to relax and spend some time with my family.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Strong control of structures', 'Time-specific organization'],
+      improvements: ['Minor stylistic variety'],
+      justification: 'Organized and confident with varied vocabulary and tenses.'
+    },
+    lexicalFeatures: ['commitments lined up', 'scheduled', 'spend time'],
+    grammarFeatures: ['mixed future', 'modals'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q6-C1-plans',
+    promptId: 'Q6',
+    cefrLevel: 'C1',
+    transcript: 'This week is shaping up to be quite productive. I\'m kicking things off with a team strategy meeting on Monday, followed by two client presentations midweek. In the evenings, I plan to continue working on my thesis, and I\'ve also penciled in time for the gym. Over the weekend, I\'ll either take a short trip to the coast or catch up on reading. It depends on how the week goes.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Idiomatic expressions', 'Nuanced sequencing'],
+      improvements: [],
+      justification: 'Sophisticated delivery with excellent structural control.'
+    },
+    lexicalFeatures: ['shaping up', 'penciled in', 'kick things off'],
+    grammarFeatures: ['conditionals', 'mixed future structures'],
+    discourseMarkers: ['followed by', 'either']
+  },
+  
+  // Q7 – Life in 10 years
+  {
+    id: 'Q7-A1-future',
+    promptId: 'Q7',
+    cefrLevel: 'A1',
+    transcript: 'I be rich. I have big car. I no work. I happy. I play football.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Some future intent'],
+      improvements: ['Be-verb forms', 'Articles', 'Connect ideas'],
+      justification: 'Fragmented desires rather than a projection.'
+    },
+    lexicalFeatures: ['rich', 'big car'],
+    grammarFeatures: ['be-verb errors', 'negation errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q7-A2-future',
+    promptId: 'Q7',
+    cefrLevel: 'A2',
+    transcript: 'In ten years, I think I will have a job and maybe a family. I will live in a nice house and work as an engineer. I want to travel to different countries also.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Basic speculation', 'Correct will-future'],
+      improvements: ['Transitions', 'Avoid repetition'],
+      justification: 'Basic future speculation with moderate control.'
+    },
+    lexicalFeatures: ['work as an engineer', 'travel to countries'],
+    grammarFeatures: ['will-future', 'modals'],
+    discourseMarkers: ['maybe', 'also']
+  },
+  {
+    id: 'Q7-B1-future',
+    promptId: 'Q7',
+    cefrLevel: 'B1',
+    transcript: 'In the next ten years, I hope to be working in my field and living in a different country. I think I\'ll have more responsibilities, maybe even a family. I also want to improve my English so I can work internationally.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Cohesive ideas', 'Appropriate hedging'],
+      improvements: ['More complex subordination'],
+      justification: 'Clear, realistic prediction with cohesive ideas.'
+    },
+    lexicalFeatures: ['responsibilities', 'work internationally'],
+    grammarFeatures: ['future continuous', 'hope to'],
+    discourseMarkers: ['maybe', 'also']
+  },
+  {
+    id: 'Q7-B2-future',
+    promptId: 'Q7',
+    cefrLevel: 'B2',
+    transcript: 'A decade from now, I imagine my life will look quite different. I expect to be working in a leadership position, possibly in a different country. I\'ll probably have a family by then, and I hope to be financially independent. I also plan to dedicate more time to personal growth, like learning languages and volunteering.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Structured reflection', 'Nuanced vocabulary'],
+      improvements: ['More specifics'],
+      justification: 'Complex, abstract thoughts articulated clearly.'
+    },
+    lexicalFeatures: ['leadership position', 'financially independent', 'personal growth'],
+    grammarFeatures: ['modals', 'future continuous'],
+    discourseMarkers: ['by then', 'also']
+  },
+  {
+    id: 'Q7-C1-future',
+    promptId: 'Q7',
+    cefrLevel: 'C1',
+    transcript: 'In ten years, I anticipate living abroad and having advanced significantly in my career. Ideally, I\'ll be managing a team or running my own company, focusing on projects I find meaningful. On a personal level, I expect to have a family and a better work–life balance. I also hope to be contributing to social causes, perhaps through mentoring or charity work. Life will be more structured, but hopefully more fulfilling as well.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Advanced abstraction', 'Mature tone'],
+      improvements: [],
+      justification: 'Advanced abstraction and reflection with wide syntactic range.'
+    },
+    lexicalFeatures: ['work–life balance', 'mentoring', 'fulfilling'],
+    grammarFeatures: ['future perfect/continuous', 'complex conditionals'],
+    discourseMarkers: []
+  },
+  
+  // Q8 – Best friend description
+  {
+    id: 'Q8-A1-friend',
+    promptId: 'Q8',
+    cefrLevel: 'A1',
+    transcript: 'My friend is nice. He is tall. He has black hair. He is good. He is funny. I like him.',
+    scores: { fluency: 3, grammar: 3, vocabulary: 2, pronunciation: 3, prosody: 3, syntax: 3, coherence: 2 },
+    feedback: {
+      strengths: ['Covers both appearance and personality'],
+      improvements: ['Add linking', 'Use wider adjectives', 'Elaborate'],
+      justification: 'Simple adjective listing; meaningful but lacks elaboration.'
+    },
+    lexicalFeatures: ['tall', 'funny', 'black hair'],
+    grammarFeatures: ['present simple', 'adjectives'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q8-A2-friend',
+    promptId: 'Q8',
+    cefrLevel: 'A2',
+    transcript: 'My best friend is short and has curly brown hair. She wears glasses and usually wears jeans and T-shirts. She is friendly and always helps me when I have problems. We laugh a lot together.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Appearance + personality', 'Behavior-linked traits'],
+      improvements: ['Variety in connectors/adjectives'],
+      justification: 'Descriptive, accurate, and linked to behavior.'
+    },
+    lexicalFeatures: ['curly hair', 'wears glasses', 'laugh a lot'],
+    grammarFeatures: ['present simple', 'adverbs of frequency'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q8-B1-friend',
+    promptId: 'Q8',
+    cefrLevel: 'B1',
+    transcript: 'My best friend is a tall guy with short dark hair and a very athletic build. He usually wears casual clothes and has a big smile that makes people feel comfortable. Personality-wise, he’s outgoing, honest, and always makes jokes. We’ve been friends for years, and I really admire how confident and caring he is.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Clear linking between appearance and traits', 'Personal examples'],
+      improvements: ['More sophisticated adjectives'],
+      justification: 'Well-developed and relevant with fluent description.'
+    },
+    lexicalFeatures: ['athletic build', 'outgoing', 'admire'],
+    grammarFeatures: ['present perfect', 'relative clauses'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q8-B2-friend',
+    promptId: 'Q8',
+    cefrLevel: 'B2',
+    transcript: 'My best friend has a slim build, wavy shoulder-length hair, and a warm smile that immediately puts people at ease. She tends to dress creatively, always adding a personal touch to her outfits. What I appreciate most is her sense of empathy—she’s a great listener, incredibly supportive, and knows how to lift my mood when I’m down.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Advanced collocations', 'Smooth transition from physical to emotional'],
+      improvements: [],
+      justification: 'Balanced structure with emotional nuance and fluent control.'
+    },
+    lexicalFeatures: ['puts people at ease', 'personal touch', 'lift my mood'],
+    grammarFeatures: ['descriptive clauses', 'adverbials'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q8-C1-friend',
+    promptId: 'Q8',
+    cefrLevel: 'C1',
+    transcript: 'My closest friend stands out, not just because of his striking appearance—tall, lean, with sharp features and expressive eyes—but also due to his magnetic personality. He has a dry sense of humor, is exceptionally articulate, and maintains a calm presence even under stress. I particularly value his emotional intelligence and the way he engages in meaningful conversations without being judgmental.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated descriptors', 'High cohesion'],
+      improvements: [],
+      justification: 'Deep description with mature language and varied structure.'
+    },
+    lexicalFeatures: ['striking appearance', 'magnetic personality', 'dry sense of humor', 'emotional intelligence'],
+    grammarFeatures: ['clause embedding', 'modifiers'],
+    discourseMarkers: []
+  },
+  
+  // Q9 – Borrowed money
+  {
+    id: 'Q9-A1-borrow',
+    promptId: 'Q9',
+    cefrLevel: 'A1',
+    transcript: 'Yes, I borrow money. My friend give me. I need buy phone. I pay later.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Core meaning present'],
+      improvements: ['Past/present perfect forms', 'Verb patterns'],
+      justification: 'Heavily flawed grammar and lack of tenses impair clarity.'
+    },
+    lexicalFeatures: ['borrow', 'pay later'],
+    grammarFeatures: ['verb forms', 'articles'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q9-A2-borrow',
+    promptId: 'Q9',
+    cefrLevel: 'A2',
+    transcript: 'Yes, I borrowed money last year from my brother. I wanted to buy a new laptop for school. He helped me, and I paid him back after two months.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Past simple accuracy', 'Full answer with reason'],
+      improvements: ['More detail or reflection'],
+      justification: 'Functional, accurate, with clear time reference and context.'
+    },
+    lexicalFeatures: ['paid back', 'buy a laptop'],
+    grammarFeatures: ['past simple'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q9-B1-borrow',
+    promptId: 'Q9',
+    cefrLevel: 'B1',
+    transcript: 'Yes, I have borrowed money a couple of times. Once, I needed help covering rent when I lost my job, and another time was for unexpected car repairs. Both times, I returned the money quickly. I really appreciated the support during difficult moments.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Present perfect + past simple mix', 'Clear explanations'],
+      improvements: ['More variety of connectors'],
+      justification: 'Clear examples, reasoning, and reflection show solid B1.'
+    },
+    lexicalFeatures: ['covering rent', 'unexpected repairs', 'appreciated the support'],
+    grammarFeatures: ['present perfect with frequency', 'past simple events'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q9-B2-borrow',
+    promptId: 'Q9',
+    cefrLevel: 'B2',
+    transcript: 'I have borrowed money a few times in the past, mostly due to emergencies. One specific situation was when my laptop broke right before final exams, and I couldn\'t afford to buy a new one immediately. A friend lent me the money, and I made sure to repay her within a month. It was a stressful situation, but I learned to manage my finances better afterward.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Structured progression', 'Accurate grammar'],
+      improvements: ['Minor stylistic variation'],
+      justification: 'Fluent, logically structured with reflection and accurate grammar.'
+    },
+    lexicalFeatures: ['afford', 'repay', 'manage finances'],
+    grammarFeatures: ['present perfect + past simple', 'modals'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q9-C1-borrow',
+    promptId: 'Q9',
+    cefrLevel: 'C1',
+    transcript: 'Yes, I have, although I generally avoid borrowing unless absolutely necessary. A few years ago, I faced an unexpected medical bill, and my savings weren\'t enough to cover the expense. A close colleague kindly offered to help, and I paid them back in installments over three months. The experience made me more mindful of financial planning and taught me to build an emergency fund.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated vocabulary', 'Cause-effect logic'],
+      improvements: [],
+      justification: 'High-level lexical accuracy and complex sentence structure.'
+    },
+    lexicalFeatures: ['installments', 'financial planning', 'emergency fund'],
+    grammarFeatures: ['perfect tenses', 'complex subordination'],
+    discourseMarkers: []
+  },
+  
+  // Q10 – Heard about a crime
+  {
+    id: 'Q10-A1-crime',
+    promptId: 'Q10',
+    cefrLevel: 'A1',
+    transcript: 'Yes, I hear crime. Man take bag. Police come. He go jail.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Core meaning communicated'],
+      improvements: ['Past forms', 'Articles', 'Sequencing'],
+      justification: 'Very basic output with incomplete story structure and tense control.'
+    },
+    lexicalFeatures: ['police', 'jail'],
+    grammarFeatures: ['past tense errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q10-A2-crime',
+    promptId: 'Q10',
+    cefrLevel: 'A2',
+    transcript: 'Yes, I heard about a crime near my house last year. A man stole a phone from a woman in the street. People saw him and called the police. They caught him after five minutes.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Accurate past simple', 'Full example'],
+      improvements: ['Add detail or reflection'],
+      justification: 'Short but logically structured and grammatically sound narrative.'
+    },
+    lexicalFeatures: ['stole a phone', 'called the police', 'caught him'],
+    grammarFeatures: ['past simple'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q10-B1-crime',
+    promptId: 'Q10',
+    cefrLevel: 'B1',
+    transcript: 'Yes, I remember a case that happened two years ago in my neighborhood. Someone broke into a small shop at night and stole money and electronics. Fortunately, the police found the person using security camera footage. It made me feel unsafe for a while.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Clear structure', 'Emotional impact'],
+      improvements: ['More detail or analysis'],
+      justification: 'Detailed and well-paced recount with proper tenses.'
+    },
+    lexicalFeatures: ['broke into', 'security footage', 'felt unsafe'],
+    grammarFeatures: ['past simple/continuous'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q10-B2-crime',
+    promptId: 'Q10',
+    cefrLevel: 'B2',
+    transcript: 'Yes, I read about a robbery at a local bank last year. The criminals managed to escape with a large amount of money and weren\'t caught for several weeks. The article explained how they planned the crime, using fake IDs and stolen vehicles. It was like something from a movie, and I was surprised such a thing could happen in my city.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Strong storytelling', 'Accurate tenses', 'Idiomatic vocabulary'],
+      improvements: [],
+      justification: 'Descriptive, detailed, and complete with accurate vocabulary.'
+    },
+    lexicalFeatures: ['robbery', 'fake IDs', 'stolen vehicles'],
+    grammarFeatures: ['past perfect', 'modals'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q10-C1-crime',
+    promptId: 'Q10',
+    cefrLevel: 'C1',
+    transcript: 'Yes, I vividly remember a high-profile crime that occurred during my final year at university. A group of cybercriminals hacked into a local company’s database and stole sensitive client information. The case received national attention because of the scale and sophistication of the breach. What shocked me most was that the perpetrators were never caught, which sparked a major debate about online security and law enforcement capabilities.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Strong narrative arc', 'Abstract reflection'],
+      improvements: [],
+      justification: 'Well-structured with detailed narrative and abstract reflection.'
+    },
+    lexicalFeatures: ['cybercriminals', 'sensitive data', 'perpetrators', 'sparked debate'],
+    grammarFeatures: ['passive voice', 'embedded clauses'],
+    discourseMarkers: []
   }
 ];
 
