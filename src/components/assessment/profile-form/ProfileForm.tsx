@@ -80,8 +80,10 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
 
    
 
-const { data: { session }, error } = await supabase.auth.getSession();
-
+ const { data, error } = await supabase.auth.signInWithPassword({
+  email: '1khaledmohamedmagdy@gmail.com',
+  password: '12345678'
+});
 console.log('Sign-in data:', data);
 console.log('Sign-in error:', error);
 if (error) {
@@ -94,11 +96,11 @@ if (!data?.session) {
 
 const accessToken = data.session.access_token;
 
-const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
+ const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkQwUUw1Ti8rSG5YQVNENlUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Jyc2xoeGlncXRmbGx1bm1vd2N5LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJmM2IwYmU2My01ZDRhLTQxMGEtYmM5OC0wYTRiNGZhMDFjNDgiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU0NzQ0NTIzLCJpYXQiOjE3NTQ3NDA5MjMsImVtYWlsIjoiMWtoYWxlZG1vaGFtZWRtYWdkeUBnbWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1NDc0MDkyM31dLCJzZXNzaW9uX2lkIjoiMTQ5MjM0NTgtNzg4OC00NDYzLTlmYzAtMjZmMjllNDljOWY4IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.z1M7TzdpFBzmTCRHeup2m4zlj3EvoHmmC9tA2xS1EkA`
+    "Authorization": `Bearer ${accessToken}`
   },
   body: JSON.stringify(payload)
 });
@@ -111,8 +113,7 @@ if (!res.ok) {
 
 console.log("Profile saved successfully:", result);
 
-// Convert ProfileFormValues to StudentInfo
-const studentInfoData: StudentInfo = {
+ const studentInfoData: StudentInfo = {
   name: values.name,
   email: values.email,
   username: values.username,
