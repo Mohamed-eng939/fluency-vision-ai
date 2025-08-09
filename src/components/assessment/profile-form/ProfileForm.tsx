@@ -57,27 +57,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     }
   }, [form.watch('name'), form.watch('phone'), form]);
   
+
   const handleSubmit = async (values: ProfileFormValues) => {
-  try {
-    // Build the payload based on your API's expected fields
-    const payload = {
-      name: values.name,
-      username: values.username,
-      email: values.email,
-      phone_number: values.phone,
-      date_of_birth: values.dateOfBirth,
-      country_of_citizenship: values.citizenshipCountry,
-      country_of_residence: values.residenceCountry,
-      firstLanguage: values.firstLanguage,
-      testReason: values.testReason,
-      otherReason: values.otherReason,
-      estimatedLevel: values.estimatedLevel,
-      preferredContact: values.preferredContact,
-      pronunciationPreference: values.pronunciationPreference,
-      promoCode: values.promoCode,
-      dataConsent: values.dataConsent,
-    };
-const handleSubmit = async (values: ProfileFormValues) => {
   try {
     const payload = {
       name: values.name,
