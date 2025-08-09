@@ -77,8 +77,28 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       promoCode: values.promoCode,
       dataConsent: values.dataConsent,
     };
+const handleSubmit = async (values: ProfileFormValues) => {
+  try {
+    const payload = {
+      name: values.name,
+      username: values.username,
+      email: values.email,
+      phone_number: values.phone,
+      date_of_birth: values.dateOfBirth,
+      country_of_citizenship: values.citizenshipCountry,
+      country_of_residence: values.residenceCountry,
+      firstLanguage: values.firstLanguage,
+      testReason: values.testReason,
+      otherReason: values.otherReason,
+      estimatedLevel: values.estimatedLevel,
+      preferredContact: values.preferredContact,
+      pronunciationPreference: values.pronunciationPreference,
+      promoCode: values.promoCode,
+      dataConsent: values.dataConsent,
+    };
 
-   const { data, error } = await supabase.auth.signInWithPassword({
+    // Sign in (temporary test account)
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: "1khaledmohamedmagdy@gmail.com",
       password: "12345678"
     });
@@ -89,7 +109,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
 
     const token = data.session.access_token;
 
-     const res = await fetch(
+    // Call Edge Function
+    const res = await fetch(
       "https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager",
       {
         method: "POST",
@@ -115,6 +136,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     alert(err.message);
   }
 };
+
+
 
   return (
     <Form {...form}>
