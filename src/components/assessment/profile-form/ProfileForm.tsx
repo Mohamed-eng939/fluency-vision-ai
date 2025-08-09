@@ -79,23 +79,40 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     };
 
     // Get the Supabase auth session token
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error || !session) {
-      throw new Error("Not authenticated");
-    }
+    // Step 1 — Sign in a test user
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: "1khaledmohamedmagdy@gmail.com", // must exist in your Supabase Auth
+  password: "12345678"
+});
 
-    // Send request to the edge function
-    const res = await fetch(
-      "https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkQwUUw1Ti8rSG5YQVNENlUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Jyc2xoeGlncXRmbGx1bm1vd2N5LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJjZDk1YzNhZi1lNWQ1LTRlMmQtYWFhOS1jODY2MzkxY2IyYjciLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU0NzM3NDMyLCJpYXQiOjE3NTQ3MzM4MzIsImVtYWlsIjoibW1vaGFtZWQubWFnZHkxQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzU0NzMzODMyfV0sInNlc3Npb25faWQiOiJhNjE0ZDZlMS1kMWVlLTQ4ODMtYjYyYy05NjJhZGNmNDY4MWQiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.NMx2pj_FlSAsUnOYlgU5dxK1U0Oh8GR5Td10gx4MNow`,
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+if (error || !data.session) {
+  throw new Error("Failed to sign in test user");
+}
+
+// Step 2 — Use their token
+const token = data.session.access_token;
+
+// Step 3 — Call the Edge Function
+const res = await fetch(
+  "https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  }
+);
+
+if (!res.ok) {
+  const errText = await res.text();
+  throw new Error(`Edge Function error: ${errText}`);
+}
+
+const result = await res.json();
+console.log("✅ Success:", result);
+
 
     const result = await res.json();
     if (!res.ok) {
