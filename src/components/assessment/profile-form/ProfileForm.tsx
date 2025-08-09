@@ -78,11 +78,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       dataConsent: values.dataConsent,
     };
 
-    // Get the Supabase auth session token
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error || !session) {
-      throw new Error("Not authenticated");
-    }
+   
 
     // Send request to the edge function
     const res = await fetch(
