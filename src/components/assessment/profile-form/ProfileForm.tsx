@@ -57,9 +57,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     }
   }, [form.watch('name'), form.watch('phone'), form]);
   
-
   const handleSubmit = async (values: ProfileFormValues) => {
   try {
+    // Build the payload based on your API's expected fields
     const payload = {
       name: values.name,
       username: values.username,
@@ -78,38 +78,31 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       dataConsent: values.dataConsent,
     };
 
-    // Sign in (temporary test account)
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: "1khaledmohamedmagdy@gmail.com",
-      password: "12345678"
-    });
-
-    if (error || !data.session) {
-      throw new Error("Failed to sign in");
+    // Get the Supabase auth session token
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+      throw new Error("Not authenticated");
     }
 
-    const token = data.session.access_token;
-
-    // Call Edge Function
-    const res = await fetch(
+     const res = await fetch(
       "https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkQwUUw1Ti8rSG5YQVNENlUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Jyc2xoeGlncXRmbGx1bm1vd2N5LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJmM2IwYmU2My01ZDRhLTQxMGEtYmM5OC0wYTRiNGZhMDFjNDgiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU0NzM4NzUxLCJpYXQiOjE3NTQ3MzUxNTEsImVtYWlsIjoiMWtoYWxlZG1vaGFtZWRtYWdkeUBnbWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1NDczNTE1MX1dLCJzZXNzaW9uX2lkIjoiM2E2NjkxODktZGRhYy00MmJhLThmNmItYWIyNjc4MDNkY2ZjIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.Z2mFPmdmu4Sfl0xdIRuUibEQdwmGiUeBxn0DThkX6AE`,
         },
         body: JSON.stringify(payload),
       }
     );
 
     const result = await res.json();
-
     if (!res.ok) {
       throw new Error(result.error || "Profile submission failed");
     }
 
     console.log("Profile saved successfully:", result);
+    // Optionally trigger onSubmit to parent
     onSubmit(values);
 
   } catch (err) {
@@ -117,7 +110,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     alert(err.message);
   }
 };
-
 
 
   return (
