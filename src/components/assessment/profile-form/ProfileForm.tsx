@@ -59,14 +59,15 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
   
   const handleSubmit = async (values: ProfileFormValues) => {
   try {
-    const payload: StudentInfo = {
-      name: values.name, // required in StudentInfo
+    // Build the payload based on your API's expected fields
+    const payload = {
+      name: values.name,
       username: values.username,
       email: values.email,
-      phone: values.phone,
-      dateOfBirth: values.dateOfBirth ?? new Date(), // or handle default
-      citizenshipCountry: values.citizenshipCountry,
-      residenceCountry: values.residenceCountry,
+      phone_number: values.phone,
+      date_of_birth: values.dateOfBirth,
+      country_of_citizenship: values.citizenshipCountry,
+      country_of_residence: values.residenceCountry,
       firstLanguage: values.firstLanguage,
       testReason: values.testReason,
       otherReason: values.otherReason,
@@ -75,7 +76,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       pronunciationPreference: values.pronunciationPreference,
       promoCode: values.promoCode,
       dataConsent: values.dataConsent,
-      emailResults: values.emailResults,
     };
 
     // Get the Supabase auth session token
@@ -91,7 +91,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkQwUUw1Ti8rSG5YQVNENlUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Jyc2xoeGlncXRmbGx1bm1vd2N5LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJmM2IwYmU2My01ZDRhLTQxMGEtYmM5OC0wYTRiNGZhMDFjNDgiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU0NzM4NzUxLCJpYXQiOjE3NTQ3MzUxNTEsImVtYWlsIjoiMWtoYWxlZG1vaGFtZWRtYWdkeUBnbWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1NDczNTE1MX1dLCJzZXNzaW9uX2lkIjoiM2E2NjkxODktZGRhYy00MmJhLThmNmItYWIyNjc4MDNkY2ZjIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.Z2mFPmdmu4Sfl0xdIRuUibEQdwmGiUeBxn0DThkX6AE`, // use actual session token
+          "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkQwUUw1Ti8rSG5YQVNENlUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Jyc2xoeGlncXRmbGx1bm1vd2N5LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJjZDk1YzNhZi1lNWQ1LTRlMmQtYWFhOS1jODY2MzkxY2IyYjciLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU0NzM3NDMyLCJpYXQiOjE3NTQ3MzM4MzIsImVtYWlsIjoibW1vaGFtZWQubWFnZHkxQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzU0NzMzODMyfV0sInNlc3Npb25faWQiOiJhNjE0ZDZlMS1kMWVlLTQ4ODMtYjYyYy05NjJhZGNmNDY4MWQiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.NMx2pj_FlSAsUnOYlgU5dxK1U0Oh8GR5Td10gx4MNow`,
         },
         body: JSON.stringify(payload),
       }
@@ -103,7 +103,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     }
 
     console.log("Profile saved successfully:", result);
-    onSubmit(payload); // ✅ now passing a proper StudentInfo
+     onSubmit(values);
 
   } catch (err) {
     console.error("Error submitting profile:", err);
