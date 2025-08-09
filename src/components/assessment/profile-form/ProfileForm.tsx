@@ -101,7 +101,7 @@ const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/p
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${accessToken}`
+    "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IkQwUUw1Ti8rSG5YQVNENlUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Jyc2xoeGlncXRmbGx1bm1vd2N5LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJmM2IwYmU2My01ZDRhLTQxMGEtYmM5OC0wYTRiNGZhMDFjNDgiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzU0NzQzNjIzLCJpYXQiOjE3NTQ3NDAwMjMsImVtYWlsIjoiMWtoYWxlZG1vaGFtZWRtYWdkeUBnbWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1NDc0MDAyM31dLCJzZXNzaW9uX2lkIjoiNTY1YjRlYTAtNTk5OC00NTQ3LWE2YjItOTVmZWJkZjZkOTE2IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.gqtm7-yveDwhZBqpjWEfVzyu6PznRtDnG7sZho3FF_E`
   },
   body: JSON.stringify(payload)
 });
