@@ -84,7 +84,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       throw new Error("Not authenticated");
     }
 
-     const res = await fetch(
+    // Send request to the edge function
+    const res = await fetch(
       "https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager",
       {
         method: "POST",
@@ -102,29 +103,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     }
 
     console.log("Profile saved successfully:", result);
-    
-    // Convert ProfileFormValues to StudentInfo format
-    const studentInfo: StudentInfo = {
-      name: values.name!,
-      email: values.email,
-      username: values.username,
-      phone: values.phone,
-      password: values.password,
-      citizenshipCountry: values.citizenshipCountry,
-      residenceCountry: values.residenceCountry,
-      dateOfBirth: values.dateOfBirth,
-      firstLanguage: values.firstLanguage,
-      testReason: values.testReason,
-      otherReason: values.otherReason,
-      estimatedLevel: values.estimatedLevel,
-      preferredContact: values.preferredContact,
-      pronunciationPreference: values.pronunciationPreference,
-      promoCode: values.promoCode,
-      dataConsent: values.dataConsent,
-      emailResults: values.emailResults,
-    };
-    
-    onSubmit(studentInfo);
+    // Optionally trigger onSubmit to parent
+    onSubmit(values);
 
   } catch (err) {
     console.error("Error submitting profile:", err);
