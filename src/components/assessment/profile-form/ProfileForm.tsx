@@ -102,8 +102,29 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     }
 
     console.log("Profile saved successfully:", result);
-    // Optionally trigger onSubmit to parent
-    onSubmit(values);
+    
+    // Convert ProfileFormValues to StudentInfo format
+    const studentInfo: StudentInfo = {
+      name: values.name!,
+      email: values.email,
+      username: values.username,
+      phone: values.phone,
+      password: values.password,
+      citizenshipCountry: values.citizenshipCountry,
+      residenceCountry: values.residenceCountry,
+      dateOfBirth: values.dateOfBirth,
+      firstLanguage: values.firstLanguage,
+      testReason: values.testReason,
+      otherReason: values.otherReason,
+      estimatedLevel: values.estimatedLevel,
+      preferredContact: values.preferredContact,
+      pronunciationPreference: values.pronunciationPreference,
+      promoCode: values.promoCode,
+      dataConsent: values.dataConsent,
+      emailResults: values.emailResults,
+    };
+    
+    onSubmit(studentInfo);
 
   } catch (err) {
     console.error("Error submitting profile:", err);
