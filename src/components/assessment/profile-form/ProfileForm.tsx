@@ -97,7 +97,7 @@ if (!data?.session) {
 const accessToken = data.session.access_token;
 
 // Call the Edge Function
-const res = await fetch(`${SUPABASE_URL}/functions/v1/profile-manager`, {
+const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
