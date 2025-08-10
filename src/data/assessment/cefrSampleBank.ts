@@ -955,6 +955,777 @@ export const sampleResponses: CEFRSampleResponse[] = [
     grammarFeatures: ['passive voice', 'embedded clauses'],
     discourseMarkers: []
   }
+  },
+  
+  // Q11 – Internet usage duration and habits
+  {
+    id: 'Q11-A1-internet',
+    promptId: 'Q11_B1',
+    cefrLevel: 'A1',
+    transcript: 'I use internet five years. I look YouTube. I chat. I like internet. It good.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Answers both parts minimally (how long and how)'],
+      improvements: ['Use auxiliaries (have been)', 'Present perfect form', 'Add prepositions (use the internet, look at YouTube)'],
+      justification: 'Low grammatical control and limited vocabulary. Idea communicated at word level.'
+    },
+    lexicalFeatures: ['YouTube', 'chat', 'internet'],
+    grammarFeatures: ['present simple errors', 'missing auxiliaries', 'target: present perfect continuous'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q11-A2-internet',
+    promptId: 'Q11_B1',
+    cefrLevel: 'A2',
+    transcript: 'I have used the internet for about six years. I usually use it to watch videos, chat with friends, and check the news. I use my phone and sometimes my laptop.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Correct present perfect duration', 'Clear list of uses'],
+      improvements: ['Reduce repetition', 'Add variety of connectors'],
+      justification: 'Functional, on-topic, and structurally sound for A2.'
+    },
+    lexicalFeatures: ['watch videos', 'chat with friends', 'check the news', 'laptop'],
+    grammarFeatures: ['present perfect', 'adverbs of frequency'],
+    discourseMarkers: ['usually', 'and']
+  },
+  {
+    id: 'Q11-B1-internet',
+    promptId: 'Q11_B1',
+    cefrLevel: 'B1',
+    transcript: 'I’ve been using the internet for around ten years, mostly for entertainment and communication. I check my emails daily, use social media like Instagram and Facebook, and watch series on streaming platforms. It’s also useful for online shopping and reading articles.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Appropriate use of present perfect continuous', 'Well-organized by function'],
+      improvements: ['Add more variety of connectors'],
+      justification: 'Structured, varied, and fluent; shows range of uses.'
+    },
+    lexicalFeatures: ['streaming platforms', 'online shopping', 'reading articles', 'social media'],
+    grammarFeatures: ['present perfect continuous', 'habitual present'],
+    discourseMarkers: ['mostly', 'also']
+  },
+  {
+    id: 'Q11-B2-internet',
+    promptId: 'Q11_B1',
+    cefrLevel: 'B2',
+    transcript: 'I’ve been actively using the internet for over 15 years. It plays a central role in my daily life—from managing emails and remote work to staying updated through podcasts and digital newspapers. I also take online courses and use cloud tools for collaboration. It’s become almost impossible to function without it.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 7, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Advanced collocations', 'Clear categorization of habits'],
+      improvements: ['Minor stylistic variation'],
+      justification: 'Detailed, specific, and reflective; clear B2 control.'
+    },
+    lexicalFeatures: ['cloud tools', 'digital newspapers', 'remote work', 'podcasts', 'collaboration'],
+    grammarFeatures: ['present perfect', 'complex noun phrases'],
+    discourseMarkers: ['from … to', 'also']
+  },
+  {
+    id: 'Q11-C1-internet',
+    promptId: 'Q11_B1',
+    cefrLevel: 'C1',
+    transcript: 'I’ve been using the internet extensively for nearly two decades, both personally and professionally. I rely on it for remote collaboration, research, and staying connected with global events. I also use it as a learning tool—taking online certifications, reading academic papers, and attending webinars. Its integration into my workflow is so seamless that I rarely distinguish between “online” and “offline” activities anymore.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated register', 'Abstract commentary', 'Excellent cohesion'],
+      improvements: [],
+      justification: 'Demonstrates digital fluency and high lexical sophistication.'
+    },
+    lexicalFeatures: ['remote collaboration', 'certifications', 'workflow', 'webinars', 'integration'],
+    grammarFeatures: ['embedded clauses', 'perfect aspect control'],
+    discourseMarkers: ['both … and', 'that']
+  },
+  
+  // Q12 – Best experience ever gained
+  {
+    id: 'Q12-A1-experience',
+    promptId: 'Q12_B2',
+    cefrLevel: 'A1',
+    transcript: 'I have good experience. I go to beach. I swim. I happy. It nice.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Basic idea conveyed'],
+      improvements: ['Use past tense and present perfect', 'Add description', 'Fix be-verb and article use'],
+      justification: 'Very limited vocabulary and grammar; no structure or depth.'
+    },
+    lexicalFeatures: ['beach', 'swim'],
+    grammarFeatures: ['past tense errors', 'present perfect target'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q12-A2-experience',
+    promptId: 'Q12_B2',
+    cefrLevel: 'A2',
+    transcript: 'My best experience was a trip to the mountains with my family. We went last summer. I liked the weather and we did hiking. I saw animals and took many pictures. It was fun and relaxing.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Clear sequence', 'Correct past simple'],
+      improvements: ['Improve collocations (go hiking)', 'Add transitions'],
+      justification: 'Basic but complete; on-topic with simple reasoning.'
+    },
+    lexicalFeatures: ['trip', 'mountains', 'pictures', 'relaxing'],
+    grammarFeatures: ['past simple', 'time expressions'],
+    discourseMarkers: ['last summer']
+  },
+  {
+    id: 'Q12-B1-experience',
+    promptId: 'Q12_B2',
+    cefrLevel: 'B1',
+    transcript: 'One of the best experiences I’ve ever had was studying abroad for a semester in Spain. I made new friends, improved my Spanish, and learned about a new culture. At first it was difficult, but it helped me become more independent and open-minded. It’s something I’ll never forget.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Balanced narrative and reflection'],
+      improvements: ['Add more specific examples'],
+      justification: 'Controlled grammar with clear emotional tone; well organized.'
+    },
+    lexicalFeatures: ['studying abroad', 'independent', 'open-minded'],
+    grammarFeatures: ['present perfect', 'past simple'],
+    discourseMarkers: ['at first', 'but']
+  },
+  {
+    id: 'Q12-B2-experience-2',
+    promptId: 'Q12_B2',
+    cefrLevel: 'B2',
+    transcript: 'The best experience I’ve ever gained was volunteering at a refugee center during my last year of university. It gave me the opportunity to connect with people from different backgrounds and understand their challenges. I organized activities for children, helped with language lessons, and even translated documents. The experience not only improved my communication skills, but also shaped my perspective on social responsibility.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Clear intro–development–reflection', 'Strong collocations'],
+      improvements: [],
+      justification: 'Fluent, structured narrative with impact.'
+    },
+    lexicalFeatures: ['refugee center', 'translated documents', 'social responsibility'],
+    grammarFeatures: ['present perfect', 'past perfect (implied)', 'complex clauses'],
+    discourseMarkers: ['not only … but also']
+  },
+  {
+    id: 'Q12-C1-experience',
+    promptId: 'Q12_B2',
+    cefrLevel: 'C1',
+    transcript: 'The most transformative experience I’ve ever had was launching a student-led environmental campaign during high school. It began as a small initiative but evolved into a regional awareness project with media coverage and community events. Coordinating a team, dealing with setbacks, and presenting to stakeholders taught me project management and leadership under pressure. It was formative in shaping my current interest in sustainability and policy-making.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated structure', 'Abstract reasoning', 'Rich collocations'],
+      improvements: [],
+      justification: 'C1-level storytelling with advanced control and insight.'
+    },
+    lexicalFeatures: ['student-led campaign', 'media coverage', 'stakeholders', 'policy-making'],
+    grammarFeatures: ['nominalizations', 'embedded clauses', 'participial phrases'],
+    discourseMarkers: ['while', 'as']
+  },
+  
+  // Q13 – Social media double-edged weapon
+  {
+    id: 'Q13-A1-social',
+    promptId: 'Q13_B2',
+    cefrLevel: 'A1',
+    transcript: 'Social media is good and bad. People use it. Sometimes it make problem. Sometimes it help. I like it.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['States both sides minimally'],
+      improvements: ['Verb agreement', 'Examples and reasons', 'Linking words'],
+      justification: 'Extremely basic with minimal logic or language control.'
+    },
+    lexicalFeatures: ['social media'],
+    grammarFeatures: ['present simple errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q13-A2-social',
+    promptId: 'Q13_B2',
+    cefrLevel: 'A2',
+    transcript: 'Social media helps people to talk and share pictures. But sometimes people write bad things and make others sad. It is good and bad at the same time.',
+    scores: { fluency: 5, grammar: 5, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Clear contrast', 'Functional cause–effect'],
+      improvements: ['Add detail and variety'],
+      justification: 'Shows contrast and purpose but lacks depth.'
+    },
+    lexicalFeatures: ['share pictures', 'write bad things'],
+    grammarFeatures: ['contrast with but', 'present simple'],
+    discourseMarkers: ['but']
+  },
+  {
+    id: 'Q13-B1-social',
+    promptId: 'Q13_B2',
+    cefrLevel: 'B1',
+    transcript: 'Social media is seen as a double-edged weapon because it has both positive and negative sides. On the one hand, it helps people stay connected and share ideas. On the other hand, it can cause stress, spread fake news, and even hurt mental health. It depends on how people use it.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Structured contrast', 'Relevant examples'],
+      improvements: ['More nuance or mitigation language'],
+      justification: 'Clear, well-organized argument at B1.'
+    },
+    lexicalFeatures: ['stay connected', 'fake news', 'mental health'],
+    grammarFeatures: ['on the one hand / other hand', 'modals'],
+    discourseMarkers: ['because', 'on the one hand', 'on the other hand']
+  },
+  {
+    id: 'Q13-B2-social',
+    promptId: 'Q13_B2',
+    cefrLevel: 'B2',
+    transcript: 'Social media is often called a double-edged weapon because while it connects people across the world and provides platforms for self-expression, it also facilitates cyberbullying, misinformation, and screen addiction. Many users are influenced by unrealistic beauty standards or become anxious from constant online comparisons. It’s a powerful tool that requires responsible use.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Advanced vocabulary', 'Nuanced contrast'],
+      improvements: [],
+      justification: 'Fluent, logical, and well-developed B2 response.'
+    },
+    lexicalFeatures: ['self-expression', 'cyberbullying', 'unrealistic standards', 'responsible use'],
+    grammarFeatures: ['complex sentences', 'subordination'],
+    discourseMarkers: ['while', 'also']
+  },
+  {
+    id: 'Q13-C1-social',
+    promptId: 'Q13_B2',
+    cefrLevel: 'C1',
+    transcript: 'Describing social media as a double-edged weapon highlights its paradoxical nature—it empowers free speech and social movements, yet simultaneously enables disinformation, manipulation, and polarization. While it democratizes information and offers marginalized voices a platform, it also amplifies hate speech and echo chambers. This duality makes it both a revolutionary tool and a societal risk, depending largely on regulation and media literacy.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Academic register', 'Conceptual clarity'],
+      improvements: [],
+      justification: 'Expert-level reflection with high lexical and structural range.'
+    },
+    lexicalFeatures: ['paradoxical nature', 'democratizes', 'echo chambers', 'media literacy'],
+    grammarFeatures: ['nominalizations', 'passive voice'],
+    discourseMarkers: ['while', 'yet']
+  },
+  
+  // Q14 – Roots of terrorism
+  {
+    id: 'Q14-A1-terrorism',
+    promptId: 'Q14_B2',
+    cefrLevel: 'A1',
+    transcript: 'Terrorism is bad. People fight. People die. It make people sad and scared.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Recognizes topic'],
+      improvements: ['Explain causes', 'Correct verbs', 'Add connectors'],
+      justification: 'Emotion shown but lacks grammar, vocabulary, and structure.'
+    },
+    lexicalFeatures: ['sad', 'scared'],
+    grammarFeatures: ['present simple errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q14-A2-terrorism',
+    promptId: 'Q14_B2',
+    cefrLevel: 'A2',
+    transcript: 'Terrorism happens because some people are angry or poor. They don’t have job or food. They do bad things to show their problems. It is dangerous and makes people afraid.',
+    scores: { fluency: 5, grammar: 5, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Basic cause–effect'],
+      improvements: ['Wider vocabulary', 'More precise reasons'],
+      justification: 'Structurally sound but limited in scope and precision.'
+    },
+    lexicalFeatures: ['dangerous', 'problems'],
+    grammarFeatures: ['because-clauses', 'present simple'],
+    discourseMarkers: ['because']
+  },
+  {
+    id: 'Q14-B1-terrorism',
+    promptId: 'Q14_B2',
+    cefrLevel: 'B1',
+    transcript: 'There are many reasons why terrorism exists. One cause is poverty—when people don’t have enough resources or jobs, they may become angry and join extremist groups. Another reason is politics or religion, especially if people feel oppressed or treated unfairly. These groups use violence to send messages or gain power, which is very harmful to society.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Clear organization', 'Appropriate lexis'],
+      improvements: ['Add more nuanced linking'],
+      justification: 'Strong structure with reasons and explanation.'
+    },
+    lexicalFeatures: ['extremist groups', 'gain power', 'treated unfairly'],
+    grammarFeatures: ['conditionals', 'modals of possibility'],
+    discourseMarkers: ['another reason', 'which']
+  },
+  {
+    id: 'Q14-B2-terrorism',
+    promptId: 'Q14_B2',
+    cefrLevel: 'B2',
+    transcript: 'Terrorism can be rooted in a combination of political, economic, and ideological factors. In some cases, individuals join terrorist organizations because they feel marginalized or powerless in their society. Unstable governments, foreign intervention, and lack of education can also contribute to radicalization. Moreover, social media sometimes spreads hate speech and propaganda, further encouraging violent actions.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Balanced analysis', 'Advanced topic vocabulary'],
+      improvements: [],
+      justification: 'Insightful argument with solid cohesion at B2.'
+    },
+    lexicalFeatures: ['marginalized', 'radicalization', 'propaganda'],
+    grammarFeatures: ['passive voice', 'complex clauses'],
+    discourseMarkers: ['in some cases', 'moreover']
+  },
+  {
+    id: 'Q14-C1-terrorism',
+    promptId: 'Q14_B2',
+    cefrLevel: 'C1',
+    transcript: 'The origins of terrorism are multifaceted, stemming from deep-seated political grievances, socio-economic disparity, and ideological manipulation. Often, terrorist groups exploit vulnerable populations by appealing to identity, religion, or nationalism, turning personal frustration into collective violence. In regions with weak governance or historical injustice, radical narratives thrive. Additionally, global connectivity allows extremist ideologies to spread rapidly through digital platforms, further complicating efforts to address root causes.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['High lexical range', 'Sophisticated reasoning'],
+      improvements: [],
+      justification: 'Advanced, abstract analysis with mature phrasing.'
+    },
+    lexicalFeatures: ['deep-seated grievances', 'ideological manipulation', 'historical injustice'],
+    grammarFeatures: ['nominalizations', 'participial phrases', 'subordination'],
+    discourseMarkers: ['additionally', 'often']
+  },
+  
+  // Q15 – Regret about youth
+  {
+    id: 'Q15-A1-regret',
+    promptId: 'Q15_B2',
+    cefrLevel: 'A1',
+    transcript: 'When I small, I go school late. I not listen teacher. I play games. I think bad.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Regret implied'],
+      improvements: ['Use modals of regret (shouldn’t have…)','Use past forms','Add cause–effect'],
+      justification: 'Conveys regret but lacks grammar and vocabulary to express it.'
+    },
+    lexicalFeatures: ['play games', 'listen to the teacher'],
+    grammarFeatures: ['modal of regret target', 'past simple errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q15-A2-regret',
+    promptId: 'Q15_B2',
+    cefrLevel: 'A2',
+    transcript: 'I think I shouldn’t have stopped studying English when I was a child. I wanted to play with friends more, so I didn’t go to class. Now, I think it was a mistake.',
+    scores: { fluency: 5, grammar: 6, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Correct modal of regret', 'Clear explanation'],
+      improvements: ['Add more detail'],
+      justification: 'Direct and functional with basic coherence.'
+    },
+    lexicalFeatures: ['study English', 'go to class', 'play with friends'],
+    grammarFeatures: ['shouldn’t have + past participle', 'past simple'],
+    discourseMarkers: ['so', 'now']
+  },
+  {
+    id: 'Q15-B1-regret',
+    promptId: 'Q15_B2',
+    cefrLevel: 'B1',
+    transcript: 'When I was younger, I shouldn’t have wasted so much time playing video games. I didn’t study enough, and as a result, I struggled in school. If I had been more focused, maybe I could have had better grades. I learned from this and now manage my time better.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Modal of regret + conditional', 'Clear cause–effect'],
+      improvements: ['Add concrete examples'],
+      justification: 'Accurate and reflective with strong structure.'
+    },
+    lexicalFeatures: ['wasted time', 'struggled', 'better grades', 'manage my time'],
+    grammarFeatures: ['third conditional', 'modal of regret'],
+    discourseMarkers: ['as a result', 'if']
+  },
+  {
+    id: 'Q15-B2-regret',
+    promptId: 'Q15_B2',
+    cefrLevel: 'B2',
+    transcript: 'Looking back, I probably shouldn’t have ignored my parents’ advice about learning a second language earlier. At the time, I thought it wasn’t important, but now I realize how much easier it would’ve been to start young. This mistake taught me the value of taking opportunities seriously.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Balanced reflection', 'Advanced collocations'],
+      improvements: [],
+      justification: 'Natural tone and grammatically complex B2 response.'
+    },
+    lexicalFeatures: ['ignored advice', 'take opportunities seriously', 'start young'],
+    grammarFeatures: ['modals of regret', 'reported thought'],
+    discourseMarkers: ['at the time', 'but now']
+  },
+  {
+    id: 'Q15-C1-regret',
+    promptId: 'Q15_B2',
+    cefrLevel: 'C1',
+    transcript: 'In retrospect, I shouldn’t have dismissed extracurricular activities as a waste of time during my school years. While I focused solely on academics, I missed out on developing soft skills like teamwork and communication. This narrow approach, although academically rewarding, left me socially unprepared in my early career. That realization pushed me to intentionally grow in those areas later.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated modals and structure', 'Abstract reflection'],
+      improvements: [],
+      justification: 'Mature, cohesive, and linguistically rich.'
+    },
+    lexicalFeatures: ['extracurricular', 'soft skills', 'socially unprepared'],
+    grammarFeatures: ['nominalization', 'contrastive clauses'],
+    discourseMarkers: ['while', 'although']
+  },
+  
+  // Q16 – Maintaining stable relationships
+  {
+    id: 'Q16-A1-relationships',
+    promptId: 'Q16_B2',
+    cefrLevel: 'A1',
+    transcript: 'To have good friends, you be nice. Talk good. Not angry. Help friend. Be happy.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Intent expressed'],
+      improvements: ['Use modals (should, can)', 'Correct sentences', 'Add reasons'],
+      justification: 'On theme but undeveloped and inaccurate.'
+    },
+    lexicalFeatures: ['friends', 'help'],
+    grammarFeatures: ['modal target', 'imperatives'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q16-A2-relationships',
+    promptId: 'Q16_B2',
+    cefrLevel: 'A2',
+    transcript: 'To keep good relationships, you should be kind and listen. People want respect and help. You can call your family and friends to talk and not forget them. This makes people happy.',
+    scores: { fluency: 5, grammar: 5, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Advice structures with modals', 'Logical sequence'],
+      improvements: ['Add variety and examples'],
+      justification: 'Clear message with simple grammar and vocabulary.'
+    },
+    lexicalFeatures: ['respect', 'listen', 'call your family'],
+    grammarFeatures: ['should/can modals', 'condition/result'],
+    discourseMarkers: ['to', 'and']
+  },
+  {
+    id: 'Q16-B1-relationships',
+    promptId: 'Q16_B2',
+    cefrLevel: 'B1',
+    transcript: 'Stable relationships are possible when people make time for each other and communicate openly. Trust and honesty are very important. I think saying sorry when you make a mistake and showing appreciation regularly help keep relationships strong. Also, it’s important to solve problems together instead of ignoring them.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Actionable advice', 'Good collocations'],
+      improvements: ['Add conditional framing'],
+      justification: 'Relevant, organized, and natural B1 response.'
+    },
+    lexicalFeatures: ['make time', 'show appreciation', 'solve problems'],
+    grammarFeatures: ['modals', 'infinitive clauses'],
+    discourseMarkers: ['also', 'instead of']
+  },
+  {
+    id: 'Q16-B2-relationships',
+    promptId: 'Q16_B2',
+    cefrLevel: 'B2',
+    transcript: 'Maintaining stable relationships requires mutual effort, emotional intelligence, and consistent communication. Being able to express feelings without judgment, admit mistakes, and resolve disagreements constructively plays a key role. Additionally, respecting boundaries and giving space when needed helps prevent conflict and resentment.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Advanced vocabulary', 'Constructive framing'],
+      improvements: [],
+      justification: 'Mature reasoning with clear, cohesive development.'
+    },
+    lexicalFeatures: ['emotional intelligence', 'constructively', 'boundaries', 'resentment'],
+    grammarFeatures: ['gerund phrases', 'complex clauses'],
+    discourseMarkers: ['additionally']
+  },
+  {
+    id: 'Q16-C1-relationships',
+    promptId: 'Q16_B2',
+    cefrLevel: 'C1',
+    transcript: 'Long-term relationship stability hinges on deep trust, vulnerability, and aligned values. It’s essential to cultivate empathy and maintain open, non-defensive dialogue even in moments of tension. Navigating conflicts collaboratively, while honoring individual autonomy, fosters long-term emotional safety. Above all, consistency in actions and emotional availability often define lasting bonds.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Abstract vocabulary', 'Nuanced structure'],
+      improvements: [],
+      justification: 'Highly developed and cohesive C1 response.'
+    },
+    lexicalFeatures: ['vulnerability', 'non-defensive dialogue', 'emotional availability'],
+    grammarFeatures: ['nominalizations', 'subjunctive tone'],
+    discourseMarkers: ['above all', 'while']
+  },
+  
+  // Q17 – Motivation and goals
+  {
+    id: 'Q17-A1-motivation',
+    promptId: 'Q17_B2',
+    cefrLevel: 'A1',
+    transcript: 'I want job. I go to work. I need money. I like food. Motivation is job.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Mentions a goal'],
+      improvements: ['Explain reasons', 'Link ideas', 'Correct grammar'],
+      justification: 'Fragmented and unclear; basic meaning only.'
+    },
+    lexicalFeatures: ['job', 'money'],
+    grammarFeatures: ['present simple errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q17-A2-motivation',
+    promptId: 'Q17_B2',
+    cefrLevel: 'A2',
+    transcript: 'I get motivation from my family. They help me work hard. My goal is to have good job and happy life. I want to learn more English and travel to other countries.',
+    scores: { fluency: 5, grammar: 5, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Addresses both parts', 'Positive and clear'],
+      improvements: ['Refine collocations (a good job)', 'Add examples'],
+      justification: 'Simple, optimistic, and clearly structured.'
+    },
+    lexicalFeatures: ['motivation', 'goal', 'travel'],
+    grammarFeatures: ['present and future forms'],
+    discourseMarkers: ['and']
+  },
+  {
+    id: 'Q17-B1-motivation',
+    promptId: 'Q17_B2',
+    cefrLevel: 'B1',
+    transcript: 'My motivation mostly comes from my desire to improve my future. I’m motivated by success stories of people who worked hard and changed their lives. One of my biggest goals is to start my own business and become financially independent. I also want to improve my English and move abroad.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Personal, structured, and clear'],
+      improvements: ['Add time frames and milestones'],
+      justification: 'Well-developed B1 response with good collocations.'
+    },
+    lexicalFeatures: ['success stories', 'financially independent', 'move abroad'],
+    grammarFeatures: ['infinitive purpose', 'present/future mix'],
+    discourseMarkers: ['also']
+  },
+  {
+    id: 'Q17-B2-motivation',
+    promptId: 'Q17_B2',
+    cefrLevel: 'B2',
+    transcript: 'I find motivation through personal growth and setting clear, achievable goals. Listening to motivational podcasts and surrounding myself with driven people also plays a big role. My current objectives include completing my degree, launching a freelance career, and becoming fluent in English. These goals give me a sense of direction and push me to stay disciplined.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Advanced collocations', 'Strong thematic flow'],
+      improvements: [],
+      justification: 'Expressive, focused, and logically framed.'
+    },
+    lexicalFeatures: ['achievable goals', 'sense of direction', 'stay disciplined'],
+    grammarFeatures: ['complex clauses', 'gerunds'],
+    discourseMarkers: ['also', 'include']
+  },
+  {
+    id: 'Q17-C1-motivation',
+    promptId: 'Q17_B2',
+    cefrLevel: 'C1',
+    transcript: 'My motivation is deeply rooted in a desire for long-term fulfillment and contribution. I draw inspiration from mentors, books on psychology and leadership, and the tangible progress I see in my personal and professional life. I’m particularly driven to lead impactful projects that align with my values—especially in education and ethical innovation. These goals fuel both my ambition and sense of purpose.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Sophisticated and reflective', 'High lexical precision'],
+      improvements: [],
+      justification: 'Nuanced, cohesive, and near-native fluency.'
+    },
+    lexicalFeatures: ['long-term fulfillment', 'ethical innovation', 'sense of purpose'],
+    grammarFeatures: ['nominalizations', 'embedded clauses'],
+    discourseMarkers: ['especially']
+  },
+  
+  // Q18 – Hypothetical business
+  {
+    id: 'Q18-A1-business',
+    promptId: 'Q18_C1',
+    cefrLevel: 'A1',
+    transcript: 'I want to open shop. I sell food. People come buy. I happy. Price cheap.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Basic idea presented'],
+      improvements: ['Use conditionals (If I could… I would…)','Add details: sector, target, pricing','Fix phrase structure'],
+      justification: 'Basic idea but lacks clarity, detail, and structure.'
+    },
+    lexicalFeatures: ['shop', 'food', 'price'],
+    grammarFeatures: ['conditional target', 'article/preposition errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q18-A2-business',
+    promptId: 'Q18_C1',
+    cefrLevel: 'A2',
+    transcript: 'I would open a coffee shop. I like coffee. My customers are students and workers. I want to sell cheap drinks and fast snacks. The shop is small, but I want it to be nice.',
+    scores: { fluency: 5, grammar: 5, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Covers sector, target, pricing'],
+      improvements: ['Add reasons and strategy'],
+      justification: 'Answers all components with limited expression and detail.'
+    },
+    lexicalFeatures: ['coffee shop', 'customers', 'snacks'],
+    grammarFeatures: ['would + base', 'simple present'],
+    discourseMarkers: ['but']
+  },
+  {
+    id: 'Q18-B1-business',
+    promptId: 'Q18_C1',
+    cefrLevel: 'B1',
+    transcript: 'If I could start a business, I’d create an online tutoring platform for students. The sector would be education, and I would target high school and university learners who need help with English. I’d offer affordable subscriptions, maybe $10 per month, and provide both group and private sessions.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Clear conditional framing', 'Full coverage of prompt'],
+      improvements: ['Add market differentiation'],
+      justification: 'Practical, structured, and functional business language.'
+    },
+    lexicalFeatures: ['platform', 'subscriptions', 'private sessions'],
+    grammarFeatures: ['second conditional', 'modals'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q18-B2-business',
+    promptId: 'Q18_C1',
+    cefrLevel: 'B2',
+    transcript: 'I’d launch a health-focused meal delivery service operating in urban areas. The sector would be food and wellness, targeting busy professionals and fitness enthusiasts. Meals would be customizable, using organic ingredients, and pricing would follow a tiered model—standard plans starting at $50 per week. I’d focus on convenience, nutrition, and sustainability.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Strong structure', 'Precise business lexis'],
+      improvements: [],
+      justification: 'Well-developed and realistic business proposal.'
+    },
+    lexicalFeatures: ['meal delivery service', 'tiered model', 'customizable'],
+    grammarFeatures: ['complex noun phrases', 'modals'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q18-C1-business-2',
+    promptId: 'Q18_C1',
+    cefrLevel: 'C1',
+    transcript: 'I would found an edtech startup that merges AI-driven learning with human mentoring. The business would operate in the global education sector, targeting corporate professionals in non-native English-speaking countries. The model would be B2B SaaS, offering tailored language programs priced per seat, starting at $99/month. My aim would be to blend personalization with scale while maintaining measurable ROI for clients.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['High-level business discourse', 'Complete strategic framing'],
+      improvements: [],
+      justification: 'C1-level plan with advanced vocabulary and structure.'
+    },
+    lexicalFeatures: ['edtech', 'B2B SaaS', 'tailored programs', 'ROI'],
+    grammarFeatures: ['passive voice', 'nominalizations'],
+    discourseMarkers: ['while']
+  },
+  
+  // Q19 – Solutions for the destitute
+  {
+    id: 'Q19-A1-poverty',
+    promptId: 'Q19_C1',
+    cefrLevel: 'A1',
+    transcript: 'Poor people need food. Government give money. People can help. I think help is good.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['On-topic'],
+      improvements: ['Use modals of obligation/possibility correctly','Add structure and detail'],
+      justification: 'Underdeveloped with minimal vocabulary and control.'
+    },
+    lexicalFeatures: ['food', 'money', 'help'],
+    grammarFeatures: ['modals target'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q19-A2-poverty',
+    promptId: 'Q19_C1',
+    cefrLevel: 'A2',
+    transcript: 'The government should give homes and food for poor people. Also, we can help by giving clothes and money. I think education is important too. If people go to school, they can get jobs and better life.',
+    scores: { fluency: 5, grammar: 5, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Multiple ideas', 'Simple cause–effect'],
+      improvements: ['Refine collocations (a better life)', 'Add examples'],
+      justification: 'Relevant and clear with simple execution.'
+    },
+    lexicalFeatures: ['education', 'jobs', 'homes'],
+    grammarFeatures: ['should', 'first conditional'],
+    discourseMarkers: ['also', 'if']
+  },
+  {
+    id: 'Q19-B1-poverty',
+    promptId: 'Q19_C1',
+    cefrLevel: 'B1',
+    transcript: 'There are many ways to help people living in poverty. Governments should invest in education and healthcare so the poor can break the cycle. NGOs can also provide short-term support like food and shelter. In the long term, creating job opportunities and offering free training programs are key to reducing suffering.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Short- vs long-term logic', 'Appropriate register'],
+      improvements: ['More data/examples'],
+      justification: 'Logical and complete answer with effective reasoning.'
+    },
+    lexicalFeatures: ['break the cycle', 'NGOs', 'job opportunities'],
+    grammarFeatures: ['modals', 'purpose clauses'],
+    discourseMarkers: ['in the long term', 'also']
+  },
+  {
+    id: 'Q19-B2-poverty',
+    promptId: 'Q19_C1',
+    cefrLevel: 'B2',
+    transcript: 'Alleviating destitution requires both systemic and community-based solutions. On a national level, governments should prioritize universal education, fair wages, and affordable housing. Meanwhile, community initiatives like food banks, skill-building centers, and microloans empower individuals to regain stability. Collaboration between sectors—public, private, and nonprofit—is vital to lasting impact.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Balanced structure', 'Precise vocabulary'],
+      improvements: [],
+      justification: 'Professional and fluent with deep understanding.'
+    },
+    lexicalFeatures: ['destitution', 'microloans', 'prioritize'],
+    grammarFeatures: ['passive voice', 'parallel structures'],
+    discourseMarkers: ['meanwhile', 'on a national level']
+  },
+  {
+    id: 'Q19-C1-poverty-2',
+    promptId: 'Q19_C1',
+    cefrLevel: 'C1',
+    transcript: 'To meaningfully alleviate the suffering of the destitute, governments must adopt comprehensive welfare policies—ranging from universal healthcare and housing subsidies to income support and job creation initiatives. Equally crucial are grassroots movements and social enterprises that drive empowerment through education and economic inclusion. Sustainable change stems from equity-focused reforms, not just temporary aid.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Policy register', 'Multi-level reasoning'],
+      improvements: [],
+      justification: 'High-level policy language with structured argument.'
+    },
+    lexicalFeatures: ['comprehensive welfare', 'economic inclusion', 'equity-focused reforms'],
+    grammarFeatures: ['subjunctive tone', 'nominalizations'],
+    discourseMarkers: ['ranging from', 'not just … but']
+  },
+  
+  // Q20 – Qualities of a good leader
+  {
+    id: 'Q20-A1-leader',
+    promptId: 'Q20_C1',
+    cefrLevel: 'A1',
+    transcript: 'Good leader is nice. He say what to do. People like him. He make rules. He help.',
+    scores: { fluency: 2, grammar: 2, vocabulary: 2, pronunciation: 3, prosody: 2, syntax: 2, coherence: 2 },
+    feedback: {
+      strengths: ['Lists traits'],
+      improvements: ['Fix subject–verb agreement', 'Add examples and reasons'],
+      justification: 'Limited content with major grammatical errors.'
+    },
+    lexicalFeatures: ['rules', 'help'],
+    grammarFeatures: ['subject–verb agreement errors'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q20-A2-leader',
+    promptId: 'Q20_C1',
+    cefrLevel: 'A2',
+    transcript: 'A good leader should be kind and strong. They must listen to people. They also make decisions. I think a leader needs to be smart and help team. If workers are happy, work is good.',
+    scores: { fluency: 5, grammar: 5, vocabulary: 4, pronunciation: 5, prosody: 5, syntax: 5, coherence: 5 },
+    feedback: {
+      strengths: ['Modals and conditional used', 'Covers core traits'],
+      improvements: ['Refine collocations (help the team)', 'Add depth'],
+      justification: 'Simple, structured, and fully relevant.'
+    },
+    lexicalFeatures: ['make decisions', 'listen'],
+    grammarFeatures: ['should/must', 'first conditional'],
+    discourseMarkers: ['also', 'if']
+  },
+  {
+    id: 'Q20-B1-leader',
+    promptId: 'Q20_C1',
+    cefrLevel: 'B1',
+    transcript: 'A good leader should be confident, organized, and able to inspire others. It’s important that they listen to their team and make fair decisions. In my opinion, a leader must also take responsibility when things go wrong. If a leader treats everyone with respect, the team will trust them.',
+    scores: { fluency: 7, grammar: 7, vocabulary: 6, pronunciation: 6, prosody: 6, syntax: 6, coherence: 7 },
+    feedback: {
+      strengths: ['Workplace tone', 'Well-developed structure'],
+      improvements: ['Add examples of behaviors'],
+      justification: 'Competent response with relevant tone and development.'
+    },
+    lexicalFeatures: ['inspire others', 'take responsibility', 'treat with respect'],
+    grammarFeatures: ['modals', 'conditionals'],
+    discourseMarkers: ['in my opinion', 'if']
+  },
+  {
+    id: 'Q20-B2-leader',
+    promptId: 'Q20_C1',
+    cefrLevel: 'B2',
+    transcript: 'Leadership requires a unique blend of communication, empathy, and strategic thinking. A good leader must motivate others, remain calm under pressure, and make decisions that balance team well-being with organizational goals. They should also give constructive feedback and model ethical behavior. These traits build trust and encourage long-term collaboration.',
+    scores: { fluency: 8, grammar: 8, vocabulary: 8, pronunciation: 8, prosody: 8, syntax: 8, coherence: 8 },
+    feedback: {
+      strengths: ['Advanced workplace lexis', 'Clear impact focus'],
+      improvements: [],
+      justification: 'Richly elaborated and relevant B2 response.'
+    },
+    lexicalFeatures: ['strategic thinking', 'constructive feedback', 'ethical behavior'],
+    grammarFeatures: ['complex/compound structures'],
+    discourseMarkers: []
+  },
+  {
+    id: 'Q20-C1-leader',
+    promptId: 'Q20_C1',
+    cefrLevel: 'C1',
+    transcript: 'An effective leader combines vision, emotional intelligence, and adaptability. They don’t simply give orders—they foster environments where autonomy, innovation, and accountability can thrive. A strong leader anticipates challenges, listens actively, and navigates interpersonal dynamics with tact. Leadership today demands authenticity and the ability to unite diverse teams around a common purpose.',
+    scores: { fluency: 9, grammar: 9, vocabulary: 9, pronunciation: 9, prosody: 9, syntax: 9, coherence: 9 },
+    feedback: {
+      strengths: ['Abstract and idiomatic', 'Sophisticated structure'],
+      improvements: [],
+      justification: 'Highly developed and insightful C1 response.'
+    },
+    lexicalFeatures: ['autonomy', 'accountability', 'interpersonal dynamics', 'authenticity'],
+    grammarFeatures: ['advanced subordination', 'passive structures'],
+    discourseMarkers: ['where', 'around']
+  }
 ];
 
 /**
