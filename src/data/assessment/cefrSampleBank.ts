@@ -954,7 +954,6 @@ export const sampleResponses: CEFRSampleResponse[] = [
     lexicalFeatures: ['cybercriminals', 'sensitive data', 'perpetrators', 'sparked debate'],
     grammarFeatures: ['passive voice', 'embedded clauses'],
     discourseMarkers: []
-  }
   },
   
   // Q11 – Internet usage duration and habits
