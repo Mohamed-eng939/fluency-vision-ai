@@ -954,6 +954,280 @@ export const sampleResponses: CEFRSampleResponse[] = [
     lexicalFeatures: ['cybercriminals', 'sensitive data', 'perpetrators', 'sparked debate'],
     grammarFeatures: ['passive voice', 'embedded clauses'],
     discourseMarkers: []
+  }
+  
+  // Additional Q11-Q23 samples will be added with proper syntax
+};
+    id: 'q21_a1',
+    promptId: 'q21',
+    level: 'A1',
+    transcript: "I like clothes. I wear jeans and shirt. I don't like fashion show. I buy clothes in shop. My style is simple.",
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'The learner can express a simple opinion but with extremely limited range and fluency.',
+    lexicalFeatures: ['jeans', 'shirt', 'shop'],
+    grammarFeatures: ['basic present simple', 'some errors'],
+    discourseMarkers: []
+  },
+  'q21_a2': {
+    id: 'q21_a2',
+    promptId: 'q21',
+    level: 'A2',
+    transcript: "I like fashion a little. I don't follow trends, but I like to look nice. I buy clothes online, like jackets and shoes. I don't care about brands. My favorite color is black because it's easy to wear.",
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'A straightforward and personal answer with some topic control.',
+    lexicalFeatures: ['trends', 'brands', 'favorite color'],
+    grammarFeatures: ['mostly correct simple tenses'],
+    discourseMarkers: ['but', 'because']
+  },
+  'q21_b1': {
+    id: 'q21_b1',
+    promptId: 'q21',
+    level: 'B1',
+    transcript: "I'm fairly interested in fashion, especially casual styles. I like to look presentable, but I don't follow every new trend. I usually shop during sales and try to buy clothes that are comfortable and affordable. I think fashion is important for self-expression, but it's not the most important thing for me.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Expresses a balanced opinion with topic-specific examples.',
+    lexicalFeatures: ['presentable', 'affordable', 'self-expression'],
+    grammarFeatures: ['conditionals', 'contrasting structures'],
+    discourseMarkers: ['especially', 'but', 'usually']
+  },
+  'q21_b2': {
+    id: 'q21_b2',
+    promptId: 'q21',
+    level: 'B2',
+    transcript: "I would say I'm moderately interested in fashion. I don't chase every seasonal trend, but I care about how I present myself, especially in professional settings. I appreciate minimalist styles and neutral colors, and I tend to choose brands that align with my values, like sustainability. For me, fashion is less about appearance and more about identity.",
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Rich, introspective response with fluent control and structure.',
+    lexicalFeatures: ['seasonal trend', 'professional settings', 'sustainability'],
+    grammarFeatures: ['modal phrasing', 'contrast clauses', 'passive voice'],
+    discourseMarkers: ['especially', 'like', 'for me']
+  },
+  'q21_c1': {
+    id: 'q21_c1',
+    promptId: 'q21',
+    level: 'C1',
+    transcript: "I consider fashion a dynamic form of self-expression that reflects culture, personality, and even politics. While I don't obsess over high fashion or designer brands, I'm deeply interested in the evolution of trends and how they mirror societal shifts. I tend to invest in pieces that are both stylish and ethically made, and I appreciate designers who blend functionality with innovation.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Complex ideas expressed with fluency, reflection, and stylistic maturity.',
+    lexicalFeatures: ['self-expression', 'mirror societal shifts', 'ethically made'],
+    grammarFeatures: ['sophisticated clause structures', 'nominalizations'],
+    discourseMarkers: ['while', 'and even', 'both...and']
+  },
+  
+  // Q22 – World peace approach
+  'q22_a1': {
+    id: 'q22_a1',
+    promptId: 'q22',
+    level: 'A1',
+    transcript: "Peace is good. No war. People be nice. No fight. Everyone happy. World is quiet.",
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Understands the basic theme, but lacks language control or elaboration.',
+    lexicalFeatures: ['peace', 'war', 'happy'],
+    grammarFeatures: ['minimal sentence control', 'missing auxiliary verbs'],
+    discourseMarkers: []
+  },
+  'q22_a2': {
+    id: 'q22_a2',
+    promptId: 'q22',
+    level: 'A2',
+    transcript: "World peace is possible if countries stop fighting. Leaders should talk and work together. Also, people can learn to respect each other. If we help poor people and give education, we can stop hate. I hope world peace can come soon.",
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Covers key ideas in simple language with basic linking.',
+    lexicalFeatures: ['respect', 'leaders', 'education'],
+    grammarFeatures: ['modals', 'conditionals'],
+    discourseMarkers: ['if', 'also']
+  },
+  'q22_b1': {
+    id: 'q22_b1',
+    promptId: 'q22',
+    level: 'B1',
+    transcript: "World peace requires cooperation between nations and respect among cultures. Governments must prioritize dialogue over violence and invest in education, especially for the younger generation. People also need to be more tolerant and open-minded. If we focus on solving poverty and injustice, there will be fewer reasons for conflict.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Well-organized, addresses the question with cause-effect logic and relevant vocabulary.',
+    lexicalFeatures: ['tolerant', 'dialogue', 'invest in education'],
+    grammarFeatures: ['modal verbs', 'complex structures'],
+    discourseMarkers: ['especially', 'also', 'if']
+  },
+  'q22_b2': {
+    id: 'q22_b2',
+    promptId: 'q22',
+    level: 'B2',
+    transcript: "Achieving world peace is a complex challenge that requires action on multiple levels. Countries must strengthen diplomatic relationships and collaborate on global issues like climate change and inequality. Educating youth about empathy, human rights, and nonviolence can create long-term cultural change. Social media can also play a role in promoting understanding, rather than spreading division.",
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Addresses the topic with both breadth and depth, using elevated vocabulary.',
+    lexicalFeatures: ['diplomatic relationships', 'cultural change', 'nonviolence'],
+    grammarFeatures: ['passive voice', 'modals', 'nominalizations'],
+    discourseMarkers: ['like', 'rather than', 'also']
+  },
+  'q22_c1': {
+    id: 'q22_c1',
+    promptId: 'q22',
+    level: 'C1',
+    transcript: "World peace cannot be attained through idealism alone—it demands structural reform, cultural empathy, and persistent diplomacy. At the geopolitical level, disarmament and transparent governance are key. Equally important are grassroots movements that foster intercultural dialogue and media that amplifies narratives of unity rather than division. Peace is a process, not an event, and must be embedded in education systems, policies, and everyday behavior.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Mature, philosophical response with layered structure and abstract reasoning.',
+    lexicalFeatures: ['disarmament', 'transparent governance', 'intercultural dialogue'],
+    grammarFeatures: ['high-level academic register', 'conditionals', 'nominal phrases'],
+    discourseMarkers: ['equally important', 'rather than', 'not...but']
+  },
+  
+  // Q23 – Technology and ecology quote reflection
+  'q23_a1': {
+    id: 'q23_a1',
+    promptId: 'q23',
+    level: 'A1',
+    transcript: "Technology is good. Ecology is trees and animals. Sorry is good when you do bad. Technology maybe hurt trees. People should say sorry.",
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Can identify individual elements but lacks ability to relate or reflect meaningfully.',
+    lexicalFeatures: ['trees', 'sorry'],
+    grammarFeatures: ['simple present only', 'limited control'],
+    discourseMarkers: ['maybe']
+  },
+  'q23_a2': {
+    id: 'q23_a2',
+    promptId: 'q23',
+    level: 'A2',
+    transcript: "The quote means that technology sometimes makes problems for nature. For example, pollution from cars or factories. People use too much energy and hurt the earth. So, we must be more careful and protect animals, water, and trees.",
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Simple, clear answer with environmental awareness and causal logic.',
+    lexicalFeatures: ['pollution', 'protect', 'nature'],
+    grammarFeatures: ['mostly correct present/simple past', 'modals used'],
+    discourseMarkers: ['for example', 'so']
+  },
+  'q23_b1': {
+    id: 'q23_b1',
+    promptId: 'q23',
+    level: 'B1',
+    transcript: "I think the quote means that technological progress has harmed the environment in many ways. For example, factories cause air and water pollution, and cars release too much CO2. While technology helps humans, it often damages nature. So, we must balance progress with environmental care and invest in green energy.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Good use of real-world examples and moderately abstract reasoning.',
+    lexicalFeatures: ['progress', 'pollution', 'green energy'],
+    grammarFeatures: ['cause/effect', 'modals', 'present perfect'],
+    discourseMarkers: ['for example', 'while', 'so']
+  },
+  'q23_b2': {
+    id: 'q23_b2',
+    promptId: 'q23',
+    level: 'B2',
+    transcript: "The quote suggests that technological advancement has often come at the expense of ecological balance. Industrialization has led to deforestation, biodiversity loss, and rising carbon emissions. In this sense, 'an apology' symbolizes a moral responsibility. We now have the tools to reverse some damage—renewable energy, eco-friendly design—but must act intentionally and globally.",
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Rich vocabulary and insight, approaching academic tone.',
+    lexicalFeatures: ['deforestation', 'ecological balance', 'biodiversity'],
+    grammarFeatures: ['complex', 'accurate', 'well-sequenced'],
+    discourseMarkers: ['in this sense', 'but']
+  },
+  'q23_c1': {
+    id: 'q23_c1',
+    promptId: 'q23',
+    level: 'C1',
+    transcript: "This quote encapsulates the moral tension between human progress and environmental degradation. For centuries, technological innovation—from industrial machines to digital infrastructure—has prioritized speed and profit over sustainability. The 'apology' metaphor implies a reckoning, urging us to reconcile innovation with stewardship. As we enter the age of AI and automation, the real challenge is designing systems that regenerate rather than extract.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Mature insight, native-level phrasing, and seamless development.',
+    lexicalFeatures: ['encapsulates', 'reckoning', 'stewardship', 'regenerate'],
   },
   
   // Q11 – Internet usage duration and habits
