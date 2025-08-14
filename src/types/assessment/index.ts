@@ -7,6 +7,9 @@ export * from './results';
 export * from './test-structure';
 export * from './audio';
 
+// Import CEFRLevel to use in local interfaces
+import { CEFRLevel } from './basic';
+
 // Additional types for CEFR Sample Bank
 export interface CEFRSample {
   id: string;
