@@ -6,3 +6,23 @@ export * from './questions';
 export * from './results';
 export * from './test-structure';
 export * from './audio';
+
+// Additional types for CEFR Sample Bank
+export interface CEFRSample {
+  id: string;
+  promptId: string;
+  level: CEFRLevel;
+  transcript: string;
+  scores: {
+    vocabulary: number;
+    grammar: number;
+    coherence: number;
+    lexicalCollocation: number;
+    taskAchievement: number;
+  };
+  finalCEFR: CEFRLevel;
+  rationale: string;
+  lexicalFeatures: string[];
+  grammarFeatures: string[];
+  discourseMarkers: string[];
+}

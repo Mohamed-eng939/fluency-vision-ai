@@ -138,8 +138,20 @@ export const calculateWeightedCEFRLevel = (
   
   // Calculate weighted average
   const levelValues: { [key in CEFRLevel]: number } = {
-    'A1': 1, 'A2': 2, 'B1': 3, 'B2': 4, 'C1': 5, 'C2': 6, 'Pre-A1': 0,
-    'A1+': 1.5, 'A2+': 2.5, 'B1+': 3.5, 'B2+': 4.5, 'C1+': 5.5
+    'Below Pre-A1': 0,
+    'Pre-A1': 0.5,
+    'A1': 1, 
+    'A1+': 1.5, 
+    'A2': 2, 
+    'A2+': 2.5, 
+    'B1': 3, 
+    'B1+': 3.5, 
+    'B2': 4, 
+    'B2+': 4.5, 
+    'C1': 5, 
+    'C1+': 5.5,
+    'C2': 6,
+    'N/A': 0
   };
   
   let weightedSum = 0;
