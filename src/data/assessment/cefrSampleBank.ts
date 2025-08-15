@@ -374,6 +374,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['followed by', 'in the afternoon', 'then']
   },
 
+  // Q6 – What are you going to do this week?
+  'q6_a1': {
+    id: 'q6_a1',
+    promptId: 'q6',
+    level: 'A1',
+    transcript: "I go school. I going to work. I meet my friend. I eat pizza.",
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 5
+    },
+    finalCEFR: 'A1',
+    rationale: 'Intentions expressed at word level, but grammar control and clarity are very limited.',
+    lexicalFeatures: ['school', 'work', 'friend', 'pizza'],
+    grammarFeatures: ['incorrect structure', 'missing articles', 'incomplete future forms'],
+    discourseMarkers: []
+  },
+  'q6_a2': {
+    id: 'q6_a2',
+    promptId: 'q6',
+    level: 'A2',
+    transcript: "This week I'm going to work every day. On Wednesday, I'm going to visit my cousin. I also want to go shopping on the weekend.",
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 5,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Future plans stated clearly using appropriate tenses. Simple but accurate.',
+    lexicalFeatures: ['visit', 'cousin', 'shopping', 'weekend'],
+    grammarFeatures: ['going to forms', 'mostly correct'],
+    discourseMarkers: ['on Wednesday', 'also', 'on the weekend']
+  },
+  'q6_b1': {
+    id: 'q6_b1',
+    promptId: 'q6',
+    level: 'B1',
+    transcript: "This week is going to be quite busy. I'm working full-time from Monday to Friday, but I'm planning to visit my grandparents on Saturday. On Sunday, I'll probably stay home and clean the apartment or watch a movie.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Well-rounded B1 response. Slight repetition but grammatically accurate and structured.',
+    lexicalFeatures: ['quite busy', 'probably', 'stay home', 'apartment'],
+    grammarFeatures: ['be going to', 'will', 'present continuous'],
+    discourseMarkers: ['but', 'on Saturday', 'on Sunday', 'or']
+  },
+  'q6_b2': {
+    id: 'q6_b2',
+    promptId: 'q6',
+    level: 'B2',
+    transcript: "This week, I've got several commitments lined up. I'm going to start a new online course on marketing, and I've scheduled a few client meetings for midweek. I'm also planning to meet some friends on Friday night. Over the weekend, I'll try to relax and spend some time with my family.",
+    scores: {
+      vocabulary: 7,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Organized and confident B2 response, varied vocabulary and tense usage, clear timeline.',
+    lexicalFeatures: ['commitments lined up', 'scheduled', 'try to relax', 'online course'],
+    grammarFeatures: ['strong control of future structures', 'modals'],
+    discourseMarkers: ['and', 'also', 'over the weekend']
+  },
+  'q6_c1': {
+    id: 'q6_c1',
+    promptId: 'q6',
+    level: 'C1',
+    transcript: "This week is shaping up to be quite productive. I'm kicking things off with a team strategy meeting on Monday, followed by two client presentations midweek. In the evenings, I plan to continue working on my thesis, and I've also penciled in time for the gym. Over the weekend, I'll either take a short trip to the coast or catch up on reading. It depends on how the week goes.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Sophisticated delivery with idiomatic expressions, strong narrative coherence, and excellent structural control.',
+    lexicalFeatures: ['shaping up', 'penciled in', 'kick off', 'depends on', 'catch up on'],
+    grammarFeatures: ['mixed future structures', 'conditionals'],
+    discourseMarkers: ['followed by', 'in the evenings', 'either...or', 'it depends on']
+  },
+
   // Q10 – Crime experience
   'q10_a1': {
     id: 'q10_a1',
