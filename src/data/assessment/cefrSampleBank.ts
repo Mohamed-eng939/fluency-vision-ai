@@ -466,6 +466,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['followed by', 'in the evenings', 'either...or', 'it depends on']
   },
 
+  // Q7 – How will your life be different in the next 10 years?
+  'q7_a1': {
+    id: 'q7_a1',
+    promptId: 'q7',
+    level: 'A1',
+    transcript: "I be rich. I have big car. I no work. I happy. I play football.",
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Poor accuracy and task development. Fragmented list of desires rather than a projection.',
+    lexicalFeatures: ['rich', 'car', 'work', 'happy', 'football'],
+    grammarFeatures: ['no correct tense forms', 'missing verbs', 'missing articles'],
+    discourseMarkers: []
+  },
+  'q7_a2': {
+    id: 'q7_a2',
+    promptId: 'q7',
+    level: 'A2',
+    transcript: "In ten years, I think I will have a job and maybe a family. I will live in a nice house and work as an engineer. I want to travel to different countries also.",
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 5,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Uses basic future speculation with moderate control. Sentence transitions could improve.',
+    lexicalFeatures: ['job', 'family', 'engineer', 'travel', 'countries'],
+    grammarFeatures: ['will-future correctly applied'],
+    discourseMarkers: ['in ten years', 'maybe', 'also']
+  },
+  'q7_b1': {
+    id: 'q7_b1',
+    promptId: 'q7',
+    level: 'B1',
+    transcript: "In the next ten years, I hope to be working in my field and living in a different country. I think I'll have more responsibilities, maybe even a family. I also want to improve my English so I can work internationally.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Clear, realistic prediction with cohesive ideas. Shows moderate variety and logical development.',
+    lexicalFeatures: ['working in my field', 'responsibilities', 'internationally', 'improve'],
+    grammarFeatures: ['will', 'hope to', 'future continuous'],
+    discourseMarkers: ['in the next ten years', 'maybe even', 'I also', 'so I can']
+  },
+  'q7_b2': {
+    id: 'q7_b2',
+    promptId: 'q7',
+    level: 'B2',
+    transcript: "A decade from now, I imagine my life will look quite different. I expect to be working in a leadership position, possibly in a different country. I'll probably have a family by then, and I hope to be financially independent. I also plan to dedicate more time to personal growth, like learning languages and volunteering.",
+    scores: {
+      vocabulary: 7,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Complex, abstract thoughts articulated clearly with strong future grammar use.',
+    lexicalFeatures: ['leadership position', 'financially independent', 'personal growth', 'dedicate', 'volunteering'],
+    grammarFeatures: ['modal verbs', 'future continuous', 'gerund phrases'],
+    discourseMarkers: ['a decade from now', 'possibly', 'by then', 'I also', 'like']
+  },
+  'q7_c1': {
+    id: 'q7_c1',
+    promptId: 'q7',
+    level: 'C1',
+    transcript: "In ten years, I anticipate living abroad and having advanced significantly in my career. Ideally, I'll be managing a team or running my own company, focusing on projects I find meaningful. On a personal level, I expect to have a family and a better work–life balance. I also hope to be contributing to social causes, perhaps through mentoring or charity work. Life will be more structured, but hopefully more fulfilling as well.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Advanced abstraction and reflection, mature tone, and wide syntactic range. Clear C1 fluency.',
+    lexicalFeatures: ['anticipate', 'advanced significantly', 'mentoring', 'fulfilling', 'contributing to social causes'],
+    grammarFeatures: ['modal verbs', 'complex conditionals', 'future perfect', 'future continuous'],
+    discourseMarkers: ['ideally', 'on a personal level', 'perhaps', 'but hopefully', 'as well']
+  },
+
   // Q10 – Crime experience
   'q10_a1': {
     id: 'q10_a1',
