@@ -282,6 +282,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['typically', 'depending on', 'either...or']
   },
 
+  // Q5 – What did you do yesterday or on your last day off?
+  'q5_a1': {
+    id: 'q5_a1',
+    promptId: 'q5',
+    level: 'A1',
+    transcript: "I go shopping. I eat pizza. I sleep. I happy.",
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 4
+    },
+    finalCEFR: 'A1',
+    rationale: 'Response is functional at word/phrase level but lacks control of tense and structure.',
+    lexicalFeatures: ['shopping', 'pizza', 'sleep'],
+    grammarFeatures: ['incorrect tense usage', 'missing articles'],
+    discourseMarkers: []
+  },
+  'q5_a2': {
+    id: 'q5_a2',
+    promptId: 'q5',
+    level: 'A2',
+    transcript: "Yesterday, I went to the mall with my sister. We bought some clothes and had lunch there. After that, I came home and watched TV. It was a nice day.",
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 5,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Shows A2 control of past tense and ability to sequence events. Slightly repetitive but comprehensible.',
+    lexicalFeatures: ['mall', 'bought', 'clothes', 'lunch'],
+    grammarFeatures: ['past simple', 'generally accurate'],
+    discourseMarkers: ['after that', 'and']
+  },
+  'q5_b1': {
+    id: 'q5_b1',
+    promptId: 'q5',
+    level: 'B1',
+    transcript: "On my last day off, I visited my grandparents in the countryside. We spent the afternoon cooking together and talking about old memories. In the evening, I helped them clean the garden, then I took the train back home. It was tiring but very rewarding.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Well-organized and fluent for B1. Natural variety, fully relevant to the task.',
+    lexicalFeatures: ['visited', 'countryside', 'rewarding', 'memories'],
+    grammarFeatures: ['past simple', 'past continuous control'],
+    discourseMarkers: ['in the evening', 'then', 'but']
+  },
+  'q5_b2': {
+    id: 'q5_b2',
+    promptId: 'q5',
+    level: 'B2',
+    transcript: "Yesterday, I took the opportunity to completely unplug from work. I went for a hike in the nearby hills, had lunch at a small café, and then spent the rest of the afternoon reading. In the evening, I watched a documentary and prepared for the upcoming week. It was a refreshing break.",
+    scores: {
+      vocabulary: 7,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Highly coherent response with nuanced vocabulary and tense accuracy. Clear B2 complexity.',
+    lexicalFeatures: ['unplug', 'refreshing break', 'upcoming week', 'documentary'],
+    grammarFeatures: ['fluent past narration', 'accurate tenses'],
+    discourseMarkers: ['in the evening', 'then', 'and']
+  },
+  'q5_c1': {
+    id: 'q5_c1',
+    promptId: 'q5',
+    level: 'C1',
+    transcript: "On my most recent day off, I deliberately avoided digital distractions. I started my morning with some journaling and meditation, followed by a long walk in the park. In the afternoon, I attended a virtual seminar on behavioral psychology, then wrapped up the day by cooking dinner for my family. It was a calm but intellectually fulfilling day.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Sophisticated and expressive with precise language, excellent discourse structure, and varied activities.',
+    lexicalFeatures: ['deliberately', 'intellectually fulfilling', 'behavioral psychology', 'virtual seminar'],
+    grammarFeatures: ['varied clause types', 'perfect past narration'],
+    discourseMarkers: ['followed by', 'in the afternoon', 'then']
+  },
+
   // Q10 – Crime experience
   'q10_a1': {
     id: 'q10_a1',
