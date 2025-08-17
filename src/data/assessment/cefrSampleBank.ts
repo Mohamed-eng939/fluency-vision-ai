@@ -558,6 +558,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['ideally', 'on a personal level', 'perhaps', 'but hopefully', 'as well']
   },
 
+  // Q8 – Describe the appearance and personality of your best friend
+  'q8_a1': {
+    id: 'q8_a1',
+    promptId: 'q8',
+    level: 'A1',
+    transcript: "My friend is nice. He is tall. He has black hair. He is good. He is funny. I like him.",
+    scores: {
+      vocabulary: 2,
+      grammar: 3,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 5
+    },
+    finalCEFR: 'A1',
+    rationale: 'Simple adjective listing. Meaningful but lacks elaboration and range.',
+    lexicalFeatures: ['nice', 'tall', 'black hair', 'good', 'funny'],
+    grammarFeatures: ['present simple correctly used', 'repetitive structure'],
+    discourseMarkers: []
+  },
+  'q8_a2': {
+    id: 'q8_a2',
+    promptId: 'q8',
+    level: 'A2',
+    transcript: "My best friend is short and has curly brown hair. She wears glasses and usually wears jeans and T-shirts. She is friendly and always helps me when I have problems. We laugh a lot together.",
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 5,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Descriptive, accurate, and linked to real-life behavior. Still mostly simple forms.',
+    lexicalFeatures: ['curly', 'friendly', 'laugh a lot', 'helps', 'problems'],
+    grammarFeatures: ['present simple', 'modifiers used correctly', 'adverbs'],
+    discourseMarkers: ['and', 'usually', 'always', 'when']
+  },
+  'q8_b1': {
+    id: 'q8_b1',
+    promptId: 'q8',
+    level: 'B1',
+    transcript: "My best friend is a tall guy with short dark hair and a very athletic build. He usually wears casual clothes and has a big smile that makes people feel comfortable. Personality-wise, he's outgoing, honest, and always makes jokes. We've been friends for years, and I really admire how confident and caring he is.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Well-developed and relevant. Mixes physical and emotional traits fluently.',
+    lexicalFeatures: ['athletic build', 'outgoing', 'confident', 'caring', 'admire'],
+    grammarFeatures: ['adjectives', 'modifiers', 'present perfect', 'relative clauses'],
+    discourseMarkers: ['personality-wise', 'and', 'how']
+  },
+  'q8_b2': {
+    id: 'q8_b2',
+    promptId: 'q8',
+    level: 'B2',
+    transcript: "My best friend has a slim build, wavy shoulder-length hair, and a warm smile that immediately puts people at ease. She tends to dress creatively, always adding a personal touch to her outfits. What I appreciate most is her sense of empathy—she's a great listener, incredibly supportive, and knows how to lift my mood when I'm down.",
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Balanced structure, emotional nuance, and fluent language control.',
+    lexicalFeatures: ['shoulder-length', 'empathetic', 'personal touch', 'supportive', 'lift my mood'],
+    grammarFeatures: ['descriptive clauses', 'adverbials', 'complex sentences'],
+    discourseMarkers: ['what I appreciate most', 'always', 'when I\'m down']
+  },
+  'q8_c1': {
+    id: 'q8_c1',
+    promptId: 'q8',
+    level: 'C1',
+    transcript: "My closest friend is someone who immediately stands out, not just because of his striking appearance—tall, lean, with sharp features and expressive eyes—but also due to his magnetic personality. He has a dry sense of humor, is exceptionally articulate, and maintains a calm presence even under stress. I particularly value his emotional intelligence and the way he engages in meaningful conversations without ever being judgmental.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Deep description with mature language, varied structure, and a high level of control.',
+    lexicalFeatures: ['striking appearance', 'magnetic personality', 'articulate', 'judgmental', 'emotional intelligence'],
+    grammarFeatures: ['clause embedding', 'sophisticated modifiers', 'complex sentence structures'],
+    discourseMarkers: ['not just...but also', 'particularly', 'even under', 'without ever being']
+  },
+
   // Q10 – Crime experience
   'q10_a1': {
     id: 'q10_a1',
