@@ -742,7 +742,7 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['although', 'unless', 'a few years ago', 'and', 'over three months']
   },
 
-  // Q10 – Crime experience
+  // Q10 – Have you ever heard about a crime?
   'q10_a1': {
     id: 'q10_a1',
     promptId: 'q10',
@@ -757,8 +757,8 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     },
     finalCEFR: 'A1',
     rationale: 'Very basic lexical and grammatical output. Story structure is incomplete and lacks tense control.',
-    lexicalFeatures: ['crime', 'police', 'jail'],
-    grammarFeatures: ['incorrect tense forms', 'sentence structure errors'],
+    lexicalFeatures: ['crime', 'man', 'bag', 'police', 'jail'],
+    grammarFeatures: ['incorrect tense forms', 'poor sentence structure'],
     discourseMarkers: []
   },
   'q10_a2': {
@@ -775,9 +775,9 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     },
     finalCEFR: 'A2',
     rationale: 'A short but logically structured and grammatically sound narrative.',
-    lexicalFeatures: ['stole', 'caught', 'street'],
-    grammarFeatures: ['accurate past simple use'],
-    discourseMarkers: ['after']
+    lexicalFeatures: ['stole', 'phone', 'caught', 'called the police'],
+    grammarFeatures: ['accurate past simple use', 'clear sentence structure'],
+    discourseMarkers: ['last year', 'and', 'after']
   },
   'q10_b1': {
     id: 'q10_b1',
@@ -793,9 +793,9 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     },
     finalCEFR: 'B1',
     rationale: 'Detailed and well-paced recount with proper tense usage and personal reflection.',
-    lexicalFeatures: ['broke into', 'security footage', 'felt unsafe'],
-    grammarFeatures: ['past simple', 'past continuous'],
-    discourseMarkers: ['fortunately', 'for a while']
+    lexicalFeatures: ['broke into', 'security footage', 'felt unsafe', 'electronics'],
+    grammarFeatures: ['past simple', 'past continuous correctly used'],
+    discourseMarkers: ['two years ago', 'fortunately', 'for a while']
   },
   'q10_b2': {
     id: 'q10_b2',
@@ -811,9 +811,9 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     },
     finalCEFR: 'B2',
     rationale: 'Strong storytelling, accurate tenses, idiomatic use of crime-related vocabulary.',
-    lexicalFeatures: ['robbery', 'fake IDs', 'stolen vehicles', 'planned the crime'],
-    grammarFeatures: ['effective use of past perfect', 'modals'],
-    discourseMarkers: ['like something from']
+    lexicalFeatures: ['robbery', 'fake IDs', 'stolen vehicles', 'planned the crime', 'managed to escape'],
+    grammarFeatures: ['past perfect', 'modals', 'passive voice'],
+    discourseMarkers: ['and', 'for several weeks', 'it was like']
   },
   'q10_c1': {
     id: 'q10_c1',
@@ -829,10 +829,11 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     },
     finalCEFR: 'C1',
     rationale: 'Well-structured with detailed narrative and abstract reflection. Mature vocabulary and fluency.',
-    lexicalFeatures: ['cybercriminals', 'sensitive data', 'perpetrators', 'sparked debate'],
-    grammarFeatures: ['passive voice', 'embedded clauses'],
-    discourseMarkers: ['what shocked me most', 'which sparked']
-  }
+    lexicalFeatures: ['cybercriminals', 'sensitive data', 'sophistication', 'perpetrators', 'law enforcement capabilities'],
+    grammarFeatures: ['clause embedding', 'passive voice', 'complex past tenses'],
+    discourseMarkers: ['during my final year', 'because of', 'what shocked me most', 'which sparked']
+  },
+
 };
 
 // Export individual functions for accessing samples
