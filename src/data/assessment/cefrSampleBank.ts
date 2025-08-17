@@ -650,6 +650,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['not just...but also', 'particularly', 'even under', 'without ever being']
   },
 
+  // Q9 – Have you ever borrowed money from someone? Why?
+  'q9_a1': {
+    id: 'q9_a1',
+    promptId: 'q9',
+    level: 'A1',
+    transcript: "Yes, I borrow money. My friend give me. I need buy phone. I pay later.",
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Communicates the idea, but heavily flawed grammar and lack of tenses impair clarity.',
+    lexicalFeatures: ['borrow', 'money', 'friend', 'phone', 'pay'],
+    grammarFeatures: ['incorrect verb forms', 'no past or present perfect', 'missing articles'],
+    discourseMarkers: []
+  },
+  'q9_a2': {
+    id: 'q9_a2',
+    promptId: 'q9',
+    level: 'A2',
+    transcript: "Yes, I borrowed money last year from my brother. I wanted to buy a new laptop for school. He helped me, and I paid him back after two months.",
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 5,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Functional, accurate, with clear time reference and context.',
+    lexicalFeatures: ['borrowed', 'paid back', 'laptop', 'helped', 'months'],
+    grammarFeatures: ['past simple correctly used', 'clear structure'],
+    discourseMarkers: ['last year', 'and', 'after']
+  },
+  'q9_b1': {
+    id: 'q9_b1',
+    promptId: 'q9',
+    level: 'B1',
+    transcript: "Yes, I have borrowed money a couple of times. Once, I needed help covering rent when I lost my job, and another time was for unexpected car repairs. Both times, I returned the money quickly. I really appreciated the support during difficult moments.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Clear examples, past reasoning, and reflection show solid B1 competence.',
+    lexicalFeatures: ['covering rent', 'unexpected repairs', 'appreciated the support', 'difficult moments'],
+    grammarFeatures: ['present perfect', 'past simple', 'relative clauses'],
+    discourseMarkers: ['once', 'another time', 'both times', 'during']
+  },
+  'q9_b2': {
+    id: 'q9_b2',
+    promptId: 'q9',
+    level: 'B2',
+    transcript: "I have borrowed money a few times in the past, mostly due to emergencies. One specific situation was when my laptop broke right before final exams, and I couldn't afford to buy a new one immediately. A friend lent me the money, and I made sure to repay her within a month. It was a stressful situation, but I learned to manage my finances better afterward.",
+    scores: {
+      vocabulary: 7,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Fluent, logically structured response with personal reflection and accurate grammar.',
+    lexicalFeatures: ['emergencies', 'afford', 'repay', 'manage my finances', 'stressful situation'],
+    grammarFeatures: ['present perfect', 'past simple', 'conditional implications'],
+    discourseMarkers: ['mostly due to', 'one specific situation', 'but', 'afterward']
+  },
+  'q9_c1': {
+    id: 'q9_c1',
+    promptId: 'q9',
+    level: 'C1',
+    transcript: "Yes, I have, although I generally avoid borrowing unless absolutely necessary. A few years ago, I faced an unexpected medical bill, and my savings weren't enough to cover the expense. A close colleague kindly offered to help, and I paid them back in installments over three months. The experience made me more mindful of financial planning and taught me to build an emergency fund.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'High-level lexical accuracy, sophisticated reasoning, and emotional maturity.',
+    lexicalFeatures: ['absolutely necessary', 'installments', 'financial planning', 'emergency fund', 'mindful'],
+    grammarFeatures: ['perfect tenses', 'complex sentence structure', 'conditionals'],
+    discourseMarkers: ['although', 'unless', 'a few years ago', 'and', 'over three months']
+  },
+
   // Q10 – Crime experience
   'q10_a1': {
     id: 'q10_a1',
