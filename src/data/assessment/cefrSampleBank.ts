@@ -926,6 +926,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['for nearly', 'both...and', 'so...that', 'anymore']
   },
 
+  // Q12 – Talk about the best experience you have ever gained
+  'q12_a1': {
+    id: 'q12_a1',
+    promptId: 'q12',
+    level: 'A1',
+    transcript: 'I have good experience. I go to beach. I swim. I happy. It nice.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Very limited vocabulary and grammatical control. No structure or depth.',
+    lexicalFeatures: ['good', 'experience', 'beach', 'swim', 'happy', 'nice'],
+    grammarFeatures: ['present simple instead of past tenses', 'incorrect sentence structure'],
+    discourseMarkers: []
+  },
+  'q12_a2': {
+    id: 'q12_a2',
+    promptId: 'q12',
+    level: 'A2',
+    transcript: 'My best experience was a trip to the mountains with my family. We went last summer. I liked the weather and we did hiking. I saw animals and took many pictures. It was fun and relaxing.',
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 5,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Basic but complete. Shows control of past events with simple reasoning.',
+    lexicalFeatures: ['trip', 'mountains', 'family', 'hiking', 'animals', 'pictures', 'relaxing'],
+    grammarFeatures: ['mostly correct past simple use', 'clear sentence structure'],
+    discourseMarkers: ['last summer', 'and', 'it was']
+  },
+  'q12_b1': {
+    id: 'q12_b1',
+    promptId: 'q12',
+    level: 'B1',
+    transcript: "One of the best experiences I've ever had was studying abroad for a semester in Spain. I made new friends, improved my Spanish, and learned about a new culture. At first it was difficult, but it helped me become more independent and open-minded. It's something I'll never forget.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Balanced narrative and personal growth. Controlled grammar with clear emotional tone.',
+    lexicalFeatures: ['studying abroad', 'semester', 'improved', 'culture', 'independent', 'open-minded'],
+    grammarFeatures: ['present perfect and past simple mix', 'comparative structures'],
+    discourseMarkers: ['one of', 'at first', 'but', 'something I will never forget']
+  },
+  'q12_b2': {
+    id: 'q12_b2',
+    promptId: 'q12',
+    level: 'B2',
+    transcript: 'The best experience I\'ve ever gained was volunteering at a refugee center during my last year of university. It gave me the opportunity to connect with people from different backgrounds and understand their challenges. I organized activities for children, helped with language lessons, and even translated documents. The experience not only improved my communication skills, but also shaped my perspective on social responsibility.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Fluent, emotionally aware, and structured narrative with impact.',
+    lexicalFeatures: ['volunteering', 'refugee center', 'backgrounds', 'challenges', 'translated documents', 'social responsibility'],
+    grammarFeatures: ['present perfect', 'past perfect', 'complex clauses'],
+    discourseMarkers: ['during', 'not only...but also', 'and even']
+  },
+  'q12_c1': {
+    id: 'q12_c1',
+    promptId: 'q12',
+    level: 'C1',
+    transcript: 'The most transformative experience I\'ve ever had was launching a student-led environmental campaign during high school. It began as a small initiative but evolved into a regional awareness project with media coverage and community events. Coordinating a team, dealing with setbacks, and presenting to stakeholders taught me project management and leadership under pressure. It was formative in shaping my current interest in sustainability and policy-making.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Sophisticated, reflective, and fluent storytelling with abstract reasoning.',
+    lexicalFeatures: ['transformative', 'student-led', 'initiative', 'stakeholders', 'project management', 'policy-making', 'sustainability'],
+    grammarFeatures: ['embedded clauses', 'modifiers', 'complex sentence structures'],
+    discourseMarkers: ['but evolved into', 'dealing with', 'it was formative in']
+  },
+
 };
 
 // Export individual functions for accessing samples
