@@ -1018,6 +1018,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['but evolved into', 'dealing with', 'it was formative in']
   },
 
+  // Q13 – Why do some people say that social media is a double-edged weapon?
+  'q13_a1': {
+    id: 'q13_a1',
+    promptId: 'q13',
+    level: 'A1',
+    transcript: 'Social media is good and bad. People use it. Sometimes it make problem. Sometimes it help. I like it.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 4
+    },
+    finalCEFR: 'A1',
+    rationale: 'Extremely basic response with minimal logic or language control.',
+    lexicalFeatures: ['social media', 'good', 'bad', 'people', 'problem', 'help'],
+    grammarFeatures: ['verb tense errors', 'simple structures only'],
+    discourseMarkers: ['sometimes']
+  },
+  'q13_a2': {
+    id: 'q13_a2',
+    promptId: 'q13',
+    level: 'A2',
+    transcript: 'Social media helps people to talk and share pictures. But sometimes people write bad things and make others sad. It is good and bad at the same time.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Shows contrast and purpose, but lacks complexity and depth.',
+    lexicalFeatures: ['helps people', 'share pictures', 'write bad things', 'make others sad'],
+    grammarFeatures: ['mostly correct present simple', 'limited structures'],
+    discourseMarkers: ['but', 'sometimes', 'at the same time']
+  },
+  'q13_b1': {
+    id: 'q13_b1',
+    promptId: 'q13',
+    level: 'B1',
+    transcript: 'Social media is seen as a double-edged weapon because it has both positive and negative sides. On the one hand, it helps people stay connected and share ideas. On the other hand, it can cause stress, spread fake news, and even hurt mental health. It depends on how people use it.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'A clear, well-organized argument that covers both sides.',
+    lexicalFeatures: ['double-edged weapon', 'stay connected', 'fake news', 'mental health', 'cause stress'],
+    grammarFeatures: ['contrasting structures', 'modals', 'cause-effect language'],
+    discourseMarkers: ['because', 'on the one hand', 'on the other hand', 'even', 'it depends on']
+  },
+  'q13_b2': {
+    id: 'q13_b2',
+    promptId: 'q13',
+    level: 'B2',
+    transcript: 'Social media is often called a double-edged weapon because while it connects people across the world and provides platforms for self-expression, it also facilitates cyberbullying, misinformation, and screen addiction. Many users are influenced by unrealistic beauty standards or become anxious from constant online comparisons. It\'s a powerful tool that requires responsible use.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Advanced lexical use, logical contrast, and nuanced discussion.',
+    lexicalFeatures: ['cyberbullying', 'misinformation', 'self-expression', 'screen addiction', 'unrealistic beauty standards', 'responsible use'],
+    grammarFeatures: ['complex sentences', 'clauses', 'modals', 'passive voice'],
+    discourseMarkers: ['while', 'also', 'or', 'from', 'that requires']
+  },
+  'q13_c1': {
+    id: 'q13_c1',
+    promptId: 'q13',
+    level: 'C1',
+    transcript: 'Describing social media as a double-edged weapon highlights its paradoxical nature—it empowers free speech and social movements, yet simultaneously enables disinformation, manipulation, and polarization. While it democratizes information and offers marginalized voices a platform, it also amplifies hate speech and echo chambers. This duality makes it both a revolutionary tool and a societal risk, depending largely on regulation and media literacy.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Expert-level reflection with high lexical and structural range.',
+    lexicalFeatures: ['paradoxical nature', 'empowers', 'democratizes', 'marginalized voices', 'amplifies', 'echo chambers', 'societal risk', 'media literacy'],
+    grammarFeatures: ['sophisticated structures', 'passive voice', 'nominalization', 'embedded clauses'],
+    discourseMarkers: ['yet simultaneously', 'while', 'depending largely on']
+  },
+
 };
 
 // Export individual functions for accessing samples
