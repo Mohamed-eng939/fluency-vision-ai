@@ -834,6 +834,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['during my final year', 'because of', 'what shocked me most', 'which sparked']
   },
 
+  // Q11 – How long have you been using the internet? And how?
+  'q11_a1': {
+    id: 'q11_a1',
+    promptId: 'q11',
+    level: 'A1',
+    transcript: 'I use internet five years. I look YouTube. I chat. I like internet. It good.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 4
+    },
+    finalCEFR: 'A1',
+    rationale: 'Low grammatical control and limited vocabulary. The idea is communicated at word level.',
+    lexicalFeatures: ['internet', 'YouTube', 'chat', 'like', 'good'],
+    grammarFeatures: ['missing auxiliary verbs', 'incorrect tense usage'],
+    discourseMarkers: []
+  },
+  'q11_a2': {
+    id: 'q11_a2',
+    promptId: 'q11',
+    level: 'A2',
+    transcript: 'I have used the internet for about six years. I usually use it to watch videos, chat with friends, and check the news. I use my phone and sometimes my laptop.',
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 5,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Fully on-topic, functional, and structurally sound for A2. Some repetition.',
+    lexicalFeatures: ['watch videos', 'chat with friends', 'check the news', 'phone', 'laptop'],
+    grammarFeatures: ['present perfect used correctly', 'clear structure'],
+    discourseMarkers: ['for about', 'usually', 'and', 'sometimes']
+  },
+  'q11_b1': {
+    id: 'q11_b1',
+    promptId: 'q11',
+    level: 'B1',
+    transcript: "I've been using the internet for around ten years, mostly for entertainment and communication. I check my emails daily, use social media like Instagram and Facebook, and watch series on streaming platforms. It's also useful for online shopping and reading articles.",
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Structured, varied, and fluent. Shows range in how the internet is used.',
+    lexicalFeatures: ['streaming platforms', 'online shopping', 'reading articles', 'social media', 'entertainment'],
+    grammarFeatures: ['present perfect continuous', 'routine tenses correctly used'],
+    discourseMarkers: ['for around', 'mostly', 'daily', 'like', 'also']
+  },
+  'q11_b2': {
+    id: 'q11_b2',
+    promptId: 'q11',
+    level: 'B2',
+    transcript: "I've been actively using the internet for over 15 years. It plays a central role in my daily life—from managing emails and remote work to staying updated through podcasts and digital newspapers. I also take online courses and use cloud tools for collaboration. It's become almost impossible to function without it.",
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Advanced vocabulary and clear examples support a highly relevant, detailed answer.',
+    lexicalFeatures: ['cloud tools', 'collaboration', 'digital newspapers', 'remote work', 'managing emails'],
+    grammarFeatures: ['present perfect', 'present simple usage', 'complex structures'],
+    discourseMarkers: ['for over', 'from...to', 'also', 'it has become']
+  },
+  'q11_c1': {
+    id: 'q11_c1',
+    promptId: 'q11',
+    level: 'C1',
+    transcript: "I've been using the internet extensively for nearly two decades, both personally and professionally. I rely on it for remote collaboration, research, and staying connected with global events. I also use it as a learning tool—taking online certifications, reading academic papers, and attending webinars. Its integration into my workflow is so seamless that I rarely distinguish between 'online' and 'offline' activities anymore.",
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Demonstrates digital fluency and high lexical sophistication. Clearly reflects C1-level competence.',
+    lexicalFeatures: ['remote collaboration', 'certifications', 'integration', 'workflow', 'academic papers', 'webinars'],
+    grammarFeatures: ['mastery of tense forms', 'embedded clauses', 'complex sentence structures'],
+    discourseMarkers: ['for nearly', 'both...and', 'so...that', 'anymore']
+  },
+
 };
 
 // Export individual functions for accessing samples
