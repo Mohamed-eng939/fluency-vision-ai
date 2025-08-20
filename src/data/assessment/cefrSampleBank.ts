@@ -1110,6 +1110,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['yet simultaneously', 'while', 'depending largely on']
   },
 
+  // Q14 – What are the roots of terrorism?
+  'q14_a1': {
+    id: 'q14_a1',
+    promptId: 'q14',
+    level: 'A1',
+    transcript: 'Terrorism is bad. People fight. People die. It make people sad and scared.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Demonstrates emotional awareness, but lacks grammar, vocabulary, and structure.',
+    lexicalFeatures: ['terrorism', 'bad', 'people', 'fight', 'die', 'sad', 'scared'],
+    grammarFeatures: ['incorrect verb forms', 'minimal range', 'simple statements'],
+    discourseMarkers: []
+  },
+  'q14_a2': {
+    id: 'q14_a2',
+    promptId: 'q14',
+    level: 'A2',
+    transcript: 'Terrorism happens because some people are angry or poor. They don\'t have job or food. They do bad things to show their problems. It is dangerous and makes people afraid.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Response is structurally sound but limited in scope and precision.',
+    lexicalFeatures: ['angry', 'poor', 'job', 'food', 'problems', 'dangerous', 'afraid'],
+    grammarFeatures: ['mostly accurate simple grammar', 'basic cause-effect'],
+    discourseMarkers: ['because', 'or']
+  },
+  'q14_b1': {
+    id: 'q14_b1',
+    promptId: 'q14',
+    level: 'B1',
+    transcript: 'There are many reasons why terrorism exists. One cause is poverty—when people don\'t have enough resources or jobs, they may become angry and join extremist groups. Another reason is politics or religion, especially if people feel oppressed or treated unfairly. These groups use violence to send messages or gain power, which is very harmful to society.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Strong structure, correct grammar, and multiple reasons offered.',
+    lexicalFeatures: ['poverty', 'resources', 'extremist groups', 'oppressed', 'violence', 'gain power', 'harmful to society'],
+    grammarFeatures: ['cause-effect structures', 'modals', 'conditionals', 'relative clauses'],
+    discourseMarkers: ['one cause', 'another reason', 'especially if', 'which']
+  },
+  'q14_b2': {
+    id: 'q14_b2',
+    promptId: 'q14',
+    level: 'B2',
+    transcript: 'Terrorism can be rooted in a combination of political, economic, and ideological factors. In some cases, individuals join terrorist organizations because they feel marginalized or powerless in their society. Unstable governments, foreign intervention, and lack of education can also contribute to radicalization. Moreover, social media sometimes spreads hate speech and propaganda, further encouraging violent actions.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Balanced, insightful argument with solid language and coherence.',
+    lexicalFeatures: ['rooted in', 'ideological factors', 'marginalized', 'powerless', 'foreign intervention', 'radicalization', 'hate speech', 'propaganda'],
+    grammarFeatures: ['passive voice', 'modal verbs', 'conditionals', 'complex sentences'],
+    discourseMarkers: ['in some cases', 'because', 'can also', 'moreover', 'further']
+  },
+  'q14_c1': {
+    id: 'q14_c1',
+    promptId: 'q14',
+    level: 'C1',
+    transcript: 'The origins of terrorism are multifaceted, stemming from deep-seated political grievances, socio-economic disparity, and ideological manipulation. Often, terrorist groups exploit vulnerable populations by appealing to identity, religion, or nationalism, turning personal frustration into collective violence. In regions with weak governance or historical injustice, radical narratives thrive. Additionally, global connectivity allows extremist ideologies to spread rapidly through digital platforms, further complicating efforts to address root causes.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'High lexical range and fluent use of academic phrasing; mature perspective.',
+    lexicalFeatures: ['multifaceted', 'deep-seated grievances', 'socio-economic disparity', 'ideological manipulation', 'exploit vulnerable populations', 'collective violence', 'historical injustice', 'radical narratives'],
+    grammarFeatures: ['complex clauses', 'passive forms', 'nominalizations', 'embedded structures'],
+    discourseMarkers: ['stemming from', 'often', 'by appealing to', 'turning into', 'additionally', 'further complicating']
+  },
+
 };
 
 // Export individual functions for accessing samples
