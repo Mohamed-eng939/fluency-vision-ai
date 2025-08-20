@@ -1294,6 +1294,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['in retrospect', 'while', 'although', 'that realization', 'later']
   },
 
+  // Q16 – How is it possible to maintain stable relationships in life?
+  'q16_a1': {
+    id: 'q16_a1',
+    promptId: 'q16',
+    level: 'A1',
+    transcript: 'To have good friends, you be nice. Talk good. Not angry. Help friend. Be happy.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 4
+    },
+    finalCEFR: 'A1',
+    rationale: 'Understands the theme, but lacks structure, clarity, and accuracy.',
+    lexicalFeatures: ['good friends', 'nice', 'talk', 'angry', 'help', 'friend', 'happy'],
+    grammarFeatures: ['no modals', 'poor sentence structure', 'missing auxiliary verbs'],
+    discourseMarkers: []
+  },
+  'q16_a2': {
+    id: 'q16_a2',
+    promptId: 'q16',
+    level: 'A2',
+    transcript: 'To keep good relationships, you should be kind and listen. People want respect and help. You can call your family and friends to talk and not forget them. This makes people happy.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Shows a clear message with simple grammar and vocabulary.',
+    lexicalFeatures: ['good relationships', 'kind', 'listen', 'respect', 'help', 'call your family'],
+    grammarFeatures: ['accurate modals', 'should', 'can', 'simple present'],
+    discourseMarkers: ['to keep', 'and', 'this makes']
+  },
+  'q16_b1': {
+    id: 'q16_b1',
+    promptId: 'q16',
+    level: 'B1',
+    transcript: 'Stable relationships are possible when people make time for each other and communicate openly. Trust and honesty are very important. I think saying sorry when you make a mistake and showing appreciation regularly help keep relationships strong. Also, it\'s important to solve problems together instead of ignoring them.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Natural, relevant, and organized. Shows ability to advise and reason.',
+    lexicalFeatures: ['stable relationships', 'make time', 'communicate openly', 'trust', 'honesty', 'showing appreciation', 'solve problems together'],
+    grammarFeatures: ['good range of modals', 'conditionals', 'gerunds', 'complex sentences'],
+    discourseMarkers: ['when', 'and', 'I think', 'also', 'instead of']
+  },
+  'q16_b2': {
+    id: 'q16_b2',
+    promptId: 'q16',
+    level: 'B2',
+    transcript: 'Maintaining stable relationships requires mutual effort, emotional intelligence, and consistent communication. Being able to express feelings without judgment, admit mistakes, and resolve disagreements constructively plays a key role. Additionally, respecting boundaries and giving space when needed helps prevent conflict and resentment.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Mature reasoning, excellent range, and appropriate tone.',
+    lexicalFeatures: ['mutual effort', 'emotional intelligence', 'consistent communication', 'express feelings', 'resolve disagreements', 'constructively', 'respecting boundaries', 'prevent conflict', 'resentment'],
+    grammarFeatures: ['complex sentence structures', 'gerund phrases', 'passive voice', 'advanced modals'],
+    discourseMarkers: ['being able to', 'plays a key role', 'additionally', 'when needed']
+  },
+  'q16_c1': {
+    id: 'q16_c1',
+    promptId: 'q16',
+    level: 'C1',
+    transcript: 'Long-term relationship stability hinges on deep trust, vulnerability, and aligned values. It\'s essential to cultivate empathy and maintain open, non-defensive dialogue even in moments of tension. Navigating conflicts collaboratively, while honoring individual autonomy, fosters long-term emotional safety. Above all, consistency in actions and emotional availability often define lasting bonds.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Abstract and expressive language with depth of thought and fluency.',
+    lexicalFeatures: ['long-term stability', 'hinges on', 'vulnerability', 'aligned values', 'cultivate empathy', 'non-defensive dialogue', 'navigating conflicts', 'individual autonomy', 'emotional availability', 'lasting bonds'],
+    grammarFeatures: ['nominalization', 'subjunctive tone', 'modal nuance', 'sophisticated structures'],
+    discourseMarkers: ['hinges on', 'it\'s essential to', 'even in', 'while', 'above all']
+  },
+
 };
 
 // Export individual functions for accessing samples
