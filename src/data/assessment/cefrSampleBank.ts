@@ -1202,6 +1202,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['stemming from', 'often', 'by appealing to', 'turning into', 'additionally', 'further complicating']
   },
 
+  // Q15 – Is there something you think you shouldn't have done when you were younger?
+  'q15_a1': {
+    id: 'q15_a1',
+    promptId: 'q15',
+    level: 'A1',
+    transcript: 'When I small, I go school late. I not listen teacher. I play games. I think bad.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'The learner conveys regret but lacks the grammar and vocabulary to express it accurately.',
+    lexicalFeatures: ['small', 'school', 'late', 'listen', 'teacher', 'play', 'games'],
+    grammarFeatures: ['incorrect modal use', 'no past forms', 'missing auxiliary verbs'],
+    discourseMarkers: []
+  },
+  'q15_a2': {
+    id: 'q15_a2',
+    promptId: 'q15',
+    level: 'A2',
+    transcript: 'I think I shouldn\'t have stopped studying English when I was a child. I wanted to play with friends more, so I didn\'t go to class. Now, I think it was a mistake.',
+    scores: {
+      vocabulary: 4,
+      grammar: 6,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'A valid regret is shared using basic but correct grammar and vocabulary.',
+    lexicalFeatures: ['stopped studying', 'play with friends', 'go to class', 'mistake'],
+    grammarFeatures: ['simple modal structure', 'shouldn\'t have stopped', 'past simple'],
+    discourseMarkers: ['so', 'now']
+  },
+  'q15_b1': {
+    id: 'q15_b1',
+    promptId: 'q15',
+    level: 'B1',
+    transcript: 'When I was younger, I shouldn\'t have wasted so much time playing video games. I didn\'t study enough, and as a result, I struggled in school. If I had been more focused, maybe I could have had better grades. I learned from this and now manage my time better.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 6,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Accurate and reflective. Demonstrates command over modal regret and conditionals.',
+    lexicalFeatures: ['wasted time', 'playing video games', 'struggled in school', 'manage my time', 'better grades'],
+    grammarFeatures: ['shouldn\'t have', 'third conditional', 'past perfect', 'modal could have'],
+    discourseMarkers: ['as a result', 'if', 'maybe', 'and now']
+  },
+  'q15_b2': {
+    id: 'q15_b2',
+    promptId: 'q15',
+    level: 'B2',
+    transcript: 'Looking back, I probably shouldn\'t have ignored my parents\' advice about learning a second language earlier. At the time, I thought it wasn\'t important, but now I realize how much easier it would\'ve been to start young. This mistake taught me the value of taking opportunities seriously.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Natural tone, balanced emotion, and grammatically complex. Shows upper-intermediate fluency.',
+    lexicalFeatures: ['ignored advice', 'second language', 'start young', 'taking opportunities seriously', 'the value of'],
+    grammarFeatures: ['modals of regret', 'past narrative structures', 'would\'ve been', 'complex tenses'],
+    discourseMarkers: ['looking back', 'probably', 'at the time', 'but now', 'this mistake']
+  },
+  'q15_c1': {
+    id: 'q15_c1',
+    promptId: 'q15',
+    level: 'C1',
+    transcript: 'In retrospect, I shouldn\'t have dismissed extracurricular activities as a waste of time during my school years. While I focused solely on academics, I missed out on developing soft skills like teamwork and communication. This narrow approach, although academically rewarding, left me socially unprepared in my early career. That realization pushed me to intentionally grow in those areas later.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Excellent control of language and message. Abstract reflection and growth conveyed naturally.',
+    lexicalFeatures: ['dismissed', 'extracurricular activities', 'soft skills', 'teamwork', 'socially unprepared', 'narrow approach', 'academically rewarding', 'intentionally grow'],
+    grammarFeatures: ['sophisticated modals', 'parallel structures', 'logical connectors', 'complex clauses'],
+    discourseMarkers: ['in retrospect', 'while', 'although', 'that realization', 'later']
+  },
+
 };
 
 // Export individual functions for accessing samples
