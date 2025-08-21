@@ -1475,6 +1475,96 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     grammarFeatures: ['abstract structures', 'passive voice', 'nominalizations', 'complex relative clauses'],
     discourseMarkers: ['deeply rooted', 'particularly', 'especially', 'both...and']
   },
+  'q18_a1': {
+    id: 'q18_a1',
+    promptId: 'q18',
+    level: 'A1',
+    transcript: 'I want to open shop. I sell food. People come buy. I happy. Price cheap.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Shows basic idea but lacks clarity, detail, and structure.',
+    lexicalFeatures: ['shop', 'food', 'people', 'price'],
+    grammarFeatures: ['simple present tense', 'basic sentence structure'],
+    discourseMarkers: []
+  },
+  'q18_a2': {
+    id: 'q18_a2',
+    promptId: 'q18',
+    level: 'A2',
+    transcript: 'I would open a coffee shop. I like coffee. My customers are students and workers. I want to sell cheap drinks and fast snacks. The shop is small, but I want it to be nice.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Answers all components with limited expression and detail.',
+    lexicalFeatures: ['coffee shop', 'customers', 'snacks', 'drinks'],
+    grammarFeatures: ['conditional would', 'simple present', 'basic connectors'],
+    discourseMarkers: ['but']
+  },
+  'q18_b1': {
+    id: 'q18_b1',
+    promptId: 'q18',
+    level: 'B1',
+    transcript: 'If I could start a business, I\'d create an online tutoring platform for students. The sector would be education, and I would target high school and university learners who need help with English. I\'d offer affordable subscriptions, maybe $10 per month, and provide both group and private sessions.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'A practical and structured response with functional use of business language.',
+    lexicalFeatures: ['platform', 'subscriptions', 'private sessions', 'affordable', 'target'],
+    grammarFeatures: ['conditional structures', 'modals', 'future forms', 'relative clauses'],
+    discourseMarkers: ['if I could', 'and', 'maybe']
+  },
+  'q18_b2': {
+    id: 'q18_b2',
+    promptId: 'q18',
+    level: 'B2',
+    transcript: 'I\'d launch a health-focused meal delivery service operating in urban areas. The sector would be food and wellness, targeting busy professionals and fitness enthusiasts. Meals would be customizable, using organic ingredients, and pricing would follow a tiered model—standard plans starting at $50 per week. I\'d focus on convenience, nutrition, and sustainability.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'A well-developed and realistic business proposal, clearly presented.',
+    lexicalFeatures: ['meal delivery service', 'tiered model', 'customizable', 'organic ingredients', 'sustainability'],
+    grammarFeatures: ['complex conditionals', 'passive voice', 'present participles', 'noun phrases'],
+    discourseMarkers: ['targeting', 'using', 'starting at', 'focus on']
+  },
+  'q18_c1': {
+    id: 'q18_c1',
+    promptId: 'q18',
+    level: 'C1',
+    transcript: 'I would found an edtech startup that merges AI-driven learning with human mentoring. The business would operate in the global education sector, targeting corporate professionals in non-native English-speaking countries. The model would be B2B SaaS, offering tailored language programs priced per seat, starting at $99/month. My aim would be to blend personalization with scale while maintaining measurable ROI for clients.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'High-level abstract reasoning, business fluency, and sophisticated structure.',
+    lexicalFeatures: ['edtech startup', 'B2B SaaS', 'tailored programs', 'measurable ROI', 'personalization'],
+    grammarFeatures: ['sophisticated conditionals', 'passive voice', 'nominalization', 'complex clauses'],
+    discourseMarkers: ['that merges', 'targeting', 'while maintaining', 'would be to']
+  },
 
 };
 
