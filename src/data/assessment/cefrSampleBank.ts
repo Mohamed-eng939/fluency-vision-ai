@@ -1385,6 +1385,96 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     grammarFeatures: ['nominalization', 'subjunctive tone', 'modal nuance', 'sophisticated structures'],
     discourseMarkers: ['hinges on', 'it\'s essential to', 'even in', 'while', 'above all']
   },
+  'q17_a1': {
+    id: 'q17_a1',
+    promptId: 'q17',
+    level: 'A1',
+    transcript: 'I want job. I go to work. I need money. I like food. Motivation is job.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Fragmented and unclear. Basic meaning is conveyed, but fluency and depth are absent.',
+    lexicalFeatures: ['job', 'work', 'money', 'food'],
+    grammarFeatures: ['simple present tense', 'basic sentence structure'],
+    discourseMarkers: []
+  },
+  'q17_a2': {
+    id: 'q17_a2',
+    promptId: 'q17',
+    level: 'A2',
+    transcript: 'I get motivation from my family. They help me work hard. My goal is to have good job and happy life. I want to learn more English and travel to other countries.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 8
+    },
+    finalCEFR: 'A2',
+    rationale: 'Simple, optimistic, and clearly structured. Limited complexity.',
+    lexicalFeatures: ['motivation', 'goal', 'travel', 'happy life', 'work hard'],
+    grammarFeatures: ['simple present', 'future with want to', 'infinitive structures'],
+    discourseMarkers: []
+  },
+  'q17_b1': {
+    id: 'q17_b1',
+    promptId: 'q17',
+    level: 'B1',
+    transcript: 'My motivation mostly comes from my desire to improve my future. I\'m motivated by success stories of people who worked hard and changed their lives. One of my biggest goals is to start my own business and become financially independent. I also want to improve my English and move abroad.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Personal, structured, and clear response with good fluency.',
+    lexicalFeatures: ['success stories', 'financially independent', 'improve my future', 'desire'],
+    grammarFeatures: ['present continuous', 'infinitive of purpose', 'complex clauses'],
+    discourseMarkers: ['mostly', 'also', 'one of']
+  },
+  'q17_b2': {
+    id: 'q17_b2',
+    promptId: 'q17',
+    level: 'B2',
+    transcript: 'I find motivation through personal growth and setting clear, achievable goals. Listening to motivational podcasts and surrounding myself with driven people also plays a big role. My current objectives include completing my degree, launching a freelance career, and becoming fluent in English. These goals give me a sense of direction and push me to stay disciplined.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Expressive, focused, and logically framed response. Appropriate for upper-intermediate level.',
+    lexicalFeatures: ['personal growth', 'achievable goals', 'disciplined', 'objectives', 'driven people', 'freelance career'],
+    grammarFeatures: ['gerund phrases', 'complex clauses', 'present continuous', 'passive structures'],
+    discourseMarkers: ['also', 'through', 'include', 'these goals']
+  },
+  'q17_c1': {
+    id: 'q17_c1',
+    promptId: 'q17',
+    level: 'C1',
+    transcript: 'My motivation is deeply rooted in a desire for long-term fulfillment and contribution. I draw inspiration from mentors, books on psychology and leadership, and the tangible progress I see in my personal and professional life. I\'m particularly driven to lead impactful projects that align with my values—especially in education and ethical innovation. These goals fuel both my ambition and sense of purpose.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Sophisticated, introspective, and stylistically polished. Near-native fluency with depth.',
+    lexicalFeatures: ['long-term fulfillment', 'ethical innovation', 'align with values', 'tangible progress', 'impactful projects'],
+    grammarFeatures: ['abstract structures', 'passive voice', 'nominalizations', 'complex relative clauses'],
+    discourseMarkers: ['deeply rooted', 'particularly', 'especially', 'both...and']
+  },
 
 };
 
