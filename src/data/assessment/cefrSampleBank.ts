@@ -1565,6 +1565,96 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     grammarFeatures: ['sophisticated conditionals', 'passive voice', 'nominalization', 'complex clauses'],
     discourseMarkers: ['that merges', 'targeting', 'while maintaining', 'would be to']
   },
+  'q19_a1': {
+    id: 'q19_a1',
+    promptId: 'q19',
+    level: 'A1',
+    transcript: 'Poor people need food. Government give money. People can help. I think help is good.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'While it touches on the theme, the delivery is underdeveloped, with minimal vocabulary and control.',
+    lexicalFeatures: ['poor people', 'food', 'government', 'money', 'help'],
+    grammarFeatures: ['simple present tense', 'basic sentence structure'],
+    discourseMarkers: ['I think']
+  },
+  'q19_a2': {
+    id: 'q19_a2',
+    promptId: 'q19',
+    level: 'A2',
+    transcript: 'The government should give homes and food for poor people. Also, we can help by giving clothes and money. I think education is important too. If people go to school, they can get jobs and better life.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Ideas are relevant and clear with simple execution.',
+    lexicalFeatures: ['government', 'homes', 'education', 'jobs', 'better life'],
+    grammarFeatures: ['basic modals (should, can)', 'conditional (if)', 'simple structures'],
+    discourseMarkers: ['also', 'too', 'if']
+  },
+  'q19_b1': {
+    id: 'q19_b1',
+    promptId: 'q19',
+    level: 'B1',
+    transcript: 'There are many ways to help people living in poverty. Governments should invest in education and healthcare so the poor can break the cycle. NGOs can also provide short-term support like food and shelter. In the long term, creating job opportunities and offering free training programs are key to reducing suffering.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Logical and complete answer. Lacks abstract nuance but delivers effective reasoning.',
+    lexicalFeatures: ['living in poverty', 'break the cycle', 'NGOs', 'job opportunities', 'training programs'],
+    grammarFeatures: ['accurate modals', 'conditional structures', 'gerund phrases'],
+    discourseMarkers: ['there are', 'so', 'also', 'in the long term', 'like']
+  },
+  'q19_b2': {
+    id: 'q19_b2',
+    promptId: 'q19',
+    level: 'B2',
+    transcript: 'Alleviating destitution requires both systemic and community-based solutions. On a national level, governments should prioritize universal education, fair wages, and affordable housing. Meanwhile, community initiatives like food banks, skill-building centers, and microloans empower individuals to regain stability. Collaboration between sectors—public, private, and nonprofit—is vital to lasting impact.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Professional and fluent. Deep understanding and solid register.',
+    lexicalFeatures: ['alleviating destitution', 'systemic solutions', 'universal education', 'microloans', 'lasting impact'],
+    grammarFeatures: ['complex sentence structures', 'modals', 'passive voice', 'gerund phrases'],
+    discourseMarkers: ['both...and', 'on a national level', 'meanwhile', 'like', 'between']
+  },
+  'q19_c1': {
+    id: 'q19_c1',
+    promptId: 'q19',
+    level: 'C1',
+    transcript: 'To meaningfully alleviate the suffering of the destitute, governments must adopt comprehensive welfare policies—ranging from universal healthcare and housing subsidies to income support and job creation initiatives. Equally crucial are grassroots movements and social enterprises that drive empowerment through education and economic inclusion. Sustainable change stems from equity-focused reforms, not just temporary aid.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'High-level policy language, structured argument, and clear moral stance.',
+    lexicalFeatures: ['comprehensive welfare policies', 'housing subsidies', 'grassroots movements', 'economic inclusion', 'equity-focused reforms'],
+    grammarFeatures: ['complex nominalization', 'subjunctive voice', 'sophisticated structures', 'modal must'],
+    discourseMarkers: ['to meaningfully', 'ranging from...to', 'equally crucial', 'through', 'not just']
+  },
 
 };
 
