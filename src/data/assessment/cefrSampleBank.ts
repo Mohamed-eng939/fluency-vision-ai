@@ -1655,6 +1655,96 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     grammarFeatures: ['complex nominalization', 'subjunctive voice', 'sophisticated structures', 'modal must'],
     discourseMarkers: ['to meaningfully', 'ranging from...to', 'equally crucial', 'through', 'not just']
   },
+  'q20_a1': {
+    id: 'q20_a1',
+    promptId: 'q20',
+    level: 'A1',
+    transcript: 'Good leader is nice. He say what to do. People like him. He make rules. He help.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'The speaker has an idea of leadership but struggles to express thoughts with accuracy or detail.',
+    lexicalFeatures: ['good leader', 'nice', 'say', 'rules', 'help'],
+    grammarFeatures: ['simple present tense', 'basic sentence structure', 'subject-verb agreement errors'],
+    discourseMarkers: []
+  },
+  'q20_a2': {
+    id: 'q20_a2',
+    promptId: 'q20',
+    level: 'A2',
+    transcript: 'A good leader should be kind and strong. They must listen to people. They also make decisions. I think a leader needs to be smart and help team. If workers are happy, work is good.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Covers key leadership traits in a simple, structured manner.',
+    lexicalFeatures: ['kind', 'strong', 'decisions', 'team', 'workers', 'smart'],
+    grammarFeatures: ['modals (should, must)', 'conditional (if)', 'simple structures'],
+    discourseMarkers: ['also', 'I think', 'if']
+  },
+  'q20_b1': {
+    id: 'q20_b1',
+    promptId: 'q20',
+    level: 'B1',
+    transcript: 'A good leader should be confident, organized, and able to inspire others. It\'s important that they listen to their team and make fair decisions. In my opinion, a leader must also take responsibility when things go wrong. If a leader treats everyone with respect, the team will trust them.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Competent response with workplace-appropriate tone and well-developed structure.',
+    lexicalFeatures: ['confident', 'organized', 'inspire', 'take responsibility', 'respect', 'trust'],
+    grammarFeatures: ['modals and conditionals', 'opinion expressions', 'subordinate clauses'],
+    discourseMarkers: ['and', 'it\'s important that', 'in my opinion', 'also', 'when', 'if']
+  },
+  'q20_b2': {
+    id: 'q20_b2',
+    promptId: 'q20',
+    level: 'B2',
+    transcript: 'Leadership requires a unique blend of communication, empathy, and strategic thinking. A good leader must motivate others, remain calm under pressure, and make decisions that balance team well-being with organizational goals. They should also give constructive feedback and model ethical behavior. These traits build trust and encourage long-term collaboration.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Advanced vocabulary and precise structuring elevate the response.',
+    lexicalFeatures: ['strategic thinking', 'empathy', 'motivate', 'constructive feedback', 'ethical behavior', 'collaboration'],
+    grammarFeatures: ['complex sentence structures', 'relative clauses', 'parallel structures'],
+    discourseMarkers: ['requires', 'must', 'under pressure', 'that balance', 'also', 'these traits']
+  },
+  'q20_c1': {
+    id: 'q20_c1',
+    promptId: 'q20',
+    level: 'C1',
+    transcript: 'An effective leader combines vision, emotional intelligence, and adaptability. They don\'t simply give orders—they foster environments where autonomy, innovation, and accountability can thrive. A strong leader anticipates challenges, listens actively, and navigates interpersonal dynamics with tact. Leadership today demands authenticity and the ability to unite diverse teams around a common purpose.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'High-level leadership discourse with abstract and idiomatic fluency.',
+    lexicalFeatures: ['emotional intelligence', 'adaptability', 'foster environments', 'autonomy', 'accountability', 'interpersonal dynamics', 'authenticity'],
+    grammarFeatures: ['sophisticated structures', 'negative constructions', 'embedded clauses', 'abstract nominalization'],
+    discourseMarkers: ['combines', 'don\'t simply', 'where', 'and', 'with tact', 'today demands', 'around']
+  },
 
 };
 
