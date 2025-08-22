@@ -1835,6 +1835,96 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     grammarFeatures: ['complex nominalization', 'embedded clauses', 'sophisticated conjunctions', 'abstract structures'],
     discourseMarkers: ['I consider', 'that reflects', 'while', 'deeply', 'and how', 'I tend to', 'both...and', 'who blend']
   },
+  'q22_a1': {
+    id: 'q22_a1',
+    promptId: 'q22',
+    level: 'A1',
+    transcript: 'Peace is good. No war. People be nice. No fight. Everyone happy. World is quiet.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Understands the basic theme, but lacks language control or elaboration.',
+    lexicalFeatures: ['peace', 'good', 'war', 'fight', 'happy', 'world', 'quiet'],
+    grammarFeatures: ['simple present tense', 'minimal sentence control', 'missing auxiliary verbs'],
+    discourseMarkers: ['no']
+  },
+  'q22_a2': {
+    id: 'q22_a2',
+    promptId: 'q22',
+    level: 'A2',
+    transcript: 'World peace is possible if countries stop fighting. Leaders should talk and work together. Also, people can learn to respect each other. If we help poor people and give education, we can stop hate. I hope world peace can come soon.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Covers key ideas in simple language with basic linking.',
+    lexicalFeatures: ['world peace', 'possible', 'leaders', 'respect', 'education', 'hate'],
+    grammarFeatures: ['modals (should, can)', 'conditionals (if)', 'simple tenses'],
+    discourseMarkers: ['if', 'also', 'and', 'I hope']
+  },
+  'q22_b1': {
+    id: 'q22_b1',
+    promptId: 'q22',
+    level: 'B1',
+    transcript: 'World peace requires cooperation between nations and respect among cultures. Governments must prioritize dialogue over violence and invest in education, especially for the younger generation. People also need to be more tolerant and open-minded. If we focus on solving poverty and injustice, there will be fewer reasons for conflict.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Well-organized, addresses the question with cause-effect logic and relevant vocabulary.',
+    lexicalFeatures: ['cooperation', 'nations', 'dialogue', 'violence', 'tolerant', 'open-minded', 'injustice', 'conflict'],
+    grammarFeatures: ['modal verbs (must, need to)', 'complex structures', 'future tense'],
+    discourseMarkers: ['between', 'among', 'over', 'especially', 'also', 'if', 'there will be']
+  },
+  'q22_b2': {
+    id: 'q22_b2',
+    promptId: 'q22',
+    level: 'B2',
+    transcript: 'Achieving world peace is a complex challenge that requires action on multiple levels. Countries must strengthen diplomatic relationships and collaborate on global issues like climate change and inequality. Educating youth about empathy, human rights, and nonviolence can create long-term cultural change. Social media can also play a role in promoting understanding, rather than spreading division.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Addresses the topic with both breadth and depth, using elevated vocabulary.',
+    lexicalFeatures: ['achieving', 'complex challenge', 'diplomatic relationships', 'collaborate', 'empathy', 'human rights', 'nonviolence', 'cultural change'],
+    grammarFeatures: ['gerund forms', 'passive voice', 'modals', 'nominalizations'],
+    discourseMarkers: ['that requires', 'on multiple levels', 'like', 'about', 'rather than', 'also']
+  },
+  'q22_c1': {
+    id: 'q22_c1',
+    promptId: 'q22',
+    level: 'C1',
+    transcript: 'World peace cannot be attained through idealism alone—it demands structural reform, cultural empathy, and persistent diplomacy. At the geopolitical level, disarmament and transparent governance are key. Equally important are grassroots movements that foster intercultural dialogue and media that amplifies narratives of unity rather than division. Peace is a process, not an event, and must be embedded in education systems, policies, and everyday behavior.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Mature, philosophical response with layered structure and abstract reasoning.',
+    lexicalFeatures: ['attained', 'idealism', 'structural reform', 'persistent diplomacy', 'geopolitical', 'disarmament', 'transparent governance', 'grassroots movements', 'intercultural dialogue', 'amplifies narratives'],
+    grammarFeatures: ['complex passive structures', 'nominalization', 'academic register', 'sophisticated conjunctions'],
+    discourseMarkers: ['cannot be', 'through', 'alone', 'at the level', 'equally important', 'that foster', 'rather than', 'not...but', 'must be embedded']
+  },
 
 };
 
