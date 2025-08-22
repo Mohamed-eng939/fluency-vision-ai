@@ -1745,6 +1745,96 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     grammarFeatures: ['sophisticated structures', 'negative constructions', 'embedded clauses', 'abstract nominalization'],
     discourseMarkers: ['combines', 'don\'t simply', 'where', 'and', 'with tact', 'today demands', 'around']
   },
+  'q21_a1': {
+    id: 'q21_a1',
+    promptId: 'q21',
+    level: 'A1',
+    transcript: 'I like clothes. I wear jeans and shirt. I don\'t like fashion show. I buy clothes in shop. My style is simple.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'The learner can express a simple opinion but with extremely limited range and fluency.',
+    lexicalFeatures: ['clothes', 'jeans', 'shirt', 'fashion show', 'shop', 'simple'],
+    grammarFeatures: ['simple present tense', 'basic negation', 'basic sentence structure'],
+    discourseMarkers: []
+  },
+  'q21_a2': {
+    id: 'q21_a2',
+    promptId: 'q21',
+    level: 'A2',
+    transcript: 'I like fashion a little. I don\'t follow trends, but I like to look nice. I buy clothes online, like jackets and shoes. I don\'t care about brands. My favorite color is black because it\'s easy to wear.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'A straightforward and personal answer with some topic control.',
+    lexicalFeatures: ['fashion', 'trends', 'brands', 'favorite color', 'jackets', 'shoes'],
+    grammarFeatures: ['simple tenses', 'basic conjunctions', 'negation', 'because clauses'],
+    discourseMarkers: ['a little', 'but', 'like', 'because']
+  },
+  'q21_b1': {
+    id: 'q21_b1',
+    promptId: 'q21',
+    level: 'B1',
+    transcript: 'I\'m fairly interested in fashion, especially casual styles. I like to look presentable, but I don\'t follow every new trend. I usually shop during sales and try to buy clothes that are comfortable and affordable. I think fashion is important for self-expression, but it\'s not the most important thing for me.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Expresses a balanced opinion with topic-specific examples.',
+    lexicalFeatures: ['presentable', 'casual styles', 'affordable', 'self-expression', 'comfortable'],
+    grammarFeatures: ['degree adverbs', 'contrasting conjunctions', 'relative clauses', 'opinion expressions'],
+    discourseMarkers: ['fairly', 'especially', 'but', 'usually', 'during', 'that are', 'I think']
+  },
+  'q21_b2': {
+    id: 'q21_b2',
+    promptId: 'q21',
+    level: 'B2',
+    transcript: 'I would say I\'m moderately interested in fashion. I don\'t chase every seasonal trend, but I care about how I present myself, especially in professional settings. I appreciate minimalist styles and neutral colors, and I tend to choose brands that align with my values, like sustainability. For me, fashion is less about appearance and more about identity.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Rich, introspective response with fluent control and structure.',
+    lexicalFeatures: ['moderately', 'seasonal trend', 'professional settings', 'minimalist styles', 'sustainability', 'identity'],
+    grammarFeatures: ['modal expressions', 'complex conjunctions', 'relative clauses', 'comparative structures'],
+    discourseMarkers: ['I would say', 'moderately', 'but', 'especially', 'and', 'that align with', 'like', 'for me', 'less...and more']
+  },
+  'q21_c1': {
+    id: 'q21_c1',
+    promptId: 'q21',
+    level: 'C1',
+    transcript: 'I consider fashion a dynamic form of self-expression that reflects culture, personality, and even politics. While I don\'t obsess over high fashion or designer brands, I\'m deeply interested in the evolution of trends and how they mirror societal shifts. I tend to invest in pieces that are both stylish and ethically made, and I appreciate designers who blend functionality with innovation.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Complex ideas expressed with fluency, reflection, and stylistic maturity.',
+    lexicalFeatures: ['dynamic form', 'self-expression', 'designer brands', 'evolution of trends', 'mirror societal shifts', 'ethically made', 'blend functionality'],
+    grammarFeatures: ['complex nominalization', 'embedded clauses', 'sophisticated conjunctions', 'abstract structures'],
+    discourseMarkers: ['I consider', 'that reflects', 'while', 'deeply', 'and how', 'I tend to', 'both...and', 'who blend']
+  },
 
 };
 
