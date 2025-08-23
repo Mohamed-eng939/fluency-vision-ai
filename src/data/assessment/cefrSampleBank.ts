@@ -1926,6 +1926,98 @@ export const cefrSampleBank: { [key: string]: CEFRSample } = {
     discourseMarkers: ['cannot be', 'through', 'alone', 'at the level', 'equally important', 'that foster', 'rather than', 'not...but', 'must be embedded']
   },
 
+  // Q23 – Reflect on the quote: "Technology owes ecology an apology."
+  'q23_a1': {
+    id: 'q23_a1',
+    promptId: 'q23',
+    level: 'A1',
+    transcript: 'Technology is good. Ecology is trees and animals. Sorry is good when you do bad. Technology maybe hurt trees. People should say sorry.',
+    scores: {
+      vocabulary: 2,
+      grammar: 2,
+      coherence: 2,
+      lexicalCollocation: 2,
+      taskAchievement: 3
+    },
+    finalCEFR: 'A1',
+    rationale: 'Can identify individual elements but lacks ability to relate or reflect meaningfully.',
+    lexicalFeatures: ['technology', 'good', 'ecology', 'trees', 'animals', 'sorry', 'bad', 'hurt'],
+    grammarFeatures: ['simple present only', 'limited control', 'missing auxiliary verbs'],
+    discourseMarkers: ['when', 'maybe']
+  },
+  'q23_a2': {
+    id: 'q23_a2',
+    promptId: 'q23',
+    level: 'A2',
+    transcript: 'The quote means that technology sometimes makes problems for nature. For example, pollution from cars or factories. People use too much energy and hurt the earth. So, we must be more careful and protect animals, water, and trees.',
+    scores: {
+      vocabulary: 4,
+      grammar: 5,
+      coherence: 5,
+      lexicalCollocation: 4,
+      taskAchievement: 7
+    },
+    finalCEFR: 'A2',
+    rationale: 'Simple, clear answer with environmental awareness and causal logic.',
+    lexicalFeatures: ['quote', 'problems', 'nature', 'pollution', 'factories', 'energy', 'protect'],
+    grammarFeatures: ['mostly correct present/simple past', 'modals used', 'basic structures'],
+    discourseMarkers: ['for example', 'so', 'and']
+  },
+  'q23_b1': {
+    id: 'q23_b1',
+    promptId: 'q23',
+    level: 'B1',
+    transcript: 'I think the quote means that technological progress has harmed the environment in many ways. For example, factories cause air and water pollution, and cars release too much CO2. While technology helps humans, it often damages nature. So, we must balance progress with environmental care and invest in green energy.',
+    scores: {
+      vocabulary: 6,
+      grammar: 7,
+      coherence: 7,
+      lexicalCollocation: 7,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B1',
+    rationale: 'Good use of real-world examples and moderately abstract reasoning.',
+    lexicalFeatures: ['technological progress', 'harmed', 'environment', 'pollution', 'release', 'CO2', 'damages', 'balance', 'invest', 'green energy'],
+    grammarFeatures: ['cause/effect structures', 'modals', 'present perfect', 'while clauses'],
+    discourseMarkers: ['I think', 'for example', 'while', 'so', 'and']
+  },
+  'q23_b2': {
+    id: 'q23_b2',
+    promptId: 'q23',
+    level: 'B2',
+    transcript: 'The quote suggests that technological advancement has often come at the expense of ecological balance. Industrialization has led to deforestation, biodiversity loss, and rising carbon emissions. In this sense, "an apology" symbolizes a moral responsibility. We now have the tools to reverse some damage—renewable energy, eco-friendly design—but must act intentionally and globally.',
+    scores: {
+      vocabulary: 8,
+      grammar: 8,
+      coherence: 8,
+      lexicalCollocation: 8,
+      taskAchievement: 10
+    },
+    finalCEFR: 'B2',
+    rationale: 'Rich vocabulary and insight, approaching academic tone.',
+    lexicalFeatures: ['advancement', 'at the expense of', 'ecological balance', 'industrialization', 'deforestation', 'biodiversity loss', 'carbon emissions', 'symbolizes', 'moral responsibility', 'renewable energy', 'eco-friendly', 'intentionally'],
+    grammarFeatures: ['complex structures', 'accurate tenses', 'passive voice', 'sophisticated linking'],
+    discourseMarkers: ['suggests', 'has often come', 'has led to', 'in this sense', 'but must']
+  },
+  'q23_c1': {
+    id: 'q23_c1',
+    promptId: 'q23',
+    level: 'C1',
+    transcript: 'This quote encapsulates the moral tension between human progress and environmental degradation. For centuries, technological innovation—from industrial machines to digital infrastructure—has prioritized speed and profit over sustainability. The "apology" metaphor implies a reckoning, urging us to reconcile innovation with stewardship. As we enter the age of AI and automation, the real challenge is designing systems that regenerate rather than extract.',
+    scores: {
+      vocabulary: 9,
+      grammar: 9,
+      coherence: 9,
+      lexicalCollocation: 9,
+      taskAchievement: 10
+    },
+    finalCEFR: 'C1',
+    rationale: 'Mature insight, native-level phrasing, and seamless development.',
+    lexicalFeatures: ['encapsulates', 'moral tension', 'environmental degradation', 'innovation', 'digital infrastructure', 'prioritized', 'sustainability', 'metaphor', 'reckoning', 'reconcile', 'stewardship', 'automation', 'regenerate', 'extract'],
+    grammarFeatures: ['elegant structures', 'rhetorical variety', 'complex embedded clauses', 'sophisticated nominalization'],
+    discourseMarkers: ['for centuries', 'from...to', 'over', 'implies', 'urging us to', 'as we enter', 'rather than']
+  },
+
 };
 
 // Export individual functions for accessing samples
