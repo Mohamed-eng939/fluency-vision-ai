@@ -20,7 +20,8 @@ export interface SkillDescriptor {
 }
 
 /**
- * Generate personalized, AI-powered feedback based on actual performance
+ * Generate evidence-based feedback that cites specific elements from the response
+ * This replaces AI-generated feedback with deterministic, rubric-based assessment
  */
 export const generateResponseFeedback = async (
   metrics: AssessmentMetrics,
@@ -30,32 +31,131 @@ export const generateResponseFeedback = async (
   promptText?: string
 ): Promise<ResponseFeedback> => {
   
+  // Require minimum transcript length for reliable feedback
+  const words = transcript.trim().split(/\s+/).filter(w => w.length > 0);
+  if (words.length < 8) {
+    return generateInsufficientDataFeedback(words.length);
+  }
+  
   try {
-    // Call the AI-powered feedback generation
+    // Try AI-powered feedback first, but with evidence requirements
     const { data, error } = await supabase.functions.invoke('personalized-feedback', {
       body: {
         transcript,
         metrics,
         audioAnalysis,
         promptText,
-        cefrLevel
+        cefrLevel,
+        requireEvidence: true, // New flag for evidence-based feedback
+        minCitations: 2 // Require at least 2 specific citations per skill
       }
     });
 
     if (error) {
-      console.error('AI feedback generation failed:', error);
-      return generateFallbackFeedback(metrics, cefrLevel);
+      console.log('AI feedback unavailable, using evidence-based fallback:', error.message);
+      return generateEvidenceBasedFallbackFeedback(metrics, cefrLevel, transcript);
     }
 
-    if (data?.success && data?.feedback) {
+    if (data?.success && data?.feedback && validateFeedbackHasEvidence(data.feedback, transcript)) {
       return data.feedback;
     }
 
-    return generateFallbackFeedback(metrics, cefrLevel);
+    console.log('AI feedback lacks required evidence, using rigorous fallback');
+    return generateEvidenceBasedFallbackFeedback(metrics, cefrLevel, transcript);
   } catch (error) {
-    console.error('Error generating personalized feedback:', error);
-    return generateFallbackFeedback(metrics, cefrLevel);
+    console.log('Error with AI feedback, using evidence-based fallback:', error);
+    return generateEvidenceBasedFallbackFeedback(metrics, cefrLevel, transcript);
   }
+};
+
+/**
+ * Generate feedback for insufficient data cases
+ */
+const generateInsufficientDataFeedback = (wordCount: number): ResponseFeedback => {
+  const baseMessage = `Response too short (${wordCount} words). Provide at least 8-10 words for reliable assessment.`;
+  
+  return {
+    fluency: baseMessage + " Practice speaking in complete sentences.",
+    grammar: baseMessage + " Focus on basic sentence structure.",
+    vocabulary: baseMessage + " Use more varied vocabulary in your response.",
+    coherence: baseMessage + " Organize ideas with connecting words.",
+    pronunciation: baseMessage,
+    prosody: baseMessage,
+    syntax: baseMessage + " Form complete sentences.",
+    overall: `Cannot assess: Response too short. Please provide a more detailed answer (minimum 8-10 words, current: ${wordCount}).`
+  };
+};
+
+/**
+ * Generate rigorous evidence-based fallback feedback that cites specific elements
+ */
+const generateEvidenceBasedFallbackFeedback = (
+  metrics: AssessmentMetrics,
+  cefrLevel: CEFRLevel,
+  transcript: string
+): ResponseFeedback => {
+  
+  // Analyze transcript for specific evidence
+  const words = transcript.toLowerCase().split(/\s+/);
+  const text = transcript.toLowerCase();
+  
+  // Grammar analysis with evidence
+  let grammarFeedback = generateGrammarFeedback(metrics.grammar);
+  if (text.match(/\b(he|she|it)\s+(are|were|have)\b/)) {
+    grammarFeedback += ` Evidence: Found subject-verb disagreement (e.g., "he are").`;
+  }
+  if (text.match(/\b(if|would|could)\b/)) {
+    grammarFeedback += ` Positive: Uses conditional structures.`;
+  }
+  
+  // Vocabulary analysis with evidence
+  let vocabularyFeedback = generateVocabularyFeedback(metrics.vocabulary);
+  const basicWords = words.filter(w => ['good', 'bad', 'nice', 'big', 'small'].includes(w));
+  if (basicWords.length > 0) {
+    vocabularyFeedback += ` Evidence: Relies on basic words like "${basicWords.slice(0, 2).join(', ')}".`;
+  }
+  const advancedWords = words.filter(w => ['furthermore', 'consequently', 'nevertheless'].includes(w));
+  if (advancedWords.length > 0) {
+    vocabularyFeedback += ` Positive: Uses advanced vocabulary like "${advancedWords.join(', ')}".`;
+  }
+  
+  // Coherence analysis with evidence
+  let coherenceFeedback = generateCoherenceFeedback(metrics.coherence);
+  const connectors = text.match(/\b(and|but|so|because|however)\b/g);
+  if (connectors) {
+    coherenceFeedback += ` Evidence: Uses connectors like "${connectors.slice(0, 2).join(', ')}".`;
+  }
+  
+  return {
+    fluency: generateFluentFeedback(metrics.fluency) + ` Response length: ${words.length} words.`,
+    grammar: grammarFeedback,
+    vocabulary: vocabularyFeedback,
+    coherence: coherenceFeedback,
+    pronunciation: generatePronunciationFeedback(metrics.pronunciation),
+    prosody: generateProsodyFeedback(metrics.prosody),
+    syntax: generateSyntaxFeedback(metrics.syntax),
+    overall: generateOverallFeedback(metrics, cefrLevel)
+  };
+};
+
+/**
+ * Validate that AI feedback contains required evidence citations
+ */
+const validateFeedbackHasEvidence = (feedback: ResponseFeedback, transcript: string): boolean => {
+  // Check if feedback contains specific quotes or references to the transcript
+  const feedbackText = Object.values(feedback).join(' ').toLowerCase();
+  const transcriptWords = transcript.toLowerCase().split(/\s+/);
+  
+  // Look for quoted text or specific references
+  const hasQuotes = /["']([^"']{3,})["']/.test(feedbackText);
+  const hasSpecificWords = transcriptWords.some(word => 
+    word.length > 3 && feedbackText.includes(word)
+  );
+  const hasEvidence = feedbackText.includes('evidence:') || 
+                      feedbackText.includes('shows') || 
+                      feedbackText.includes('demonstrates');
+  
+  return hasQuotes || (hasSpecificWords && hasEvidence);
 };
 
 /**

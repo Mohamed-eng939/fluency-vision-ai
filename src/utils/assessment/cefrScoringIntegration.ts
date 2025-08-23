@@ -1,10 +1,10 @@
 /**
  * CEFR Scoring Integration
- * Main integration point for evidence-based CEFR scoring using similarity matching
+ * Main integration point for evidence-based CEFR scoring using similarity matching and rubric validation
  */
 
-import { generateEvidenceBasedAssessment } from './evidenceBasedScoring';
-import { calculateWeightedCEFRLevel } from './embeddingSimilarity';
+import { generateEvidenceBasedFeedback } from './evidenceBasedFeedback';
+import { performBenchmarkComparison } from './benchmarkComparison';
 import { AssessmentMetrics, CEFRLevel } from '../../types/assessment';
 
 export interface CEFRScoringResult {
@@ -22,7 +22,7 @@ export interface CEFRScoringResult {
 }
 
 /**
- * Main function to score a learner response using evidence-based CEFR assessment
+ * Main function to score a learner response using rigorous evidence-based CEFR assessment
  */
 export const scoreResponseWithCEFR = (
   transcript: string,
@@ -30,10 +30,10 @@ export const scoreResponseWithCEFR = (
   audioMetrics?: any
 ): CEFRScoringResult => {
   
-  // Generate evidence-based assessment
-  const assessment = generateEvidenceBasedAssessment(transcript, promptId);
+  // Use the new evidence-based feedback system
+  const evidenceFeedback = generateEvidenceBasedFeedback(transcript, promptId);
   
-  if (!assessment.isReliable) {
+  if (!evidenceFeedback.isReliable) {
     return {
       isReliable: false,
       finalLevel: 'A1',
@@ -50,20 +50,20 @@ export const scoreResponseWithCEFR = (
       feedback: {
         strengths: [],
         improvements: [],
-        evidence: [`Assessment not reliable: ${assessment.reason}`]
+        evidence: [`Assessment not reliable: ${evidenceFeedback.insufficientDataReason}`]
       },
       confidence: 0,
-      reason: assessment.reason
+      reason: evidenceFeedback.insufficientDataReason
     };
   }
   
-  // Extract scores and feedback
-  const grammarScore = assessment.scores.grammar?.score || 5;
-  const vocabularyScore = assessment.scores.vocabulary?.score || 5;
-  const coherenceScore = assessment.scores.coherence?.score || 5;
+  // Extract rubric-based scores
+  const grammarScore = evidenceFeedback.grammar.score;
+  const vocabularyScore = evidenceFeedback.vocabulary.score;
+  const coherenceScore = evidenceFeedback.coherence.score;
   
   // Use audio metrics if available, otherwise estimate from linguistic analysis
-  const fluencyScore = audioMetrics?.fluencyScore || coherenceScore;
+  const fluencyScore = audioMetrics?.fluencyScore || Math.max(4, coherenceScore - 1);
   const pronunciationScore = audioMetrics?.pronunciationScore || 5;
   const prosodyScore = audioMetrics?.prosodyScore || 5;
   const syntaxScore = grammarScore; // Syntax closely related to grammar
@@ -80,52 +80,60 @@ export const scoreResponseWithCEFR = (
   
   // Calculate final score (weighted average)
   const finalScore = (
-    grammarScore * 0.2 +
-    vocabularyScore * 0.2 +
-    coherenceScore * 0.2 +
+    grammarScore * 0.25 +
+    vocabularyScore * 0.25 +
+    coherenceScore * 0.25 +
     fluencyScore * 0.15 +
-    pronunciationScore * 0.1 +
-    prosodyScore * 0.1 +
-    syntaxScore * 0.05
+    syntaxScore * 0.1
   );
   
-  // Collect all feedback
+  // Collect evidence-based feedback
   const allStrengths: string[] = [];
   const allImprovements: string[] = [];
   const allEvidence: string[] = [];
   
-  Object.entries(assessment.scores).forEach(([skill, data]) => {
-    allStrengths.push(...data.strengths.map(s => `${skill}: ${s}`));
-    allImprovements.push(...data.improvements.map(i => `${skill}: ${i}`));
-    allEvidence.push(...data.evidence.map(e => `${skill}: ${e}`));
+  // Grammar citations
+  evidenceFeedback.grammar.citations.forEach(citation => {
+    allStrengths.push(`Grammar: ${citation.analysis}`);
+    allImprovements.push(`Grammar: ${citation.improvement}`);
+    allEvidence.push(`Quote: "${citation.quote}" - ${citation.analysis}`);
   });
   
-  // Calculate confidence based on similarity and transcript quality
-  let confidence = 0.7; // Base confidence
+  // Vocabulary citations  
+  evidenceFeedback.vocabulary.citations.forEach(citation => {
+    allStrengths.push(`Vocabulary: ${citation.analysis}`);
+    allImprovements.push(`Vocabulary: ${citation.improvement}`);
+    allEvidence.push(`Quote: "${citation.quote}" - ${citation.analysis}`);
+  });
   
-  if (promptId) {
-    const similarityResult = calculateWeightedCEFRLevel(transcript, promptId);
-    if (similarityResult) {
-      confidence = Math.min(0.95, similarityResult.confidence + 0.2);
-      allEvidence.push(...similarityResult.evidence);
-    }
+  // Coherence citations
+  evidenceFeedback.coherence.citations.forEach(citation => {
+    allStrengths.push(`Coherence: ${citation.analysis}`);
+    allImprovements.push(`Coherence: ${citation.improvement}`);
+    allEvidence.push(`Quote: "${citation.quote}" - ${citation.analysis}`);
+  });
+  
+  // Add rubric evidence
+  allEvidence.push(...evidenceFeedback.grammar.rubricEvidence.map(e => `Grammar rubric: ${e}`));
+  allEvidence.push(...evidenceFeedback.vocabulary.rubricEvidence.map(e => `Vocabulary rubric: ${e}`));
+  allEvidence.push(...evidenceFeedback.coherence.rubricEvidence.map(e => `Coherence rubric: ${e}`));
+  
+  // Add benchmark comparison if available
+  if (promptId && evidenceFeedback.similarityAnalysis) {
+    allEvidence.push(`Benchmark: ${evidenceFeedback.similarityAnalysis.levelJustification}`);
   }
-  
-  const wordCount = transcript.split(/\s+/).length;
-  if (wordCount < 10) confidence *= 0.7;
-  if (wordCount > 50) confidence = Math.min(0.95, confidence + 0.1);
   
   return {
     isReliable: true,
-    finalLevel: assessment.overallLevel,
+    finalLevel: evidenceFeedback.overallLevel,
     finalScore: Math.round(finalScore * 10) / 10,
     metrics,
     feedback: {
-      strengths: allStrengths,
-      improvements: allImprovements,
-      evidence: allEvidence
+      strengths: allStrengths.slice(0, 5), // Top 5 strengths
+      improvements: allImprovements.slice(0, 5), // Top 5 improvements
+      evidence: allEvidence.slice(0, 8) // Top 8 pieces of evidence
     },
-    confidence: Math.round(confidence * 100) / 100
+    confidence: evidenceFeedback.confidence
   };
 };
 

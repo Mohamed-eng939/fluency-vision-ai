@@ -70,3 +70,12 @@ export {
   calculateCoherenceCriterion,
   calculateDefaultCriterion
 };
+
+// Export rigorous scoring system
+export {
+  performRigorousCEFRAssessment,
+  performBenchmarkComparison,
+  generateEvidenceBasedFeedback,
+  getComprehensiveRubricScore,
+  scoreResponseWithCEFR
+} from './rigorousScoring';
