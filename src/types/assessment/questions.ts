@@ -16,7 +16,7 @@ export interface AssessmentQuestion {
 export interface SpeakingPrompt {
   id: string;
   text: string;
-  category: 'describe' | 'argue' | 'explain' | 'narrate';
+  category: 'describe' | 'argue' | 'explain' | 'narrate' | 'read_aloud';
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   timeLimit: number;
   questionData?: AssessmentQuestion;
@@ -25,4 +25,5 @@ export interface SpeakingPrompt {
   audioUrl?: string;
   imageUrl?: string;
   hint?: string;
+  isReadAloud?: boolean;
 }

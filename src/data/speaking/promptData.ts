@@ -242,5 +242,181 @@ export const speakingPrompts: SpeakingPrompt[] = [
     cefrLevel: 'C1',
     topic: 'Environment',
     hint: 'Analyze the relationship between technological advancement and environmental impact.'
+  },
+
+  // READ ALOUD TASKS (Q24-Q38)
+  // A1 Read Aloud Tasks (Q24-Q26)
+  {
+    id: 'Q24_RA_A1',
+    text: 'Read Aloud Task 1 (A1 Level)',
+    category: 'read_aloud',
+    difficulty: 'beginner',
+    timeLimit: 30,
+    cefrLevel: 'A1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q25_RA_A1',
+    text: 'Read Aloud Task 2 (A1 Level)',
+    category: 'read_aloud',
+    difficulty: 'beginner',
+    timeLimit: 30,
+    cefrLevel: 'A1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q26_RA_A1',
+    text: 'Read Aloud Task 3 (A1 Level)',
+    category: 'read_aloud',
+    difficulty: 'beginner',
+    timeLimit: 30,
+    cefrLevel: 'A1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+
+  // A2 Read Aloud Tasks (Q27-Q29)
+  {
+    id: 'Q27_RA_A2',
+    text: 'Read Aloud Task 1 (A2 Level)',
+    category: 'read_aloud',
+    difficulty: 'beginner',
+    timeLimit: 30,
+    cefrLevel: 'A2',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q28_RA_A2',
+    text: 'Read Aloud Task 2 (A2 Level)',
+    category: 'read_aloud',
+    difficulty: 'beginner',
+    timeLimit: 30,
+    cefrLevel: 'A2',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q29_RA_A2',
+    text: 'Read Aloud Task 3 (A2 Level)',
+    category: 'read_aloud',
+    difficulty: 'beginner',
+    timeLimit: 30,
+    cefrLevel: 'A2',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+
+  // B1 Read Aloud Tasks (Q30-Q32)
+  {
+    id: 'Q30_RA_B1',
+    text: 'Read Aloud Task 1 (B1 Level)',
+    category: 'read_aloud',
+    difficulty: 'intermediate',
+    timeLimit: 30,
+    cefrLevel: 'B1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q31_RA_B1',
+    text: 'Read Aloud Task 2 (B1 Level)',
+    category: 'read_aloud',
+    difficulty: 'intermediate',
+    timeLimit: 30,
+    cefrLevel: 'B1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q32_RA_B1',
+    text: 'Read Aloud Task 3 (B1 Level)',
+    category: 'read_aloud',
+    difficulty: 'intermediate',
+    timeLimit: 30,
+    cefrLevel: 'B1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+
+  // B2 Read Aloud Tasks (Q33-Q35)
+  {
+    id: 'Q33_RA_B2',
+    text: 'Read Aloud Task 1 (B2 Level)',
+    category: 'read_aloud',
+    difficulty: 'intermediate',
+    timeLimit: 30,
+    cefrLevel: 'B2',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q34_RA_B2',
+    text: 'Read Aloud Task 2 (B2 Level)',
+    category: 'read_aloud',
+    difficulty: 'intermediate',
+    timeLimit: 30,
+    cefrLevel: 'B2',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q35_RA_B2',
+    text: 'Read Aloud Task 3 (B2 Level)',
+    category: 'read_aloud',
+    difficulty: 'intermediate',
+    timeLimit: 30,
+    cefrLevel: 'B2',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+
+  // C1 Read Aloud Tasks (Q36-Q38)
+  {
+    id: 'Q36_RA_C1',
+    text: 'Read Aloud Task 1 (C1 Level)',
+    category: 'read_aloud',
+    difficulty: 'advanced',
+    timeLimit: 30,
+    cefrLevel: 'C1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q37_RA_C1',
+    text: 'Read Aloud Task 2 (C1 Level)',
+    category: 'read_aloud',
+    difficulty: 'advanced',
+    timeLimit: 30,
+    cefrLevel: 'C1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
+  },
+  {
+    id: 'Q38_RA_C1',
+    text: 'Read Aloud Task 3 (C1 Level)',
+    category: 'read_aloud',
+    difficulty: 'advanced',
+    timeLimit: 30,
+    cefrLevel: 'C1',
+    topic: 'Pronunciation',
+    hint: 'Read the sentence aloud clearly and naturally.',
+    isReadAloud: true
   }
 ];

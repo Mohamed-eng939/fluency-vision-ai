@@ -96,11 +96,39 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
     case AssessmentStep.RECORDING:
       if (!currentPrompt) return null;
       
+      // If current prompt is a Read Aloud task, redirect to READ_ALOUD step
+      if (currentPrompt.isReadAloud) {
+        return (
+          <ReadAloudAssessmentStep
+            sessionId={sessionId || ''}
+            currentIndex={currentPromptIndex - 23} // Adjust index for Read Aloud (0-14)
+            totalTasks={15} // 3 sentences × 5 CEFR levels
+            onComplete={(result) => {
+              // Store Read Aloud result with complete AudioAnalysisResult structure
+              handleResponseComplete(result.audioBlob || new Blob(), result.transcript, {
+                wpm: 0,
+                totalWords: 0,
+                pauseCount: 0,
+                pauseDuration: 0,
+                pauseRatio: 0,
+                speakingDuration: 0,
+                totalDuration: 0,
+                readAloudScore: result.score,
+                pronunciationScore: result.score,
+                band: result.band
+              });
+            }}
+            onNext={skipToNextPrompt}
+            onFinish={() => finishAssessment(finalResult)}
+          />
+        );
+      }
+      
       return (
         <RecordingStep 
           prompt={currentPrompt}
           currentIndex={currentPromptIndex}
-          totalPrompts={totalPrompts}
+          totalPrompts={23} // Only count free response questions
           onRecordingComplete={handleResponseComplete}
           onPause={() => {}} // This would be implemented for pausing functionality
           onFinishNow={() => finishAssessment(finalResult)}
@@ -110,16 +138,17 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
       );
 
     case AssessmentStep.READ_ALOUD:
-      if (!sessionId) return null;
+      if (!sessionId || !currentPrompt) return null;
       
       return (
         <ReadAloudAssessmentStep
           sessionId={sessionId}
-          currentIndex={currentPromptIndex}
+          currentIndex={currentPromptIndex - 23} // Adjust index for Read Aloud (0-14)
           totalTasks={15} // 3 sentences × 5 CEFR levels
+          cefrLevel={currentPrompt.cefrLevel || 'A1'}
           onComplete={(result) => {
             // Store Read Aloud result with complete AudioAnalysisResult structure
-            handleResponseComplete(result.audioBlob, result.transcript, {
+            handleResponseComplete(result.audioBlob || new Blob(), result.transcript, {
               wpm: 0,
               totalWords: 0,
               pauseCount: 0,
