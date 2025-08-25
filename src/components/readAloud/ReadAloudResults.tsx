@@ -3,12 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ReadAloudResult } from '@/data/readAloud/sentenceBank';
 import { aggregateReadAloudScores } from '@/utils/readAloud/pronunciationScoring';
+import { IPAComparisonComponent } from '@/components/assessment/IPAComparison';
+import { generateIPATranscription, compareIPATranscriptions } from '@/utils/ipa/ipaTranscriptionService';
 
 interface ReadAloudResultsProps {
   results: ReadAloudResult[];
+  sentences?: Array<{ id: string; sentence: string; ipa?: string; }>;
 }
 
-export const ReadAloudResults: React.FC<ReadAloudResultsProps> = ({ results }) => {
+export const ReadAloudResults: React.FC<ReadAloudResultsProps> = ({ results, sentences = [] }) => {
   const aggregated = aggregateReadAloudScores(results);
   
   return (
@@ -52,6 +55,36 @@ export const ReadAloudResults: React.FC<ReadAloudResultsProps> = ({ results }) =
             ))}
           </div>
         </div>
+
+        {/* IPA Comparisons */}
+        {results.map((result, index) => {
+          const sentence = sentences.find(s => s.id === result.sentenceId);
+          if (!sentence || !result.expectedIPA || !result.actualIPA) return null;
+
+          const expectedTranscription = {
+            text: sentence.sentence,
+            ipa: result.expectedIPA,
+            words: []
+          };
+          
+          const actualTranscription = {
+            text: sentence.sentence,
+            ipa: result.actualIPA,
+            words: []
+          };
+
+          const comparison = compareIPATranscriptions(expectedTranscription, actualTranscription);
+
+          return (
+            <div key={`ipa-${result.sentenceId}`}>
+              <h4 className="font-medium mb-2">Sentence {index + 1} - IPA Analysis:</h4>
+              <IPAComparisonComponent
+                comparison={comparison}
+                sentence={sentence.sentence}
+              />
+            </div>
+          );
+        }).filter(Boolean)}
       </CardContent>
     </Card>
   );

@@ -20,6 +20,15 @@ export interface PronunciationResponse {
   total_phones: number;
   aligned_phones: number;
   duration_seconds: number;
+  // New IPA fields
+  expected_ipa?: string;
+  actual_ipa?: string;
+  ipa_alignment?: Array<{
+    expected_phoneme: string;
+    actual_phoneme: string;
+    position: number;
+    accuracy: number;
+  }>;
 }
 
 // Configuration object for the API

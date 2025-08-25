@@ -2,6 +2,7 @@ export interface ReadAloudSentence {
   id: string;
   sentence: string;
   band: 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
+  ipa?: string;
   exampleErrors?: string[];
   feedback?: string[];
 }
@@ -22,6 +23,9 @@ export interface ReadAloudResult {
   errors: ReadAloudError[];
   transcription?: string;
   confidence?: number;
+  expectedIPA?: string;
+  actualIPA?: string;
+  ipaAccuracy?: number;
 }
 
 // A1 Sentence Bank
