@@ -75,19 +75,13 @@ export const aggregateReadAloudScores = (
 };
 
 /**
- * Map pronunciation score to CEFR level
+ * Map pronunciation score to CEFR level using pronunciation-specific ranges
  */
 const determineCEFRFromPronunciationScore = (score: number): string => {
-  if (score >= 9.0) return 'C2';
-  if (score >= 8.5) return 'C1+';
-  if (score >= 8.0) return 'C1';
-  if (score >= 7.5) return 'B2+';
-  if (score >= 7.0) return 'B2';
-  if (score >= 6.5) return 'B1+';
-  if (score >= 6.0) return 'B1';
-  if (score >= 5.5) return 'A2+';
-  if (score >= 5.0) return 'A2';
-  if (score >= 4.0) return 'A1+';
+  if (score >= 7.5) return 'C1';
+  if (score >= 6.5) return 'B2';
+  if (score >= 5.5) return 'B1';
+  if (score >= 4.5) return 'A2';
   if (score >= 3.0) return 'A1';
   return 'Pre-A1';
 };
