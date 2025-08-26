@@ -4,22 +4,37 @@ import { AudioValidationResult } from './types';
 
 export const useAudioValidation = () => {
   const validateAudioBlob = (audioBlob: Blob, recordingTime: number): AudioValidationResult => {
+    console.log('Validating audio blob:', {
+      size: audioBlob.size,
+      type: audioBlob.type,
+      recordingTime
+    });
+    
     // Enhanced validation with user feedback
-    if (audioBlob.size === 0) {
+    if (!audioBlob || audioBlob.size === 0) {
       console.error("Audio blob is empty - cannot submit");
       return {
         isValid: false,
         errorTitle: "Recording Error",
-        errorMessage: "The audio recording is empty. Please try recording again."
+        errorMessage: "The audio recording is empty. Please check your microphone and try recording again."
       };
     }
     
-    // Minimum recording length check
-    if (audioBlob.size < 1000) { // Less than ~1KB indicates very short recording
+    // Minimum recording length check - reduced threshold for compressed audio
+    if (audioBlob.size < 100) { // Very small threshold to account for different formats
       return {
         isValid: false,
         errorTitle: "Recording Too Short",
-        errorMessage: "Please record a longer response (at least 3-5 seconds)."
+        errorMessage: "The recording appears to be too short. Please record a longer response."
+      };
+    }
+    
+    // Check recording duration
+    if (recordingTime < 1) {
+      return {
+        isValid: false,
+        errorTitle: "Recording Too Short", 
+        errorMessage: "Please record for at least 1 second."
       };
     }
     

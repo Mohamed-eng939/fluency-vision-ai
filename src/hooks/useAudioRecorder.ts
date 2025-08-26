@@ -26,17 +26,40 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
   
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
       streamRef.current = stream;
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      
+      // Determine supported MIME type
+      let mimeType = 'audio/webm';
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        mimeType = 'audio/webm;codecs=opus';
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
+      } else if (MediaRecorder.isTypeSupported('audio/wav')) {
+        mimeType = 'audio/wav';
+      }
+      
+      console.log('Using MediaRecorder with MIME type:', mimeType);
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType });
       audioChunksRef.current = [];
       
       mediaRecorderRef.current.ondataavailable = (e) => {
-        audioChunksRef.current.push(e.data);
+        console.log('Data available, chunk size:', e.data.size);
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
       };
       
       mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        console.log('MediaRecorder stopped, chunks:', audioChunksRef.current.length);
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        console.log('Created blob, size:', audioBlob.size);
         setAudioBlob(audioBlob);
         
         // Process audio features
@@ -66,7 +89,8 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         }
       };
       
-      mediaRecorderRef.current.start();
+      // Start recording with time slices to ensure data events fire
+      mediaRecorderRef.current.start(1000); // Request data every 1000ms
       setIsRecording(true);
       setRecordingTime(0);
       
