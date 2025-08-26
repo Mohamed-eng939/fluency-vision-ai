@@ -6,11 +6,12 @@ import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
 import { StoredResponse, ProcessingProgress } from './types';
 import { calculateAggregatedResult } from './responseAggregation';
 import { useSupabaseStorage } from '../useSupabaseStorage';
-
+import { useAudioUpload } from '@/hooks/useAudioUpload';
 export const useResponseBatchProcessor = () => {
   const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress>({ current: 0, total: 0 });
   const { storePromptResponse, storeFinalAssessment } = useSupabaseStorage();
+  const { uploadAudio } = useAudioUpload();
 
   /**
    * Process all stored responses in batch at test completion
@@ -50,14 +51,24 @@ export const useResponseBatchProcessor = () => {
           // Apply CEFR calibration
           const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis);
           
-          // Store individual response in database
+          // Upload audio to storage and store individual response in database
+          let audioPath: string | undefined = undefined;
+          if (response.audioBlob) {
+            const upload = await uploadAudio(response.audioBlob, sessionId);
+            if (upload.path) {
+              audioPath = upload.path;
+            } else if (upload.error) {
+              console.warn('Audio upload failed for this response:', upload.error);
+            }
+          }
+
           await storePromptResponse(
             sessionId,
             response.prompt,
             enhancedResult,
             index,
             response.transcript,
-            response.audioBlob ? URL.createObjectURL(response.audioBlob) : undefined
+            audioPath
           );
           
           processedHistory.push({

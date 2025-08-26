@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { VoiceActivityDetector } from '@/utils/speechAnalysisUtils';
 import { analyzeAudioFeatures, AudioAnalysisResult } from '@/utils/audioAnalysisUtils';
+import { convertToWav } from '@/utils/audio/convertToWav';
 
 interface UseAudioRecorderOptions {
   onRecordingComplete?: (blob: Blob, analysis?: AudioAnalysisResult) => void;
@@ -60,16 +61,31 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         console.log('MediaRecorder stopped, chunks:', audioChunksRef.current.length);
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         console.log('Created blob, size:', audioBlob.size);
-        setAudioBlob(audioBlob);
+        
+        // Ensure cross-browser playback compatibility
+        let finalBlob = audioBlob;
+        const audioElem = document.createElement('audio');
+        const support = audioElem.canPlayType(mimeType as any);
+        if (!support) {
+          console.warn('Browser cannot play recorded MIME type', mimeType, '- converting to WAV');
+          try {
+            finalBlob = await convertToWav(audioBlob);
+            console.log('Converted to WAV, size:', finalBlob.size);
+          } catch (convErr) {
+            console.error('Failed to convert audio to WAV:', convErr);
+          }
+        }
+
+        setAudioBlob(finalBlob);
         
         // Process audio features
         setIsProcessing(true);
         try {
-          const analysis = await analyzeAudioFeatures(audioBlob);
+          const analysis = await analyzeAudioFeatures(finalBlob);
           setAudioAnalysis(analysis);
           
           if (options.onRecordingComplete) {
-            options.onRecordingComplete(audioBlob, analysis);
+            options.onRecordingComplete(finalBlob, analysis);
           }
         } catch (error) {
           console.error("Error analyzing audio:", error);

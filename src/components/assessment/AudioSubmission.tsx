@@ -18,7 +18,10 @@ const AudioSubmission: React.FC<AudioSubmissionProps> = ({
   return (
     <div className="space-y-4">
       <div>
-        <audio controls src={URL.createObjectURL(audioBlob)} className="w-full"></audio>
+        <audio controls className="w-full">
+          <source src={URL.createObjectURL(audioBlob)} type={audioBlob.type || 'audio/webm'} />
+          Your browser does not support the audio element.
+        </audio>
       </div>
       
       {transcript && (
