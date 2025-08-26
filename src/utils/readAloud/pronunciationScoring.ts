@@ -1,4 +1,7 @@
 import { ReadAloudError, ReadAloudResult } from '@/data/readAloud/sentenceBank';
+import { calculateDeterministicScore, determineBandFromSentence } from './deterministicScoring';
+import { aggregateReadAloudScores as aggregateWithBandWeights } from './aggregationSystem';
+import { IPAError } from './types';
 
 export interface PronunciationAnalysis {
   words: string[];
@@ -82,6 +85,65 @@ const REGIONAL_ERROR_PATTERNS: RegionalErrorPattern[] = [
   }
 ];
 
+/**
+ * New deterministic IPA-based pronunciation scoring (preferred method)
+ */
+export const scoreReadAloudWithIPA = (
+  referenceSentence: string,
+  transcription: string,
+  ipaErrors: IPAError[],
+  phonemeAccuracy: number,
+  wordAccuracy: number,
+  stressAccuracy: number = 0.5,
+  articulationRate: number,
+  pauseRatio: number,
+  speakingTime: number,
+  asrConfidence: number,
+  audioAnalysis?: PronunciationAnalysis
+): ReadAloudResult => {
+  const totalPhones = referenceSentence.length * 2.5; // Rough estimate
+  const band = determineBandFromSentence(referenceSentence.length);
+  
+  const analysis = calculateDeterministicScore(
+    phonemeAccuracy,
+    wordAccuracy,
+    stressAccuracy,
+    articulationRate,
+    pauseRatio,
+    ipaErrors,
+    totalPhones,
+    band,
+    speakingTime,
+    asrConfidence,
+    transcription.split(/\s+/).length
+  );
+  
+  // Convert IPA errors to ReadAloud errors format
+  const errors: ReadAloudError[] = ipaErrors.map(error => ({
+    type: error.type as any,
+    position: error.position,
+    expected: error.expected,
+    actual: error.actual,
+    description: `${error.type}: ${error.phoneme} (severity: ${error.severity.toFixed(2)})`
+  }));
+  
+  return {
+    sentenceId: '',
+    score: analysis.adjustedScore / 2, // Convert from 0-10 to 0-5 scale
+    errors,
+    transcription,
+    confidence: asrConfidence
+  };
+};
+
+/**
+ * Export the new band-weighted aggregation system
+ */
+export { aggregateWithBandWeights };
+
+/**
+ * Legacy scoring function (maintained for backwards compatibility)
+ */
 export const scoreReadAloudSentence = (
   referenceSentence: string,
   transcription: string,
