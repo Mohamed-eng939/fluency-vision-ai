@@ -31,10 +31,25 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
+          autoGainControl: true,
+          channelCount: 1
         }
       });
       streamRef.current = stream;
+      
+      // Monitor microphone track state
+      const firstTrack = stream.getAudioTracks()[0];
+      if (firstTrack) {
+        try {
+          const settings = (firstTrack as any).getSettings ? (firstTrack as any).getSettings() : {};
+          console.log('Audio track settings:', settings);
+        } catch {}
+        firstTrack.onmute = () => console.warn('Microphone track muted by the system or browser');
+        firstTrack.onunmute = () => console.log('Microphone track unmuted');
+        if ((firstTrack as any).muted) {
+          console.warn('Microphone track currently muted. Please check OS/browser input settings.');
+        }
+      }
       
       // Determine supported MIME type
       let mimeType = 'audio/webm';
@@ -47,7 +62,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
       }
       
       console.log('Using MediaRecorder with MIME type:', mimeType);
-      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 });
       audioChunksRef.current = [];
       
       mediaRecorderRef.current.ondataavailable = (e) => {

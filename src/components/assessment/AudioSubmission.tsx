@@ -15,11 +15,24 @@ const AudioSubmission: React.FC<AudioSubmissionProps> = ({
   onSubmit,
   onReset
 }) => {
+  const audioUrl = React.useMemo(() => {
+    try {
+      return URL.createObjectURL(audioBlob);
+    } catch {
+      return '';
+    }
+  }, [audioBlob]);
+
+  React.useEffect(() => {
+    return () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+  }, [audioUrl]);
+
   return (
     <div className="space-y-4">
       <div>
-        <audio controls className="w-full">
-          <source src={URL.createObjectURL(audioBlob)} type={audioBlob.type || 'audio/webm'} />
+        <audio controls className="w-full" src={audioUrl} preload="auto" playsInline>
           Your browser does not support the audio element.
         </audio>
       </div>
