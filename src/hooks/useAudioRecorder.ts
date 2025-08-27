@@ -62,18 +62,18 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         console.log('Created blob, size:', audioBlob.size);
         
-        // Ensure cross-browser playback compatibility
+        // Normalize to WAV for consistent playback across browsers
         let finalBlob = audioBlob;
-        const audioElem = document.createElement('audio');
-        const support = audioElem.canPlayType(mimeType as any);
-        if (!support) {
-          console.warn('Browser cannot play recorded MIME type', mimeType, '- converting to WAV');
-          try {
-            finalBlob = await convertToWav(audioBlob);
-            console.log('Converted to WAV, size:', finalBlob.size);
-          } catch (convErr) {
-            console.error('Failed to convert audio to WAV:', convErr);
+        try {
+          const wavBlob = await convertToWav(audioBlob);
+          if (wavBlob && wavBlob.size > 0) {
+            finalBlob = wavBlob;
+            console.log('Normalized recording to WAV, size:', finalBlob.size);
+          } else {
+            console.warn('WAV conversion returned empty blob, keeping original recording');
           }
+        } catch (convErr) {
+          console.error('Failed to convert audio to WAV, keeping original:', convErr);
         }
 
         setAudioBlob(finalBlob);
