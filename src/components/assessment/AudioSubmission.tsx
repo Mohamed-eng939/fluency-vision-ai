@@ -29,20 +29,14 @@ const AudioSubmission: React.FC<AudioSubmissionProps> = ({
     };
   }, [audioUrl]);
 
-  return (
-    <div className="space-y-4">
-      <div>
-        <audio
-          key={audioUrl}
-          controls
-          className="w-full"
-          preload="auto"
-          playsInline
-          src={audioUrl}
-        >
-          Your browser does not support the audio element.
-        </audio>
-      </div>
+    return (
+      <div className="space-y-4">
+        <div>
+          <audio controls className="w-full" preload="auto" playsInline>
+            <source src={audioUrl} type={audioBlob?.type || 'audio/wav'} />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
       
       {transcript && (
         <div className="bg-gray-50 p-3 rounded-md text-sm">
