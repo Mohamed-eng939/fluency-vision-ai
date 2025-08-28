@@ -33,8 +33,8 @@ export const useRecordingSubmission = (callbacks: RecordingFlowCallbacks) => {
         pauseCount: 0,
         pauseDuration: 0,
         pauseRatio: 0,
-        speakingDuration: recordingTime / 1000, // Convert to seconds
-        totalDuration: recordingTime / 1000
+        speakingDuration: recordingTime, // seconds
+        totalDuration: recordingTime
       };
       
       callbacks.onRecordingComplete(audioBlob, transcript, minimalAnalysis);
