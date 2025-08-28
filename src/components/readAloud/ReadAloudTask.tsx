@@ -45,14 +45,14 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
   
   // Update progress
   useEffect(() => {
-    if (session && onProgress) {
+    if (session && session.selectedSentences && onProgress) {
       onProgress(session.currentIndex, session.selectedSentences.length);
     }
   }, [session, onProgress]);
   
   // Handle task completion
   useEffect(() => {
-    if (session && session.isCompleted && session.completedSentences.length > 0) {
+    if (session && session.selectedSentences && session.isCompleted && session.completedSentences.length > 0) {
       onComplete(session.completedSentences);
     }
   }, [session, onComplete]);
@@ -168,7 +168,9 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
     );
   }
   
-  const progress = (session.currentIndex / session.selectedSentences.length) * 100;
+  const progress = session?.selectedSentences?.length 
+    ? (session.currentIndex / session.selectedSentences.length) * 100 
+    : 0;
   
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -176,7 +178,7 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
         <CardTitle className="flex items-center justify-between">
           <span>Read Aloud Task</span>
           <span className="text-sm font-normal text-muted-foreground">
-            {session.currentIndex + 1} of {session.selectedSentences.length}
+            {session.currentIndex + 1} of {session.selectedSentences?.length || 0}
           </span>
         </CardTitle>
         <Progress value={progress} className="w-full" />
