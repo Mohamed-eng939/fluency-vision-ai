@@ -32,8 +32,14 @@ const AudioSubmission: React.FC<AudioSubmissionProps> = ({
   return (
     <div className="space-y-4">
       <div>
-        <audio controls className="w-full" preload="auto" playsInline>
-          <source src={audioUrl} type={audioBlob?.type || 'audio/wav'} />
+        <audio
+          key={audioUrl}
+          controls
+          className="w-full"
+          preload="auto"
+          playsInline
+          src={audioUrl}
+        >
           Your browser does not support the audio element.
         </audio>
       </div>
