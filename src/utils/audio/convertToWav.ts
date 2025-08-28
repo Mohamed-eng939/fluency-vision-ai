@@ -9,6 +9,33 @@ export const convertToWav = async (blob: Blob): Promise<Blob> => {
   const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
+  // Quick silence/health check using RMS (downsampled for performance)
+  let sumSquares = 0;
+  const channelsToCheck = Math.min(audioBuffer.numberOfChannels, 2);
+  const len = audioBuffer.length;
+  const step = 256; // check every 256th sample
+  for (let ch = 0; ch < channelsToCheck; ch++) {
+    const data = audioBuffer.getChannelData(ch);
+    for (let i = 0; i < len; i += step) {
+      const v = data[i];
+      sumSquares += v * v;
+    }
+  }
+  const samplesCount = Math.max(1, Math.ceil(len / step) * channelsToCheck);
+  const rms = Math.sqrt(sumSquares / samplesCount);
+  console.log('WAV conversion: decoded buffer', {
+    channels: audioBuffer.numberOfChannels,
+    sampleRate: audioBuffer.sampleRate,
+    length: audioBuffer.length,
+    rms
+  });
+
+  // If decoded audio appears near-silent, keep original encoding to avoid producing a silent WAV
+  if (rms < 0.0005) {
+    console.warn('Decoded audio is near-silent (RMS below threshold); returning original blob');
+    return blob;
+  }
+
   const numChannels = audioBuffer.numberOfChannels;
   const sampleRate = audioBuffer.sampleRate;
   const length = audioBuffer.length;
