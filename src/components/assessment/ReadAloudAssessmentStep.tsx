@@ -38,12 +38,11 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
     const taskInLevel = index % tasksPerLevel;
     
     const sentenceGroups = [a1Sentences, a2Sentences, b1Sentences, b2Sentences, c1Sentences];
-    const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
     
     if (levelIndex < sentenceGroups.length) {
-      const sentences = sentenceGroups[levelIndex];
-      if (taskInLevel < sentences.length) {
-        return sentences[taskInLevel];
+      const sentences = sentenceGroups[levelIndex] ?? [];
+      if (Array.isArray(sentences) && taskInLevel < sentences.length) {
+        return sentences[taskInLevel] ?? null;
       }
     }
     return null;
