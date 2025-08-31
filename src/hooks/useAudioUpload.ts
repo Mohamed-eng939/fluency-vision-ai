@@ -25,15 +25,17 @@ export const useAudioUpload = () => {
       // Try Edge Function first
       const response = await audioService.uploadAudio(audioBlob, assessmentId, promptId);
       
-      if (response.success) {
-        setProgress(100);
-        return { path: response.path || null, error: null };
-      } else {
-        // Fallback to direct upload
-        console.warn('Edge Function failed, falling back to direct upload:', response.error);
+       if (response.success) {
+         setProgress(100);
+         console.info('[UPLOAD_OK]', { path: response.path, url: response.url });
+         return { path: response.path || null, error: null };
+       } else {
+         // Fallback to direct upload
+         console.warn('[UPLOAD_FAIL] Edge Function failed, falling back to direct upload:', response.error);
         
-        const fileName = `${assessmentId}/${uuidv4()}.webm`;
-        const filePath = `audio-recordings/${fileName}`;
+         const ext = audioBlob.type?.includes('wav') ? 'wav' : 'webm';
+         const tail = promptId ? `read_aloud/${promptId}-${Date.now()}` : uuidv4();
+         const filePath = `audio-recordings/${assessmentId}/${tail}.${ext}`;
         
         const { data, error } = await supabase.storage
           .from('assessment-audio')

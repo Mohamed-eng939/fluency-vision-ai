@@ -33,13 +33,16 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
     reset
   } = useReadAloudTask();
   
-  const { isRecording, startRecording, stopRecording, audioBlob } = useAudioRecorder();
+  const { isRecording, startRecording, stopRecording, audioBlob, recordingTime, resetRecording } = useAudioRecorder();
   const { transcript, isListening, startListening, stopListening } = useSpeechRecognition();
   const { uploadAudio } = useAudioUpload();
   const { storePromptResponse } = useSupabaseStorage();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [watchdogFired, setWatchdogFired] = useState(false);
+  const watchdogRef = React.useRef<number | null>(null);
+  const [lastError, setLastError] = useState<string | null>(null);
   
   // Initialize task on mount
   useEffect(() => {
@@ -53,64 +56,126 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
     if (session && session.selectedSentences && onProgress) {
       onProgress(session.currentIndex, session.selectedSentences.length);
     }
-  }, [session, onProgress]);
+   }, [session, onProgress]);
+  
+  // Log init for each RA item
+  useEffect(() => {
+    if (session && currentSentence) {
+      console.info('[RA_INIT]', {
+        sessionId,
+        readAloudIndex: session.currentIndex,
+        total: session.selectedSentences?.length,
+        sentence_id: currentSentence.id,
+        band: currentSentence.band
+      });
+    }
+  }, [session, currentSentence, sessionId]);
   
   // Handle task completion
   useEffect(() => {
     if (session && session.selectedSentences && session.isCompleted && session.completedSentences.length > 0) {
       onComplete(session.completedSentences);
     }
-  }, [session, onComplete]);
+   }, [session, onComplete]);
+  
+  // Log when blob becomes available
+  useEffect(() => {
+    if (audioBlob) {
+      console.info('[REC_STOP]', { size: audioBlob.size, type: audioBlob.type, durationSec: recordingTime });
+    }
+  }, [audioBlob, recordingTime]);
+
+  // Cleanup watchdog on unmount
+  useEffect(() => {
+    return () => {
+      if (watchdogRef.current) {
+        window.clearTimeout(watchdogRef.current);
+      }
+    };
+  }, []);
   
   const handleStartRecording = async () => {
     if (!currentSentence) return;
-    
     try {
-      await startRecording();
-      startListening();
+      setLastError(null);
+      setWatchdogFired(false);
+      resetRecording();
+      const ok = await startRecording();
+      if (ok) {
+        console.info('[REC_START]', { mime: 'auto', band: currentSentence.band, sentence_id: currentSentence.id });
+        startListening();
+      } else {
+        console.warn('[REC_START_FAIL] getUserMedia failed');
+      }
     } catch (error) {
-      console.error('Failed to start recording:', error);
+      console.error('[REC_START_FAIL]', error);
     }
   };
   
   const handleStopRecording = async () => {
-    stopRecording();
-    stopListening();
+    try {
+      console.info('[REC_STOP_REQUEST]');
+      stopRecording();
+      stopListening();
+    } catch (e) {
+      console.error('[REC_STOP_FAIL]', e);
+    }
   };
   
   const handleSubmitRecording = async () => {
-    if (!currentSentence || !audioBlob) return;
+    if (!currentSentence || !audioBlob) {
+      console.warn('[SUBMIT_ABORT] Missing sentence or audioBlob');
+      return;
+    }
+
     setIsProcessing(true);
+    setLastError(null);
+
+    // Start watchdog
+    if (watchdogRef.current) window.clearTimeout(watchdogRef.current);
+    watchdogRef.current = window.setTimeout(() => {
+      console.warn('[WATCHDOG] Submission taking too long, showing Retry/Skip');
+      setWatchdogFired(true);
+    }, 20000);
 
     try {
-      // 1) Score the pronunciation locally
+      // Optional duration guard
+      if (typeof recordingTime === 'number' && recordingTime < 1) {
+        console.warn('[REC_SHORT] durationSec < 1s');
+      }
+
+      // 1) Score locally
       const raScore = scoreReadAloudSentence(
         currentSentence.sentence,
         transcript || '',
         {
           words: transcript ? transcript.split(' ') : [],
-          confidenceScores: [0.8], // Placeholder - would come from actual ASR
+          confidenceScores: [0.8],
           speechRate: 120,
           pauseCount: 0,
-          totalDuration: 5000,
-          speakingDuration: 4500
+          totalDuration: Math.max(1, recordingTime) * 1000,
+          speakingDuration: Math.max(1, recordingTime - 0.2) * 1000
         }
       );
       raScore.sentenceId = currentSentence.id;
 
-      // 2) Upload audio to storage (Edge Function first, fallback to direct storage)
-      let audioPath: string | undefined;
+      // 2) Upload audio
+      console.info('[UPLOAD_BEGIN]', { assessmentId: sessionId, sentenceId: currentSentence.id, size: audioBlob.size, type: audioBlob.type });
+      let audioPath: string | null = null;
       try {
         const upload = await uploadAudio(audioBlob, sessionId, currentSentence.id);
-        audioPath = upload.path || undefined;
-        if (!audioPath) {
-          console.warn('Read Aloud upload failed; proceeding with warning');
+        audioPath = upload.path || null;
+        if (audioPath) {
+          console.info('[UPLOAD_OK]', { path: audioPath });
+        } else {
+          console.warn('[UPLOAD_FAIL] No path returned');
         }
-      } catch (e) {
-        console.error('Read Aloud upload exception:', e);
+      } catch (e: any) {
+        console.error('[UPLOAD_FAIL]', e?.message || e);
+        setLastError(e?.message || String(e));
       }
 
-      // 3) Store response row in Supabase "responses"
+      // 3) Prepare response
       const difficulty = (currentSentence.band === 'A1' || currentSentence.band === 'A2')
         ? 'beginner'
         : (currentSentence.band === 'B1' || currentSentence.band === 'B2')
@@ -128,7 +193,10 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
         topic: 'Read Aloud'
       };
 
-      const pron = Math.max(0, Math.min(100, raScore.score * 20)); // 0-5 -> 0-100
+      const pron = Math.max(0, Math.min(100, raScore.score * 20));
+      const errorFlags: string[] = [];
+      if (!audioPath) errorFlags.push('upload_failed');
+
       const raResult: AssessmentResult = {
         metrics: {
           fluency: 0,
@@ -149,53 +217,105 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
           syntax: '',
           coherence: '',
           prosody: '',
-          overall: `Read Aloud (${currentSentence.band})`
+          overall: `Read Aloud (${currentSentence.band})${errorFlags.length ? ' | flags: ' + errorFlags.join(',') : ''}`
         },
         transcript: transcript || '',
-        audioUrl: audioPath
+        audioUrl: audioPath || undefined
       };
 
+      // 4) Store response row
+      let saved = false;
       try {
-        await storePromptResponse(
+        const ok = await storePromptResponse(
           sessionId,
           raPrompt,
           raResult,
           session?.currentIndex || 0,
           transcript || '',
-          audioPath
+          audioPath || undefined
         );
-      } catch (e) {
-        console.error('Failed to store Read Aloud response:', e);
+        saved = !!ok;
+        if (saved) console.info('[SAVE_OK]');
+        else console.warn('[SAVE_FAIL] storePromptResponse returned false');
+      } catch (e: any) {
+        console.error('[SAVE_FAIL]', e?.message || e);
+        setLastError(e?.message || String(e));
       }
 
-      // 4) Keep internal RA session results for UI flow
+      // 5) Advance flow regardless
       submitResult(raScore);
-
       const hasMore = moveToNext();
-      if (!hasMore) {
-        console.log('Read Aloud task completed');
-      }
-    } catch (error) {
-      console.error('Error processing Read Aloud recording:', error);
+      console.info(hasMore ? '[ADVANCE]' : '[DONE]', {
+        from: session?.currentIndex,
+        to: (session?.currentIndex || 0) + 1
+      });
+
+      // Reset local recorder for next item
+      resetRecording();
+      setWatchdogFired(false);
+
+    } catch (error: any) {
+      console.error('[SUBMIT_FAIL]', error?.message || error);
+      setLastError(error?.message || String(error));
     } finally {
       setIsProcessing(false);
+      if (watchdogRef.current) {
+        window.clearTimeout(watchdogRef.current);
+      }
     }
   };
   
-  const handleSkip = () => {
+  const handleSkip = async () => {
     if (!currentSentence) return;
-    
-    // Submit a minimal result for skipped sentence
+
     const skippedResult: ReadAloudResult = {
       sentenceId: currentSentence.id,
       score: 0,
       errors: [{ type: 'omission', description: 'Sentence skipped' }],
-      transcription: '',
+      transcription: transcript || '',
       confidence: 0
     };
-    
+
+    // Try to store a minimal response as well
+    try {
+      const raPrompt: SpeakingPrompt = {
+        id: `RA-${currentSentence.id}`,
+        text: currentSentence.sentence,
+        category: 'read_aloud',
+        difficulty: (currentSentence.band === 'A1' || currentSentence.band === 'A2') ? 'beginner' : (currentSentence.band === 'B1' || currentSentence.band === 'B2') ? 'intermediate' : 'advanced',
+        timeLimit: 60,
+        cefrLevel: currentSentence.band as any,
+        isReadAloud: true,
+        topic: 'Read Aloud'
+      };
+
+      const raResult: AssessmentResult = {
+        metrics: { fluency: 0, grammar: 0, pronunciation: 0, vocabulary: 0, syntax: 0, coherence: 0, prosody: 0 },
+        totalScore: 0,
+        cefrLevel: currentSentence.band as any,
+        feedback: { fluency: '', grammar: '', pronunciation: 'Skipped', vocabulary: '', syntax: '', coherence: '', prosody: '', overall: 'Skipped | flags: skipped' },
+        transcript: transcript || '',
+        audioUrl: undefined
+      };
+
+      const ok = await storePromptResponse(
+        sessionId,
+        raPrompt,
+        raResult,
+        session?.currentIndex || 0,
+        transcript || '',
+        undefined
+      );
+      if (ok) console.info('[SAVE_OK] skipped');
+      else console.warn('[SAVE_FAIL] skipped');
+    } catch (e) {
+      console.error('[SAVE_FAIL] skipped', e);
+    }
+
     submitResult(skippedResult);
-    moveToNext();
+    const hasMore = moveToNext();
+    console.info(hasMore ? '[ADVANCE]' : '[DONE]');
+    resetRecording();
   };
   
   if (!session || !currentSentence) {
@@ -348,6 +468,20 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
             Skip this sentence
           </Button>
         </div>
+
+        {/* Watchdog fallback UI */}
+        {watchdogFired && (
+          <div className="p-4 rounded-md border border-destructive/30 bg-destructive/5 space-y-3">
+            <div className="text-sm">Submission is taking longer than expected.</div>
+            <div className="flex gap-2">
+              <Button onClick={handleSubmitRecording} disabled={isProcessing} className="flex-1">Retry Submit</Button>
+              <Button onClick={handleSkip} variant="outline" disabled={isProcessing} className="flex-1">Skip</Button>
+            </div>
+            {lastError && (
+              <div className="text-xs text-muted-foreground break-words">Last error: {lastError}</div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
