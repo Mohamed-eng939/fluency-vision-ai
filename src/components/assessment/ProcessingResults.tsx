@@ -24,7 +24,7 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
     { icon: BarChart, label: "Generating comprehensive CEFR assessment", step: 4 }
   ];
   
-  const currentStepIndex = Math.floor((current / total) * processingSteps.length);
+  const currentStepIndex = total > 0 ? Math.floor((current / total) * processingSteps.length) : 0;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

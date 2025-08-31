@@ -106,8 +106,11 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
           <ReadAloudTask
             sessionId={sessionId}
             onComplete={(results) => {
-              if (results.length > 0) {
+              if (Array.isArray(results) && results.length > 0) {
                 handleTaskComplete(results[results.length - 1]);
+              } else if (results && !Array.isArray(results)) {
+                // Fallback: handle single result object
+                handleTaskComplete(results);
               }
             }}
             onProgress={(current, total) => {

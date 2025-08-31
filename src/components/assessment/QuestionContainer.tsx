@@ -16,7 +16,7 @@ const QuestionContainer: React.FC<QuestionContainerProps> = ({
   answers,
   handleAnswer
 }) => {
-  if (!questions.length) {
+  if (!questions || questions.length === 0) {
     return (
       <div className="text-center py-8">
         <div className="text-gray-500">
