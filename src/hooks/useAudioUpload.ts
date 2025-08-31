@@ -47,20 +47,8 @@ export const useAudioUpload = () => {
           throw error;
         }
         
-        // Create a record in audio_recordings table
-        const { error: dbError } = await supabase
-          .from('audio_recordings')
-          .insert({
-            assessment_id: assessmentId,
-            prompt_id: promptId || null,
-            storage_path: data?.path || filePath
-          });
-          
-        if (dbError) {
-          throw dbError;
-        }
-        
-        return { path: data?.path || null, error: null };
+        // Return storage path; we'll link it to responses separately
+        return { path: data?.path || filePath, error: null };
       }
     } catch (error: any) {
       toast({

@@ -8,6 +8,9 @@ import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { scoreReadAloudSentence } from '@/utils/readAloud/pronunciationScoring';
 import { ReadAloudResult } from '@/data/readAloud/sentenceBank';
+import { useAudioUpload } from '@/hooks/useAudioUpload';
+import { useSupabaseStorage } from '@/hooks/assessment/useSupabaseStorage';
+import { AssessmentResult, SpeakingPrompt } from '@/types/assessment';
 
 interface ReadAloudTaskProps {
   sessionId: string;
@@ -32,6 +35,8 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
   
   const { isRecording, startRecording, stopRecording, audioBlob } = useAudioRecorder();
   const { transcript, isListening, startListening, stopListening } = useSpeechRecognition();
+  const { uploadAudio } = useAudioUpload();
+  const { storePromptResponse } = useSupabaseStorage();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
@@ -75,12 +80,11 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
   
   const handleSubmitRecording = async () => {
     if (!currentSentence || !audioBlob) return;
-    
     setIsProcessing(true);
-    
+
     try {
-      // Score the pronunciation
-      const result = scoreReadAloudSentence(
+      // 1) Score the pronunciation locally
+      const raScore = scoreReadAloudSentence(
         currentSentence.sentence,
         transcript || '',
         {
@@ -92,22 +96,87 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
           speakingDuration: 4500
         }
       );
-      
-      // Set the sentence ID
-      result.sentenceId = currentSentence.id;
-      
-      // Submit the result
-      submitResult(result);
-      
-      // Move to next sentence or complete
+      raScore.sentenceId = currentSentence.id;
+
+      // 2) Upload audio to storage (Edge Function first, fallback to direct storage)
+      let audioPath: string | undefined;
+      try {
+        const upload = await uploadAudio(audioBlob, sessionId, currentSentence.id);
+        audioPath = upload.path || undefined;
+        if (!audioPath) {
+          console.warn('Read Aloud upload failed; proceeding with warning');
+        }
+      } catch (e) {
+        console.error('Read Aloud upload exception:', e);
+      }
+
+      // 3) Store response row in Supabase "responses"
+      const difficulty = (currentSentence.band === 'A1' || currentSentence.band === 'A2')
+        ? 'beginner'
+        : (currentSentence.band === 'B1' || currentSentence.band === 'B2')
+        ? 'intermediate'
+        : 'advanced';
+
+      const raPrompt: SpeakingPrompt = {
+        id: `RA-${currentSentence.id}`,
+        text: currentSentence.sentence,
+        category: 'read_aloud',
+        difficulty,
+        timeLimit: 60,
+        cefrLevel: currentSentence.band as any,
+        isReadAloud: true,
+        topic: 'Read Aloud'
+      };
+
+      const pron = Math.max(0, Math.min(100, raScore.score * 20)); // 0-5 -> 0-100
+      const raResult: AssessmentResult = {
+        metrics: {
+          fluency: 0,
+          grammar: 0,
+          pronunciation: pron,
+          vocabulary: 0,
+          syntax: 0,
+          coherence: 0,
+          prosody: 0
+        },
+        totalScore: pron,
+        cefrLevel: currentSentence.band as any,
+        feedback: {
+          fluency: '',
+          grammar: '',
+          pronunciation: currentSentence.feedback?.[0] || 'Pronunciation feedback',
+          vocabulary: '',
+          syntax: '',
+          coherence: '',
+          prosody: '',
+          overall: `Read Aloud (${currentSentence.band})`
+        },
+        transcript: transcript || '',
+        audioUrl: audioPath
+      };
+
+      try {
+        await storePromptResponse(
+          sessionId,
+          raPrompt,
+          raResult,
+          session?.currentIndex || 0,
+          transcript || '',
+          audioPath
+        );
+      } catch (e) {
+        console.error('Failed to store Read Aloud response:', e);
+      }
+
+      // 4) Keep internal RA session results for UI flow
+      submitResult(raScore);
+
       const hasMore = moveToNext();
       if (!hasMore) {
-        // Task completed
         console.log('Read Aloud task completed');
       }
-      
     } catch (error) {
-      console.error('Error processing recording:', error);
+      console.error('Error processing Read Aloud recording:', error);
     } finally {
       setIsProcessing(false);
     }
