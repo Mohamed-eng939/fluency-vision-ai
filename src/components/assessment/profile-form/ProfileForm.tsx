@@ -103,7 +103,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
       // --- 4. Call Edge Function ---
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/profile-manager`,
+        `https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`,
         {
           method: "POST",
           headers: {
