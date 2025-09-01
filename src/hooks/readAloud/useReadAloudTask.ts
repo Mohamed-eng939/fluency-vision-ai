@@ -36,7 +36,7 @@ const SENTENCES_PER_BAND = 3;
 export const useReadAloudTask = (): ReadAloudTaskManager => {
   const [session, setSession] = useState<ReadAloudSession | null>(null);
 
-  // Select 3 random sentences from each CEFR band
+  // Select first 3 sentences from each CEFR band (deterministic)
   const selectSentencesForTest = useCallback((sessionId: string): ReadAloudSentence[] => {
     const selectedSentences: ReadAloudSentence[] = [];
     
@@ -47,15 +47,14 @@ export const useReadAloudTask = (): ReadAloudTaskManager => {
         console.warn(`Insufficient sentences for band ${band}. Expected ${SENTENCES_PER_BAND}, found ${bandSentences.length}`);
       }
       
-      // Shuffle and select 3 sentences from this band
-      const shuffled = [...bandSentences].sort(() => Math.random() - 0.5);
-      const selected = shuffled.slice(0, Math.min(SENTENCES_PER_BAND, bandSentences.length));
+      // Select first 3 sentences from this band (no randomization)
+      const selected = bandSentences.slice(0, Math.min(SENTENCES_PER_BAND, bandSentences.length));
       
       selectedSentences.push(...selected);
     });
     
-    // Optionally shuffle the final order, or keep band-grouped
-    return selectedSentences.sort(() => Math.random() - 0.5);
+    // Keep band-grouped order (no shuffling)
+    return selectedSentences;
   }, []);
 
   const initializeTask = useCallback((sessionId: string) => {
