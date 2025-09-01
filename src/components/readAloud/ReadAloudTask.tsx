@@ -319,6 +319,11 @@ export const ReadAloudTask: React.FC<ReadAloudTaskProps> = ({
   };
   
   if (!session || !currentSentence) {
+    console.warn('[RA_LOADING]', {
+      hasSession: !!session,
+      index: session?.currentIndex,
+      total: session?.selectedSentences?.length
+    });
     return (
       <Card className="w-full max-w-2xl mx-auto">
         <CardContent className="p-6">

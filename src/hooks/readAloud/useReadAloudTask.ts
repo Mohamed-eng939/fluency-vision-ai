@@ -86,23 +86,21 @@ export const useReadAloudTask = (): ReadAloudTaskManager => {
   }, [session]);
 
   const moveToNext = useCallback((): boolean => {
-    if (!session) return false;
-    
-    const nextIndex = session.currentIndex + 1;
-    const hasMore = nextIndex < session.selectedSentences.length;
-    
+    // Compute next index based on latest state to avoid stale closures
+    let hasMore = false;
     setSession(prev => {
       if (!prev) return prev;
-      
+      const nextIndex = prev.currentIndex + 1;
+      hasMore = nextIndex < prev.selectedSentences.length;
       return {
         ...prev,
         currentIndex: nextIndex,
         isCompleted: !hasMore
       };
     });
-    
     return hasMore;
-  }, [session]);
+  }, []);
+
 
   const getAggregatedScore = useCallback(() => {
     if (!session || session.completedSentences.length === 0) {

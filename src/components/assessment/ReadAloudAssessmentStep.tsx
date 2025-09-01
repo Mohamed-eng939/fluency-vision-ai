@@ -51,6 +51,28 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
   const currentSentence = getSentenceForIndex(currentIndex);
   const currentLevel = currentSentence?.band || cefrLevel;
 
+  // Debug instrumentation for RA sentence resolution
+  React.useEffect(() => {
+    const tasksPerLevel = 3;
+    const levelIndex = Math.floor(currentIndex / tasksPerLevel);
+    const taskInLevel = currentIndex % tasksPerLevel;
+    console.info('[RA_STEP]', { sessionId, currentIndex, levelIndex, taskInLevel, totalTasks, hasSentence: !!currentSentence });
+    if (!currentSentence) {
+      console.warn('[RA_SENTENCE_NULL]', { currentIndex, levelIndex, taskInLevel });
+    }
+  }, [sessionId, currentIndex, totalTasks, currentSentence]);
+
+  // Auto-advance if sentence cannot be resolved to avoid stall
+  React.useEffect(() => {
+    if (!currentSentence) {
+      const t = setTimeout(() => {
+        if (currentIndex < totalTasks - 1) onNext();
+        else onFinish();
+      }, 1500);
+      return () => clearTimeout(t);
+    }
+  }, [currentSentence, currentIndex, totalTasks, onNext, onFinish]);
+
   const handleTaskComplete = (result: any) => {
     onComplete({
       ...result,
