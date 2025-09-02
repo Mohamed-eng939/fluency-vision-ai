@@ -44,6 +44,16 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  // Auto-reset error message after 3 seconds
+  React.useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => {
+        setErrorMsg(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
   // Auto-generate username
   React.useEffect(() => {
     const watchName = form.watch('name');
@@ -181,7 +191,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
           {loading
             ? "Saving..."
             : errorMsg
-            ? `❌ ${errorMsg}`
+            ? `Error: ${errorMsg}`
             : "Create Profile & Start Assessment"}
         </Button>
       </form>
