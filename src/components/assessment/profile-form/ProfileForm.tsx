@@ -40,6 +40,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       promoCode: '',
       dataConsent: false,
       emailResults: false,
+      dateOfBirth: new Date(2000, 0, 1), // Default date to prevent undefined issues
     },
   });
 
@@ -50,9 +51,11 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   React.useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if ((name === 'name' || name === 'phone') && value.name && value.phone?.length >= 4) {
-        const baseName = value.name.split(' ')[0].toLowerCase();
-        const lastFour = value.phone.slice(-4);
-        form.setValue('username', `${baseName}${lastFour}`);
+        const baseName = value.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+        const lastFour = value.phone.slice(-4).replace(/\D/g, '');
+        if (baseName && lastFour.length >= 4) {
+          form.setValue('username', `${baseName}${lastFour}`);
+        }
       }
     });
     return () => subscription.unsubscribe();
@@ -69,11 +72,20 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   }, [errorMsg]);
 
   const handleSubmit = async (values: ProfileFormValues) => {
-    console.log('🚀 Form submission started');
+    console.log('🚀 Form submission started with values:', values);
     setLoading(true);
     setErrorMsg(null);
 
     try {
+      // Validate required fields first
+      if (!values.name || !values.email || !values.password) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      if (!values.dataConsent) {
+        throw new Error('You must agree to the data usage terms');
+      }
+
       console.log('📧 Starting authentication with:', values.email);
       
       // 1️⃣ Try to sign up first
@@ -82,48 +94,52 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         email: values.email,
         password: values.password,
         options: { 
-          data: { name: values.name, phone: values.phone },
+          data: { 
+            name: values.name, 
+            phone: values.phone 
+          },
           emailRedirectTo: `${window.location.origin}/assessment`
         },
       });
 
-      console.log('🔐 SignUp result:', { signUpData, signUpError });
+      console.log('🔐 SignUp result:', signUpData, signUpError);
 
       if (signUpError) {
+        console.log('❌ SignUp error:', signUpError.message);
+        
         if (signUpError.message.includes('User already registered')) {
           console.log('👤 User exists, attempting sign in...');
-          // User exists, try to sign in
+          
           const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: values.email,
             password: values.password,
           });
-          console.log('🔑 SignIn result:', { signInData, signInError });
+          
+          console.log('🔑 SignIn result:', signInData, signInError);
           
           if (signInError) {
-            if (signInError.message.includes('Invalid login credentials')) {
-              throw new Error('Email already registered with different password');
-            }
-            throw signInError;
+            console.log('❌ SignIn error:', signInError.message);
+            throw new Error(`Sign in failed: ${signInError.message}`);
           }
+          
           session = signInData.session;
-        } else if (signUpError.message.includes('Email not confirmed')) {
-          throw new Error('Please check your email and confirm your account');
         } else {
-          throw signUpError;
+          throw new Error(`Sign up failed: ${signUpError.message}`);
         }
       } else {
+        console.log('✅ SignUp successful');
         session = signUpData?.session;
       }
 
       if (!session) {
         console.error('❌ No session after auth');
-        throw new Error('Authentication failed');
+        throw new Error('Authentication failed - no session created');
       }
 
       const userId = session.user.id;
       console.log('✅ Authentication successful, userId:', userId);
 
-      // 2️⃣ Save profile to "profiles" table
+      // 2️⃣ Prepare profile data
       const profileData = {
         id: userId,
         name: values.name,
@@ -135,30 +151,33 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         country_of_residence: values.residenceCountry,
         first_language: values.firstLanguage,
         test_reason: values.testReason,
-        other_reason: values.otherReason,
+        other_reason: values.otherReason || null,
         estimated_level: values.estimatedLevel,
         preferred_contact: values.preferredContact,
         pronunciation_preference: values.pronunciationPreference,
-        promo_code: values.promoCode,
+        promo_code: values.promoCode || null,
         data_consent: values.dataConsent,
         email_results: values.emailResults,
       };
 
       console.log('💾 Saving profile data:', profileData);
       
+      // 3️⃣ Save to database
       const { data: profileResult, error: dbError } = await supabase
         .from('profiles')
         .upsert([profileData])
         .select();
 
-      console.log('🗃️ Database result:', { profileResult, dbError });
+      console.log('🗃️ Database result:', profileResult, dbError);
 
       if (dbError) {
         console.error('❌ Database error:', dbError);
         throw new Error(`Database save failed: ${dbError.message}`);
       }
 
-      // 3️⃣ Convert to StudentInfo and submit
+      console.log('✅ Profile saved successfully');
+
+      // 4️⃣ Convert to StudentInfo format
       const studentInfoData: StudentInfo = {
         name: values.name,
         email: values.email,
@@ -178,18 +197,23 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         emailResults: values.emailResults,
       };
 
-      console.log('🎉 Profile saved successfully, submitting to parent');
+      console.log('🎉 Submitting to parent component');
+      
       toast({
         title: "Success",
         description: "Profile created successfully!",
       });
       
+      // Call the parent callback
       onSubmit(studentInfoData);
 
     } catch (err: any) {
       console.error('❌ Profile submission error:', err);
       const errorMessage = err.message || 'Unexpected error occurred';
+      console.error('Setting error message:', errorMessage);
+      
       setErrorMsg(errorMessage);
+      
       toast({
         title: "Error",
         description: errorMessage,
