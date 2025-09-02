@@ -161,10 +161,14 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       
       // If user is not authenticated, sign them up first
       if (!user) {
+        console.log('No authenticated user, attempting signup for:', values.email);
+        
+        const redirectUrl = `${window.location.origin}/assessment`;
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
           options: {
+            emailRedirectTo: redirectUrl,
             data: {
               name: values.name,
               phone: values.phone
@@ -172,13 +176,18 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
           }
         });
 
+        console.log('Signup result:', { authData, authError });
+
         if (authError) {
           // If user exists, try signing in
-          if (authError.message.includes('User already registered')) {
+          if (authError.message.includes('User already registered') || authError.message.includes('already been registered')) {
+            console.log('User exists, attempting sign in');
             const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
               email: values.email,
               password: values.password
             });
+
+            console.log('Sign in result:', { signInData, signInError });
 
             if (signInError) throw signInError;
             if (!signInData.session) throw new Error("No session after sign in");
@@ -188,7 +197,14 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
             throw authError;
           }
         } else {
-          if (!authData.session) throw new Error("No session after sign up");
+          if (!authData.session) {
+            console.log('No session after signup, user may need to confirm email');
+            toast({
+              title: "Check your email",
+              description: "Please check your email and click the confirmation link to complete registration.",
+            });
+            return; // Exit early, don't proceed with profile creation
+          }
           currentSession = authData.session;
         }
       }
