@@ -10,9 +10,16 @@ import { PreferencesSection } from './PreferencesSection';
 import { ConsentSection } from './ConsentSection';
 import { profileFormSchema, ProfileFormValues } from './types';
 import { countries, languages, cefrLevels, testReasons } from './constants';
+import { StudentInfo } from '@/hooks/assessment';
 import { supabase } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
-export const ProfileForm: React.FC = () => {
+interface ProfileFormProps {
+  onSubmit: (data: StudentInfo) => void;
+  onCancel?: () => void;
+}
+
+export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -36,7 +43,7 @@ export const ProfileForm: React.FC = () => {
   });
 
   const [loading, setLoading] = React.useState(false);
-  const [toast, setToast] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   // Auto-generate username
   React.useEffect(() => {
@@ -50,12 +57,22 @@ export const ProfileForm: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [form]);
 
+  // Reset error after timeout
+  React.useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => {
+        setErrorMsg(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
   const handleSubmit = async (values: ProfileFormValues) => {
     setLoading(true);
-    setToast(null);
+    setErrorMsg(null);
 
     try {
-      // 1️⃣ Sign up or Sign in
+      // 1️⃣ Try to sign up first
       let session;
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: values.email,
@@ -65,12 +82,20 @@ export const ProfileForm: React.FC = () => {
 
       if (signUpError) {
         if (signUpError.message.includes('User already registered')) {
+          // User exists, try to sign in
           const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: values.email,
             password: values.password,
           });
-          if (signInError) throw signInError;
+          if (signInError) {
+            if (signInError.message.includes('Invalid login credentials')) {
+              throw new Error('Email already registered with different password');
+            }
+            throw signInError;
+          }
           session = signInData.session;
+        } else if (signUpError.message.includes('Email not confirmed')) {
+          throw new Error('Please check your email and confirm your account');
         } else {
           throw signUpError;
         }
@@ -78,7 +103,7 @@ export const ProfileForm: React.FC = () => {
         session = signUpData?.session;
       }
 
-      if (!session) throw new Error('No active session found');
+      if (!session) throw new Error('Authentication failed');
 
       const userId = session.user.id;
 
@@ -105,20 +130,58 @@ export const ProfileForm: React.FC = () => {
         },
       ]);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Database error: ${dbError.message}`);
+      }
 
-      setToast({ type: 'success', message: '✅ Profile created and saved successfully!' });
-      form.reset();
+      // 3️⃣ Convert to StudentInfo and submit
+      const studentInfoData: StudentInfo = {
+        name: values.name,
+        email: values.email,
+        username: values.username,
+        phone: values.phone,
+        citizenshipCountry: values.citizenshipCountry,
+        residenceCountry: values.residenceCountry,
+        dateOfBirth: values.dateOfBirth,
+        firstLanguage: values.firstLanguage,
+        testReason: values.testReason,
+        otherReason: values.otherReason,
+        estimatedLevel: values.estimatedLevel,
+        preferredContact: values.preferredContact,
+        pronunciationPreference: values.pronunciationPreference,
+        promoCode: values.promoCode,
+        dataConsent: values.dataConsent,
+        emailResults: values.emailResults,
+      };
+
+      toast.success('Profile created successfully!');
+      onSubmit(studentInfoData);
+
     } catch (err: any) {
-      setToast({ type: 'error', message: err.message || 'Unexpected error occurred' });
+      console.error('Profile submission error:', err);
+      const errorMessage = err.message || 'Unexpected error occurred';
+      setErrorMsg(errorMessage);
+      toast.error(`Error: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
 
+  const getButtonText = () => {
+    if (loading) return 'Saving...';
+    if (errorMsg) return `Error: ${errorMsg}`;
+    return 'Create Profile & Start Assessment';
+  };
+
+  const getButtonStyle = () => {
+    if (errorMsg) return 'bg-destructive hover:bg-destructive/90 text-destructive-foreground';
+    return 'bg-primary hover:bg-primary/90 text-primary-foreground';
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 relative">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <PersonalInfoSection form={form} countries={countries} languages={languages} />
         <AccountSection form={form} />
         <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
@@ -128,21 +191,10 @@ export const ProfileForm: React.FC = () => {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
+          className={`w-full ${getButtonStyle()}`}
         >
-          {loading ? 'Savingيااارب...' : 'Create Profile & Start Assessment'}
+          {getButtonText()}
         </Button>
-
-        {/* Toast Message */}
-        {toast && (
-          <div
-            className={`fixed bottom-5 right-5 px-4 py-3 rounded-md shadow-md text-white font-medium ${
-              toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'
-            }`}
-          >
-            {toast.message}
-          </div>
-        )}
       </form>
     </Form>
   );
