@@ -411,26 +411,27 @@ export type Database = {
           country_of_citizenship: string | null
           country_of_residence: string | null
           created_at: string | null
+          data_consent: boolean | null
           date_of_birth: string | null
           email: string | null
-          estimatedLevel: string | null
-          firstLanguage: string | null
+          email_results: boolean | null
+          estimated_level: string | null
+          first_language: string | null
           has_assessment_access: boolean | null
           id: string
           is_active: boolean | null
           last_login_at: string | null
           name: string | null
-          nationality: string | null
-          native_language: string | null
           organization_id: string | null
+          other_reason: string | null
           payment_status: string | null
-          phone_number: string | null
-          preferred_language: string | null
-          preferredContact: string | null
-          pronunciationPreference: string | null
+          phone: string | null
+          preferred_contact: string | null
+          promo_code: string | null
+          pronunciation_preference: string | null
           role: string
           subscription_status: string | null
-          testReason: string | null
+          test_reason: string | null
           timezone: string | null
           updated_at: string | null
           username: string | null
@@ -444,26 +445,27 @@ export type Database = {
           country_of_citizenship?: string | null
           country_of_residence?: string | null
           created_at?: string | null
+          data_consent?: boolean | null
           date_of_birth?: string | null
           email?: string | null
-          estimatedLevel?: string | null
-          firstLanguage?: string | null
+          email_results?: boolean | null
+          estimated_level?: string | null
+          first_language?: string | null
           has_assessment_access?: boolean | null
           id: string
           is_active?: boolean | null
           last_login_at?: string | null
           name?: string | null
-          nationality?: string | null
-          native_language?: string | null
           organization_id?: string | null
+          other_reason?: string | null
           payment_status?: string | null
-          phone_number?: string | null
-          preferred_language?: string | null
-          preferredContact?: string | null
-          pronunciationPreference?: string | null
+          phone?: string | null
+          preferred_contact?: string | null
+          promo_code?: string | null
+          pronunciation_preference?: string | null
           role?: string
           subscription_status?: string | null
-          testReason?: string | null
+          test_reason?: string | null
           timezone?: string | null
           updated_at?: string | null
           username?: string | null
@@ -477,26 +479,27 @@ export type Database = {
           country_of_citizenship?: string | null
           country_of_residence?: string | null
           created_at?: string | null
+          data_consent?: boolean | null
           date_of_birth?: string | null
           email?: string | null
-          estimatedLevel?: string | null
-          firstLanguage?: string | null
+          email_results?: boolean | null
+          estimated_level?: string | null
+          first_language?: string | null
           has_assessment_access?: boolean | null
           id?: string
           is_active?: boolean | null
           last_login_at?: string | null
           name?: string | null
-          nationality?: string | null
-          native_language?: string | null
           organization_id?: string | null
+          other_reason?: string | null
           payment_status?: string | null
-          phone_number?: string | null
-          preferred_language?: string | null
-          preferredContact?: string | null
-          pronunciationPreference?: string | null
+          phone?: string | null
+          preferred_contact?: string | null
+          promo_code?: string | null
+          pronunciation_preference?: string | null
           role?: string
           subscription_status?: string | null
-          testReason?: string | null
+          test_reason?: string | null
           timezone?: string | null
           updated_at?: string | null
           username?: string | null

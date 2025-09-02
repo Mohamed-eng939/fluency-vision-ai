@@ -12,7 +12,7 @@ import { profileFormSchema, ProfileFormValues } from './types';
 import { countries, languages, cefrLevels, testReasons } from './constants';
 import { StudentInfo } from '@/hooks/assessment';
 import { supabase } from '@/lib/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProfileFormProps {
   onSubmit: (data: StudentInfo) => void;
@@ -20,6 +20,7 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
+  const { toast } = useToast();
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -68,25 +69,36 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   }, [errorMsg]);
 
   const handleSubmit = async (values: ProfileFormValues) => {
+    console.log('🚀 Form submission started');
     setLoading(true);
     setErrorMsg(null);
 
     try {
+      console.log('📧 Starting authentication with:', values.email);
+      
       // 1️⃣ Try to sign up first
       let session;
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: { data: { name: values.name, phone: values.phone } },
+        options: { 
+          data: { name: values.name, phone: values.phone },
+          emailRedirectTo: `${window.location.origin}/assessment`
+        },
       });
+
+      console.log('🔐 SignUp result:', { signUpData, signUpError });
 
       if (signUpError) {
         if (signUpError.message.includes('User already registered')) {
+          console.log('👤 User exists, attempting sign in...');
           // User exists, try to sign in
           const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: values.email,
             password: values.password,
           });
+          console.log('🔑 SignIn result:', { signInData, signInError });
+          
           if (signInError) {
             if (signInError.message.includes('Invalid login credentials')) {
               throw new Error('Email already registered with different password');
@@ -103,36 +115,47 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         session = signUpData?.session;
       }
 
-      if (!session) throw new Error('Authentication failed');
+      if (!session) {
+        console.error('❌ No session after auth');
+        throw new Error('Authentication failed');
+      }
 
       const userId = session.user.id;
+      console.log('✅ Authentication successful, userId:', userId);
 
       // 2️⃣ Save profile to "profiles" table
-      const { error: dbError } = await supabase.from('profiles').upsert([
-        {
-          id: userId,
-          name: values.name,
-          username: values.username,
-          email: values.email,
-          phone: values.phone,
-          date_of_birth: values.dateOfBirth,
-          country_of_citizenship: values.citizenshipCountry,
-          country_of_residence: values.residenceCountry,
-          first_language: values.firstLanguage,
-          test_reason: values.testReason,
-          other_reason: values.otherReason,
-          estimated_level: values.estimatedLevel,
-          preferred_contact: values.preferredContact,
-          pronunciation_preference: values.pronunciationPreference,
-          promo_code: values.promoCode,
-          data_consent: values.dataConsent,
-          email_results: values.emailResults,
-        },
-      ]);
+      const profileData = {
+        id: userId,
+        name: values.name,
+        username: values.username,
+        email: values.email,
+        phone: values.phone,
+        date_of_birth: values.dateOfBirth,
+        country_of_citizenship: values.citizenshipCountry,
+        country_of_residence: values.residenceCountry,
+        first_language: values.firstLanguage,
+        test_reason: values.testReason,
+        other_reason: values.otherReason,
+        estimated_level: values.estimatedLevel,
+        preferred_contact: values.preferredContact,
+        pronunciation_preference: values.pronunciationPreference,
+        promo_code: values.promoCode,
+        data_consent: values.dataConsent,
+        email_results: values.emailResults,
+      };
+
+      console.log('💾 Saving profile data:', profileData);
+      
+      const { data: profileResult, error: dbError } = await supabase
+        .from('profiles')
+        .upsert([profileData])
+        .select();
+
+      console.log('🗃️ Database result:', { profileResult, dbError });
 
       if (dbError) {
-        console.error('Database error:', dbError);
-        throw new Error(`Database error: ${dbError.message}`);
+        console.error('❌ Database error:', dbError);
+        throw new Error(`Database save failed: ${dbError.message}`);
       }
 
       // 3️⃣ Convert to StudentInfo and submit
@@ -155,15 +178,25 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         emailResults: values.emailResults,
       };
 
-      toast.success('Profile created successfully!');
+      console.log('🎉 Profile saved successfully, submitting to parent');
+      toast({
+        title: "Success",
+        description: "Profile created successfully!",
+      });
+      
       onSubmit(studentInfoData);
 
     } catch (err: any) {
-      console.error('Profile submission error:', err);
+      console.error('❌ Profile submission error:', err);
       const errorMessage = err.message || 'Unexpected error occurred';
       setErrorMsg(errorMessage);
-      toast.error(`Error: ${errorMessage}`);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
+      console.log('🏁 Setting loading to false');
       setLoading(false);
     }
   };
