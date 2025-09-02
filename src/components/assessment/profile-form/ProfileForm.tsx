@@ -108,7 +108,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
       // 3. Call Edge Function to save profile
       const res = await fetch(
-        `https://<your-project-ref>.supabase.co/functions/v1/profile-manager`,
+        `https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`,
         {
           method: "POST",
           headers: {
