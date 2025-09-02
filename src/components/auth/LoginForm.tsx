@@ -6,6 +6,7 @@ import * as z from 'zod';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/auth';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Form,
   FormControl,
@@ -19,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  emailOrUsername: z.string().min(1, 'Email or username is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -32,7 +33,7 @@ const LoginForm: React.FC = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      emailOrUsername: '',
       password: '',
     },
   });
@@ -41,11 +42,38 @@ const LoginForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await signIn(values.email, values.password);
+      // Check if input is email or username
+      const isEmail = values.emailOrUsername.includes('@');
       
-      if (!error) {
-        // Redirect based on role will be handled by ProtectedRoute and AuthProvider
-        navigate('/dashboard');
+      if (isEmail) {
+        const { error } = await signIn(values.emailOrUsername, values.password);
+        
+        if (!error) {
+          navigate('/dashboard');
+        }
+      } else {
+        // For username login, we need to get the email first from profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', values.emailOrUsername)
+          .single();
+        
+        if (profileError || !profile?.email) {
+          toast({
+            title: "Login Failed",
+            description: "Username not found.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        const { error } = await signIn(profile.email, values.password);
+        
+        if (!error) {
+          navigate('/dashboard');
+        }
       }
     } catch (error) {
       toast({
@@ -63,12 +91,12 @@ const LoginForm: React.FC = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="email"
+          name="emailOrUsername"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Email or Username</FormLabel>
               <FormControl>
-                <Input placeholder="Email address" {...field} />
+                <Input placeholder="Email address or username" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
