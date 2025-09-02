@@ -461,7 +461,7 @@ export type Database = {
           preferred_language?: string | null
           preferredContact?: string | null
           pronunciationPreference?: string | null
-          role: string
+          role?: string
           subscription_status?: string | null
           testReason?: string | null
           timezone?: string | null

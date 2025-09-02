@@ -212,7 +212,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         estimatedLevel: values.estimatedLevel,
         preferredContact: values.preferredContact,
         pronunciationPreference: values.pronunciationPreference,
-        role: user?.role || 'learner'
+        role: 'learner' // Always default to learner for new profiles
       };
 
       // Call the profile-manager edge function - let Supabase handle auth automatically
