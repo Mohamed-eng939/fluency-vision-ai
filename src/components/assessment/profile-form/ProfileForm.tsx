@@ -40,8 +40,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
     },
   });
 
+  const [buttonMsg, setButtonMsg] = React.useState("Create Profile & Start Assessment");
   const [loading, setLoading] = React.useState(false);
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   // Auto-generate username
   React.useEffect(() => {
@@ -57,7 +57,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = async (values: ProfileFormValues) => {
     setLoading(true);
-    setErrorMsg(null);
+    setButtonMsg("Savinggggg...");
 
     try {
       // 1. Sign up
@@ -121,13 +121,22 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         }
       );
 
+      let resultText = await res.text();
+      console.log("📩 Response text:", resultText);
+
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Profile submission failed");
+        throw new Error(resultText || "Profile submission failed");
       }
 
-      const result = await res.json();
+      let result;
+      try {
+        result = JSON.parse(resultText);
+      } catch {
+        result = { raw: resultText };
+      }
+
       console.log("✅ Profile saved:", result);
+      setButtonMsg("Done ✅");
 
       // 4. Pass to parent
       const studentInfoData: StudentInfo = {
@@ -153,7 +162,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
     } catch (err: any) {
       console.error("🔥 Error submitting profile:", err);
-      setErrorMsg(err.message || "Unexpected error occurred");
+      setButtonMsg(`Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -168,18 +177,12 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
 
-        {errorMsg && (
-          <div className="p-3 mt-2 rounded-md bg-red-100 text-red-700 border border-red-300">
-            ❌ {errorMsg}
-          </div>
-        )}
-
         <Button
           type="submit"
           disabled={loading}
           className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
         >
-          {loading ? "Savinسسسg..." : "Create Profile & Start Assessment"}
+          {buttonMsg}
         </Button>
       </form>
     </Form>
