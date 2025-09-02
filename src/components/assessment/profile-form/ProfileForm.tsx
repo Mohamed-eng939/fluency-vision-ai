@@ -15,7 +15,6 @@ import { supabase } from '@/lib/supabase/client';
 
 interface ProfileFormProps {
   onSubmit: (data: StudentInfo) => void;
-  onCancel?: () => void;
 }
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
@@ -59,8 +58,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (values: ProfileFormValues) => {
     setLoading(true);
     setErrorMsg(null);
+
     try {
-      // 1. Sign up the user
+      // 1. Sign up
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -70,12 +70,12 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       let session = authData?.session;
 
       if (authError) {
-        // If user exists → sign in
         if (authError.message.includes('User already registered')) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: values.email,
-            password: values.password
-          });
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({
+              email: values.email,
+              password: values.password
+            });
           if (signInError) throw signInError;
           session = signInData.session;
         } else {
@@ -85,7 +85,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
       if (!session) throw new Error("No active session after sign up/sign in");
 
-      // 2. Prepare payload for profiles table
+      console.log("🟢 Token:", session.access_token);
+
+      // 2. Prepare payload
       const payload = {
         id: session.user.id,
         name: values.name,
@@ -106,7 +108,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         email_results: values.emailResults,
       };
 
-      // 3. Call Edge Function to save profile
+      // 3. Call Edge Function
       const res = await fetch(
         `https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`,
         {
@@ -125,9 +127,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       }
 
       const result = await res.json();
-      console.log("Profile saved:", result);
+      console.log("✅ Profile saved:", result);
 
-      // 4. Convert for StudentInfo
+      // 4. Pass to parent
       const studentInfoData: StudentInfo = {
         name: values.name,
         email: values.email,
@@ -150,8 +152,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       onSubmit(studentInfoData);
 
     } catch (err: any) {
-      console.error("Error submitting profile:", err);
-      setErrorMsg(err.message || "Unexpected error");
+      console.error("🔥 Error submitting profile:", err);
+      setErrorMsg(err.message || "Unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -167,7 +169,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         <ConsentSection form={form} />
 
         {errorMsg && (
-          <div className="text-red-600 font-medium">{errorMsg}</div>
+          <div className="p-3 mt-2 rounded-md bg-red-100 text-red-700 border border-red-300">
+            ❌ {errorMsg}
+          </div>
         )}
 
         <Button
