@@ -215,17 +215,21 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         role: 'learner' // Always default to learner for new profiles
       };
 
-      // Call the profile-manager edge function - let Supabase handle auth automatically
+      // Call the profile-manager edge function with explicit headers
       console.log('Calling profile-manager edge function with:', {
         userId: currentSession.user.id,
-        hasSession: !!currentSession
+        hasSession: !!currentSession,
+        profileData: profileData
       });
       
       const { data: result, error: functionError } = await supabase.functions.invoke('profile-manager', {
-        body: profileData
+        body: profileData,
+        headers: {
+          Authorization: `Bearer ${currentSession.access_token}`
+        }
       });
 
-      console.log('Edge function response:', { result, functionError });
+      console.log('Edge function response:', { result, functionError, hasResult: !!result });
 
       if (functionError) {
         console.error('Edge function error:', functionError);

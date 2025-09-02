@@ -165,8 +165,10 @@ serve(async (req) => {
           })
         }
 
-        // Prevent non-admins from changing sensitive fields
-        if (currentUserProfile?.role !== 'admin') {
+        // For new profiles (no existing profile), allow setting role to 'learner'
+        // For existing profiles, prevent non-admins from changing sensitive fields
+        if (currentUserProfile && currentUserProfile.role !== 'admin') {
+          // User has existing profile and isn't admin - prevent role changes
           delete profileData.role;
           delete profileData.has_assessment_access;
           delete profileData.assessment_credits;
@@ -174,6 +176,9 @@ serve(async (req) => {
           delete profileData.access_granted_at;
           delete profileData.access_expires_at;
           delete profileData.organization_id;
+        } else if (!currentUserProfile && profileData.role !== 'learner') {
+          // New user trying to set role other than learner - force to learner
+          profileData.role = 'learner';
         }
 
         // Remove id from update data to prevent ID changes
