@@ -15,6 +15,7 @@ import { supabase } from '@/lib/supabase/client';
 
 interface ProfileFormProps {
   onSubmit: (data: StudentInfo) => void;
+  onCancel?: () => void;
 }
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
@@ -58,9 +59,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (values: ProfileFormValues) => {
     setLoading(true);
     setErrorMsg(null);
-
     try {
-      // 1. Sign up
+      // 1. Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -71,11 +71,10 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
       if (authError) {
         if (authError.message.includes('User already registered')) {
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInWithPassword({
-              email: values.email,
-              password: values.password
-            });
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password
+          });
           if (signInError) throw signInError;
           session = signInData.session;
         } else {
@@ -84,8 +83,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       }
 
       if (!session) throw new Error("No active session after sign up/sign in");
-
-      console.log("🟢 Token:", session.access_token);
 
       // 2. Prepare payload
       const payload = {
@@ -127,9 +124,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       }
 
       const result = await res.json();
-      console.log("✅ Profile saved:", result);
+      console.log("Profile saved:", result);
 
-      // 4. Pass to parent
+      // 4. Convert for StudentInfo
       const studentInfoData: StudentInfo = {
         name: values.name,
         email: values.email,
@@ -152,8 +149,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       onSubmit(studentInfoData);
 
     } catch (err: any) {
-      console.error("🔥 Error submitting profile:", err);
-      setErrorMsg(err.message || "Unexpected error occurred");
+      console.error("Error submitting profile:", err);
+      setErrorMsg(err.message || "Unexpected error");
     } finally {
       setLoading(false);
     }
@@ -168,28 +165,21 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
 
-        {errorMsg && (
-          <div className="p-3 mt-2 rounded-md bg-red-100 text-red-700 border border-red-300">
-            ❌ {errorMsg}
-          </div>
-        )}
-
-       <Button
-  type="submit"
-  disabled={loading}
-  className={`w-full ${
-    errorMsg
-      ? "bg-red-600 hover:bg-red-700"
-      : "bg-assessment-blue hover:bg-assessment-lightBlue"
-  }`}
->
-  {loading
-    ? "Saving..."
-    : errorMsg
-    ? `❌ ${errorMsg}`
-    : "Create Profile & Start Assessment"}
-</Button>
-
+        <Button
+          type="submit"
+          disabled={loading}
+          className={`w-full ${
+            errorMsg
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-assessment-blue hover:bg-assessment-lightBlue"
+          }`}
+        >
+          {loading
+            ? "Saving..."
+            : errorMsg
+            ? `❌ ${errorMsg}`
+            : "Create Profile & Start Assessment"}
+        </Button>
       </form>
     </Form>
   );
