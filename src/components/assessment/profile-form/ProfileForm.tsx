@@ -40,8 +40,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
     },
   });
 
-  const [buttonMsg, setButtonMsg] = React.useState("Create Profile & Start Assessment");
   const [loading, setLoading] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   // Auto-generate username
   React.useEffect(() => {
@@ -57,7 +57,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = async (values: ProfileFormValues) => {
     setLoading(true);
-    setButtonMsg("Savinggggg...");
+    setErrorMsg(null);
 
     try {
       // 1. Sign up
@@ -83,7 +83,12 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         }
       }
 
-      if (!session) throw new Error("No active session after sign up/sign in");
+      // 🟢 fallback: لو مفيش session بعد SignUp جيبه بـ getSession
+      if (!session) {
+        const { data: { session: freshSession }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !freshSession) throw new Error("No active session after sign up/sign in");
+        session = freshSession;
+      }
 
       console.log("🟢 Token:", session.access_token);
 
@@ -121,22 +126,13 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         }
       );
 
-      let resultText = await res.text();
-      console.log("📩 Response text:", resultText);
-
       if (!res.ok) {
-        throw new Error(resultText || "Profile submission failed");
+        const errorText = await res.text();
+        throw new Error(errorText || "Profile submission failed");
       }
 
-      let result;
-      try {
-        result = JSON.parse(resultText);
-      } catch {
-        result = { raw: resultText };
-      }
-
+      const result = await res.json();
       console.log("✅ Profile saved:", result);
-      setButtonMsg("Done ✅");
 
       // 4. Pass to parent
       const studentInfoData: StudentInfo = {
@@ -162,7 +158,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
     } catch (err: any) {
       console.error("🔥 Error submitting profile:", err);
-      setButtonMsg(`Error: ${err.message}`);
+      setErrorMsg(err.message || "Unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -180,9 +176,17 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
+          className={`w-full ${
+            errorMsg
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-assessment-blue hover:bg-assessment-lightBlue"
+          }`}
         >
-          {buttonMsg}
+          {loading
+            ? "Savingققق..."
+            : errorMsg
+              ? `Error: ${errorMsg}`
+              : "Create Profile & Start Assessment"}
         </Button>
       </form>
     </Form>
