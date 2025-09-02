@@ -10,14 +10,9 @@ import { PreferencesSection } from './PreferencesSection';
 import { ConsentSection } from './ConsentSection';
 import { profileFormSchema, ProfileFormValues } from './types';
 import { countries, languages, cefrLevels, testReasons } from './constants';
-import { StudentInfo } from '@/hooks/assessment';
 import { supabase } from '@/lib/supabase/client';
 
-interface ProfileFormProps {
-  onSubmit: (data: StudentInfo) => void;
-}
-
-export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
+export const ProfileForm: React.FC = () => {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -41,131 +36,113 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   });
 
   const [loading, setLoading] = React.useState(false);
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [toast, setToast] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Auto-generate username
   React.useEffect(() => {
-    const watchName = form.watch('name');
-    const watchPhone = form.watch('phone');
-    if (watchName && watchPhone && watchPhone.length >= 4) {
-      const baseName = watchName.split(' ')[0].toLowerCase();
-      const lastFourDigits = watchPhone.slice(-4);
-      const generatedUsername = `${baseName}${lastFourDigits}`;
-      form.setValue('username', generatedUsername);
-    }
-  }, [form.watch('name'), form.watch('phone'), form]);
-
- const [serverMsg, setServerMsg] = React.useState<string | null>(null);
-
-const handleSubmit = async (values: ProfileFormValues) => {
-  setLoading(true);
-  setErrorMsg(null);
-  setServerMsg(null);
-
-  try {
-    // 1. Sign up
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: { data: { name: values.name, phone: values.phone } }
+    const subscription = form.watch((value, { name }) => {
+      if ((name === 'name' || name === 'phone') && value.name && value.phone?.length >= 4) {
+        const baseName = value.name.split(' ')[0].toLowerCase();
+        const lastFour = value.phone.slice(-4);
+        form.setValue('username', `${baseName}${lastFour}`);
+      }
     });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
-    let session = authData?.session;
+  const handleSubmit = async (values: ProfileFormValues) => {
+    setLoading(true);
+    setToast(null);
 
-    if (authError) {
-      if (authError.message.includes('User already registered')) {
-        const { data: signInData, error: signInError } =
-          await supabase.auth.signInWithPassword({
+    try {
+      // 1️⃣ Sign up or Sign in
+      let session;
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: { data: { name: values.name, phone: values.phone } },
+      });
+
+      if (signUpError) {
+        if (signUpError.message.includes('User already registered')) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: values.email,
-            password: values.password
+            password: values.password,
           });
-        if (signInError) throw signInError;
-        session = signInData.session;
+          if (signInError) throw signInError;
+          session = signInData.session;
+        } else {
+          throw signUpError;
+        }
       } else {
-        throw authError;
+        session = signUpData?.session;
       }
-    }
 
-    if (!session) throw new Error("No active session after sign up/sign in");
+      if (!session) throw new Error('No active session found');
 
-    // 🟢 اطبع التوكن كرسالة
-    setServerMsg(`🟢 Token: ${session.access_token}`);
+      const userId = session.user.id;
 
-    // 2. Prepare payload
-    const payload = {
-      id: session.user.id,
-      name: values.name,
-      username: values.username,
-      email: values.email,
-      phone: values.phone,
-      date_of_birth: values.dateOfBirth,
-      country_of_citizenship: values.citizenshipCountry,
-      country_of_residence: values.residenceCountry,
-      first_language: values.firstLanguage,
-      test_reason: values.testReason,
-      other_reason: values.otherReason,
-      estimated_level: values.estimatedLevel,
-      preferred_contact: values.preferredContact,
-      pronunciation_preference: values.pronunciationPreference,
-      promo_code: values.promoCode,
-      data_consent: values.dataConsent,
-      email_results: values.emailResults,
-    };
-
-    // 3. Call Edge Function
-    const res = await fetch(
-      `https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`
+      // 2️⃣ Save profile to "profiles" table
+      const { error: dbError } = await supabase.from('profiles').upsert([
+        {
+          id: userId,
+          name: values.name,
+          username: values.username,
+          email: values.email,
+          phone: values.phone,
+          date_of_birth: values.dateOfBirth,
+          country_of_citizenship: values.citizenshipCountry,
+          country_of_residence: values.residenceCountry,
+          first_language: values.firstLanguage,
+          test_reason: values.testReason,
+          other_reason: values.otherReason,
+          estimated_level: values.estimatedLevel,
+          preferred_contact: values.preferredContact,
+          pronunciation_preference: values.pronunciationPreference,
+          promo_code: values.promoCode,
+          data_consent: values.dataConsent,
+          email_results: values.emailResults,
         },
-        body: JSON.stringify(payload)
-      }
-    );
+      ]);
 
-    const text = await res.text(); // خد النص الخام
-    if (!res.ok) throw new Error(text || "Profile submission failed");
+      if (dbError) throw dbError;
 
-    setServerMsg(`✅ Profile saved successfully: ${text}`);
-
-  } catch (err: any) {
-    setErrorMsg(err.message || "Unexpected error occurred");
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setToast({ type: 'success', message: '✅ Profile created and saved successfully!' });
+      form.reset();
+    } catch (err: any) {
+      setToast({ type: 'error', message: err.message || 'Unexpected error occurred' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 relative">
         <PersonalInfoSection form={form} countries={countries} languages={languages} />
         <AccountSection form={form} />
         <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
 
-        {errorMsg && (
-          <div className="p-3 mt-2 rounded-md bg-red-100 text-red-700 border border-red-300">
-            ❌ {errorMsg}
-          </div>
-        )}
-
         <Button
           type="submit"
           disabled={loading}
           className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
         >
-          {loading ? "Savingللل..." : "Create Profile & Start Assessment"}
+          {loading ? 'Savingيااارب...' : 'Create Profile & Start Assessment'}
         </Button>
-        {serverMsg && (
-  <div className="p-3 mt-2 rounded-md bg-green-100 text-green-700 border border-green-300">
-    {serverMsg}
-  </div>
-)}
 
+        {/* Toast Message */}
+        {toast && (
+          <div
+            className={`fixed bottom-5 right-5 px-4 py-3 rounded-md shadow-md text-white font-medium ${
+              toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'
+            }`}
+          >
+            {toast.message}
+          </div>
+        )}
       </form>
     </Form>
   );
