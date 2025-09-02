@@ -12,7 +12,7 @@ import { ConsentSection } from './ConsentSection';
 import { profileFormSchema, ProfileFormValues } from './types';
 import { countries, languages, cefrLevels, testReasons } from './constants';
 import { StudentInfo } from '@/hooks/assessment';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';

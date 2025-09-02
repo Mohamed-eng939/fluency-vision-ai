@@ -6,200 +6,238 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface ResponseData {
+  session_id: string;
+  prompt_id?: string;
+  transcript?: string;
+  audio_url?: string;
+  cefr_level?: string;
+  metrics?: any;
+  audio_analysis?: any;
+  coherence_analysis?: any;
+  prompt_order?: number;
+  is_final?: boolean;
+  response_duration?: number;
+  confidence_score?: number;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization');
+    console.log('Response Handler - Auth header present:', !!authHeader);
+    
+    // Create Supabase client with proper authorization
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      { 
+        global: { 
+          headers: authHeader ? { Authorization: authHeader } : undefined
+        } 
+      }
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
+    // For authenticated requests, get the user
+    let user = null;
+    if (authHeader) {
+      const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+      if (authError) {
+        console.error('Authentication error:', authError);
+        return new Response(JSON.stringify({ error: `Authentication failed: ${authError.message}` }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      user = authUser;
+    }
+    
+    console.log('Response Handler - Authenticated user:', user?.id);
+
     const url = new URL(req.url)
-    const action = url.pathname.split('/').pop()
+    const method = req.method
+    const responseId = url.pathname.split('/').pop()
 
-    console.log(`Response Processor: ${req.method} ${action}`)
+    console.log(`Response Handler: ${method} request for user ${user?.id}`)
 
-    switch (action) {
-      case 'submit-response':
-        // Add authentication check
-        if (!user) {
-          return new Response(JSON.stringify({ error: 'Authentication required' }), {
-            status: 401,
+    switch (method) {
+      case 'GET':
+        if (responseId && responseId !== 'response-handler') {
+          // Get specific response
+          const { data: response, error } = await supabaseClient
+            .from('prompt_responses')
+            .select(`
+              *,
+              audio_recordings (*)
+            `)
+            .eq('id', responseId)
+            .single()
+
+          if (error) {
+            console.error('Error fetching response:', error)
+            return new Response(JSON.stringify({ error: error.message }), {
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          return new Response(JSON.stringify({ response }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        } else {
+          // Get all responses for session or user
+          const sessionId = url.searchParams.get('session_id');
+          
+          let query = supabaseClient
+            .from('prompt_responses')
+            .select(`
+              *,
+              audio_recordings (*)
+            `)
+            .order('created_at', { ascending: false })
+
+          if (sessionId) {
+            query = query.eq('session_id', sessionId)
+          } else if (user) {
+            // Get responses for user's sessions
+            const { data: userSessions } = await supabaseClient
+              .from('assessment_sessions')
+              .select('id')
+              .eq('user_id', user.id)
+
+            if (userSessions && userSessions.length > 0) {
+              const sessionIds = userSessions.map(s => s.id)
+              query = query.in('session_id', sessionIds)
+            }
+          }
+
+          const { data: responses, error } = await query
+
+          if (error) {
+            console.error('Error fetching responses:', error)
+            return new Response(JSON.stringify({ error: error.message }), {
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          return new Response(JSON.stringify({ responses }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        const { 
-          session_id, 
-          prompt_id, 
-          transcript, 
-          audio_url, 
-          response_duration,
-          prompt_order 
-        } = await req.json()
+      case 'POST':
+        const responseData: ResponseData = await req.json()
+        
+        // Verify session ownership if user is authenticated
+        if (user) {
+          const { data: session } = await supabaseClient
+            .from('assessment_sessions')
+            .select('user_id')
+            .eq('id', responseData.session_id)
+            .single()
 
-        if (!session_id || !prompt_id || !transcript) {
-          return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
+          if (session && session.user_id !== user.id) {
+            return new Response(JSON.stringify({ error: 'Access denied' }), {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
         }
 
-        // Add session access validation
-        const { data: session, error: sessionError } = await supabaseClient
-          .from('assessment_sessions')
-          .select('user_id, organization_id')
-          .eq('id', session_id)
-          .single()
-
-        if (sessionError || !session) {
-          return new Response(JSON.stringify({ error: 'Session not found' }), {
-            status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
-        }
-
-        // Check if user has access to this session
-        if (session.user_id && session.user_id !== user.id) {
-          return new Response(JSON.stringify({ error: 'Access denied' }), {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
-        }
-
-        // Create response record
-        const { data: response, error: responseError } = await supabaseClient
+        const { data: newResponse, error: createError } = await supabaseClient
           .from('prompt_responses')
           .insert({
-            session_id,
-            prompt_id,
-            transcript,
-            audio_url,
-            response_duration,
-            prompt_order: prompt_order || 1,
-            processing_status: 'pending',
-            started_at: new Date().toISOString(),
-            completed_at: new Date().toISOString()
+            session_id: responseData.session_id,
+            prompt_id: responseData.prompt_id,
+            transcript: responseData.transcript,
+            audio_url: responseData.audio_url,
+            cefr_level: responseData.cefr_level,
+            metrics: responseData.metrics || {},
+            audio_analysis: responseData.audio_analysis || {},
+            coherence_analysis: responseData.coherence_analysis || {},
+            prompt_order: responseData.prompt_order,
+            response_duration: responseData.response_duration,
+            confidence_score: responseData.confidence_score,
+            processing_status: 'completed'
           })
           .select()
           .single()
 
-        if (responseError) {
-          console.error('Error creating response:', responseError)
-          return new Response(JSON.stringify({ error: responseError.message }), {
+        if (createError) {
+          console.error('Error creating response:', createError)
+          return new Response(JSON.stringify({ error: createError.message }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        // Background task: Trigger scoring process with error handling
-        const backgroundScoring = async () => {
-          try {
-            const scoringResponse = await supabaseClient.functions.invoke('scoring-engine', {
-              body: { response_id: response.id }
-            })
-
-            if (scoringResponse.error) {
-              console.error('Scoring error:', scoringResponse.error)
-              // Update response status to indicate scoring failed
-              await supabaseClient
-                .from('prompt_responses')
-                .update({ processing_status: 'scoring_failed' })
-                .eq('id', response.id)
-            }
-          } catch (scoringError) {
-            console.error('Failed to trigger scoring:', scoringError)
-            // Update response status to indicate scoring failed
-            await supabaseClient
-              .from('prompt_responses')
-              .update({ processing_status: 'scoring_failed' })
-              .eq('id', response.id)
-          }
-        }
-
-        // Run scoring in background without blocking response
-        EdgeRuntime.waitUntil(backgroundScoring())
-
-        return new Response(JSON.stringify({ 
-          response,
-          message: 'Response submitted successfully' 
-        }), {
+        console.log('Response created successfully:', newResponse.id)
+        return new Response(JSON.stringify({ response: newResponse }), {
           status: 201,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
 
-      case 'get-responses':
-        const sessionId = url.searchParams.get('session_id')
-        if (!sessionId) {
-          return new Response(JSON.stringify({ error: 'Session ID required' }), {
+      case 'PUT':
+        if (!responseId || responseId === 'response-handler') {
+          return new Response(JSON.stringify({ error: 'Response ID required' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        // Add session access validation for GET
+        const updateData = await req.json()
+        
+        // Verify ownership if user is authenticated
         if (user) {
-          const { data: sessionCheck } = await supabaseClient
-            .from('assessment_sessions')
-            .select('user_id, organization_id')
-            .eq('id', sessionId)
+          const { data: responseCheck } = await supabaseClient
+            .from('prompt_responses')
+            .select(`
+              session_id,
+              assessment_sessions!inner(user_id)
+            `)
+            .eq('id', responseId)
             .single()
 
-          if (sessionCheck && sessionCheck.user_id && sessionCheck.user_id !== user.id) {
-            // Check if user has organization access
-            const { data: profile } = await supabaseClient
-              .from('profiles')
-              .select('role, organization_id')
-              .eq('id', user.id)
-              .single()
-
-            const hasOrgAccess = profile && 
-              ['admin', 'assessor'].includes(profile.role) &&
-              profile.organization_id === sessionCheck.organization_id
-
-            if (!hasOrgAccess) {
-              return new Response(JSON.stringify({ error: 'Access denied' }), {
-                status: 403,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-              })
-            }
+          if (responseCheck && responseCheck.assessment_sessions.user_id !== user.id) {
+            return new Response(JSON.stringify({ error: 'Access denied' }), {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
           }
         }
 
-        const { data: responses, error: getError } = await supabaseClient
+        const { data: updatedResponse, error: updateError } = await supabaseClient
           .from('prompt_responses')
-          .select(`
-            *,
-            scoring_results (*)
-          `)
-          .eq('session_id', sessionId)
-          .order('prompt_order', { ascending: true })
+          .update(updateData)
+          .eq('id', responseId)
+          .select()
+          .single()
 
-        if (getError) {
-          console.error('Error fetching responses:', getError)
-          return new Response(JSON.stringify({ error: getError.message }), {
+        if (updateError) {
+          console.error('Error updating response:', updateError)
+          return new Response(JSON.stringify({ error: updateError.message }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        return new Response(JSON.stringify({ responses }), {
+        return new Response(JSON.stringify({ response: updatedResponse }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
 
       default:
-        return new Response(JSON.stringify({ error: 'Invalid action' }), {
-          status: 400,
+        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+          status: 405,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
     }
   } catch (error) {
-    console.error('Response Processor Error:', error)
+    console.error('Response Handler Error:', error)
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

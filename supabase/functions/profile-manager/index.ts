@@ -46,65 +46,57 @@ serve(async (req) => {
   try {
     // Get the authorization header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Authorization header missing' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
+    console.log('Profile Manager - Auth header present:', !!authHeader);
+    
     // Create Supabase client with proper authorization
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { 
         global: { 
-          headers: { 
-            Authorization: authHeader
-          } 
+          headers: authHeader ? { Authorization: authHeader } : undefined
         } 
       }
     )
 
-    // Get authenticated user from the JWT token
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    
-    console.log('Auth check:', { user: user?.id, authError });
-    
-    if (authError) {
-      console.error('Authentication error:', authError);
-      return new Response(JSON.stringify({ error: `Authentication failed: ${authError.message}` }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+    // For authenticated requests, get the user
+    let user = null;
+    if (authHeader) {
+      const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+      if (authError) {
+        console.error('Authentication error:', authError);
+        return new Response(JSON.stringify({ error: `Authentication failed: ${authError.message}` }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      user = authUser;
     }
     
-    if (!user) {
-      console.error('No user found in JWT token');
-      return new Response(JSON.stringify({ error: 'No user found in token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+    console.log('Profile Manager - Authenticated user:', user?.id);
 
     const url = new URL(req.url)
     const method = req.method
     const profileId = url.pathname.split('/').pop()
 
-    console.log(`Profile Manager: ${method} request for user ${user.id}`)
+    console.log(`Profile Manager: ${method} request for user ${user?.id}`)
 
     // Check if user is trying to access another user's profile
-    const targetUserId = (profileId && profileId !== 'profile-manager') ? profileId : user.id
+    const targetUserId = (profileId && profileId !== 'profile-manager') ? profileId : user?.id
 
     // Get current user's role for permission checks
-    const { data: currentUserProfile } = await supabaseClient
-      .from('profiles')
-      .select('role, organization_id')
-      .eq('id', user.id)
-      .maybeSingle()
+    let currentUserProfile = null;
+    if (user) {
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, organization_id')
+        .eq('id', user.id)
+        .maybeSingle();
+      currentUserProfile = profile;
+    }
 
     // Permission check: users can only access their own profile unless they're admin
-    if (targetUserId !== user.id && currentUserProfile?.role !== 'admin') {
+    if (targetUserId !== user?.id && currentUserProfile?.role !== 'admin') {
       return new Response(JSON.stringify({ error: 'Access denied' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -140,6 +132,14 @@ serve(async (req) => {
 
       case 'POST':
       case 'PUT':
+        // For profile updates, we need authentication
+        if (!user) {
+          return new Response(JSON.stringify({ error: 'Authentication required for profile updates' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        
         // Only allow users to update their own profile (unless admin)
         if (targetUserId !== user.id && currentUserProfile?.role !== 'admin') {
           return new Response(JSON.stringify({ error: 'Can only update own profile' }), {
@@ -213,6 +213,14 @@ serve(async (req) => {
         })
 
       case 'DELETE':
+        // For delete operations, we need authentication
+        if (!user) {
+          return new Response(JSON.stringify({ error: 'Authentication required for profile deletion' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        
         // Only allow users to deactivate their own profile (unless admin)
         if (targetUserId !== user.id && currentUserProfile?.role !== 'admin') {
           return new Response(JSON.stringify({ error: 'Can only deactivate own profile' }), {

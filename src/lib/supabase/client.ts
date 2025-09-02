@@ -5,19 +5,25 @@ import type { Database } from './database.types';
 const supabaseUrl = "https://rrslhxigqtfllunmowcy.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyc2xoeGlncXRmbGx1bm1vd2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTI0NDUsImV4cCI6MjA2NjUyODQ0NX0.k3wjgHGU3d_k0vzSMP2jeKaXMs85zrhu_vb4Ym2Sq9c";
 
-// Create Supabase client
-const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storage: localStorage
-  }
-});
+// Create Supabase client - ensure singleton
+let supabaseClient: ReturnType<typeof createClient<Database>> | null = null;
 
-console.log("✅ Connected to Supabase");
+const getSupabaseClient = () => {
+  if (!supabaseClient) {
+    supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        storage: localStorage
+      }
+    });
+    console.log("✅ Connected to Supabase");
+  }
+  return supabaseClient;
+};
 
 // Export the client
-export const supabase = supabaseClient;
+export const supabase = getSupabaseClient();
 
 export const getRole = async (): Promise<string | null> => {
   try {

@@ -7,12 +7,15 @@ const corsHeaders = {
 }
 
 interface AudioUploadData {
-  session_id: string;
-  response_id?: string;
-  audio_blob: string;  
-  original_filename?: string;
-  format?: string;
+  response_id: string;
+  file_path: string;
+  file_size?: number;
   duration?: number;
+  format?: string;
+  sample_rate?: number;
+  bit_rate?: number;
+  channels?: number;
+  original_filename?: string;
 }
 
 serve(async (req) => {
@@ -21,173 +24,215 @@ serve(async (req) => {
   }
 
   try {
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization');
+    console.log('Audio Processor - Auth header present:', !!authHeader);
+    
+    // Create Supabase client with proper authorization
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      { 
+        global: { 
+          headers: authHeader ? { Authorization: authHeader } : undefined
+        } 
+      }
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+    // For authenticated requests, get the user
+    let user = null;
+    if (authHeader) {
+      const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+      if (authError) {
+        console.error('Authentication error:', authError);
+        return new Response(JSON.stringify({ error: `Authentication failed: ${authError.message}` }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      user = authUser;
     }
+    
+    console.log('Audio Processor - Authenticated user:', user?.id);
 
+    const url = new URL(req.url)
     const method = req.method
+    const audioId = url.pathname.split('/').pop()
+
     console.log(`Audio Processor: ${method} request for user ${user?.id}`)
 
     switch (method) {
-      case 'POST':
-        const uploadData: AudioUploadData = await req.json()
+      case 'GET':
+        if (audioId && audioId !== 'audio-processor') {
+          // Get specific audio recording
+          const { data: audio, error } = await supabaseClient
+            .from('audio_recordings')
+            .select('*')
+            .eq('id', audioId)
+            .single()
 
-        // Validate required fields
-        if (!uploadData.session_id || !uploadData.audio_blob) {
-          return new Response(JSON.stringify({ error: 'Session ID and audio blob are required' }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
-        }
-
-        // Fetch session first
-        const { data: session, error: sessionError } = await supabaseClient
-          .from('assessment_sessions')
-          .select('id, organization_id, user_id')
-          .eq('id', uploadData.session_id)
-          .single()
-
-        if (sessionError || !session) {
-          return new Response(JSON.stringify({ error: 'Invalid session' }), {
-            status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
-        }
-
-        // Check access permissions
-        if (user && session.user_id !== user.id) {
-          return new Response(JSON.stringify({ error: 'Access denied' }), {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
-        }
-
-        // Fix base64 decoding and create both buffer and blob
-        let audioBuffer: Uint8Array;
-        let audioBlob: Blob;
-        try {
-          const binaryString = atob(uploadData.audio_blob);
-          audioBuffer = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-            audioBuffer[i] = binaryString.charCodeAt(i);
+          if (error) {
+            console.error('Error fetching audio:', error)
+            return new Response(JSON.stringify({ error: error.message }), {
+              status: 404,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
           }
-          audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
-        } catch (error) {
-          return new Response(JSON.stringify({ error: 'Invalid audio data format' }), {
-            status: 400,
+
+          // Get signed URL for the audio file
+          const { data: signedUrl } = await supabaseClient.storage
+            .from('assessment-audio')
+            .createSignedUrl(audio.file_path, 3600) // 1 hour expiry
+
+          return new Response(JSON.stringify({ 
+            audio: { ...audio, signed_url: signedUrl?.signedUrl }
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        } else {
+          // Get audio recordings for a response
+          const responseId = url.searchParams.get('response_id');
+          
+          if (!responseId) {
+            return new Response(JSON.stringify({ error: 'response_id parameter required' }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          const { data: recordings, error } = await supabaseClient
+            .from('audio_recordings')
+            .select('*')
+            .eq('response_id', responseId)
+
+          if (error) {
+            console.error('Error fetching recordings:', error)
+            return new Response(JSON.stringify({ error: error.message }), {
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          // Get signed URLs for all recordings
+          const recordingsWithUrls = await Promise.all(
+            recordings.map(async (recording) => {
+              const { data: signedUrl } = await supabaseClient.storage
+                .from('assessment-audio')
+                .createSignedUrl(recording.file_path, 3600)
+              
+              return {
+                ...recording,
+                signed_url: signedUrl?.signedUrl
+              }
+            })
+          )
+
+          return new Response(JSON.stringify({ recordings: recordingsWithUrls }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-        const fileName = `${uploadData.session_id}/${timestamp}_${uploadData.original_filename || 'recording.webm'}`
+      case 'POST':
+        const audioData: AudioUploadData = await req.json()
+        
+        // Verify response ownership if user is authenticated
+        if (user) {
+          const { data: response } = await supabaseClient
+            .from('prompt_responses')
+            .select(`
+              session_id,
+              assessment_sessions!inner(user_id)
+            `)
+            .eq('id', audioData.response_id)
+            .single()
 
-        const { data: uploadResult, error: uploadError } = await supabaseClient.storage
-          .from('assessment-audio')
-          .upload(fileName, audioBlob, {
-            contentType: 'audio/webm',
-            upsert: false
-          })
-
-        if (uploadError) {
-          console.error('Error uploading audio:', uploadError)
-          return new Response(JSON.stringify({ error: 'Failed to upload audio' }), {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
+          if (response && response.assessment_sessions.user_id !== user.id) {
+            return new Response(JSON.stringify({ error: 'Access denied' }), {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
         }
 
-        // Save audio record to database
-        const { data: audioRecord, error: dbError } = await supabaseClient
+        const { data: newAudio, error: createError } = await supabaseClient
           .from('audio_recordings')
           .insert({
-            response_id: uploadData.response_id,
-            organization_id: session.organization_id,
-            file_path: uploadResult.path,
-            original_filename: uploadData.original_filename,
-            format: uploadData.format || 'webm',
-            duration: uploadData.duration,
-            file_size: audioBuffer.length,
-            transcription_status: 'pending'
+            response_id: audioData.response_id,
+            file_path: audioData.file_path,
+            file_size: audioData.file_size,
+            duration: audioData.duration,
+            format: audioData.format || 'webm',
+            sample_rate: audioData.sample_rate,
+            bit_rate: audioData.bit_rate,
+            channels: audioData.channels || 1,
+            original_filename: audioData.original_filename,
+            is_processed: false
           })
           .select()
           .single()
 
-        if (dbError) {
-          console.error('Error saving audio record:', dbError)
-          return new Response(JSON.stringify({ error: 'Failed to save audio record' }), {
+        if (createError) {
+          console.error('Error creating audio record:', createError)
+          return new Response(JSON.stringify({ error: createError.message }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        // Get signed URL for the uploaded file
-        const { data: signedUrlData } = await supabaseClient.storage
-          .from('assessment-audio')
-          .createSignedUrl(uploadResult.path, 3600) // 1 hour expiry
-
-        console.log('Audio uploaded successfully:', audioRecord.id)
-        return new Response(JSON.stringify({
-          audio_record: audioRecord,
-          audio_url: signedUrlData?.signedUrl,
-          message: 'Audio uploaded successfully'
-        }), {
+        console.log('Audio record created successfully:', newAudio.id)
+        return new Response(JSON.stringify({ audio: newAudio }), {
           status: 201,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
 
-      case 'GET':
-        const url = new URL(req.url)
-        const recordId = url.searchParams.get('record_id')
-
-        if (!recordId) {
-          return new Response(JSON.stringify({ error: 'Record ID required' }), {
+      case 'PUT':
+        if (!audioId || audioId === 'audio-processor') {
+          return new Response(JSON.stringify({ error: 'Audio ID required' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        // Get audio record
-        const { data: record, error: fetchError } = await supabaseClient
-          .from('audio_recordings')
-          .select('*')
-          .eq('id', recordId)
-          .single()
+        const updateData = await req.json()
+        
+        // Verify ownership if user is authenticated
+        if (user) {
+          const { data: audioCheck } = await supabaseClient
+            .from('audio_recordings')
+            .select(`
+              response_id,
+              prompt_responses!inner(
+                session_id,
+                assessment_sessions!inner(user_id)
+              )
+            `)
+            .eq('id', audioId)
+            .single()
 
-        if (fetchError || !record) {
-          return new Response(JSON.stringify({ error: 'Audio record not found' }), {
-            status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
+          if (audioCheck && audioCheck.prompt_responses.assessment_sessions.user_id !== user.id) {
+            return new Response(JSON.stringify({ error: 'Access denied' }), {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
         }
 
-        // Generate signed URL
-        const { data: urlData, error: urlError } = await supabaseClient.storage
-          .from('assessment-audio')
-          .createSignedUrl(record.file_path, 3600)
+        const { data: updatedAudio, error: updateError } = await supabaseClient
+          .from('audio_recordings')
+          .update(updateData)
+          .eq('id', audioId)
+          .select()
+          .single()
 
-        if (urlError) {
-          console.error('Error creating signed URL:', urlError)
-          return new Response(JSON.stringify({ error: 'Failed to generate audio URL' }), {
+        if (updateError) {
+          console.error('Error updating audio:', updateError)
+          return new Response(JSON.stringify({ error: updateError.message }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        return new Response(JSON.stringify({
-          audio_record: record,
-          audio_url: urlData.signedUrl
-        }), {
+        return new Response(JSON.stringify({ audio: updatedAudio }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
 

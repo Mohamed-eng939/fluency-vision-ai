@@ -23,13 +23,36 @@ serve(async (req) => {
   }
 
   try {
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization');
+    console.log('Session Manager - Auth header present:', !!authHeader);
+    
+    // Create Supabase client with proper authorization
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    ) 
+      { 
+        global: { 
+          headers: authHeader ? { Authorization: authHeader } : undefined
+        } 
+      }
+    )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
+    // For authenticated requests, get the user
+    let user = null;
+    if (authHeader) {
+      const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+      if (authError) {
+        console.error('Authentication error:', authError);
+        return new Response(JSON.stringify({ error: `Authentication failed: ${authError.message}` }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      user = authUser;
+    }
+    
+    console.log('Session Manager - Authenticated user:', user?.id);
     const url = new URL(req.url)
     const method = req.method
     const sessionId = url.pathname.split('/').pop()
