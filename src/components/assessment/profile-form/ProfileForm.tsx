@@ -215,11 +215,17 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         role: user?.role || 'learner'
       };
 
-      // Call the profile-manager edge function instead of direct DB calls
-      const { data: result, error: functionError } = await supabase.functions.invoke('profile-manager', {
-        body: profileData,
-        method: 'POST'
+      // Call the profile-manager edge function - let Supabase handle auth automatically
+      console.log('Calling profile-manager edge function with:', {
+        userId: currentSession.user.id,
+        hasSession: !!currentSession
       });
+      
+      const { data: result, error: functionError } = await supabase.functions.invoke('profile-manager', {
+        body: profileData
+      });
+
+      console.log('Edge function response:', { result, functionError });
 
       if (functionError) {
         console.error('Edge function error:', functionError);
