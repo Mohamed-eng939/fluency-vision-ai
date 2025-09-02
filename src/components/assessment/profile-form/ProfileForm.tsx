@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
@@ -20,6 +19,9 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -42,121 +44,84 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     },
   });
 
-  // Auto-generate username based on name and phone
-  React.useEffect(() => {
-    const watchName = form.watch('name');
-    const watchPhone = form.watch('phone');
-    
-    if (watchName && watchPhone && watchPhone.length >= 4) {
-      const baseName = watchName.split(' ')[0].toLowerCase();
-      const lastFourDigits = watchPhone.slice(-4);
-      const generatedUsername = `${baseName}${lastFourDigits}`;
-      
-      // Only update if user hasn't manually changed it
-      form.setValue('username', generatedUsername);
-    }
-  }, [form.watch('name'), form.watch('phone'), form]);
-  
+  // Auto-generate username
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      if (values.name && values.phone && values.phone.length >= 4) {
+        const baseName = values.name.split(' ')[0].toLowerCase();
+        const lastFour = values.phone.slice(-4);
+        form.setValue('username', `${baseName}${lastFour}`, { shouldValidate: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const handleSubmit = async (values: ProfileFormValues) => {
-  try {
-    // 1. Sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        data: {
-          name: values.name,
-          phone: values.phone
-        }
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      // 1. Get current session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        throw new Error("Not authenticated. Please log in first.");
       }
-    });
+      const user = sessionData.session.user;
 
-    if (authError) {
-      // If user exists, try signing in
-      if (authError.message.includes('User already registered')) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password
-        });
+      // 2. Prepare profile payload
+      const payload = {
+        id: user.id, // link to auth user
+        name: values.name,
+        username: values.username,
+        email: values.email,
+        phone: values.phone,
+        date_of_birth: values.dateOfBirth ?? null,
+        country_of_citizenship: values.citizenshipCountry ?? null,
+        country_of_residence: values.residenceCountry ?? null,
+        first_language: values.firstLanguage ?? null,
+        test_reason: values.testReason ?? null,
+        other_reason: values.otherReason ?? null,
+        estimated_level: values.estimatedLevel ?? null,
+        preferred_contact: values.preferredContact ?? 'email',
+        pronunciation_preference: values.pronunciationPreference ?? 'neutral',
+        promo_code: values.promoCode ?? null,
+        data_consent: values.dataConsent,
+        email_results: values.emailResults,
+        updated_at: new Date().toISOString(),
+      };
 
-        if (signInError) throw signInError;
-        if (!signInData.session) throw new Error("No session after sign in");
-        
-        var session = signInData.session;
-      } else {
-        throw authError;
-      }
-    } else {
-      if (!authData.session) throw new Error("No session after sign up");
-      var session = authData.session;
+      // 3. Insert or update profile
+      const { error } = await supabase.from("profiles").upsert(payload);
+      if (error) throw error;
+
+      // 4. Pass to parent
+      const studentInfoData: StudentInfo = {
+        name: values.name,
+        email: values.email,
+        username: values.username,
+        phone: values.phone,
+        citizenshipCountry: values.citizenshipCountry,
+        residenceCountry: values.residenceCountry,
+        dateOfBirth: values.dateOfBirth,
+        firstLanguage: values.firstLanguage,
+        testReason: values.testReason,
+        otherReason: values.otherReason,
+        estimatedLevel: values.estimatedLevel,
+        preferredContact: values.preferredContact,
+        pronunciationPreference: values.pronunciationPreference,
+        promoCode: values.promoCode,
+        dataConsent: values.dataConsent,
+        emailResults: values.emailResults,
+      };
+
+      onSubmit(studentInfoData);
+    } catch (err: any) {
+      console.error("Error submitting profile:", err);
+      setErrorMsg(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    // 2. Prepare the payload matching your profiles table
-    const payload = {
-      id: session.user.id, // Important: link to auth user
-      name: values.name,
-      username: values.username,
-      email: values.email,
-      phone: values.phone,
-      date_of_birth: values.dateOfBirth,
-      country_of_citizenship: values.citizenshipCountry,
-      country_of_residence: values.residenceCountry,
-      first_language: values.firstLanguage,
-      test_reason: values.testReason,
-      other_reason: values.otherReason,
-      estimated_level: values.estimatedLevel,
-      preferred_contact: values.preferredContact,
-      pronunciation_preference: values.pronunciationPreference,
-      promo_code: values.promoCode,
-      data_consent: values.dataConsent,
-      email_results: values.emailResults,
-    };
-
-    // 3. Call Edge Function
-    const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(errorText || "Profile submission failed");
-    }
-
-    const result = await res.json();
-    console.log("Profile saved successfully:", result);
-
-    // 4. Convert and submit
-    const studentInfoData: StudentInfo = {
-      name: values.name,
-      email: values.email,
-      username: values.username,
-      phone: values.phone,
-      citizenshipCountry: values.citizenshipCountry,
-      residenceCountry: values.residenceCountry,
-      dateOfBirth: values.dateOfBirth,
-      firstLanguage: values.firstLanguage,
-      testReason: values.testReason,
-      otherReason: values.otherReason,
-      estimatedLevel: values.estimatedLevel,
-      preferredContact: values.preferredContact,
-      pronunciationPreference: values.pronunciationPreference,
-      promoCode: values.promoCode,
-      dataConsent: values.dataConsent,
-      emailResults: values.emailResults,
-    };
-
-    onSubmit(studentInfoData);
-
-  } catch (err) {
-    console.error("Error submitting profile:", err);
-    alert(err.message);
-  }
-};
+  };
 
   return (
     <Form {...form}>
@@ -166,9 +131,15 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
-        
-        <Button type="submit" className="w-full bg-assessment-blue hover:bg-assessment-lightBlue">
-          Create Profile & Start Assessment
+
+        {errorMsg && <p className="text-red-600">{errorMsg}</p>}
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
+        >
+          {loading ? "Saving Profile..." : "Create Profile & Start Assessment"}
         </Button>
       </form>
     </Form>
