@@ -175,12 +175,21 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         )}
 
         <Button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
-        >
-          {loading ? "Saving..." : "Create Profile & Start Assessment"}
-        </Button>
+  type="submit"
+  disabled={loading}
+  className={`w-full ${
+    errorMsg
+      ? "bg-red-600 hover:bg-red-700"
+      : "bg-assessment-blue hover:bg-assessment-lightBlue"
+  }`}
+>
+  {loading
+    ? "Saving..."
+    : errorMsg
+    ? `❌ ${errorMsg}`
+    : "Create Profile & Start Assessment"}
+</Button>
+
       </form>
     </Form>
   );
