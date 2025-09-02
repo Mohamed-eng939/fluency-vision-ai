@@ -11,7 +11,7 @@ import { ConsentSection } from './ConsentSection';
 import { profileFormSchema, ProfileFormValues } from './types';
 import { countries, languages, cefrLevels, testReasons } from './constants';
 import { StudentInfo } from '@/hooks/assessment';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProfileFormProps {
@@ -146,7 +146,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         username: values.username,
         email: values.email,
         phone: values.phone,
-        date_of_birth: values.dateOfBirth,
+        date_of_birth: values.dateOfBirth.toISOString().split('T')[0], // Convert Date to string
         country_of_citizenship: values.citizenshipCountry,
         country_of_residence: values.residenceCountry,
         first_language: values.firstLanguage,
