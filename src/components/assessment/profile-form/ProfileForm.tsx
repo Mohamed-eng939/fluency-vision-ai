@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,7 @@ interface ProfileFormProps {
   onCancel?: () => void;
 }
 
-export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
+export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -42,59 +41,52 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     },
   });
 
-  // Auto-generate username based on name and phone
+  const [loading, setLoading] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+
+  // Auto-generate username
   React.useEffect(() => {
     const watchName = form.watch('name');
     const watchPhone = form.watch('phone');
-    
     if (watchName && watchPhone && watchPhone.length >= 4) {
       const baseName = watchName.split(' ')[0].toLowerCase();
       const lastFourDigits = watchPhone.slice(-4);
       const generatedUsername = `${baseName}${lastFourDigits}`;
-      
-      // Only update if user hasn't manually changed it
       form.setValue('username', generatedUsername);
     }
   }, [form.watch('name'), form.watch('phone'), form]);
-  
+
   const handleSubmit = async (values: ProfileFormValues) => {
-  try {
-    // 1. Sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        data: {
-          name: values.name,
-          phone: values.phone
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      // 1. Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: { data: { name: values.name, phone: values.phone } }
+      });
+
+      let session = authData?.session;
+
+      if (authError) {
+        // If user exists → sign in
+        if (authError.message.includes('User already registered')) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password
+          });
+          if (signInError) throw signInError;
+          session = signInData.session;
+        } else {
+          throw authError;
         }
       }
-    });
 
-    if (authError) {
-      // If user exists, try signing in
-      if (authError.message.includes('User already registered')) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password
-        });
+      if (!session) throw new Error("No active session after sign up/sign in");
 
-        if (signInError) throw signInError;
-        if (!signInData.session) throw new Error("No session after sign in");
-        
-        var session = signInData.session;
-      } else {
-        throw authError;
-      }
-    } else {
-      if (!authData.session) throw new Error("No session after sign up");
-      var session = authData.session;
-    }
-
-    // 2. Insert profile directly using Supabase client
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .upsert({
+      // 2. Prepare payload for profiles table
+      const payload = {
         id: session.user.id,
         name: values.name,
         username: values.username,
@@ -112,45 +104,58 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         promo_code: values.promoCode,
         data_consent: values.dataConsent,
         email_results: values.emailResults,
-        role: 'learner'
-      })
-      .select()
-      .single();
+      };
 
-    if (profileError) {
-      console.error("Profile creation error:", profileError);
-      throw new Error(profileError.message);
+      // 3. Call Edge Function to save profile
+      const res = await fetch(
+        `https://<your-project-ref>.supabase.co/functions/v1/profile-manager`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Profile submission failed");
+      }
+
+      const result = await res.json();
+      console.log("Profile saved:", result);
+
+      // 4. Convert for StudentInfo
+      const studentInfoData: StudentInfo = {
+        name: values.name,
+        email: values.email,
+        username: values.username,
+        phone: values.phone,
+        citizenshipCountry: values.citizenshipCountry,
+        residenceCountry: values.residenceCountry,
+        dateOfBirth: values.dateOfBirth,
+        firstLanguage: values.firstLanguage,
+        testReason: values.testReason,
+        otherReason: values.otherReason,
+        estimatedLevel: values.estimatedLevel,
+        preferredContact: values.preferredContact,
+        pronunciationPreference: values.pronunciationPreference,
+        promoCode: values.promoCode,
+        dataConsent: values.dataConsent,
+        emailResults: values.emailResults,
+      };
+
+      onSubmit(studentInfoData);
+
+    } catch (err: any) {
+      console.error("Error submitting profile:", err);
+      setErrorMsg(err.message || "Unexpected error");
+    } finally {
+      setLoading(false);
     }
-
-    console.log("Profile created successfully:", profile);
-
-    // 4. Convert and submit
-    const studentInfoData: StudentInfo = {
-      name: values.name,
-      email: values.email,
-      username: values.username,
-      phone: values.phone,
-      citizenshipCountry: values.citizenshipCountry,
-      residenceCountry: values.residenceCountry,
-      dateOfBirth: values.dateOfBirth,
-      firstLanguage: values.firstLanguage,
-      testReason: values.testReason,
-      otherReason: values.otherReason,
-      estimatedLevel: values.estimatedLevel,
-      preferredContact: values.preferredContact,
-      pronunciationPreference: values.pronunciationPreference,
-      promoCode: values.promoCode,
-      dataConsent: values.dataConsent,
-      emailResults: values.emailResults,
-    };
-
-    onSubmit(studentInfoData);
-
-  } catch (err) {
-    console.error("Error submitting profile:", err);
-    alert(err.message);
-  }
-};
+  };
 
   return (
     <Form {...form}>
@@ -160,9 +165,17 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
-        
-        <Button type="submit" className="w-full bg-assessment-blue hover:bg-assessment-lightBlue">
-          Create Profile & Start Assessment
+
+        {errorMsg && (
+          <div className="text-red-600 font-medium">{errorMsg}</div>
+        )}
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
+        >
+          {loading ? "Saving..." : "Create Profile & Start Assessment"}
         </Button>
       </form>
     </Form>
