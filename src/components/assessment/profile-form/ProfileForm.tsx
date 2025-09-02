@@ -79,12 +79,10 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       try {
         setIsInitializing(true);
         
-        // Fetch profile data from Supabase
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
+        // Fetch profile data using the edge function for consistency
+        const { data: result, error } = await supabase.functions.invoke('profile-manager', {
+          method: 'GET'
+        });
 
         if (error) {
           console.error('Error fetching profile:', error);
@@ -96,6 +94,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
           return;
         }
 
+        const profile = result?.profile;
         if (profile) {
           // Populate form with existing data (only use fields that exist in the profiles table)
           form.reset({
@@ -198,7 +197,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         throw new Error("No valid session found");
       }
 
-      // Prepare profile data payload (only include fields that exist in profiles table)
+      // Prepare profile data payload for edge function
       const profileData: ProfileData = {
         id: currentSession.user.id,
         name: values.name,
@@ -216,17 +215,19 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
         role: user?.role || 'learner'
       };
 
-      // Save to Supabase using upsert (insert or update)
-      const { error: upsertError } = await supabase
-        .from('profiles')
-        .upsert(profileData, { 
-          onConflict: 'id',
-          ignoreDuplicates: false 
-        });
+      // Call the profile-manager edge function instead of direct DB calls
+      const { data: result, error: functionError } = await supabase.functions.invoke('profile-manager', {
+        body: profileData,
+        method: 'POST'
+      });
 
-      if (upsertError) {
-        console.error('Supabase upsert error:', upsertError);
-        throw new Error(`Failed to save profile: ${upsertError.message}`);
+      if (functionError) {
+        console.error('Edge function error:', functionError);
+        throw new Error(`Failed to save profile: ${functionError.message}`);
+      }
+
+      if (!result) {
+        throw new Error('No response from profile manager');
       }
 
       // Show success message
