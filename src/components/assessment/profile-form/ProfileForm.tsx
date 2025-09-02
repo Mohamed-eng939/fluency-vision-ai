@@ -75,14 +75,18 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
             email: values.email,
             password: values.password
           });
-          if (signInError) throw signInError;
+          if (signInError) {
+            throw new Error("User already exists with different password. Please use correct password or try with different email.");
+          }
           session = signInData.session;
         } else {
           throw authError;
         }
       }
 
-      if (!session) throw new Error("No active session after sign up/sign in");
+      if (!session) {
+        throw new Error("Please check your email to confirm registration");
+      }
 
       // 2. Prepare payload
       const payload = {
