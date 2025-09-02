@@ -83,14 +83,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         }
       }
 
-      // 🟢 fallback: لو مفيش session بعد SignUp جيبه بـ getSession
-      if (!session) {
-        const { data: { session: freshSession }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !freshSession) throw new Error("No active session after sign up/sign in");
-        session = freshSession;
-      }
-
-      console.log("🟢 Token:", session.access_token);
+      if (!session) throw new Error("No active session after sign up/sign in");
 
       // 2. Prepare payload
       const payload = {
@@ -113,6 +106,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         email_results: values.emailResults,
       };
 
+      console.log("📦 Payload to send:", payload);
+
       // 3. Call Edge Function
       const res = await fetch(
         `https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`,
@@ -126,12 +121,14 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         }
       );
 
+      const rawText = await res.text();
+      console.log("🔵 Raw response:", rawText);
+
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Profile submission failed");
+        throw new Error(`Status ${res.status}: ${rawText}`);
       }
 
-      const result = await res.json();
+      const result = JSON.parse(rawText);
       console.log("✅ Profile saved:", result);
 
       // 4. Pass to parent
@@ -173,20 +170,19 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
 
+        {/* مكان عرض أي Error */}
+        {errorMsg && (
+          <div className="p-3 mt-2 rounded-md bg-red-100 text-red-700 border border-red-300">
+            ❌ {errorMsg}
+          </div>
+        )}
+
         <Button
           type="submit"
           disabled={loading}
-          className={`w-full ${
-            errorMsg
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-assessment-blue hover:bg-assessment-lightBlue"
-          }`}
+          className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
         >
-          {loading
-            ? "Savingققق..."
-            : errorMsg
-              ? `Error: ${errorMsg}`
-              : "Create Profile & Start Assessment"}
+          {loading ? (errorMsg ? `Error: ${errorMsg}` : "Saving...") : "Create Profile & Start Assessment"}
         </Button>
       </form>
     </Form>
