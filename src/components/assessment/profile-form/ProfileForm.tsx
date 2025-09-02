@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
@@ -12,14 +12,40 @@ import { ConsentSection } from './ConsentSection';
 import { profileFormSchema, ProfileFormValues } from './types';
 import { countries, languages, cefrLevels, testReasons } from './constants';
 import { StudentInfo } from '@/hooks/assessment';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/auth';
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
 
 interface ProfileFormProps {
   onSubmit: (data: StudentInfo) => void;
   onCancel?: () => void;
 }
 
+// Profile data type matching actual Supabase profiles table structure
+interface ProfileData {
+  id: string;
+  name?: string | null;
+  username?: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+  date_of_birth?: string | null;
+  country_of_citizenship?: string | null;
+  country_of_residence?: string | null;
+  firstLanguage?: string | null;
+  testReason?: string | null;
+  estimatedLevel?: string | null;
+  preferredContact?: string | null;
+  pronunciationPreference?: string | null;
+  role: string; // Required field
+}
+
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
+  const { user, session } = useAuth();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -42,134 +68,239 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
     },
   });
 
+  // Fetch existing profile data if user is authenticated
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user?.id) {
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        setIsInitializing(true);
+        
+        // Fetch profile data from Supabase
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load profile data",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (profile) {
+          // Populate form with existing data (only use fields that exist in the profiles table)
+          form.reset({
+            name: profile.name || '',
+            username: profile.username || '',
+            email: profile.email || user.email || '',
+            phone: profile.phone_number || '',
+            password: '', // Never pre-fill password
+            confirmPassword: '',
+            citizenshipCountry: profile.country_of_citizenship || '',
+            residenceCountry: profile.country_of_residence || '',
+            dateOfBirth: profile.date_of_birth ? new Date(profile.date_of_birth) : undefined,
+            firstLanguage: profile.firstLanguage || '',
+            testReason: profile.testReason || '',
+            otherReason: '', // Not stored in profiles table
+            estimatedLevel: profile.estimatedLevel || '',
+            preferredContact: (profile.preferredContact as any) || 'email',
+            pronunciationPreference: (profile.pronunciationPreference as any) || 'neutral',
+            promoCode: '', // Not stored in profiles table
+            dataConsent: false, // Not stored in profiles table - always require re-consent
+            emailResults: false, // Not stored in profiles table
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data",
+          variant: "destructive"
+        });
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [user?.id, form, toast]);
+
   // Auto-generate username based on name and phone
-  React.useEffect(() => {
-    const watchName = form.watch('name');
-    const watchPhone = form.watch('phone');
-    
-    if (watchName && watchPhone && watchPhone.length >= 4) {
-      const baseName = watchName.split(' ')[0].toLowerCase();
-      const lastFourDigits = watchPhone.slice(-4);
-      const generatedUsername = `${baseName}${lastFourDigits}`;
-      
-      // Only update if user hasn't manually changed it
-      form.setValue('username', generatedUsername);
-    }
-  }, [form.watch('name'), form.watch('phone'), form]);
-  
-  const handleSubmit = async (values: ProfileFormValues) => {
-  try {
-    // 1. Sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        data: {
-          name: values.name,
-          phone: values.phone
+  useEffect(() => {
+    const subscription = form.watch((values, { name: fieldName }) => {
+      if ((fieldName === 'name' || fieldName === 'phone') && values.name && values.phone && values.phone.length >= 4) {
+        const baseName = values.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+        const lastFourDigits = values.phone.slice(-4);
+        const generatedUsername = `${baseName}${lastFourDigits}`;
+        
+        // Only update if user hasn't manually changed it
+        if (!values.username || form.getValues('username') === generatedUsername.slice(0, -4) + values.phone.slice(-8, -4)) {
+          form.setValue('username', generatedUsername);
         }
       }
     });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
 
-    if (authError) {
-      // If user exists, try signing in
-      if (authError.message.includes('User already registered')) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+  const handleSubmit = async (values: ProfileFormValues) => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    try {
+      let currentSession = session;
+      
+      // If user is not authenticated, sign them up first
+      if (!user) {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email: values.email,
-          password: values.password
+          password: values.password,
+          options: {
+            data: {
+              name: values.name,
+              phone: values.phone
+            }
+          }
         });
 
-        if (signInError) throw signInError;
-        if (!signInData.session) throw new Error("No session after sign in");
-        
-        var session = signInData.session;
-      } else {
-        throw authError;
+        if (authError) {
+          // If user exists, try signing in
+          if (authError.message.includes('User already registered')) {
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: values.email,
+              password: values.password
+            });
+
+            if (signInError) throw signInError;
+            if (!signInData.session) throw new Error("No session after sign in");
+            
+            currentSession = signInData.session;
+          } else {
+            throw authError;
+          }
+        } else {
+          if (!authData.session) throw new Error("No session after sign up");
+          currentSession = authData.session;
+        }
       }
-    } else {
-      if (!authData.session) throw new Error("No session after sign up");
-      var session = authData.session;
+
+      if (!currentSession) {
+        throw new Error("No valid session found");
+      }
+
+      // Prepare profile data payload (only include fields that exist in profiles table)
+      const profileData: ProfileData = {
+        id: currentSession.user.id,
+        name: values.name,
+        username: values.username,
+        email: values.email,
+        phone_number: values.phone,
+        date_of_birth: values.dateOfBirth?.toISOString().split('T')[0] || null,
+        country_of_citizenship: values.citizenshipCountry,
+        country_of_residence: values.residenceCountry,
+        firstLanguage: values.firstLanguage,
+        testReason: values.testReason,
+        estimatedLevel: values.estimatedLevel,
+        preferredContact: values.preferredContact,
+        pronunciationPreference: values.pronunciationPreference,
+        role: user?.role || 'learner'
+      };
+
+      // Save to Supabase using upsert (insert or update)
+      const { error: upsertError } = await supabase
+        .from('profiles')
+        .upsert(profileData, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        });
+
+      if (upsertError) {
+        console.error('Supabase upsert error:', upsertError);
+        throw new Error(`Failed to save profile: ${upsertError.message}`);
+      }
+
+      // Show success message
+      toast({
+        title: "Success",
+        description: user ? "Profile updated successfully!" : "Profile created successfully!",
+      });
+
+      // Convert to StudentInfo format for callback
+      const studentInfoData: StudentInfo = {
+        name: values.name,
+        email: values.email,
+        username: values.username,
+        phone: values.phone,
+        citizenshipCountry: values.citizenshipCountry,
+        residenceCountry: values.residenceCountry,
+        dateOfBirth: values.dateOfBirth,
+        firstLanguage: values.firstLanguage,
+        testReason: values.testReason,
+        otherReason: values.otherReason,
+        estimatedLevel: values.estimatedLevel,
+        preferredContact: values.preferredContact,
+        pronunciationPreference: values.pronunciationPreference,
+        promoCode: values.promoCode,
+        dataConsent: values.dataConsent,
+        emailResults: values.emailResults,
+      };
+
+      onSubmit(studentInfoData);
+
+    } catch (error: any) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save profile. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-    // 2. Prepare the payload matching your profiles table
-    const payload = {
-      id: session.user.id, // Important: link to auth user
-      name: values.name,
-      username: values.username,
-      email: values.email,
-      phone: values.phone,
-      date_of_birth: values.dateOfBirth,
-      country_of_citizenship: values.citizenshipCountry,
-      country_of_residence: values.residenceCountry,
-      first_language: values.firstLanguage,
-      test_reason: values.testReason,
-      other_reason: values.otherReason,
-      estimated_level: values.estimatedLevel,
-      preferred_contact: values.preferredContact,
-      pronunciation_preference: values.pronunciationPreference,
-      promo_code: values.promoCode,
-      data_consent: values.dataConsent,
-      email_results: values.emailResults,
-    };
-
-    // 3. Call Edge Function
-    const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(errorText || "Profile submission failed");
-    }
-
-    const result = await res.json();
-    console.log("Profile saved successfully:", result);
-
-    // 4. Convert and submit
-    const studentInfoData: StudentInfo = {
-      name: values.name,
-      email: values.email,
-      username: values.username,
-      phone: values.phone,
-      citizenshipCountry: values.citizenshipCountry,
-      residenceCountry: values.residenceCountry,
-      dateOfBirth: values.dateOfBirth,
-      firstLanguage: values.firstLanguage,
-      testReason: values.testReason,
-      otherReason: values.otherReason,
-      estimatedLevel: values.estimatedLevel,
-      preferredContact: values.preferredContact,
-      pronunciationPreference: values.pronunciationPreference,
-      promoCode: values.promoCode,
-      dataConsent: values.dataConsent,
-      emailResults: values.emailResults,
-    };
-
-    onSubmit(studentInfoData);
-
-  } catch (err) {
-    console.error("Error submitting profile:", err);
-    alert(err.message);
-  }
-};
+  };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        <PersonalInfoSection form={form} countries={countries} languages={languages} />
-        <AccountSection form={form} />
-        <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
-        <PreferencesSection form={form} />
-        <ConsentSection form={form} />
-        
-        <Button type="submit" className="w-full bg-assessment-blue hover:bg-assessment-lightBlue">
-          Create Profile & Start Assessment
-        </Button>
+        {isInitializing ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="ml-2">Loading profile...</span>
+          </div>
+        ) : (
+          <>
+            <PersonalInfoSection form={form} countries={countries} languages={languages} />
+            <AccountSection form={form} />
+            <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
+            <PreferencesSection form={form} />
+            <ConsentSection form={form} />
+            
+            <Button 
+              type="submit" 
+              disabled={isLoading || isInitializing}
+              className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {user ? 'Updating Profile...' : 'Creating Profile...'}
+                </>
+              ) : (
+                user ? 'Update Profile & Continue' : 'Create Profile & Start Assessment'
+              )}
+            </Button>
+          </>
+        )}
       </form>
     </Form>
   );
