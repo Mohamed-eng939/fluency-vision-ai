@@ -41,7 +41,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   });
 
   const [loading, setLoading] = React.useState(false);
-  const [buttonMsg, setButtonMsg] = React.useState("Create Profile & Start Assessment");
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   // Auto-generate username
   React.useEffect(() => {
@@ -57,7 +57,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = async (values: ProfileFormValues) => {
     setLoading(true);
-    setButtonMsg("Saving...");
+    setErrorMsg(null);
 
     try {
       // 1. Sign up
@@ -84,6 +84,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       }
 
       if (!session) throw new Error("No active session after sign up/sign in");
+
+      console.log("🟢 Token:", session.access_token);
 
       // 2. Prepare payload
       const payload = {
@@ -126,7 +128,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
       const result = await res.json();
       console.log("✅ Profile saved:", result);
-      setButtonMsg("Profile Created ✅");
 
       // 4. Pass to parent
       const studentInfoData: StudentInfo = {
@@ -152,7 +153,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
     } catch (err: any) {
       console.error("🔥 Error submitting profile:", err);
-      setButtonMsg(`Error: ${err.message}`);
+      setErrorMsg(err.message || "Unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -167,12 +168,18 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
 
+        {errorMsg && (
+          <div className="p-3 mt-2 rounded-md bg-red-100 text-red-700 border border-red-300">
+            ❌ {errorMsg}
+          </div>
+        )}
+
         <Button
           type="submit"
           disabled={loading}
           className="w-full bg-assessment-blue hover:bg-assessment-lightBlue"
         >
-          {buttonMsg}
+          {loading ? "Savinسسسg..." : "Create Profile & Start Assessment"}
         </Button>
       </form>
     </Form>
