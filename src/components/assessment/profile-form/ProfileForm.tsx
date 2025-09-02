@@ -91,44 +91,38 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) 
       var session = authData.session;
     }
 
-    // 2. Prepare the payload matching your profiles table
-    const payload = {
-      id: session.user.id, // Important: link to auth user
-      name: values.name,
-      username: values.username,
-      email: values.email,
-      phone: values.phone,
-      date_of_birth: values.dateOfBirth,
-      country_of_citizenship: values.citizenshipCountry,
-      country_of_residence: values.residenceCountry,
-      first_language: values.firstLanguage,
-      test_reason: values.testReason,
-      other_reason: values.otherReason,
-      estimated_level: values.estimatedLevel,
-      preferred_contact: values.preferredContact,
-      pronunciation_preference: values.pronunciationPreference,
-      promo_code: values.promoCode,
-      data_consent: values.dataConsent,
-      email_results: values.emailResults,
-    };
+    // 2. Insert profile directly using Supabase client
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: session.user.id,
+        name: values.name,
+        username: values.username,
+        email: values.email,
+        phone: values.phone,
+        date_of_birth: values.dateOfBirth,
+        country_of_citizenship: values.citizenshipCountry,
+        country_of_residence: values.residenceCountry,
+        first_language: values.firstLanguage,
+        test_reason: values.testReason,
+        other_reason: values.otherReason,
+        estimated_level: values.estimatedLevel,
+        preferred_contact: values.preferredContact,
+        pronunciation_preference: values.pronunciationPreference,
+        promo_code: values.promoCode,
+        data_consent: values.dataConsent,
+        email_results: values.emailResults,
+        role: 'learner'
+      })
+      .select()
+      .single();
 
-    // 3. Call Edge Function
-    const res = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/profile-manager`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(errorText || "Profile submission failed");
+    if (profileError) {
+      console.error("Profile creation error:", profileError);
+      throw new Error(profileError.message);
     }
 
-    const result = await res.json();
-    console.log("Profile saved successfully:", result);
+    console.log("Profile created successfully:", profile);
 
     // 4. Convert and submit
     const studentInfoData: StudentInfo = {
