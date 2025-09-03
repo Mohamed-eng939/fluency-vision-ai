@@ -369,12 +369,14 @@ export type Database = {
           date_of_birth: string | null
           email: string
           email_results: boolean | null
+          estimated_level: string | null
           first_language: string | null
           full_name: string | null
           id: string
           is_active: boolean | null
           last_assessment_at: string | null
           organization_id: string | null
+          other_reason: string | null
           phone: string | null
           preferred_contact: string | null
           promo_code: string | null
@@ -394,12 +396,14 @@ export type Database = {
           date_of_birth?: string | null
           email: string
           email_results?: boolean | null
+          estimated_level?: string | null
           first_language?: string | null
           full_name?: string | null
           id: string
           is_active?: boolean | null
           last_assessment_at?: string | null
           organization_id?: string | null
+          other_reason?: string | null
           phone?: string | null
           preferred_contact?: string | null
           promo_code?: string | null
@@ -419,12 +423,14 @@ export type Database = {
           date_of_birth?: string | null
           email?: string
           email_results?: boolean | null
+          estimated_level?: string | null
           first_language?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean | null
           last_assessment_at?: string | null
           organization_id?: string | null
+          other_reason?: string | null
           phone?: string | null
           preferred_contact?: string | null
           promo_code?: string | null
