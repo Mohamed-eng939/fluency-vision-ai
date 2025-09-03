@@ -14,55 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
-      api_usage_logs: {
+      api_keys: {
         Row: {
-          created_at: string | null
-          endpoint: string
+          api_key: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
           id: string
-          ip_address: unknown | null
-          method: string
-          organization_id: string | null
-          processing_time: number | null
-          request_size: number | null
-          response_size: number | null
-          status_code: number | null
-          tokens_used: number | null
-          user_agent: string | null
-          user_id: string | null
+          is_active: boolean | null
+          key_name: string
+          organization_id: string
+          permissions: Json | null
+          rate_limit: number | null
+          updated_at: string
+          usage_count: number | null
         }
         Insert: {
-          created_at?: string | null
-          endpoint: string
+          api_key?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
           id?: string
-          ip_address?: unknown | null
-          method: string
-          organization_id?: string | null
-          processing_time?: number | null
-          request_size?: number | null
-          response_size?: number | null
-          status_code?: number | null
-          tokens_used?: number | null
-          user_agent?: string | null
-          user_id?: string | null
+          is_active?: boolean | null
+          key_name: string
+          organization_id: string
+          permissions?: Json | null
+          rate_limit?: number | null
+          updated_at?: string
+          usage_count?: number | null
         }
         Update: {
-          created_at?: string | null
-          endpoint?: string
+          api_key?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
           id?: string
-          ip_address?: unknown | null
-          method?: string
-          organization_id?: string | null
-          processing_time?: number | null
-          request_size?: number | null
-          response_size?: number | null
-          status_code?: number | null
-          tokens_used?: number | null
-          user_agent?: string | null
-          user_id?: string | null
+          is_active?: boolean | null
+          key_name?: string
+          organization_id?: string
+          permissions?: Json | null
+          rate_limit?: number | null
+          updated_at?: string
+          usage_count?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "api_usage_logs_organization_id_fkey"
+            foreignKeyName: "api_keys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -70,139 +74,96 @@ export type Database = {
           },
         ]
       }
-      assessment_analytics: {
+      assessment_responses: {
         Row: {
-          avg_completion_rate: number | null
-          avg_processing_time: number | null
-          avg_score: number | null
-          cefr_distribution: Json | null
-          created_at: string | null
+          audio_duration: number | null
+          audio_url: string | null
+          cefr_level: Database["public"]["Enums"]["cefr_level"] | null
+          coherence_score: number | null
+          created_at: string
+          detailed_feedback: Json | null
+          fluency_score: number | null
+          grammar_score: number | null
           id: string
+          is_final: boolean | null
+          mistakes_analysis: Json | null
           organization_id: string | null
-          performance_by_prompt: Json | null
-          period_end: string
-          period_start: string
-          period_type: string
-          score_distribution: Json | null
-          scores_by_skill: Json | null
-          success_rate: number | null
-          total_assessments: number | null
-          total_users: number | null
+          overall_score: number | null
+          processing_metadata: Json | null
+          prompt_id: string
+          prompt_order: number
+          pronunciation_score: number | null
+          session_id: string
+          transcript: string | null
+          updated_at: string
+          user_response: string | null
+          vocabulary_score: number | null
         }
         Insert: {
-          avg_completion_rate?: number | null
-          avg_processing_time?: number | null
-          avg_score?: number | null
-          cefr_distribution?: Json | null
-          created_at?: string | null
+          audio_duration?: number | null
+          audio_url?: string | null
+          cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          coherence_score?: number | null
+          created_at?: string
+          detailed_feedback?: Json | null
+          fluency_score?: number | null
+          grammar_score?: number | null
           id?: string
+          is_final?: boolean | null
+          mistakes_analysis?: Json | null
           organization_id?: string | null
-          performance_by_prompt?: Json | null
-          period_end: string
-          period_start: string
-          period_type: string
-          score_distribution?: Json | null
-          scores_by_skill?: Json | null
-          success_rate?: number | null
-          total_assessments?: number | null
-          total_users?: number | null
+          overall_score?: number | null
+          processing_metadata?: Json | null
+          prompt_id: string
+          prompt_order: number
+          pronunciation_score?: number | null
+          session_id: string
+          transcript?: string | null
+          updated_at?: string
+          user_response?: string | null
+          vocabulary_score?: number | null
         }
         Update: {
-          avg_completion_rate?: number | null
-          avg_processing_time?: number | null
-          avg_score?: number | null
-          cefr_distribution?: Json | null
-          created_at?: string | null
+          audio_duration?: number | null
+          audio_url?: string | null
+          cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          coherence_score?: number | null
+          created_at?: string
+          detailed_feedback?: Json | null
+          fluency_score?: number | null
+          grammar_score?: number | null
           id?: string
+          is_final?: boolean | null
+          mistakes_analysis?: Json | null
           organization_id?: string | null
-          performance_by_prompt?: Json | null
-          period_end?: string
-          period_start?: string
-          period_type?: string
-          score_distribution?: Json | null
-          scores_by_skill?: Json | null
-          success_rate?: number | null
-          total_assessments?: number | null
-          total_users?: number | null
+          overall_score?: number | null
+          processing_metadata?: Json | null
+          prompt_id?: string
+          prompt_order?: number
+          pronunciation_score?: number | null
+          session_id?: string
+          transcript?: string | null
+          updated_at?: string
+          user_response?: string | null
+          vocabulary_score?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "assessment_analytics_organization_id_fkey"
+            foreignKeyName: "assessment_responses_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      assessment_reviews: {
-        Row: {
-          approved_at: string | null
-          approved_by: string | null
-          created_at: string | null
-          id: string
-          is_approved: boolean | null
-          original_score: number | null
-          quality_flags: Json | null
-          response_id: string | null
-          review_status: string | null
-          review_type: string
-          reviewed_score: number | null
-          reviewer_id: string | null
-          reviewer_notes: string | null
-          score_adjustment: number | null
-          score_justification: string | null
-          session_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          approved_at?: string | null
-          approved_by?: string | null
-          created_at?: string | null
-          id?: string
-          is_approved?: boolean | null
-          original_score?: number | null
-          quality_flags?: Json | null
-          response_id?: string | null
-          review_status?: string | null
-          review_type: string
-          reviewed_score?: number | null
-          reviewer_id?: string | null
-          reviewer_notes?: string | null
-          score_adjustment?: number | null
-          score_justification?: string | null
-          session_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          approved_at?: string | null
-          approved_by?: string | null
-          created_at?: string | null
-          id?: string
-          is_approved?: boolean | null
-          original_score?: number | null
-          quality_flags?: Json | null
-          response_id?: string | null
-          review_status?: string | null
-          review_type?: string
-          reviewed_score?: number | null
-          reviewer_id?: string | null
-          reviewer_notes?: string | null
-          score_adjustment?: number | null
-          score_justification?: string | null
-          session_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "assessment_reviews_response_id_fkey"
-            columns: ["response_id"]
+            foreignKeyName: "assessment_responses_prompt_id_fkey"
+            columns: ["prompt_id"]
             isOneToOne: false
-            referencedRelation: "prompt_responses"
+            referencedRelation: "prompts"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "assessment_reviews_session_id_fkey"
+            foreignKeyName: "assessment_responses_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "assessment_sessions"
@@ -212,75 +173,82 @@ export type Database = {
       }
       assessment_sessions: {
         Row: {
-          assessment_settings: Json | null
-          cefr_level: string | null
-          completed_at: string | null
-          confidence_score: number | null
-          created_at: string | null
+          approved_at: string | null
+          assigned_assessor: string | null
+          coherence_score: number | null
+          created_at: string
+          fluency_score: number | null
+          grammar_score: number | null
           has_score_override: boolean | null
           id: string
+          metadata: Json | null
           organization_id: string | null
+          overall_cefr_level: Database["public"]["Enums"]["cefr_level"] | null
           overall_score: number | null
           override_summary: Json | null
-          session_type: string
-          started_at: string | null
-          status: string | null
-          student_country: string | null
-          student_email: string | null
-          student_name: string | null
-          student_phone: string | null
-          target_cefr_level: string | null
-          total_prompts: number | null
-          updated_at: string | null
-          user_id: string | null
+          pronunciation_score: number | null
+          reviewed_at: string | null
+          session_type: string | null
+          status: Database["public"]["Enums"]["assessment_status"] | null
+          student_info: Json | null
+          updated_at: string
+          user_id: string
+          vocabulary_score: number | null
         }
         Insert: {
-          assessment_settings?: Json | null
-          cefr_level?: string | null
-          completed_at?: string | null
-          confidence_score?: number | null
-          created_at?: string | null
+          approved_at?: string | null
+          assigned_assessor?: string | null
+          coherence_score?: number | null
+          created_at?: string
+          fluency_score?: number | null
+          grammar_score?: number | null
           has_score_override?: boolean | null
           id?: string
+          metadata?: Json | null
           organization_id?: string | null
+          overall_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
           overall_score?: number | null
           override_summary?: Json | null
-          session_type: string
-          started_at?: string | null
-          status?: string | null
-          student_country?: string | null
-          student_email?: string | null
-          student_name?: string | null
-          student_phone?: string | null
-          target_cefr_level?: string | null
-          total_prompts?: number | null
-          updated_at?: string | null
-          user_id?: string | null
+          pronunciation_score?: number | null
+          reviewed_at?: string | null
+          session_type?: string | null
+          status?: Database["public"]["Enums"]["assessment_status"] | null
+          student_info?: Json | null
+          updated_at?: string
+          user_id: string
+          vocabulary_score?: number | null
         }
         Update: {
-          assessment_settings?: Json | null
-          cefr_level?: string | null
-          completed_at?: string | null
-          confidence_score?: number | null
-          created_at?: string | null
+          approved_at?: string | null
+          assigned_assessor?: string | null
+          coherence_score?: number | null
+          created_at?: string
+          fluency_score?: number | null
+          grammar_score?: number | null
           has_score_override?: boolean | null
           id?: string
+          metadata?: Json | null
           organization_id?: string | null
+          overall_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
           overall_score?: number | null
           override_summary?: Json | null
-          session_type?: string
-          started_at?: string | null
-          status?: string | null
-          student_country?: string | null
-          student_email?: string | null
-          student_name?: string | null
-          student_phone?: string | null
-          target_cefr_level?: string | null
-          total_prompts?: number | null
-          updated_at?: string | null
-          user_id?: string | null
+          pronunciation_score?: number | null
+          reviewed_at?: string | null
+          session_type?: string | null
+          status?: Database["public"]["Enums"]["assessment_status"] | null
+          student_info?: Json | null
+          updated_at?: string
+          user_id?: string
+          vocabulary_score?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "assessment_sessions_assigned_assessor_fkey"
+            columns: ["assigned_assessor"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "assessment_sessions_organization_id_fkey"
             columns: ["organization_id"]
@@ -288,220 +256,168 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assessment_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      audio_recordings: {
+      assessor_reviews: {
         Row: {
-          bit_rate: number | null
-          channels: number | null
-          created_at: string | null
-          duration: number | null
-          expires_at: string | null
-          file_path: string
-          file_size: number | null
-          format: string | null
+          assessor_feedback: string | null
+          assessor_id: string
+          created_at: string
           id: string
-          is_processed: boolean | null
           organization_id: string | null
-          original_filename: string | null
-          response_id: string | null
-          sample_rate: number | null
-          storage_tier: string | null
-          transcription_status: string | null
+          override_scores: Json | null
+          recommendation: string | null
+          review_status: string | null
+          reviewed_at: string | null
+          session_id: string
+          updated_at: string
         }
         Insert: {
-          bit_rate?: number | null
-          channels?: number | null
-          created_at?: string | null
-          duration?: number | null
-          expires_at?: string | null
-          file_path: string
-          file_size?: number | null
-          format?: string | null
+          assessor_feedback?: string | null
+          assessor_id: string
+          created_at?: string
           id?: string
-          is_processed?: boolean | null
           organization_id?: string | null
-          original_filename?: string | null
-          response_id?: string | null
-          sample_rate?: number | null
-          storage_tier?: string | null
-          transcription_status?: string | null
+          override_scores?: Json | null
+          recommendation?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          session_id: string
+          updated_at?: string
         }
         Update: {
-          bit_rate?: number | null
-          channels?: number | null
-          created_at?: string | null
-          duration?: number | null
-          expires_at?: string | null
-          file_path?: string
-          file_size?: number | null
-          format?: string | null
+          assessor_feedback?: string | null
+          assessor_id?: string
+          created_at?: string
           id?: string
-          is_processed?: boolean | null
           organization_id?: string | null
-          original_filename?: string | null
-          response_id?: string | null
-          sample_rate?: number | null
-          storage_tier?: string | null
-          transcription_status?: string | null
+          override_scores?: Json | null
+          recommendation?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          session_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "audio_recordings_organization_id_fkey"
+            foreignKeyName: "assessor_reviews_assessor_id_fkey"
+            columns: ["assessor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessor_reviews_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "audio_recordings_response_id_fkey"
-            columns: ["response_id"]
+            foreignKeyName: "assessor_reviews_session_id_fkey"
+            columns: ["session_id"]
             isOneToOne: false
-            referencedRelation: "prompt_responses"
+            referencedRelation: "assessment_sessions"
             referencedColumns: ["id"]
           },
         ]
       }
       organizations: {
         Row: {
-          created_at: string | null
+          api_key: string | null
+          created_at: string
+          domain: string | null
           id: string
           is_active: boolean | null
-          max_assessments_per_month: number | null
-          max_users: number | null
           name: string
-          settings: Json | null
-          slug: string
-          subscription_tier: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          api_key?: string | null
+          created_at?: string
+          domain?: string | null
           id?: string
           is_active?: boolean | null
-          max_assessments_per_month?: number | null
-          max_users?: number | null
           name: string
-          settings?: Json | null
-          slug: string
-          subscription_tier?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          api_key?: string | null
+          created_at?: string
+          domain?: string | null
           id?: string
           is_active?: boolean | null
-          max_assessments_per_month?: number | null
-          max_users?: number | null
           name?: string
-          settings?: Json | null
-          slug?: string
-          subscription_tier?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
       profiles: {
         Row: {
-          access_expires_at: string | null
-          access_granted_at: string | null
-          access_granted_by: string | null
-          assessment_credits: number | null
-          avatar_url: string | null
           country_of_citizenship: string | null
           country_of_residence: string | null
-          created_at: string | null
-          data_consent: boolean | null
+          created_at: string
+          current_cefr_level: Database["public"]["Enums"]["cefr_level"] | null
           date_of_birth: string | null
-          email: string | null
-          email_results: boolean | null
-          estimated_level: string | null
+          email: string
           first_language: string | null
-          has_assessment_access: boolean | null
+          full_name: string | null
           id: string
           is_active: boolean | null
-          last_login_at: string | null
-          name: string | null
+          last_assessment_at: string | null
           organization_id: string | null
-          other_reason: string | null
-          payment_status: string | null
           phone: string | null
-          preferred_contact: string | null
-          promo_code: string | null
-          pronunciation_preference: string | null
-          role: string
-          subscription_status: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          target_language: string | null
           test_reason: string | null
-          timezone: string | null
-          updated_at: string | null
+          updated_at: string
           username: string | null
         }
         Insert: {
-          access_expires_at?: string | null
-          access_granted_at?: string | null
-          access_granted_by?: string | null
-          assessment_credits?: number | null
-          avatar_url?: string | null
           country_of_citizenship?: string | null
           country_of_residence?: string | null
-          created_at?: string | null
-          data_consent?: boolean | null
+          created_at?: string
+          current_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
           date_of_birth?: string | null
-          email?: string | null
-          email_results?: boolean | null
-          estimated_level?: string | null
+          email: string
           first_language?: string | null
-          has_assessment_access?: boolean | null
+          full_name?: string | null
           id: string
           is_active?: boolean | null
-          last_login_at?: string | null
-          name?: string | null
+          last_assessment_at?: string | null
           organization_id?: string | null
-          other_reason?: string | null
-          payment_status?: string | null
           phone?: string | null
-          preferred_contact?: string | null
-          promo_code?: string | null
-          pronunciation_preference?: string | null
-          role?: string
-          subscription_status?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          target_language?: string | null
           test_reason?: string | null
-          timezone?: string | null
-          updated_at?: string | null
+          updated_at?: string
           username?: string | null
         }
         Update: {
-          access_expires_at?: string | null
-          access_granted_at?: string | null
-          access_granted_by?: string | null
-          assessment_credits?: number | null
-          avatar_url?: string | null
           country_of_citizenship?: string | null
           country_of_residence?: string | null
-          created_at?: string | null
-          data_consent?: boolean | null
+          created_at?: string
+          current_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
           date_of_birth?: string | null
-          email?: string | null
-          email_results?: boolean | null
-          estimated_level?: string | null
+          email?: string
           first_language?: string | null
-          has_assessment_access?: boolean | null
+          full_name?: string | null
           id?: string
           is_active?: boolean | null
-          last_login_at?: string | null
-          name?: string | null
+          last_assessment_at?: string | null
           organization_id?: string | null
-          other_reason?: string | null
-          payment_status?: string | null
           phone?: string | null
-          preferred_contact?: string | null
-          promo_code?: string | null
-          pronunciation_preference?: string | null
-          role?: string
-          subscription_status?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          target_language?: string | null
           test_reason?: string | null
-          timezone?: string | null
-          updated_at?: string | null
+          updated_at?: string
           username?: string | null
         }
         Relationships: [
@@ -514,143 +430,60 @@ export type Database = {
           },
         ]
       }
-      prompt_responses: {
-        Row: {
-          audio_analysis: Json | null
-          audio_url: string | null
-          cefr_level: string | null
-          coherence_analysis: Json | null
-          completed_at: string | null
-          confidence_score: number | null
-          created_at: string | null
-          fallback_info: Json | null
-          id: string
-          metrics: Json | null
-          processing_error: string | null
-          processing_status: string | null
-          prompt_id: string | null
-          prompt_order: number | null
-          response_duration: number | null
-          session_id: string | null
-          started_at: string | null
-          transcript: string | null
-        }
-        Insert: {
-          audio_analysis?: Json | null
-          audio_url?: string | null
-          cefr_level?: string | null
-          coherence_analysis?: Json | null
-          completed_at?: string | null
-          confidence_score?: number | null
-          created_at?: string | null
-          fallback_info?: Json | null
-          id?: string
-          metrics?: Json | null
-          processing_error?: string | null
-          processing_status?: string | null
-          prompt_id?: string | null
-          prompt_order?: number | null
-          response_duration?: number | null
-          session_id?: string | null
-          started_at?: string | null
-          transcript?: string | null
-        }
-        Update: {
-          audio_analysis?: Json | null
-          audio_url?: string | null
-          cefr_level?: string | null
-          coherence_analysis?: Json | null
-          completed_at?: string | null
-          confidence_score?: number | null
-          created_at?: string | null
-          fallback_info?: Json | null
-          id?: string
-          metrics?: Json | null
-          processing_error?: string | null
-          processing_status?: string | null
-          prompt_id?: string | null
-          prompt_order?: number | null
-          response_duration?: number | null
-          session_id?: string | null
-          started_at?: string | null
-          transcript?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "prompt_responses_prompt_id_fkey"
-            columns: ["prompt_id"]
-            isOneToOne: false
-            referencedRelation: "prompts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "prompt_responses_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "assessment_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       prompts: {
         Row: {
-          category: string
-          cefr_level: string
-          cefr_weight_mapping: Json | null
-          created_at: string | null
+          audio_url: string | null
+          cefr_level: Database["public"]["Enums"]["cefr_level"]
+          content: string
+          created_at: string
           created_by: string | null
-          difficulty: string
-          difficulty_weight: number | null
-          hint: string | null
+          expected_duration: number | null
           id: string
+          instructions: string | null
           is_active: boolean | null
-          is_global: boolean | null
-          order_index: number | null
           organization_id: string | null
-          text: string
-          time_limit: number | null
-          topic: string | null
-          updated_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["prompt_type"]
+          updated_at: string
         }
         Insert: {
-          category: string
-          cefr_level: string
-          cefr_weight_mapping?: Json | null
-          created_at?: string | null
+          audio_url?: string | null
+          cefr_level: Database["public"]["Enums"]["cefr_level"]
+          content: string
+          created_at?: string
           created_by?: string | null
-          difficulty: string
-          difficulty_weight?: number | null
-          hint?: string | null
-          id: string
+          expected_duration?: number | null
+          id?: string
+          instructions?: string | null
           is_active?: boolean | null
-          is_global?: boolean | null
-          order_index?: number | null
           organization_id?: string | null
-          text: string
-          time_limit?: number | null
-          topic?: string | null
-          updated_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["prompt_type"]
+          updated_at?: string
         }
         Update: {
-          category?: string
-          cefr_level?: string
-          cefr_weight_mapping?: Json | null
-          created_at?: string | null
+          audio_url?: string | null
+          cefr_level?: Database["public"]["Enums"]["cefr_level"]
+          content?: string
+          created_at?: string
           created_by?: string | null
-          difficulty?: string
-          difficulty_weight?: number | null
-          hint?: string | null
+          expected_duration?: number | null
           id?: string
+          instructions?: string | null
           is_active?: boolean | null
-          is_global?: boolean | null
-          order_index?: number | null
           organization_id?: string | null
-          text?: string
-          time_limit?: number | null
-          topic?: string | null
-          updated_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["prompt_type"]
+          updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "prompts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "prompts_organization_id_fkey"
             columns: ["organization_id"]
@@ -660,243 +493,56 @@ export type Database = {
           },
         ]
       }
-      responses: {
+      training_data: {
         Row: {
-          assessment_id: string | null
-          audio_url: string | null
-          created_at: string | null
-          id: string
-          is_final: boolean | null
-          prompt_text: string | null
-          reviewer_notes: string | null
-          scores: Json | null
-          transcript: string | null
-        }
-        Insert: {
-          assessment_id?: string | null
-          audio_url?: string | null
-          created_at?: string | null
-          id?: string
-          is_final?: boolean | null
-          prompt_text?: string | null
-          reviewer_notes?: string | null
-          scores?: Json | null
-          transcript?: string | null
-        }
-        Update: {
-          assessment_id?: string | null
-          audio_url?: string | null
-          created_at?: string | null
-          id?: string
-          is_final?: boolean | null
-          prompt_text?: string | null
-          reviewer_notes?: string | null
-          scores?: Json | null
-          transcript?: string | null
-        }
-        Relationships: []
-      }
-      score_overrides: {
-        Row: {
+          assessor_feedback: string | null
           created_at: string
           id: string
-          is_active: boolean
-          original_scores: Json
-          overridden_at: string
-          overridden_by: string
-          override_notes: Json
-          override_reason: string | null
-          override_scores: Json
-          response_id: string | null
-          session_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          original_scores?: Json
-          overridden_at?: string
-          overridden_by: string
-          override_notes?: Json
-          override_reason?: string | null
-          override_scores?: Json
-          response_id?: string | null
-          session_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          original_scores?: Json
-          overridden_at?: string
-          overridden_by?: string
-          override_notes?: Json
-          override_reason?: string | null
-          override_scores?: Json
-          response_id?: string | null
-          session_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      scoring_configurations: {
-        Row: {
-          cefr_thresholds: Json | null
-          coherence_weight: number | null
-          created_at: string | null
-          created_by: string | null
-          custom_rubrics: Json | null
-          description: string | null
-          fluency_weight: number | null
-          grammar_weight: number | null
-          id: string
-          is_active: boolean | null
-          is_default: boolean | null
-          name: string
           organization_id: string | null
-          pronunciation_weight: number | null
-          prosody_weight: number | null
-          syntax_weight: number | null
-          updated_at: string | null
-          vocabulary_weight: number | null
+          prompt_text: string | null
+          quality_rating: number | null
+          response_id: string | null
+          scores: Json | null
+          transcript: string | null
+          user_response: string | null
         }
         Insert: {
-          cefr_thresholds?: Json | null
-          coherence_weight?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          custom_rubrics?: Json | null
-          description?: string | null
-          fluency_weight?: number | null
-          grammar_weight?: number | null
+          assessor_feedback?: string | null
+          created_at?: string
           id?: string
-          is_active?: boolean | null
-          is_default?: boolean | null
-          name: string
           organization_id?: string | null
-          pronunciation_weight?: number | null
-          prosody_weight?: number | null
-          syntax_weight?: number | null
-          updated_at?: string | null
-          vocabulary_weight?: number | null
+          prompt_text?: string | null
+          quality_rating?: number | null
+          response_id?: string | null
+          scores?: Json | null
+          transcript?: string | null
+          user_response?: string | null
         }
         Update: {
-          cefr_thresholds?: Json | null
-          coherence_weight?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          custom_rubrics?: Json | null
-          description?: string | null
-          fluency_weight?: number | null
-          grammar_weight?: number | null
+          assessor_feedback?: string | null
+          created_at?: string
           id?: string
-          is_active?: boolean | null
-          is_default?: boolean | null
-          name?: string
           organization_id?: string | null
-          pronunciation_weight?: number | null
-          prosody_weight?: number | null
-          syntax_weight?: number | null
-          updated_at?: string | null
-          vocabulary_weight?: number | null
+          prompt_text?: string | null
+          quality_rating?: number | null
+          response_id?: string | null
+          scores?: Json | null
+          transcript?: string | null
+          user_response?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "scoring_configurations_organization_id_fkey"
+            foreignKeyName: "training_data_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      scoring_results: {
-        Row: {
-          coherence_feedback: string | null
-          coherence_score: number | null
-          created_at: string | null
-          fluency_feedback: string | null
-          fluency_score: number | null
-          grammar_feedback: string | null
-          grammar_score: number | null
-          id: string
-          overall_feedback: string | null
-          pause_analysis: Json | null
-          pronunciation_analysis: Json | null
-          pronunciation_feedback: string | null
-          pronunciation_score: number | null
-          prosody_feedback: string | null
-          prosody_score: number | null
-          response_id: string | null
-          scoring_method: string | null
-          scoring_version: string | null
-          speech_rate: number | null
-          syntax_feedback: string | null
-          syntax_score: number | null
-          vocabulary_analysis: Json | null
-          vocabulary_feedback: string | null
-          vocabulary_score: number | null
-        }
-        Insert: {
-          coherence_feedback?: string | null
-          coherence_score?: number | null
-          created_at?: string | null
-          fluency_feedback?: string | null
-          fluency_score?: number | null
-          grammar_feedback?: string | null
-          grammar_score?: number | null
-          id?: string
-          overall_feedback?: string | null
-          pause_analysis?: Json | null
-          pronunciation_analysis?: Json | null
-          pronunciation_feedback?: string | null
-          pronunciation_score?: number | null
-          prosody_feedback?: string | null
-          prosody_score?: number | null
-          response_id?: string | null
-          scoring_method?: string | null
-          scoring_version?: string | null
-          speech_rate?: number | null
-          syntax_feedback?: string | null
-          syntax_score?: number | null
-          vocabulary_analysis?: Json | null
-          vocabulary_feedback?: string | null
-          vocabulary_score?: number | null
-        }
-        Update: {
-          coherence_feedback?: string | null
-          coherence_score?: number | null
-          created_at?: string | null
-          fluency_feedback?: string | null
-          fluency_score?: number | null
-          grammar_feedback?: string | null
-          grammar_score?: number | null
-          id?: string
-          overall_feedback?: string | null
-          pause_analysis?: Json | null
-          pronunciation_analysis?: Json | null
-          pronunciation_feedback?: string | null
-          pronunciation_score?: number | null
-          prosody_feedback?: string | null
-          prosody_score?: number | null
-          response_id?: string | null
-          scoring_method?: string | null
-          scoring_version?: string | null
-          speech_rate?: number | null
-          syntax_feedback?: string | null
-          syntax_score?: number | null
-          vocabulary_analysis?: Json | null
-          vocabulary_feedback?: string | null
-          vocabulary_score?: number | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "scoring_results_response_id_fkey"
+            foreignKeyName: "training_data_response_id_fkey"
             columns: ["response_id"]
             isOneToOne: false
-            referencedRelation: "prompt_responses"
+            referencedRelation: "assessment_responses"
             referencedColumns: ["id"]
           },
         ]
@@ -928,7 +574,15 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      assessment_status:
+        | "in_progress"
+        | "completed"
+        | "under_review"
+        | "approved"
+        | "rejected"
+      cefr_level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
+      prompt_type: "speaking" | "read_aloud" | "conversation"
+      user_role: "admin" | "assessor" | "learner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1055,6 +709,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      assessment_status: [
+        "in_progress",
+        "completed",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
+      cefr_level: ["A1", "A2", "B1", "B2", "C1", "C2"],
+      prompt_type: ["speaking", "read_aloud", "conversation"],
+      user_role: ["admin", "assessor", "learner"],
+    },
   },
 } as const
