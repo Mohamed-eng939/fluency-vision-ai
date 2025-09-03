@@ -16,7 +16,7 @@ export interface SessionResponse {
 }
 
 /**
- * Session Service - Handle all session-related operations via Edge Functions
+ * Session Service - Handle all session-related operations via Assessment Manager Edge Function
  */
 export const sessionService = {
   /**
@@ -24,14 +24,28 @@ export const sessionService = {
    */
   initializeSession: async (withEmail: boolean = false): Promise<SessionResponse> => {
     try {
-      const { data, error } = await supabase.functions.invoke('session-manager', {
-        body: {
-          action: 'initialize',
-          emailResults: withEmail
-        }
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/create-session`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.data.session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionType: 'full_assessment',
+          metadata: { emailResults: withEmail }
+        })
       });
 
-      if (error) throw error;
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create session');
+      }
 
       return {
         success: true,
@@ -48,18 +62,34 @@ export const sessionService = {
   },
 
   /**
-   * Store assessment data for a session
+   * Store assessment data for a session (finalize)
    */
   storeAssessmentData: async (sessionData: SessionData): Promise<SessionResponse> => {
     try {
-      const { data, error } = await supabase.functions.invoke('session-manager', {
-        body: {
-          action: 'store',
-          ...sessionData
-        }
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/finalize-session`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.data.session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId: sessionData.sessionId,
+          overallScores: sessionData.finalResult?.metrics || {},
+          cefrLevel: sessionData.finalResult?.cefrLevel,
+          studentInfo: sessionData.studentInfo
+        })
       });
 
-      if (error) throw error;
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to store assessment data');
+      }
 
       return {
         success: true,
@@ -79,14 +109,24 @@ export const sessionService = {
    */
   getSession: async (sessionId: string): Promise<SessionResponse> => {
     try {
-      const { data, error } = await supabase.functions.invoke('session-manager', {
-        body: {
-          action: 'get',
-          sessionId
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/session/${sessionId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.data.session.access_token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      if (error) throw error;
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get session');
+      }
 
       return {
         success: true,
@@ -106,15 +146,25 @@ export const sessionService = {
    */
   updateSessionStatus: async (sessionId: string, status: string): Promise<SessionResponse> => {
     try {
-      const { data, error } = await supabase.functions.invoke('session-manager', {
-        body: {
-          action: 'update_status',
-          sessionId,
-          status
-        }
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/session/${sessionId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.data.session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
       });
 
-      if (error) throw error;
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update session status');
+      }
 
       return {
         success: true,

@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { sessionService } from '@/services/sessionService';
 import { useSupabaseStorage } from './useSupabaseStorage';
 

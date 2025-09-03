@@ -16,9 +16,47 @@ export const useSupabaseStorage = () => {
     try {
       console.log('Storing prompt response for session:', sessionId);
       
-      // For now, just return true until database is fully integrated
-      // This prevents the app from breaking during development
-      console.log('Response stored successfully (mock)');
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/save-response`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.data.session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId,
+          promptId: prompt.id || crypto.randomUUID(),
+          promptOrder,
+          userResponse: result.transcript,
+          transcript,
+          audioUrl,
+          audioDuration: result.duration,
+          scores: {
+            overall: result.metrics.overall || result.totalScore,
+            fluency: result.metrics.fluency,
+            pronunciation: result.metrics.pronunciation,
+            grammar: result.metrics.grammar,
+            vocabulary: result.metrics.vocabulary,
+            coherence: result.metrics.coherence,
+            cefrLevel: result.cefrLevel
+          },
+          detailedFeedback: result.feedback,
+          mistakesAnalysis: result.audioAnalysis,
+          isFinal: false
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to store response');
+      }
+
+      console.log('Response stored successfully:', data);
       return true;
     } catch (error) {
       console.error('Error storing prompt response:', error);
@@ -36,9 +74,39 @@ export const useSupabaseStorage = () => {
       setIsStoring(true);
       console.log('Storing final assessment for session:', sessionId);
 
-      // For now, just return true until database is fully integrated
-      // This prevents the app from breaking during development
-      console.log('Final assessment stored successfully (mock)');
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/finalize-session`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.data.session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId,
+          overallScores: {
+            overall: finalResult.metrics.overall || finalResult.totalScore,
+            fluency: finalResult.metrics.fluency,
+            pronunciation: finalResult.metrics.pronunciation,
+            grammar: finalResult.metrics.grammar,
+            vocabulary: finalResult.metrics.vocabulary,
+            coherence: finalResult.metrics.coherence
+          },
+          cefrLevel: finalResult.cefrLevel,
+          studentInfo
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to store final assessment');
+      }
+
+      console.log('Final assessment stored successfully:', data);
       return true;
     } catch (error) {
       console.error('Error storing final assessment:', error);
