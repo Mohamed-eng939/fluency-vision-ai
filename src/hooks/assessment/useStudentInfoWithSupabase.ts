@@ -103,10 +103,10 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
             const extendedProfile = data as ExtendedProfile;
             
             setStudentInfo({
-              name: extendedProfile.name || extendedProfile.full_name,
+              name: extendedProfile.full_name || extendedProfile.full_name,
               email: extendedProfile.email,
               phone: extendedProfile.phone,
-              username: (extendedProfile.name || extendedProfile.full_name)?.split(' ')[0].toLowerCase() + (extendedProfile.phone?.slice(-4) || ''),
+              username: (extendedProfile.full_name || extendedProfile.full_name)?.split(' ')[0].toLowerCase() + (extendedProfile.phone?.slice(-4) || ''),
               country: extendedProfile.country,
               native_language: extendedProfile.native_language,
               role: extendedProfile.role,
@@ -175,12 +175,11 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
-            name: info.name,
             full_name: info.name,
             phone: info.phone || info.phoneNumber,
-            country: info.country || info.countryCode || info.citizenshipCountry,
-            native_language: info.native_language || info.firstLanguage,
-            role: info.role || 'learner',
+            country_of_citizenship: info.country || info.countryCode || info.citizenshipCountry,
+            first_language: info.native_language || info.firstLanguage,
+            role: (info.role || 'learner') as 'admin' | 'assessor' | 'learner',
             updated_at: new Date().toISOString()
           })
           .eq('id', user.id);

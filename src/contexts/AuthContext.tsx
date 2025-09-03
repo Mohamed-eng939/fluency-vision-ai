@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const extendedProfile = profile as ExtendedProfile;
             setUser({
               id: extendedProfile.id,
-              name: extendedProfile.name || extendedProfile.full_name,
+              name: extendedProfile.full_name || extendedProfile.full_name,
               email: extendedProfile.email,
               role: (extendedProfile.role as UserRole) || 'learner',
               phone: extendedProfile.phone,
@@ -122,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const extendedProfile = profile as ExtendedProfile;
             setUser({
               id: extendedProfile.id,
-              name: extendedProfile.name || extendedProfile.full_name,
+              name: extendedProfile.full_name || extendedProfile.full_name,
               email: extendedProfile.email,
               role: (extendedProfile.role as UserRole) || 'learner',
               phone: extendedProfile.phone,

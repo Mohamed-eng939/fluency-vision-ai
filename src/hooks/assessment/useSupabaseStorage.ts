@@ -18,16 +18,18 @@ export const useSupabaseStorage = () => {
       const { data, error } = await supabase
         .from('responses')
         .insert({
-          assessment_id: sessionId,
-          prompt_text: prompt.text || JSON.stringify(prompt),
+          session_id: sessionId,
+          prompt_id: prompt.id,
+          prompt_order: promptOrder,
+          user_response: prompt.text || JSON.stringify(prompt),
           transcript: transcript || result.transcript,
           audio_url: audioUrl,
-          scores: {
-            fluency: result.metrics.fluency,
-            grammar: result.metrics.grammar,
-            pronunciation: result.metrics.pronunciation,
-            vocabulary: result.metrics.vocabulary,
-            syntax: result.metrics.syntax,
+          overall_score: result.metrics.overall,
+          fluency_score: result.metrics.fluency,
+          grammar_score: result.metrics.grammar,
+          pronunciation_score: result.metrics.pronunciation,
+          vocabulary_score: result.metrics.vocabulary,
+          coherence_score: result.metrics.syntax,
             coherence: result.metrics.coherence,
             prosody: result.metrics.prosody,
             total_score: result.totalScore,
@@ -64,15 +66,16 @@ export const useSupabaseStorage = () => {
       const { data, error } = await supabase
         .from('responses')
         .insert({
-          assessment_id: sessionId,
-          prompt_text: `Final Assessment for ${studentInfo?.name || 'Anonymous'}`,
+          session_id: sessionId,
+          prompt_order: 0,
+          user_response: `Final Assessment for ${studentInfo?.name || 'Anonymous'}`,
           transcript: promptHistory.map(h => h.result?.transcript).filter(Boolean).join(' '),
-          scores: {
-            fluency: finalResult.metrics.fluency,
-            grammar: finalResult.metrics.grammar,
-            pronunciation: finalResult.metrics.pronunciation,
-            vocabulary: finalResult.metrics.vocabulary,
-            syntax: finalResult.metrics.syntax,
+          overall_score: finalResult.metrics.overall,
+          fluency_score: finalResult.metrics.fluency,
+          grammar_score: finalResult.metrics.grammar,
+          pronunciation_score: finalResult.metrics.pronunciation,
+          vocabulary_score: finalResult.metrics.vocabulary,
+          coherence_score: finalResult.metrics.syntax,
             coherence: finalResult.metrics.coherence,
             prosody: finalResult.metrics.prosody,
             total_score: finalResult.totalScore,

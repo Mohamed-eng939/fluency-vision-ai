@@ -112,14 +112,14 @@ const ScoreOverride: React.FC<ScoreOverrideProps> = ({
 
       // Insert score override
       const { error } = await supabase
-        .from('score_overrides')
+        .from('assessor_reviews')
         .insert({
           session_id: sessionId,
+          assessor_id: user.user.id,
           override_scores: overrideData.scores as any,
-          override_notes: overrideData.notes as any,
-          original_scores: result.metrics as any,
-          overridden_by: user.user.id,
-          override_reason: overrideData.reason
+          assessor_feedback: overrideData.notes as any,
+          recommendation: overrideData.reason,
+          review_status: 'approved'
         });
 
       if (error) throw error;

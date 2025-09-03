@@ -12,7 +12,7 @@ export const AssessmentStorageDemo = () => {
     setIsLoading(true);
     try {
       const { data: responses, error } = await supabase
-        .from('responses')
+        .from('assessment_responses')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10);

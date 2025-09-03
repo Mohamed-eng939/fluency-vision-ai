@@ -1,1 +1,13 @@
 project_id = "rrslhxigqtfllunmowcy"
+
+[functions.assessment-manager]
+verify_jwt = true
+
+[functions.prompt-manager] 
+verify_jwt = false
+
+[functions.assessor-manager]
+verify_jwt = true
+
+[functions.admin-manager]
+verify_jwt = true
