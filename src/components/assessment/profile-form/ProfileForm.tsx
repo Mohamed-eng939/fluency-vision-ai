@@ -142,7 +142,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       // 2️⃣ Prepare profile data
       const profileData = {
         id: userId,
-        name: values.name,
+        full_name: values.name, // Fixed: database column is 'full_name', not 'name'
         username: values.username,
         email: values.email,
         phone: values.phone,
