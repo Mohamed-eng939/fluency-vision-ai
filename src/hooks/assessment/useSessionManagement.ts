@@ -12,14 +12,27 @@ export const useSessionManagement = () => {
   
   // Initialize session
   const initializeSession = async (withEmail: boolean = false) => {
-    const response = await sessionService.initializeSession(withEmail);
+    console.log('🚀 [useSessionManagement] Starting session initialization with email:', withEmail);
     
-    if (response.success && response.sessionId) {
-      setSessionId(response.sessionId);
-      setEmailResults(withEmail);
-      return response.sessionId;
-    } else {
-      console.error('Failed to initialize session:', response.error);
+    try {
+      const response = await sessionService.initializeSession(withEmail);
+      console.log('📡 [useSessionManagement] sessionService response:', response);
+      
+      if (response.success && response.sessionId) {
+        console.log('✅ [useSessionManagement] Session created successfully:', response.sessionId);
+        setSessionId(response.sessionId);
+        setEmailResults(withEmail);
+        return response.sessionId;
+      } else {
+        console.error('❌ [useSessionManagement] Failed to initialize session:', response.error);
+        // Generate proper UUID fallback
+        const fallbackId = crypto.randomUUID();
+        setSessionId(fallbackId);
+        setEmailResults(withEmail);
+        return fallbackId;
+      }
+    } catch (error) {
+      console.error('💥 [useSessionManagement] Exception during session initialization:', error);
       // Generate proper UUID fallback
       const fallbackId = crypto.randomUUID();
       setSessionId(fallbackId);
