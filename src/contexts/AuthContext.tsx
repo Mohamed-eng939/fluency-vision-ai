@@ -9,16 +9,15 @@ export type UserRole = 'admin' | 'assessor' | 'learner';
 // Extended profile type that includes the new fields
 interface ExtendedProfile {
   id: string;
-  name: string | null;
-  full_name?: string | null;
+  full_name: string | null;
   role: string | null;
   organization_id: string | null;
   created_at: string | null;
   // Extended fields that we added
   email?: string | null;
   phone?: string | null;
-  country?: string | null;
-  native_language?: string | null;
+  country_of_residence?: string | null;
+  first_language?: string | null;
   username?: string | null;
   updated_at?: string | null;
 }
@@ -76,21 +75,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
             
           if (profile) {
-            setUser({
-              id: profile.id,
-              name: profile.full_name || 'User',
-              email: profile.email,
-              role: (profile.role as UserRole) || 'learner',
-              phone: profile.phone,
             const extendedProfile = profile as ExtendedProfile;
             setUser({
               id: extendedProfile.id,
-              name: extendedProfile.full_name || extendedProfile.full_name,
+              name: extendedProfile.full_name || 'User',
               email: extendedProfile.email,
               role: (extendedProfile.role as UserRole) || 'learner',
               phone: extendedProfile.phone,
-              country: extendedProfile.country,
-              native_language: extendedProfile.native_language
+              country: extendedProfile.country_of_residence,
+              native_language: extendedProfile.first_language
             });
           }
         }
@@ -128,12 +121,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const extendedProfile = profile as ExtendedProfile;
             setUser({
               id: extendedProfile.id,
-              name: extendedProfile.full_name || extendedProfile.full_name,
+              name: extendedProfile.full_name || 'User',
               email: extendedProfile.email,
               role: (extendedProfile.role as UserRole) || 'learner',
               phone: extendedProfile.phone,
-              country: extendedProfile.country,
-              native_language: extendedProfile.native_language
+              country: extendedProfile.country_of_residence,
+              native_language: extendedProfile.first_language
             });
           }
         } catch (error) {
