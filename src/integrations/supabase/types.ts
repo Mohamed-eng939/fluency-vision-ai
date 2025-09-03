@@ -365,8 +365,10 @@ export type Database = {
           country_of_residence: string | null
           created_at: string
           current_cefr_level: Database["public"]["Enums"]["cefr_level"] | null
+          data_consent: boolean | null
           date_of_birth: string | null
           email: string
+          email_results: boolean | null
           first_language: string | null
           full_name: string | null
           id: string
@@ -374,6 +376,9 @@ export type Database = {
           last_assessment_at: string | null
           organization_id: string | null
           phone: string | null
+          preferred_contact: string | null
+          promo_code: string | null
+          pronunciation_preference: string | null
           role: Database["public"]["Enums"]["user_role"] | null
           target_language: string | null
           test_reason: string | null
@@ -385,8 +390,10 @@ export type Database = {
           country_of_residence?: string | null
           created_at?: string
           current_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          data_consent?: boolean | null
           date_of_birth?: string | null
           email: string
+          email_results?: boolean | null
           first_language?: string | null
           full_name?: string | null
           id: string
@@ -394,6 +401,9 @@ export type Database = {
           last_assessment_at?: string | null
           organization_id?: string | null
           phone?: string | null
+          preferred_contact?: string | null
+          promo_code?: string | null
+          pronunciation_preference?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           target_language?: string | null
           test_reason?: string | null
@@ -405,8 +415,10 @@ export type Database = {
           country_of_residence?: string | null
           created_at?: string
           current_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          data_consent?: boolean | null
           date_of_birth?: string | null
           email?: string
+          email_results?: boolean | null
           first_language?: string | null
           full_name?: string | null
           id?: string
@@ -414,6 +426,9 @@ export type Database = {
           last_assessment_at?: string | null
           organization_id?: string | null
           phone?: string | null
+          preferred_contact?: string | null
+          promo_code?: string | null
+          pronunciation_preference?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           target_language?: string | null
           test_reason?: string | null
