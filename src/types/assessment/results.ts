@@ -3,6 +3,7 @@ import { CEFRLevel } from './basic';
 import { AudioAnalysisResult } from './audio';
 
 export interface AssessmentMetrics {
+  overall?: number; // Add overall score
   fluency: number;
   grammar: number;
   pronunciation: number;

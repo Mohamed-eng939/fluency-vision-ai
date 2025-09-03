@@ -1,25 +1,28 @@
 import { useState, useEffect } from 'react';
 import { generateUniqueId } from '@/utils/assessmentUtils';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { profileService } from '@/services/profileService';
 
-// Extended profile type that includes the new fields
 interface ExtendedProfile {
   id: string;
-  name: string | null;
-  full_name?: string | null;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
   role: string | null;
   organization_id: string | null;
+  country_of_citizenship: string | null;
+  country_of_residence: string | null;
+  first_language: string | null;
   created_at: string | null;
-  // Extended fields that we added
-  email?: string | null;
-  phone?: string | null;
-  country?: string | null;
-  native_language?: string | null;
+  updated_at: string | null;
   username?: string | null;
-  updated_at?: string | null;
+  target_language?: string | null;
+  current_cefr_level?: string | null;
+  test_reason?: string | null;
+  date_of_birth?: string | null;
+  is_active?: boolean;
 }
 
 export interface StudentInfo {
@@ -27,66 +30,31 @@ export interface StudentInfo {
   email?: string;
   phone?: string;
   username?: string;
-  password?: string;
   country?: string;
   native_language?: string;
   role?: string;
   sessionId?: string;
-  emailResults?: boolean;
-  // Legacy fields - kept for backward compatibility
-  countryCode?: string;
-  phoneNumber?: string;
+  firstLanguage?: string;
   citizenshipCountry?: string;
   residenceCountry?: string;
-  dateOfBirth?: Date;
-  firstLanguage?: string;
-  testReason?: string;
-  otherReason?: string;
-  estimatedLevel?: string;
-  preferredContact?: "email" | "whatsapp" | "phone";
-  pronunciationPreference?: "british" | "american" | "neutral";
-  promoCode?: string;
-  dataConsent?: boolean;
+  phoneNumber?: string;
+  countryCode?: string;
 }
 
-export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {}) => {
+export const useStudentInfoWithSupabase = (initialInfo: StudentInfo = {}) => {
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  
-  // Initialize with a unique session ID if none provided
+
   useEffect(() => {
     if (!studentInfo && user) {
       const sessionId = initialInfo.sessionId || generateUniqueId('ST');
       
-      // If we have a logged-in user, fetch their profile
       const fetchProfile = async () => {
-        // Try Edge Function first
-        const response = await profileService.getProfile(user.id);
-        
-        if (response.success && response.data) {
-          const extendedProfile = response.data as ExtendedProfile;
-          
-          // Map database fields to our StudentInfo interface
-          setStudentInfo({
-            name: extendedProfile.name || extendedProfile.full_name,
-            email: extendedProfile.email,
-            phone: extendedProfile.phone,
-            username: (extendedProfile.name || extendedProfile.full_name)?.split(' ')[0].toLowerCase() + (extendedProfile.phone?.slice(-4) || ''),
-            country: extendedProfile.country,
-            native_language: extendedProfile.native_language,
-            role: extendedProfile.role,
-            sessionId,
-            // Set compatibility fields
-            firstLanguage: extendedProfile.native_language,
-            citizenshipCountry: extendedProfile.country,
-            residenceCountry: extendedProfile.country,
-            phoneNumber: extendedProfile.phone,
-            countryCode: extendedProfile.country
-          });
-        } else {
-          // Fallback to direct database query
-          console.warn('Edge Function failed, falling back to direct query:', response.error);
+        try {
+          setIsLoading(true);
           
           const { data, error } = await supabase
             .from('profiles')
@@ -100,23 +68,22 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
           }
           
           if (data) {
-            const extendedProfile = data as ExtendedProfile;
+            const profile = data as ExtendedProfile;
             
             setStudentInfo({
-              name: extendedProfile.full_name || extendedProfile.full_name,
-              email: extendedProfile.email,
-              phone: extendedProfile.phone,
-              username: (extendedProfile.full_name || extendedProfile.full_name)?.split(' ')[0].toLowerCase() + (extendedProfile.phone?.slice(-4) || ''),
-              country: extendedProfile.country,
-              native_language: extendedProfile.native_language,
-              role: extendedProfile.role,
+              name: profile.full_name || 'User',
+              email: profile.email || user.email,
+              phone: profile.phone,
+              username: (profile.full_name || 'user')?.split(' ')[0].toLowerCase() + (profile.phone?.slice(-4) || ''),
+              country: profile.country_of_residence,
+              native_language: profile.first_language,
+              role: profile.role,
               sessionId,
-              // Set compatibility fields
-              firstLanguage: extendedProfile.native_language,
-              citizenshipCountry: extendedProfile.country,
-              residenceCountry: extendedProfile.country,
-              phoneNumber: extendedProfile.phone,
-              countryCode: extendedProfile.country
+              firstLanguage: profile.first_language,
+              citizenshipCountry: profile.country_of_citizenship,
+              residenceCountry: profile.country_of_residence,
+              phoneNumber: profile.phone,
+              countryCode: profile.country_of_residence
             });
           } else if (initialInfo.name || initialInfo.email) {
             setStudentInfo({
@@ -124,60 +91,35 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
               sessionId
             });
           }
+        } catch (error) {
+          console.error('Error in fetchProfile:', error);
+        } finally {
+          setIsLoading(false);
         }
       };
-      
+
       fetchProfile();
-    } else if (!studentInfo && (initialInfo.name || initialInfo.email)) {
+    } else if (!user && (initialInfo.name || initialInfo.email)) {
       const sessionId = initialInfo.sessionId || generateUniqueId('ST');
       setStudentInfo({
         ...initialInfo,
         sessionId
       });
     }
-  }, [initialInfo, studentInfo, user]);
+  }, [user, initialInfo, studentInfo]);
 
-  const handleStudentInfoSubmit = async (info: StudentInfo) => {
-    // Generate a session ID if none provided
-    const sessionId = info.sessionId || generateUniqueId('ST');
-    
-    // Generate username if not provided
-    if (!info.username && info.name && (info.phone || info.phoneNumber)) {
-      const firstName = info.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
-      const phone = info.phone || info.phoneNumber || '';
-      const lastFourDigits = phone.slice(-4).replace(/[^0-9]/g, '');
-      info.username = `${firstName}${lastFourDigits}`;
-    }
-    
-    // Store student info
-    const updatedInfo = {
-      ...info,
-      sessionId
-    };
-    
-    setStudentInfo(updatedInfo);
-    
-    // If user is authenticated, update profile via Edge Function
-    if (user) {
-      const response = await profileService.upsertProfile({
-        name: info.name,
-        full_name: info.name,
-        phone: info.phone || info.phoneNumber,
-        country: info.country || info.countryCode || info.citizenshipCountry,
-        native_language: info.native_language || info.firstLanguage,
-        role: info.role || 'learner'
-      });
+  const updateStudentInfo = async (info: StudentInfo) => {
+    try {
+      setIsSaving(true);
       
-      if (!response.success) {
-        // Fallback to direct database update
-        console.warn('Edge Function failed, falling back to direct update:', response.error);
-        
+      if (user) {
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
             full_name: info.name,
             phone: info.phone || info.phoneNumber,
             country_of_citizenship: info.country || info.countryCode || info.citizenshipCountry,
+            country_of_residence: info.residenceCountry || info.country,
             first_language: info.native_language || info.firstLanguage,
             role: (info.role || 'learner') as 'admin' | 'assessor' | 'learner',
             updated_at: new Date().toISOString()
@@ -187,35 +129,44 @@ export const useStudentInfoWithSupabase = (initialInfo: Partial<StudentInfo> = {
         if (updateError) {
           console.error('Error updating profile:', updateError);
           toast({
-            title: "Failed to update profile",
-            description: updateError.message,
-            variant: "destructive"
+            title: "Error",
+            description: "Failed to save profile. Please try again.",
+            variant: "destructive",
           });
-          return null;
+          return false;
         }
+        
+        toast({
+          title: "Success",
+          description: "Profile updated successfully!",
+        });
       }
-    } else {
-      // For non-authenticated users (should be rare with Supabase auth)
-      try {
-        localStorage.setItem('lingua_student_info', JSON.stringify(updatedInfo));
-      } catch (error) {
-        console.warn('Could not save student info to localStorage:', error);
-      }
-    }
-    
-    // Notify
-    if (info.name) {
+      
+      setStudentInfo(prev => prev ? { ...prev, ...info } : info);
+      return true;
+    } catch (error) {
+      console.error('Error updating student info:', error);
       toast({
-        title: "Profile Created",
-        description: `Thank you, ${info.name}. Your profile has been created.`
+        title: "Error",
+        description: "Failed to save information. Please try again.",
+        variant: "destructive",
       });
+      return false;
+    } finally {
+      setIsSaving(false);
     }
-    
-    return updatedInfo;
+  };
+
+  const resetStudentInfo = () => {
+    setStudentInfo(null);
   };
 
   return {
     studentInfo,
-    handleStudentInfoSubmit,
+    setStudentInfo,
+    updateStudentInfo,
+    resetStudentInfo,
+    isLoading,
+    isSaving,
   };
 };

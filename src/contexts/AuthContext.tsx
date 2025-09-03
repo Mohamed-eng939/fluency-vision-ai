@@ -76,6 +76,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
             
           if (profile) {
+            setUser({
+              id: profile.id,
+              name: profile.full_name || 'User',
+              email: profile.email,
+              role: (profile.role as UserRole) || 'learner',
+              phone: profile.phone,
             const extendedProfile = profile as ExtendedProfile;
             setUser({
               id: extendedProfile.id,
