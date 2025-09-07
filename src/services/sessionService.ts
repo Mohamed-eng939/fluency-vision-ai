@@ -21,8 +21,21 @@ export interface SessionResponse {
 // Helper function to finalize anonymous session
 async function finalizeAnonymousSession(sessionData: SessionData): Promise<SessionResponse> {
   console.log('🔄 [sessionService] Finalizing anonymous session directly in DB');
+  console.log('🔄 [sessionService] Using sessionId:', sessionData.sessionId);
+  
+  // Use sessionId from sessionData or from studentInfo as fallback
+  const effectiveSessionId = sessionData.sessionId || sessionData.studentInfo?.sessionId;
+  
+  if (!effectiveSessionId) {
+    console.error('❌ [sessionService] No valid session ID found for anonymous finalization');
+    return {
+      success: false,
+      error: 'No valid session ID found'
+    };
+  }
   
   try {
+    // First try to update existing session
     const { data: session, error } = await supabase
       .from('assessment_sessions')
       .update({
@@ -36,13 +49,44 @@ async function finalizeAnonymousSession(sessionData: SessionData): Promise<Sessi
         overall_cefr_level: sessionData.finalResult?.cefrLevel || 'A1',
         student_info: sessionData.studentInfo
       })
-      .eq('id', sessionData.sessionId)
+      .eq('id', effectiveSessionId)
       .select()
       .single();
 
     if (error) {
-      console.error('❌ [sessionService] Anonymous finalization failed:', error);
-      throw new Error('Failed to finalize anonymous session');
+      console.log('⚠️ [sessionService] Session update failed, trying to create new session:', error);
+      
+      // If update fails, try to create the session
+      const { data: newSession, error: createError } = await supabase
+        .from('assessment_sessions')
+        .insert({
+          id: effectiveSessionId,
+          user_id: effectiveSessionId, // Use as anonymous user ID
+          session_type: 'full_assessment',
+          status: 'completed',
+          overall_score: sessionData.finalResult?.metrics?.overall || 0,
+          fluency_score: sessionData.finalResult?.metrics?.fluency || 0,
+          pronunciation_score: sessionData.finalResult?.metrics?.pronunciation || 0,
+          grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
+          vocabulary_score: sessionData.finalResult?.metrics?.vocabulary || 0,
+          coherence_score: sessionData.finalResult?.metrics?.coherence || 0,
+          overall_cefr_level: sessionData.finalResult?.cefrLevel || 'A1',
+          student_info: sessionData.studentInfo,
+          metadata: { anonymous: true, created_during_finalization: true }
+        })
+        .select()
+        .single();
+        
+      if (createError) {
+        console.error('❌ [sessionService] Anonymous session creation failed:', createError);
+        throw new Error('Failed to create anonymous session');
+      }
+      
+      console.log('✅ [sessionService] Created new anonymous session successfully');
+      return {
+        success: true,
+        data: { session: newSession }
+      };
     }
 
     console.log('✅ [sessionService] Anonymous session finalized successfully');

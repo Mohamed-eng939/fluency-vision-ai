@@ -43,16 +43,27 @@ export const useSessionManagement = () => {
   
   // Store assessment data
   const storeAssessmentData = async (studentInfo: any, promptHistory: any[], finalResult: any) => {
-    console.log('Storing assessment data via session-manager', {
+    // Use the sessionId from studentInfo if our sessionId is empty or invalid
+    const effectiveSessionId = sessionId || studentInfo?.sessionId || crypto.randomUUID();
+    
+    console.log('💾 [useSessionManagement] Storing assessment data', {
       sessionId,
+      effectiveSessionId,
+      studentInfoSessionId: studentInfo?.sessionId,
       studentInfo,
       promptHistory,
       finalResult
     });
     
+    // Update our internal sessionId if it was empty
+    if (!sessionId && effectiveSessionId) {
+      console.log('🔧 [useSessionManagement] Updating internal sessionId:', effectiveSessionId);
+      setSessionId(effectiveSessionId);
+    }
+    
     // Store via Edge Function
     const response = await sessionService.storeAssessmentData({
-      sessionId,
+      sessionId: effectiveSessionId,
       studentInfo,
       promptHistory,
       finalResult,
@@ -63,9 +74,9 @@ export const useSessionManagement = () => {
     
     // Fallback to direct database storage if Edge Function fails
     if (!success) {
-      console.warn('Edge Function failed, falling back to direct storage:', response.error);
+      console.warn('⚠️ [useSessionManagement] Edge Function failed, falling back to direct storage:', response.error);
       success = await storeFinalAssessment(
-        sessionId,
+        effectiveSessionId,
         finalResult,
         studentInfo,
         promptHistory
@@ -80,7 +91,7 @@ export const useSessionManagement = () => {
     
     // Return exportable data for UI usage
     return {
-      sessionId,
+      sessionId: effectiveSessionId,
       studentInfo,
       promptHistory,
       finalResult,

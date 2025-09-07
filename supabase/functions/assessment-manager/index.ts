@@ -263,6 +263,25 @@ async function finalizeAssessmentSession(supabase: any, userId: string, requestB
     const { sessionId, overallScores, cefrLevel, studentInfo } = requestBody;
 
     console.log(`[Assessment Manager] Finalizing session ${sessionId} for user ${userId}`);
+    
+    // Validate sessionId
+    if (!sessionId || sessionId === '') {
+      console.error('[Assessment Manager] Session ID is required for finalization. sessionId:', sessionId);
+      return new Response(
+        JSON.stringify({ error: 'Session ID is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate sessionId is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      console.error('[Assessment Manager] Invalid session ID format:', sessionId);
+      return new Response(
+        JSON.stringify({ error: 'Invalid session ID format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // First try to find existing session
     const { data: existingSession, error: findError } = await supabase
