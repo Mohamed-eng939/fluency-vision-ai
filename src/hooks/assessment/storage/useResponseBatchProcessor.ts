@@ -55,15 +55,18 @@ export const useResponseBatchProcessor = () => {
           let audioPath: string | undefined = undefined;
           if (response.audioBlob) {
             try {
+              console.log(`🎵 [BatchProcessor] Attempting audio upload for response ${index + 1}...`);
               const upload = await uploadAudio(response.audioBlob, sessionId);
               if (upload.path) {
                 audioPath = upload.path;
-                console.log(`🎵 [BatchProcessor] Audio uploaded successfully: ${audioPath}`);
+                console.log(`✅ [BatchProcessor] Audio uploaded successfully: ${audioPath}`);
               } else if (upload.error) {
-                console.warn('⚠️ [BatchProcessor] Audio upload failed:', upload.error);
+                console.warn('⚠️ [BatchProcessor] Audio upload failed, continuing without audio:', upload.error);
+                // Don't let audio upload failure break the entire process
               }
             } catch (uploadError) {
-              console.warn('⚠️ [BatchProcessor] Audio upload exception:', uploadError);
+              console.warn('⚠️ [BatchProcessor] Audio upload exception, continuing without audio:', uploadError);
+              // Continue processing even if audio upload fails
             }
           }
 
@@ -78,10 +81,10 @@ export const useResponseBatchProcessor = () => {
               response.transcript,
               audioPath
             );
-            console.log(`✅ [BatchProcessor] Response ${index + 1} stored successfully`);
+            console.log(`✅ [BatchProcessor] Response ${index + 1} stored successfully in database`);
           } catch (storeError) {
-            console.error(`❌ [BatchProcessor] Failed to store response ${index + 1}:`, storeError);
-            // Continue processing even if storage fails
+            console.error(`❌ [BatchProcessor] Failed to store response ${index + 1} in database:`, storeError);
+            // Continue processing even if individual response storage fails
           }
           
           processedHistory.push({
@@ -97,10 +100,12 @@ export const useResponseBatchProcessor = () => {
         }
       }
       
-      console.log(`🎊 [BatchProcessor] All responses processed. Calculating final result...`);
+      console.log(`🎊 [BatchProcessor] All ${storedResponses.length} responses processed successfully!`);
       
       // Calculate aggregated final result
+      console.log(`🧮 [BatchProcessor] Calculating aggregated result from ${allResults.length} results...`);
       const aggregatedResult = await calculateAggregatedResult(allResults, sessionId, studentName);
+      console.log(`📊 [BatchProcessor] Aggregated result calculated:`, aggregatedResult ? 'Success' : 'Failed');
       
       // Store final assessment result in database
       if (aggregatedResult) {

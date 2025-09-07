@@ -36,7 +36,7 @@ export const audioService = {
         body: {
           action: 'upload',
           audioData: base64Audio,
-          assessmentId,
+          sessionId: assessmentId, // Use sessionId instead of assessmentId
           promptId,
           contentType: audioBlob.type
         }

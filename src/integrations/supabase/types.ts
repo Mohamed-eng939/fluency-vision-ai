@@ -91,6 +91,7 @@ export type Database = {
           overall_score: number | null
           processing_metadata: Json | null
           prompt_id: string
+          prompt_identifier: string | null
           prompt_order: number
           pronunciation_score: number | null
           session_id: string
@@ -115,6 +116,7 @@ export type Database = {
           overall_score?: number | null
           processing_metadata?: Json | null
           prompt_id: string
+          prompt_identifier?: string | null
           prompt_order: number
           pronunciation_score?: number | null
           session_id: string
@@ -139,6 +141,7 @@ export type Database = {
           overall_score?: number | null
           processing_metadata?: Json | null
           prompt_id?: string
+          prompt_identifier?: string | null
           prompt_order?: number
           pronunciation_score?: number | null
           session_id?: string
