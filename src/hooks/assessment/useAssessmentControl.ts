@@ -48,20 +48,22 @@ export const useAssessmentControl = (config: Partial<AssessmentFlowConfig> = {})
     emailResults: boolean,
     bypassScoringDelay: boolean
   ) => {
-    console.log("Finishing assessment with result:", finalAssessmentResult);
+    console.log("🏁 Finishing assessment with result:", finalAssessmentResult);
+    console.log("🏁 Email results:", emailResults, "Bypass delay:", bypassScoringDelay);
+    
     setFinalResult(finalAssessmentResult);
     
-    // Store assessment data
-    storeAssessmentData(studentInfo, promptHistory, finalAssessmentResult);
-    
-    if (emailResults && !bypassScoringDelay) {
-      setCurrentStep(AssessmentStep.PROCESSING);
-      setTimeout(() => {
-        setCurrentStep(AssessmentStep.RESULTS);
-      }, 3000);
-    } else {
-      setCurrentStep(AssessmentStep.RESULTS);
+    // Store assessment data (async but don't block UI)
+    if (finalAssessmentResult) {
+      Promise.resolve(storeAssessmentData(studentInfo, promptHistory, finalAssessmentResult))
+        .catch(error => console.error("Failed to store assessment data:", error));
     }
+    
+    // Always move to results step after a brief delay for user feedback
+    setTimeout(() => {
+      console.log("🎯 Moving to RESULTS step");
+      setCurrentStep(AssessmentStep.RESULTS);
+    }, 1500); // Shorter delay for better UX
   };
 
   // Reset the entire assessment

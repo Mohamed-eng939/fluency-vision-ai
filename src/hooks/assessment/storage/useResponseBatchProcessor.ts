@@ -120,7 +120,10 @@ export const useResponseBatchProcessor = () => {
       
       // Update prompt history with processed results
       if (setPromptHistory) {
+        console.log(`📝 [BatchProcessor] Updating prompt history with ${processedHistory.length} entries`);
         setPromptHistory(processedHistory);
+      } else {
+        console.log(`📝 [BatchProcessor] No setPromptHistory callback provided`);
       }
       
       console.log("🎉 [BatchProcessor] Batch processing completed successfully!");

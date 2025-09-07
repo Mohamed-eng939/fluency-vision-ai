@@ -90,21 +90,37 @@ export const useAssessmentFlowHandlers = ({
     console.log("Starting batch processing phase for all stored responses");
     setCurrentStep(AssessmentStep.PROCESSING);
     
-    const lastResult = await processAllStoredResponses(
-      sessionId,
-      studentInfo?.name,
-      (history) => {} // setPromptHistory handled in parent
-    );
-    
-    finishAssessment(
-      lastResult,
-      setFinalResult,
-      storeAssessmentData,
-      studentInfo,
-      promptHistory,
-      emailResults,
-      bypassScoringDelay
-    );
+    try {
+      const lastResult = await processAllStoredResponses(
+        sessionId,
+        studentInfo?.name,
+        undefined // Let the parent handle prompt history updates
+      );
+      
+      console.log("✅ Batch processing completed, calling finishAssessment with result:", lastResult);
+      
+      finishAssessment(
+        lastResult,
+        setFinalResult,
+        storeAssessmentData,
+        studentInfo,
+        promptHistory,
+        emailResults,
+        bypassScoringDelay
+      );
+    } catch (error) {
+      console.error("❌ Error in batch processing:", error);
+      // Even if processing fails, finish with null result
+      finishAssessment(
+        null,
+        setFinalResult,
+        storeAssessmentData,
+        studentInfo,
+        promptHistory,
+        emailResults,
+        bypassScoringDelay
+      );
+    }
   };
   
   // Skip to next prompt
