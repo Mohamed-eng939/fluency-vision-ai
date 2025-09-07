@@ -30,6 +30,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
   onTakeFullAssessment
 }) => {
   const { storeAssessmentData } = useSessionManagement();
+  const [storageError, setStorageError] = React.useState<string | null>(null);
   
   console.log("ResultsStep rendering with result:", result, "isProcessing:", isProcessing);
   
@@ -50,9 +51,11 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
       storeAssessmentData(studentInfo, promptHistory, result)
         .then(() => {
           console.log("✅ ResultsStep: Fallback storage successful");
+          setStorageError(null);
         })
         .catch((error) => {
-          console.log("ℹ️ ResultsStep: Fallback storage failed (data may already be stored):", error);
+          console.log("❌ ResultsStep: Fallback storage failed:", error);
+          setStorageError(error?.message || error?.toString() || "Failed to save assessment data");
         });
     }
   }, [result, isProcessing, promptHistory, storeAssessmentData]);
@@ -112,6 +115,17 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
         </CardHeader>
         
         <CardContent>
+          {/* Storage Error Display */}
+          {storageError && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h3 className="text-red-800 font-semibold mb-2">Data Storage Error</h3>
+              <p className="text-red-700 text-sm">{storageError}</p>
+              <p className="text-red-600 text-xs mt-2">
+                Your assessment results are displayed but may not be saved to the database.
+              </p>
+            </div>
+          )}
+          
           {/* Enhanced CEFR Skills Breakdown */}
           {(result as any)?.cefrLevels && (
             <div className="mb-6">
