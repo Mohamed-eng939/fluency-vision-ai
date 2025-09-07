@@ -40,11 +40,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             const userProfile: UserProfile = {
               id: session.user.id,
-              name: profile?.name || session.user.user_metadata?.name || '',
+              full_name: profile?.full_name || session.user.user_metadata?.name || '',
               email: session.user.email || profile?.email || '',
               role: (profile?.role as UserRole) || 'learner',
-              phone: profile?.phone_number || '',
-              country: profile?.country_of_residence || ''
+              phone: profile?.phone || '',
+              country_of_citizenship: profile?.country_of_citizenship || '',
+              country_of_residence: profile?.country_of_residence || '',
+              first_language: profile?.first_language || '',
+              username: profile?.username || '',
+              date_of_birth: profile?.date_of_birth || null,
             };
             
             setUser(userProfile);
@@ -53,9 +57,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Set basic user info even if profile fetch fails
             const basicUser: UserProfile = {
               id: session.user.id,
-              name: session.user.user_metadata?.name || '',
+              full_name: session.user.user_metadata?.name || '',
               email: session.user.email || '',
-              role: 'learner'
+              role: 'learner',
+              phone: '',
+              country_of_citizenship: '',
+              country_of_residence: '',
+              first_language: '',
+              username: '',
+              date_of_birth: null,
             };
             setUser(basicUser);
           }
@@ -128,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            name: userData.name,
+            full_name: userData.full_name,
             role: userData.role || 'learner'
           }
         }
@@ -149,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('profiles')
           .insert({
             id: data.user.id,
-            name: userData.name || email.split('@')[0],
+            full_name: userData.full_name || email.split('@')[0],
             email: email,
             role: userData.role || 'learner'
           });

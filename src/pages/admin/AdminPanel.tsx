@@ -23,7 +23,7 @@ const AdminPanel: React.FC = () => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-assessment-blue">Admin Control Panel</h1>
-          <p className="text-muted-foreground">Welcome, {user?.name || 'Admin'} (Testing Mode)</p>
+          <p className="text-muted-foreground">Welcome, {user?.full_name || 'Admin'} (Testing Mode)</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => window.location.href = '/'}>Home</Button>

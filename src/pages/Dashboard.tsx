@@ -189,7 +189,7 @@ const Dashboard: React.FC = () => {
               <p className="text-gray-600 mt-1">Comprehensive assessment insights and performance metrics</p>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">Welcome, {user?.name || 'Admin'}</span>
+              <span className="text-sm text-gray-500">Welcome, {user?.full_name || 'Admin'}</span>
               <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>
             </div>
           </div>

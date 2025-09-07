@@ -71,10 +71,10 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     if (user && !studentInfo) {
       // Create default student info from user profile
       const defaultInfo = {
-        name: user.name || 'Anonymous User',
+        name: user.full_name || 'Anonymous User',
         email: user.email || '',
         sessionId: sessionId || `session-${Date.now()}`,
-        countryCode: user.country || '',
+        countryCode: user.country_of_citizenship || '',
         phoneNumber: user.phone || '',
       };
       
