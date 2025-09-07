@@ -50,24 +50,24 @@ export const assessorService = {
       // Try Edge Function first
       try {
         const { data, error } = await supabase.functions.invoke('assessment-manager', {
-          method: 'GET',
-          body: null,
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
-          }
+          body: { action: 'get-pending-sessions' }
         });
 
         if (error) {
           throw new Error(error.message);
         }
 
-        console.log('✅ [assessorService] Got pending assessments via Edge Function:', data);
+        if (!data?.success) {
+          throw new Error(data?.error || 'Failed to get pending sessions');
+        }
+
+        console.log('✅ [assessorService] Got pending assessments via Edge Function:', data.sessions?.length);
         return {
           success: true,
           data: data.sessions || []
         };
       } catch (edgeError) {
-        console.log('🔄 [assessorService] Edge Function failed, trying direct DB...');
+        console.log('🔄 [assessorService] Edge Function failed, trying direct DB...', edgeError);
         
         // Fallback to direct database query
         const { data: sessions, error: dbError } = await supabase

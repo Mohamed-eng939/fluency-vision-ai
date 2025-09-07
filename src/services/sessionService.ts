@@ -107,7 +107,7 @@ export const sessionService = {
    * Initialize a new assessment session
    */
   initializeSession: async (withEmail: boolean = false): Promise<SessionResponse> => {
-    console.log('🚀 [sessionService] Starting session initialization...');
+    console.log('🚀 [sessionService] Starting session initialization with email:', withEmail);
     
     try {
       // Check authentication first
@@ -115,6 +115,7 @@ export const sessionService = {
       console.log('🔐 [sessionService] Auth session:', { 
         hasSession: !!session, 
         hasUser: !!session?.user,
+        userId: session?.user?.id,
         authError: authError?.message 
       });
       
@@ -125,7 +126,7 @@ export const sessionService = {
       }
 
       // Use Supabase client function invoke
-      console.log('📡 [sessionService] Calling assessment-manager Edge Function...');
+      console.log('📡 [sessionService] Calling assessment-manager Edge Function with user:', session.user.id);
       const { data, error } = await supabase.functions.invoke('assessment-manager', {
         body: {
           action: 'create-session',
@@ -134,17 +135,19 @@ export const sessionService = {
         }
       });
 
-      console.log('📡 [sessionService] Edge Function response:', { data, error });
+      console.log('📡 [sessionService] Edge Function response:', { data, error, status: data?.status });
       
       if (error) {
-        throw new Error(error.message || 'Failed to create session via Edge Function');
+        console.log('🔄 [sessionService] Edge Function error, falling back to anonymous session:', error);
+        return await createAnonymousSession(withEmail);
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Session creation failed');
+      if (!data?.success) {
+        console.log('🔄 [sessionService] Edge Function unsuccessful, falling back to anonymous session:', data?.error);
+        return await createAnonymousSession(withEmail);
       }
 
-      console.log('✅ [sessionService] Session created successfully:', data.sessionId);
+      console.log('✅ [sessionService] Session created successfully via Edge Function:', data.sessionId);
       return {
         success: true,
         sessionId: data.sessionId,
@@ -163,7 +166,9 @@ export const sessionService = {
    * Store assessment data for a session (finalize)
    */
   storeAssessmentData: async (sessionData: SessionData): Promise<SessionResponse> => {
-    console.log('💾 [sessionService] Starting assessment data storage...', sessionData.sessionId);
+    console.log('💾 [sessionService] Starting assessment data storage for session:', sessionData.sessionId);
+    console.log('💾 [sessionService] Final result metrics:', sessionData.finalResult?.metrics);
+    console.log('💾 [sessionService] Student info:', sessionData.studentInfo);
     
     try {
       const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -174,7 +179,7 @@ export const sessionService = {
       }
 
       // Use Supabase client function invoke
-      console.log('📡 [sessionService] Calling finalize-session Edge Function...');
+      console.log('📡 [sessionService] Calling finalize-session Edge Function with user:', session.user.id);
       const { data, error } = await supabase.functions.invoke('assessment-manager', {
         body: {
           action: 'finalize-session',
@@ -185,18 +190,19 @@ export const sessionService = {
         }
       });
 
-      console.log('📡 [sessionService] Finalization response:', { data, error });
+      console.log('📡 [sessionService] Finalization response:', { data, error, success: data?.success });
       
       if (error) {
-        console.log('🔄 [sessionService] Edge Function failed, falling back to direct DB...');
+        console.log('🔄 [sessionService] Edge Function failed, falling back to direct DB...', error);
         return await finalizeAnonymousSession(sessionData);
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Assessment finalization failed');
+      if (!data?.success) {
+        console.log('🔄 [sessionService] Edge Function unsuccessful, falling back to direct DB:', data?.error);
+        return await finalizeAnonymousSession(sessionData);
       }
 
-      console.log('✅ [sessionService] Assessment finalized successfully');
+      console.log('✅ [sessionService] Assessment finalized successfully via Edge Function');
       return {
         success: true,
         data

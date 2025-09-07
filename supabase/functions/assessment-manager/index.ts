@@ -63,7 +63,10 @@ serve(async (req) => {
       case 'POST':
         const action = requestBody?.action;
         
-        if (action === 'create-session') {
+        // Add get-pending-sessions action
+        if (action === 'get-pending-sessions') {
+          return await getPendingSessions(supabase, user.id);
+        } else if (action === 'create-session') {
           return await createAssessmentSession(supabase, user.id, requestBody);
         } else if (action === 'save-response') {
           return await saveAssessmentResponse(supabase, user.id, requestBody);
