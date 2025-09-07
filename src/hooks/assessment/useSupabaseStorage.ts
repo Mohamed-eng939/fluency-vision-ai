@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AssessmentResult, SpeakingPrompt } from '@/types/assessment';
+import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
 
 export const useSupabaseStorage = () => {
   const [isStoring, setIsStoring] = useState(false);
@@ -95,7 +96,7 @@ export const useSupabaseStorage = () => {
             vocabulary: finalResult.metrics.vocabulary,
             coherence: finalResult.metrics.coherence
           },
-          cefrLevel: finalResult.cefrLevel,
+          cefrLevel: normalizeCEFRForDatabase(finalResult.cefrLevel),
           studentInfo
         })
       });

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
+import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
 
 export interface SessionData {
   sessionId: string;
@@ -46,7 +47,7 @@ async function finalizeAnonymousSession(sessionData: SessionData): Promise<Sessi
         grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
         vocabulary_score: sessionData.finalResult?.metrics?.vocabulary || 0,
         coherence_score: sessionData.finalResult?.metrics?.coherence || 0,
-        overall_cefr_level: sessionData.finalResult?.cefrLevel || 'A1',
+        overall_cefr_level: normalizeCEFRForDatabase(sessionData.finalResult?.cefrLevel || 'A1'),
         student_info: sessionData.studentInfo
       })
       .eq('id', effectiveSessionId)
@@ -70,7 +71,7 @@ async function finalizeAnonymousSession(sessionData: SessionData): Promise<Sessi
           grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
           vocabulary_score: sessionData.finalResult?.metrics?.vocabulary || 0,
           coherence_score: sessionData.finalResult?.metrics?.coherence || 0,
-          overall_cefr_level: sessionData.finalResult?.cefrLevel || 'A1',
+          overall_cefr_level: normalizeCEFRForDatabase(sessionData.finalResult?.cefrLevel || 'A1'),
           student_info: sessionData.studentInfo,
           metadata: { anonymous: true, created_during_finalization: true }
         })
@@ -229,7 +230,7 @@ export const sessionService = {
           action: 'finalize-session',
           sessionId: sessionData.sessionId,
           overallScores: sessionData.finalResult?.metrics || {},
-          cefrLevel: sessionData.finalResult?.cefrLevel,
+          cefrLevel: normalizeCEFRForDatabase(sessionData.finalResult?.cefrLevel),
           studentInfo: sessionData.studentInfo
         }
       });

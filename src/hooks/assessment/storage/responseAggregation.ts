@@ -1,6 +1,7 @@
 
 import { AssessmentResult, CEFRLevel } from '@/types/assessment';
 import { generateSmartFeedback } from './feedbackGeneration';
+import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
 
 /**
  * Skill weights for CEFR-aligned assessment
