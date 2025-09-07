@@ -99,6 +99,10 @@ export const useAssessmentFlowHandlers = ({
       
       console.log("✅ Batch processing completed, calling finishAssessment with result:", lastResult);
       
+      // Set the final result first
+      setFinalResult(lastResult);
+      
+      // Then call finishAssessment to transition to RESULTS step
       finishAssessment(
         lastResult,
         setFinalResult,
@@ -110,7 +114,8 @@ export const useAssessmentFlowHandlers = ({
       );
     } catch (error) {
       console.error("❌ Error in batch processing:", error);
-      // Even if processing fails, finish with null result
+      // Even if processing fails, set null result and finish
+      setFinalResult(null);
       finishAssessment(
         null,
         setFinalResult,

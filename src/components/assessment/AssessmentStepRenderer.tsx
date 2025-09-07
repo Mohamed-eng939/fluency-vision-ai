@@ -27,6 +27,7 @@ interface AssessmentStepRendererProps {
   showAdminControls: boolean;
   processingProgress?: { current: number; total: number };
   sessionId?: string;
+  processBatchAndFinish?: () => void;
 
   // Methods
   onSelectQuickAssessment: () => void;
@@ -57,6 +58,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
   showAdminControls,
   processingProgress,
   sessionId,
+  processBatchAndFinish,
   onSelectQuickAssessment,
   initializeAssessment,
   onStudentInfoSubmit,
@@ -119,7 +121,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
               });
             }}
             onNext={skipToNextPrompt}
-            onFinish={() => finishAssessment(finalResult)}
+            onFinish={() => processBatchAndFinish?.()}
           />
         );
       }
@@ -131,7 +133,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
           totalPrompts={23} // Only count free response questions
           onRecordingComplete={handleResponseComplete}
           onPause={() => {}} // This would be implemented for pausing functionality
-          onFinishNow={() => finishAssessment(finalResult)}
+          onFinishNow={() => processBatchAndFinish?.()}
           onNext={skipToNextPrompt}
           isProcessing={isProcessing}
         />
@@ -162,7 +164,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
             });
           }}
           onNext={skipToNextPrompt}
-          onFinish={() => finishAssessment(finalResult)}
+          onFinish={() => processBatchAndFinish?.()}
         />
       );
     

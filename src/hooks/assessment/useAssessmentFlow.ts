@@ -83,11 +83,12 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     startAssessment: startAssessmentFlow,
     handleResponseComplete,
     skipToNextPrompt,
-    finishAssessment: processBatchAndFinish,
+    finishAssessment: () => processBatchAndFinish(),
     resetAssessment: resetAssessmentFlow,
     toggleAdminReviewMode: state.toggleAdminReviewMode,
     handleStudentInfoSubmit: state.handleStudentInfoSubmit,
     processAllStoredResponses: processBatchAndFinish,
+    processBatchAndFinish,
     
     // Configuration
     flowConfig: state.flowConfig,
