@@ -163,7 +163,7 @@ async function createAssessmentSession(supabase: any, userId: string, requestBod
 // Save individual assessment response
 async function saveAssessmentResponse(supabase: any, userId: string, requestBody: any) {
   try {
-    const { sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = requestBody;
+    const { sessionId, promptId, promptIdentifier, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = requestBody;
 
     console.log(`[Assessment Manager] Saving response for session ${sessionId}, prompt order ${promptOrder}`);
 
@@ -187,6 +187,7 @@ async function saveAssessmentResponse(supabase: any, userId: string, requestBody
       .insert({
         session_id: sessionId,
         prompt_id: promptId,
+        prompt_identifier: promptIdentifier,
         prompt_order: promptOrder,
         user_response: userResponse,
         transcript: transcript,
