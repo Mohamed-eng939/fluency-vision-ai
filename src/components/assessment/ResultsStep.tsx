@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 import AssessmentResults from './AssessmentResults';
 import ProcessingResults from './ProcessingResults';
 import CEFRSkillsBreakdown from '@/components/reports/sections/CEFRSkillsBreakdown';
+import { useSessionManagement } from '@/hooks/assessment/useSessionManagement';
 
 interface ResultsStepProps {
   result: AssessmentResult | null;
@@ -28,7 +29,33 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
   onReset,
   onTakeFullAssessment
 }) => {
+  const { storeAssessmentData } = useSessionManagement();
+  
   console.log("ResultsStep rendering with result:", result, "isProcessing:", isProcessing);
+  
+  // Fallback storage: if we have a result but no evidence of storage, try to store it
+  useEffect(() => {
+    if (result && !isProcessing) {
+      console.log("🔍 ResultsStep: Checking if we need to store assessment data...");
+      
+      // Simple check: if we have a result, try to store it as a fallback
+      // This ensures data gets saved even if the main flow missed it somehow
+      const studentInfo = {
+        name: result.learnerName || 'Anonymous User',
+        sessionId: result.sessionId,
+        email: '', // Will be filled by the session management
+      };
+      
+      console.log("💾 ResultsStep: Attempting fallback storage of assessment data");
+      storeAssessmentData(studentInfo, promptHistory, result)
+        .then(() => {
+          console.log("✅ ResultsStep: Fallback storage successful");
+        })
+        .catch((error) => {
+          console.log("ℹ️ ResultsStep: Fallback storage failed (data may already be stored):", error);
+        });
+    }
+  }, [result, isProcessing, promptHistory, storeAssessmentData]);
   
   // Show processing state if still processing
   if (isProcessing) {

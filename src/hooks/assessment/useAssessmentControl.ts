@@ -50,13 +50,25 @@ export const useAssessmentControl = (config: Partial<AssessmentFlowConfig> = {})
   ) => {
     console.log("🏁 Finishing assessment with result:", finalAssessmentResult);
     console.log("🏁 Email results:", emailResults, "Bypass delay:", bypassScoringDelay);
+    console.log("🏁 Student info:", studentInfo);
+    console.log("🏁 Prompt history length:", promptHistory?.length);
     
     setFinalResult(finalAssessmentResult);
     
     // Store assessment data (async but don't block UI)
     if (finalAssessmentResult) {
+      console.log("💾 Calling storeAssessmentData...");
       Promise.resolve(storeAssessmentData(studentInfo, promptHistory, finalAssessmentResult))
-        .catch(error => console.error("Failed to store assessment data:", error));
+        .then(() => {
+          console.log("✅ Assessment data stored successfully");
+        })
+        .catch(error => {
+          console.error("❌ Failed to store assessment data:", error);
+          // Show user error notification
+          console.error("Storage failed - assessment data not saved to database");
+        });
+    } else {
+      console.log("⚠️ No final result to store");
     }
     
     // Always move to results step after a brief delay for user feedback

@@ -87,7 +87,10 @@ export const useAssessmentFlowHandlers = ({
 
   // Process all stored responses and finish assessment
   const processBatchAndFinish = async () => {
-    console.log("Starting batch processing phase for all stored responses");
+    console.log("🔄 Starting batch processing phase for all stored responses");
+    console.log("🔄 Session ID:", sessionId);
+    console.log("🔄 Student Info:", studentInfo);
+    
     setCurrentStep(AssessmentStep.PROCESSING);
     
     try {
@@ -97,12 +100,13 @@ export const useAssessmentFlowHandlers = ({
         undefined // Let the parent handle prompt history updates
       );
       
-      console.log("✅ Batch processing completed, calling finishAssessment with result:", lastResult);
+      console.log("✅ Batch processing completed, result:", lastResult);
       
       // Set the final result first
       setFinalResult(lastResult);
       
-      // Then call finishAssessment to transition to RESULTS step
+      // Then call finishAssessment to transition to RESULTS step and store data
+      console.log("🏁 Calling finishAssessment with storage...");
       finishAssessment(
         lastResult,
         setFinalResult,
