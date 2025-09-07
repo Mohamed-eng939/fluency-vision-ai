@@ -576,6 +576,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_session_for_finalization: {
+        Args: { session_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
       get_current_user_organization: {
         Args: Record<PropertyKey, never>
         Returns: string

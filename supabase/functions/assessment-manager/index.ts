@@ -167,18 +167,45 @@ async function saveAssessmentResponse(supabase: any, userId: string, requestBody
 
     console.log(`[Assessment Manager] Saving response for session ${sessionId}, prompt order ${promptOrder}`);
 
-    // Verify session belongs to user
-    const { data: session, error: sessionError } = await supabase
+    // First try to find existing session
+    const { data: existingSession, error: findError } = await supabase
       .from('assessment_sessions')
       .select('id, user_id')
       .eq('id', sessionId)
-      .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (sessionError || !session) {
+    let session = existingSession;
+
+    // If session doesn't exist, create it now
+    if (!existingSession && !findError) {
+      console.log(`[Assessment Manager] Session ${sessionId} not found, creating it now`);
+      
+      const { data: newSession, error: createError } = await supabase
+        .from('assessment_sessions')
+        .insert({
+          id: sessionId, // Use the provided session ID
+          user_id: userId,
+          session_type: 'full_assessment',
+          student_info: studentInfo,
+          status: 'in_progress'
+        })
+        .select('id, user_id')
+        .single();
+
+      if (createError) {
+        console.error('[Assessment Manager] Failed to create session:', createError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to create session', details: createError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      session = newSession;
+    } else if (findError) {
+      console.error('[Assessment Manager] Session lookup error:', findError);
       return new Response(
-        JSON.stringify({ error: 'Session not found or access denied' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Session lookup failed', details: findError.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -237,18 +264,45 @@ async function finalizeAssessmentSession(supabase: any, userId: string, requestB
 
     console.log(`[Assessment Manager] Finalizing session ${sessionId} for user ${userId}`);
 
-    // Verify session belongs to user
-    const { data: session, error: sessionError } = await supabase
+    // First try to find existing session
+    const { data: existingSession, error: findError } = await supabase
       .from('assessment_sessions')
       .select('id, user_id')
       .eq('id', sessionId)
-      .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (sessionError || !session) {
+    let session = existingSession;
+
+    // If session doesn't exist, create it now
+    if (!existingSession && !findError) {
+      console.log(`[Assessment Manager] Session ${sessionId} not found, creating it now`);
+      
+      const { data: newSession, error: createError } = await supabase
+        .from('assessment_sessions')
+        .insert({
+          id: sessionId, // Use the provided session ID
+          user_id: userId,
+          session_type: 'full_assessment',
+          student_info: studentInfo,
+          status: 'in_progress'
+        })
+        .select('id, user_id')
+        .single();
+
+      if (createError) {
+        console.error('[Assessment Manager] Failed to create session:', createError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to create session', details: createError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      session = newSession;
+    } else if (findError) {
+      console.error('[Assessment Manager] Session lookup error:', findError);
       return new Response(
-        JSON.stringify({ error: 'Session not found or access denied' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Session lookup failed', details: findError.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
