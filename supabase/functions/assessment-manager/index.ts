@@ -45,24 +45,39 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const method = req.method;
+    
+    // Read request body only once for POST requests
+    let requestBody = null;
+    if (method === 'POST') {
+      try {
+        requestBody = await req.json();
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON in request body' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     switch (method) {
       case 'POST':
-        const body = await req.json();
-        const action = body.action;
+        const action = requestBody?.action;
         
         if (action === 'create-session') {
-          return await createAssessmentSession(req, supabase, user.id, body);
+          return await createAssessmentSession(supabase, user.id, requestBody);
         } else if (action === 'save-response') {
-          return await saveAssessmentResponse(req, supabase, user.id, body);
+          return await saveAssessmentResponse(supabase, user.id, requestBody);
         } else if (action === 'finalize-session') {
-          return await finalizeAssessmentSession(req, supabase, user.id, body);
+          return await finalizeAssessmentSession(supabase, user.id, requestBody);
         } else if (url.pathname.endsWith('/create-session')) {
-          return await createAssessmentSession(req, supabase, user.id);
+          return await createAssessmentSession(supabase, user.id, requestBody);
         } else if (url.pathname.endsWith('/save-response')) {
-          return await saveAssessmentResponse(req, supabase, user.id);
+          return await saveAssessmentResponse(supabase, user.id, requestBody);
         } else if (url.pathname.endsWith('/finalize-session')) {
-          return await finalizeAssessmentSession(req, supabase, user.id);
+          return await finalizeAssessmentSession(supabase, user.id, requestBody);
+        } else {
+          // Handle default case for assessment-manager calls without specific action
+          return await createAssessmentSession(supabase, user.id, requestBody);
         }
         break;
       
@@ -72,13 +87,16 @@ serve(async (req) => {
         } else if (url.pathname.includes('/session/')) {
           const sessionId = url.pathname.split('/session/')[1];
           return await getSessionDetails(supabase, user.id, sessionId);
+        } else if (url.pathname.endsWith('/pending-sessions')) {
+          return await getPendingSessions(supabase, user.id);
         }
         break;
 
       case 'PUT':
         if (url.pathname.includes('/session/')) {
           const sessionId = url.pathname.split('/session/')[1];
-          return await updateSessionStatus(req, supabase, user.id, sessionId);
+          const body = await req.json();
+          return await updateSessionStatus(supabase, user.id, sessionId, body);
         }
         break;
     }
@@ -98,16 +116,9 @@ serve(async (req) => {
 });
 
 // Create a new assessment session
-async function createAssessmentSession(req: Request, supabase: any, userId: string, requestBody?: any) {
+async function createAssessmentSession(supabase: any, userId: string, requestBody: any) {
   try {
-    // Handle both action-based and URL-based requests
-    let sessionType, studentInfo, metadata;
-    
-    if (requestBody) {
-      ({ sessionType, studentInfo, metadata } = requestBody);
-    } else {
-      ({ sessionType, studentInfo, metadata } = await req.json());
-    }
+    const { sessionType, studentInfo, metadata } = requestBody || {};
 
     console.log(`[Assessment Manager] Creating session for user ${userId}, type: ${sessionType}`);
 
@@ -147,16 +158,9 @@ async function createAssessmentSession(req: Request, supabase: any, userId: stri
 }
 
 // Save individual assessment response
-async function saveAssessmentResponse(req: Request, supabase: any, userId: string, requestBody?: any) {
+async function saveAssessmentResponse(supabase: any, userId: string, requestBody: any) {
   try {
-    // Handle both action-based and URL-based requests
-    let sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal;
-    
-    if (requestBody) {
-      ({ sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = requestBody);
-    } else {
-      ({ sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = await req.json());
-    }
+    const { sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = requestBody;
 
     console.log(`[Assessment Manager] Saving response for session ${sessionId}, prompt order ${promptOrder}`);
 
@@ -223,16 +227,9 @@ async function saveAssessmentResponse(req: Request, supabase: any, userId: strin
 }
 
 // Finalize assessment session with overall results
-async function finalizeAssessmentSession(req: Request, supabase: any, userId: string, requestBody?: any) {
+async function finalizeAssessmentSession(supabase: any, userId: string, requestBody: any) {
   try {
-    // Handle both action-based and URL-based requests
-    let sessionId, overallScores, cefrLevel, studentInfo;
-    
-    if (requestBody) {
-      ({ sessionId, overallScores, cefrLevel, studentInfo } = requestBody);
-    } else {
-      ({ sessionId, overallScores, cefrLevel, studentInfo } = await req.json());
-    }
+    const { sessionId, overallScores, cefrLevel, studentInfo } = requestBody;
 
     console.log(`[Assessment Manager] Finalizing session ${sessionId} for user ${userId}`);
 
@@ -378,9 +375,9 @@ async function getSessionDetails(supabase: any, userId: string, sessionId: strin
 }
 
 // Update session status
-async function updateSessionStatus(req: Request, supabase: any, userId: string, sessionId: string) {
+async function updateSessionStatus(supabase: any, userId: string, sessionId: string, body: any) {
   try {
-    const { status } = await req.json();
+    const { status } = body;
 
     const { data: updatedSession, error } = await supabase
       .from('assessment_sessions')
@@ -408,6 +405,78 @@ async function updateSessionStatus(req: Request, supabase: any, userId: string, 
     return new Response(
       JSON.stringify({ error: 'Invalid request data' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+// Get pending assessment sessions for assessors
+async function getPendingSessions(supabase: any, userId: string) {
+  try {
+    console.log(`[Assessment Manager] Getting pending sessions for assessor ${userId}`);
+
+    // Get user profile to check role and organization
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role, organization_id')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile) {
+      return new Response(
+        JSON.stringify({ error: 'User profile not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (profile.role !== 'assessor' && profile.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: 'Access denied: Insufficient permissions' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get completed assessment sessions that need review
+    let query = supabase
+      .from('assessment_sessions')
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          email,
+          first_language,
+          country_of_residence
+        )
+      `)
+      .eq('status', 'completed')
+      .is('assigned_assessor', null)
+      .order('created_at', { ascending: false });
+
+    // If user is assessor (not admin), filter by organization
+    if (profile.role === 'assessor' && profile.organization_id) {
+      query = query.eq('organization_id', profile.organization_id);
+    }
+
+    const { data: sessions, error } = await query;
+
+    if (error) {
+      console.error('[Assessment Manager] Get pending sessions error:', error);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch pending sessions', details: error.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[Assessment Manager] Found ${sessions?.length || 0} pending sessions`);
+    return new Response(
+      JSON.stringify({ success: true, sessions: sessions || [] }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('[Assessment Manager] Get pending sessions error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 }
