@@ -35,7 +35,8 @@ export const useSupabaseStorageResponse = () => {
         body: {
           action: 'save-response',
           sessionId,
-          promptId: prompt.id || crypto.randomUUID(),
+          promptId: crypto.randomUUID(), // Always generate a valid UUID
+          promptIdentifier: prompt.id || `Q${promptOrder}`, // Store original ID separately
           promptOrder,
           userResponse: transcript || '',
           transcript,
@@ -90,7 +91,8 @@ export const useSupabaseStorageResponse = () => {
         .from('assessment_responses')
         .insert({
           session_id: sessionId,
-          prompt_id: prompt.id || crypto.randomUUID(),
+          prompt_id: crypto.randomUUID(), // Always generate a valid UUID
+          prompt_identifier: prompt.id || `Q${promptOrder}`, // Store original ID separately
           prompt_order: promptOrder,
           user_response: transcript || '',
           transcript: transcript,
