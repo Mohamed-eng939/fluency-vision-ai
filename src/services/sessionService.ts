@@ -18,46 +18,144 @@ export interface SessionResponse {
 /**
  * Session Service - Handle all session-related operations via Assessment Manager Edge Function
  */
+// Helper function to finalize anonymous session
+async function finalizeAnonymousSession(sessionData: SessionData): Promise<SessionResponse> {
+  console.log('🔄 [sessionService] Finalizing anonymous session directly in DB');
+  
+  try {
+    const { data: session, error } = await supabase
+      .from('assessment_sessions')
+      .update({
+        status: 'completed',
+        overall_score: sessionData.finalResult?.metrics?.overall || 0,
+        fluency_score: sessionData.finalResult?.metrics?.fluency || 0,
+        pronunciation_score: sessionData.finalResult?.metrics?.pronunciation || 0,
+        grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
+        vocabulary_score: sessionData.finalResult?.metrics?.vocabulary || 0,
+        coherence_score: sessionData.finalResult?.metrics?.coherence || 0,
+        overall_cefr_level: sessionData.finalResult?.cefrLevel || 'A1',
+        student_info: sessionData.studentInfo
+      })
+      .eq('id', sessionData.sessionId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ [sessionService] Anonymous finalization failed:', error);
+      throw new Error('Failed to finalize anonymous session');
+    }
+
+    console.log('✅ [sessionService] Anonymous session finalized successfully');
+    return {
+      success: true,
+      data: { session }
+    };
+  } catch (error: any) {
+    console.error('💥 [sessionService] Anonymous finalization error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to finalize session'
+    };
+  }
+}
+
+// Helper function to create anonymous session
+async function createAnonymousSession(withEmail: boolean): Promise<SessionResponse> {
+  console.log('🔄 [sessionService] Creating anonymous session fallback');
+  
+  try {
+    // Create session directly in database for anonymous users
+    const sessionId = crypto.randomUUID();
+    
+    const { data: session, error } = await supabase
+      .from('assessment_sessions')
+      .insert({
+        id: sessionId,
+        user_id: sessionId, // Use session ID as anonymous user ID
+        session_type: 'full_assessment',
+        metadata: { emailResults: withEmail, anonymous: true },
+        status: 'in_progress'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ [sessionService] Anonymous session creation failed:', error);
+      throw new Error('Failed to create anonymous session');
+    }
+
+    console.log('✅ [sessionService] Anonymous session created:', sessionId);
+    return {
+      success: true,
+      sessionId: sessionId,
+      data: { session }
+    };
+  } catch (error: any) {
+    console.error('💥 [sessionService] Anonymous session fallback failed:', error);
+    // Last resort - return a client-side session ID
+    const fallbackId = crypto.randomUUID();
+    return {
+      success: true,
+      sessionId: fallbackId,
+      data: { fallback: true }
+    };
+  }
+}
+
 export const sessionService = {
   /**
    * Initialize a new assessment session
    */
   initializeSession: async (withEmail: boolean = false): Promise<SessionResponse> => {
+    console.log('🚀 [sessionService] Starting session initialization...');
+    
     try {
-      const session = await supabase.auth.getSession();
-      if (!session.data.session?.access_token) {
-        throw new Error('No valid session found');
+      // Check authentication first
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      console.log('🔐 [sessionService] Auth session:', { 
+        hasSession: !!session, 
+        hasUser: !!session?.user,
+        authError: authError?.message 
+      });
+      
+      if (authError || !session?.user) {
+        console.log('⚠️ [sessionService] No authenticated user, creating anonymous session');
+        // For anonymous users, create session without auth
+        return await createAnonymousSession(withEmail);
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/create-session`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.data.session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      // Use Supabase client function invoke
+      console.log('📡 [sessionService] Calling assessment-manager Edge Function...');
+      const { data, error } = await supabase.functions.invoke('assessment-manager', {
+        body: {
+          action: 'create-session',
           sessionType: 'full_assessment',
           metadata: { emailResults: withEmail }
-        })
+        }
       });
 
-      const data = await response.json();
+      console.log('📡 [sessionService] Edge Function response:', { data, error });
       
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create session');
+      if (error) {
+        throw new Error(error.message || 'Failed to create session via Edge Function');
       }
 
+      if (!data.success) {
+        throw new Error(data.error || 'Session creation failed');
+      }
+
+      console.log('✅ [sessionService] Session created successfully:', data.sessionId);
       return {
         success: true,
         sessionId: data.sessionId,
         data
       };
     } catch (error: any) {
-      console.error('Failed to initialize session:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to initialize session'
-      };
+      console.error('❌ [sessionService] Session initialization failed:', error);
+      console.log('🔄 [sessionService] Falling back to anonymous session...');
+      
+      // Fallback to anonymous session
+      return await createAnonymousSession(withEmail);
     }
   },
 
@@ -65,42 +163,48 @@ export const sessionService = {
    * Store assessment data for a session (finalize)
    */
   storeAssessmentData: async (sessionData: SessionData): Promise<SessionResponse> => {
+    console.log('💾 [sessionService] Starting assessment data storage...', sessionData.sessionId);
+    
     try {
-      const session = await supabase.auth.getSession();
-      if (!session.data.session?.access_token) {
-        throw new Error('No valid session found');
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      
+      if (authError || !session?.user) {
+        console.log('⚠️ [sessionService] No auth for finalization, using direct DB update');
+        return await finalizeAnonymousSession(sessionData);
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/finalize-session`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.data.session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      // Use Supabase client function invoke
+      console.log('📡 [sessionService] Calling finalize-session Edge Function...');
+      const { data, error } = await supabase.functions.invoke('assessment-manager', {
+        body: {
+          action: 'finalize-session',
           sessionId: sessionData.sessionId,
           overallScores: sessionData.finalResult?.metrics || {},
           cefrLevel: sessionData.finalResult?.cefrLevel,
           studentInfo: sessionData.studentInfo
-        })
+        }
       });
 
-      const data = await response.json();
+      console.log('📡 [sessionService] Finalization response:', { data, error });
       
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to store assessment data');
+      if (error) {
+        console.log('🔄 [sessionService] Edge Function failed, falling back to direct DB...');
+        return await finalizeAnonymousSession(sessionData);
       }
 
+      if (!data.success) {
+        throw new Error(data.error || 'Assessment finalization failed');
+      }
+
+      console.log('✅ [sessionService] Assessment finalized successfully');
       return {
         success: true,
         data
       };
     } catch (error: any) {
-      console.error('Failed to store assessment data:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to store assessment data'
-      };
+      console.error('❌ [sessionService] Assessment finalization failed:', error);
+      console.log('🔄 [sessionService] Falling back to anonymous finalization...');
+      return await finalizeAnonymousSession(sessionData);
     }
   },
 

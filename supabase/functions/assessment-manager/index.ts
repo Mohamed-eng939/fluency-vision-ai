@@ -48,7 +48,16 @@ serve(async (req) => {
 
     switch (method) {
       case 'POST':
-        if (url.pathname.endsWith('/create-session')) {
+        const body = await req.json();
+        const action = body.action;
+        
+        if (action === 'create-session') {
+          return await createAssessmentSession(req, supabase, user.id, body);
+        } else if (action === 'save-response') {
+          return await saveAssessmentResponse(req, supabase, user.id, body);
+        } else if (action === 'finalize-session') {
+          return await finalizeAssessmentSession(req, supabase, user.id, body);
+        } else if (url.pathname.endsWith('/create-session')) {
           return await createAssessmentSession(req, supabase, user.id);
         } else if (url.pathname.endsWith('/save-response')) {
           return await saveAssessmentResponse(req, supabase, user.id);
@@ -89,9 +98,18 @@ serve(async (req) => {
 });
 
 // Create a new assessment session
-async function createAssessmentSession(req: Request, supabase: any, userId: string) {
+async function createAssessmentSession(req: Request, supabase: any, userId: string, requestBody?: any) {
   try {
-    const { sessionType, studentInfo, metadata } = await req.json();
+    // Handle both action-based and URL-based requests
+    let sessionType, studentInfo, metadata;
+    
+    if (requestBody) {
+      ({ sessionType, studentInfo, metadata } = requestBody);
+    } else {
+      ({ sessionType, studentInfo, metadata } = await req.json());
+    }
+
+    console.log(`[Assessment Manager] Creating session for user ${userId}, type: ${sessionType}`);
 
     const { data: session, error } = await supabase
       .from('assessment_sessions')
@@ -106,20 +124,21 @@ async function createAssessmentSession(req: Request, supabase: any, userId: stri
       .single();
 
     if (error) {
-      console.error('Session creation error:', error);
+      console.error('[Assessment Manager] Session creation error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to create session', details: error.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log(`[Assessment Manager] Session created successfully: ${session.id}`);
     return new Response(
       JSON.stringify({ success: true, sessionId: session.id, session }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Create session error:', error);
+    console.error('[Assessment Manager] Create session error:', error);
     return new Response(
       JSON.stringify({ error: 'Invalid request data' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -128,21 +147,18 @@ async function createAssessmentSession(req: Request, supabase: any, userId: stri
 }
 
 // Save individual assessment response
-async function saveAssessmentResponse(req: Request, supabase: any, userId: string) {
+async function saveAssessmentResponse(req: Request, supabase: any, userId: string, requestBody?: any) {
   try {
-    const { 
-      sessionId, 
-      promptId, 
-      promptOrder,
-      userResponse, 
-      transcript, 
-      audioUrl, 
-      audioDuration,
-      scores,
-      detailedFeedback,
-      mistakesAnalysis,
-      isFinal 
-    } = await req.json();
+    // Handle both action-based and URL-based requests
+    let sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal;
+    
+    if (requestBody) {
+      ({ sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = requestBody);
+    } else {
+      ({ sessionId, promptId, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = await req.json());
+    }
+
+    console.log(`[Assessment Manager] Saving response for session ${sessionId}, prompt order ${promptOrder}`);
 
     // Verify session belongs to user
     const { data: session, error: sessionError } = await supabase
@@ -184,20 +200,21 @@ async function saveAssessmentResponse(req: Request, supabase: any, userId: strin
       .single();
 
     if (error) {
-      console.error('Response save error:', error);
+      console.error('[Assessment Manager] Response save error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to save response', details: error.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log(`[Assessment Manager] Response saved successfully: ${response.id}`);
     return new Response(
       JSON.stringify({ success: true, responseId: response.id, response }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Save response error:', error);
+    console.error('[Assessment Manager] Save response error:', error);
     return new Response(
       JSON.stringify({ error: 'Invalid request data' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -206,14 +223,18 @@ async function saveAssessmentResponse(req: Request, supabase: any, userId: strin
 }
 
 // Finalize assessment session with overall results
-async function finalizeAssessmentSession(req: Request, supabase: any, userId: string) {
+async function finalizeAssessmentSession(req: Request, supabase: any, userId: string, requestBody?: any) {
   try {
-    const { 
-      sessionId, 
-      overallScores,
-      cefrLevel,
-      studentInfo 
-    } = await req.json();
+    // Handle both action-based and URL-based requests
+    let sessionId, overallScores, cefrLevel, studentInfo;
+    
+    if (requestBody) {
+      ({ sessionId, overallScores, cefrLevel, studentInfo } = requestBody);
+    } else {
+      ({ sessionId, overallScores, cefrLevel, studentInfo } = await req.json());
+    }
+
+    console.log(`[Assessment Manager] Finalizing session ${sessionId} for user ${userId}`);
 
     // Verify session belongs to user
     const { data: session, error: sessionError } = await supabase
@@ -248,20 +269,21 @@ async function finalizeAssessmentSession(req: Request, supabase: any, userId: st
       .single();
 
     if (error) {
-      console.error('Session finalization error:', error);
+      console.error('[Assessment Manager] Session finalization error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to finalize session', details: error.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log(`[Assessment Manager] Session finalized successfully: ${sessionId}`);
     return new Response(
       JSON.stringify({ success: true, session: updatedSession }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Finalize session error:', error);
+    console.error('[Assessment Manager] Finalize session error:', error);
     return new Response(
       JSON.stringify({ error: 'Invalid request data' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
