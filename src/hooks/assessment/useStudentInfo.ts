@@ -49,12 +49,12 @@ export const useStudentInfo = () => {
         if (user) {
           console.log("Updating profile for authenticated user:", user.id);
           const profileUpdate = {
-            name: info.name,
             full_name: info.name,
             email: info.email,
-            country: info.countryCode || info.citizenshipCountry || info.residenceCountry,
+            country_of_citizenship: info.citizenshipCountry,
+            country_of_residence: info.residenceCountry || info.countryCode,
             phone: info.phoneNumber || info.phone,
-            native_language: info.firstLanguage,
+            first_language: info.firstLanguage,
             updated_at: new Date().toISOString()
           };
           
