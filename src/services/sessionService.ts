@@ -61,8 +61,7 @@ async function finalizeAnonymousSession(sessionData: SessionData): Promise<Sessi
       const { data: newSession, error: createError } = await supabase
         .from('assessment_sessions')
         .insert({
-          id: effectiveSessionId,
-          user_id: effectiveSessionId, // Use as anonymous user ID
+          user_id: sessionData.studentInfo?.userId || null, // Use authenticated user ID if available
           session_type: 'full_assessment',
           status: 'completed',
           overall_score: sessionData.finalResult?.metrics?.overall || 0,
@@ -73,7 +72,7 @@ async function finalizeAnonymousSession(sessionData: SessionData): Promise<Sessi
           coherence_score: sessionData.finalResult?.metrics?.coherence || 0,
           overall_cefr_level: normalizeCEFRForDatabase(sessionData.finalResult?.cefrLevel || 'A1'),
           student_info: sessionData.studentInfo,
-          metadata: { anonymous: true, created_during_finalization: true }
+          metadata: { anonymous: !sessionData.studentInfo?.userId, created_during_finalization: true }
         })
         .select()
         .single();
@@ -110,13 +109,10 @@ async function createAnonymousSession(withEmail: boolean): Promise<SessionRespon
   
   try {
     // Create session directly in database for anonymous users
-    const sessionId = crypto.randomUUID();
-    
     const { data: session, error } = await supabase
       .from('assessment_sessions')
       .insert({
-        id: sessionId,
-        user_id: sessionId, // Use session ID as anonymous user ID
+        user_id: null, // Anonymous sessions have no user
         session_type: 'full_assessment',
         metadata: { emailResults: withEmail, anonymous: true },
         status: 'in_progress'
@@ -129,10 +125,10 @@ async function createAnonymousSession(withEmail: boolean): Promise<SessionRespon
       throw new Error('Failed to create anonymous session');
     }
 
-    console.log('✅ [sessionService] Anonymous session created:', sessionId);
+    console.log('✅ [sessionService] Anonymous session created:', session.id);
     return {
       success: true,
-      sessionId: sessionId,
+      sessionId: session.id,
       data: { session }
     };
   } catch (error: any) {

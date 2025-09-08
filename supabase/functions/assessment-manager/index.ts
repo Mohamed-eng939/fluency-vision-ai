@@ -163,7 +163,7 @@ async function createAssessmentSession(supabase: any, userId: string, requestBod
 // Save individual assessment response
 async function saveAssessmentResponse(supabase: any, userId: string, requestBody: any) {
   try {
-    const { sessionId, promptId, promptIdentifier, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal } = requestBody;
+    const { sessionId, promptId, promptIdentifier, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal, studentInfo } = requestBody;
 
     console.log(`[Assessment Manager] Saving response for session ${sessionId}, prompt order ${promptOrder}`);
 
@@ -183,10 +183,9 @@ async function saveAssessmentResponse(supabase: any, userId: string, requestBody
       const { data: newSession, error: createError } = await supabase
         .from('assessment_sessions')
         .insert({
-          id: sessionId, // Use the provided session ID
           user_id: userId,
           session_type: 'full_assessment',
-          student_info: studentInfo,
+          student_info: studentInfo || {},
           status: 'in_progress'
         })
         .select('id, user_id')
@@ -299,10 +298,9 @@ async function finalizeAssessmentSession(supabase: any, userId: string, requestB
       const { data: newSession, error: createError } = await supabase
         .from('assessment_sessions')
         .insert({
-          id: sessionId, // Use the provided session ID
           user_id: userId,
           session_type: 'full_assessment',
-          student_info: studentInfo,
+          student_info: studentInfo || {},
           status: 'in_progress'
         })
         .select('id, user_id')
