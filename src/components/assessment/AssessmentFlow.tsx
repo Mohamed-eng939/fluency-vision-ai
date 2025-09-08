@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AssessmentStep, useAssessmentFlow } from '@/hooks/assessment/useAssessmentFlow';
+import { StudentInfo } from '@/hooks/assessment';
 import AdminControls from './AdminControls';
 import AuthButtons from './auth/AuthButtons';
 import LoginModal from './auth/LoginModal';
@@ -67,10 +68,10 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showAdminControls]);
 
-  // Auto-populate student info if user is logged in
+  // Auto-populate student info if user is logged in (but only when not coming from profile form)
   useEffect(() => {
-    if (user && !studentInfo) {
-      // Create default student info from user profile
+    if (user && !studentInfo && currentStep === 'entry') {
+      // Only auto-populate if we're on the entry step and haven't manually submitted student info
       const defaultInfo = {
         name: user.full_name || 'Anonymous User',
         email: user.email || '',
@@ -82,7 +83,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
       console.log("Auto-populating student info from user profile:", defaultInfo);
       handleStudentInfoSubmit(defaultInfo);
     }
-  }, [user, studentInfo, sessionId, handleStudentInfoSubmit]);
+  }, [user, studentInfo, sessionId, handleStudentInfoSubmit, currentStep]);
 
   const handleSelectQuickAssessment = () => {
     setShowAssessmentOptions(false);
@@ -95,6 +96,16 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   const handleSignUpClick = () => {
     setShowSignUpDialog(true);
     setShowAssessmentOptions(false);
+  };
+
+  const handleSignUpSuccess = (studentInfo: StudentInfo) => {
+    console.log("AssessmentFlow: SignUp successful, starting assessment with:", studentInfo);
+    // Submit student info and start assessment
+    handleStudentInfoSubmit(studentInfo);
+    setShowSignUpDialog(false);
+    setShowAssessmentOptions(false);
+    // Initialize assessment to move to welcome step
+    initializeAssessment(studentInfo.emailResults || false);
   };
 
   const handleLoginSuccess = (user: any) => {
@@ -181,10 +192,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
       <SignUpSheet
         open={showSignUpDialog}
         onOpenChange={setShowSignUpDialog}
-        onContinue={() => {
-          setShowSignUpDialog(false);
-          setShowAssessmentOptions(false);
-        }}
+        onContinue={handleSignUpSuccess}
       />
     </div>
   );

@@ -5,15 +5,15 @@ import {
   SheetContent, 
   SheetHeader, 
   SheetTitle,
-  SheetDescription,
-  SheetFooter
+  SheetDescription
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { ProfileForm } from '../profile-form/ProfileForm';
+import { StudentInfo } from '@/hooks/assessment';
 
 interface SignUpSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onContinue: () => void;
+  onContinue: (studentInfo: StudentInfo) => void;
 }
 
 const SignUpSheet: React.FC<SignUpSheetProps> = ({
@@ -21,33 +21,28 @@ const SignUpSheet: React.FC<SignUpSheetProps> = ({
   onOpenChange,
   onContinue
 }) => {
+  const handleProfileSubmit = (studentInfo: StudentInfo) => {
+    console.log("SignUpSheet: Profile submitted successfully, proceeding to assessment");
+    onContinue(studentInfo);
+    onOpenChange(false);
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent>
+      <SheetContent className="w-full max-w-2xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Sign Up</SheetTitle>
+          <SheetTitle>Create Your Profile</SheetTitle>
           <SheetDescription>
-            Create a new account to take the assessment
+            Complete your profile to get started with the assessment
           </SheetDescription>
         </SheetHeader>
         
         <div className="py-6">
-          <p className="text-sm text-muted-foreground mb-4">
-            Please complete the sign up form to create your account.
-          </p>
-          <Button 
-            className="w-full" 
-            onClick={onContinue}
-          >
-            Continue to Sign Up Form
-          </Button>
+          <ProfileForm 
+            onSubmit={handleProfileSubmit}
+            onCancel={() => onOpenChange(false)}
+          />
         </div>
-
-        <SheetFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
