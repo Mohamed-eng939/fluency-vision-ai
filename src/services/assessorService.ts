@@ -47,6 +47,21 @@ export const assessorService = {
         };
       }
 
+      // Check user role first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, organization_id')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile || !['assessor', 'admin'].includes(profile.role)) {
+        console.log('⚠️ [assessorService] User does not have assessor permissions');
+        return {
+          success: false,
+          error: 'Insufficient permissions - assessor role required'
+        };
+      }
+
       // Try Edge Function first
       try {
         const { data, error } = await supabase.functions.invoke('assessor-manager', {
@@ -85,10 +100,11 @@ export const assessorService = {
           .order('created_at', { ascending: false });
 
         if (dbError) {
+          console.error('❌ [assessorService] DB query failed:', dbError);
           throw new Error(dbError.message);
         }
 
-        console.log('✅ [assessorService] Got pending assessments via direct DB:', sessions);
+        console.log('✅ [assessorService] Got pending assessments via direct DB:', sessions?.length);
         return {
           success: true,
           data: sessions || []
