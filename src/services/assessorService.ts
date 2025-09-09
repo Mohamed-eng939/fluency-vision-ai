@@ -54,6 +54,8 @@ export const assessorService = {
         .eq('id', session.user.id)
         .single();
 
+      console.log('👤 [assessorService] User profile:', profile);
+
       if (!profile || !['assessor', 'admin'].includes(profile.role)) {
         console.log('⚠️ [assessorService] User does not have assessor permissions');
         return {
@@ -62,16 +64,30 @@ export const assessorService = {
         };
       }
 
-      // Try Edge Function first
+      // Try Edge Function first with proper endpoint
       try {
-        const { data, error } = await supabase.functions.invoke('assessor-manager', {
-          body: {}
+        console.log('📡 [assessorService] Trying edge function...');
+        const supabaseUrl = 'https://rrslhxigqtfllunmowcy.supabase.co';
+        const response = await fetch(`${supabaseUrl}/functions/v1/assessor-manager/pending-assessments`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyc2xoeGlncXRmbGx1bm1vd2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTI0NDUsImV4cCI6MjA2NjUyODQ0NX0.k3wjgHGU3d_k0vzSMP2jeKaXMs85zrhu_vb4Ym2Sq9c',
+            'Content-Type': 'application/json'
+          }
         });
 
-        if (error) {
-          throw new Error(error.message);
+        console.log('📡 [assessorService] Edge function response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('📡 [assessorService] Edge function error response:', errorText);
+          throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
         }
 
+        const data = await response.json();
+        console.log('📡 [assessorService] Edge function response data:', data);
+        
         if (!data?.success) {
           throw new Error(data?.error || 'Failed to get pending assessments');
         }
@@ -85,6 +101,7 @@ export const assessorService = {
         console.log('🔄 [assessorService] Edge Function failed, trying direct DB...', edgeError);
         
         // Fallback to direct database query
+        console.log('📊 [assessorService] Using direct database query...');
         const { data: sessions, error: dbError } = await supabase
           .from('assessment_sessions')
           .select(`
