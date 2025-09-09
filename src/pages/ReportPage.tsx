@@ -153,7 +153,7 @@ const ReportPage: React.FC = () => {
   }
 
   // Determine if this is a full assessment based on the data structure
-  const isFullAssessment = report.assessmentType === 'full' || report.overallCefr;
+  const isFullAssessment = report.assessmentType === 'full' || !!report.overallCefr;
   
   // Use the scores directly from the report data
   const reportScores = report.scores || {};
