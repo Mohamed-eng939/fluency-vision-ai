@@ -37,24 +37,28 @@ export const assessorService = {
     try {
       console.log('🔍 [assessorService] Fetching pending assessments...');
       
+      console.log('🔐 [assessorService] Getting auth session...');
       const { data: { session }, error: authError } = await supabase.auth.getSession();
       
+      console.log('🔐 [assessorService] Auth session result:', { session: !!session, user: !!session?.user, error: authError });
+      
       if (authError || !session?.user) {
-        console.log('⚠️ [assessorService] No authenticated user');
+        console.log('⚠️ [assessorService] No authenticated user', { authError, hasSession: !!session });
         return {
           success: false,
           error: 'Authentication required'
         };
       }
 
+      console.log('👤 [assessorService] Checking user profile for ID:', session.user.id);
       // Check user role first
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role, organization_id')
         .eq('id', session.user.id)
         .single();
 
-      console.log('👤 [assessorService] User profile:', profile);
+      console.log('👤 [assessorService] User profile result:', { profile, profileError });
 
       if (!profile || !['assessor', 'admin'].includes(profile.role)) {
         console.log('⚠️ [assessorService] User does not have assessor permissions');
