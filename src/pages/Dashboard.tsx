@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,90 +10,19 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Users, TrendingUp, BarChart3, Calendar, Filter } from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { supabase } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
-// Updated assessment data to match existing report IDs
-const assessments = [
-  {
-    id: "A001",
-    name: "Alex Chen",
-    email: "alex.chen@email.com",
-    testType: "Quick",
-    date: "2025-05-24",
-    cefr: "B1",
-    score: 67,
-    reportUrl: "/reports/A001"
-  },
-  {
-    id: "A002",
-    name: "Maria Rodriguez",
-    email: "maria.rodriguez@email.com",
-    testType: "Quick",
-    date: "2025-05-24",
-    cefr: "A2",
-    score: 45,
-    reportUrl: "/reports/A002"
-  },
-  {
-    id: "F001",
-    name: "John Smith",
-    email: "john.smith@email.com",
-    testType: "Full",
-    date: "2025-05-23",
-    cefr: "B2",
-    score: 78,
-    reportUrl: "/reports/F001"
-  },
-  {
-    id: "F002",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@email.com",
-    testType: "Full",
-    date: "2025-05-23",
-    cefr: "C1",
-    score: 88,
-    reportUrl: "/reports/F002"
-  },
-  {
-    id: "A003",
-    name: "Emma Johnson",
-    email: "emma.j@school.edu",
-    testType: "Quick",
-    date: "2025-05-22",
-    cefr: "A2",
-    score: 55,
-    reportUrl: "/reports/A003"
-  },
-  {
-    id: "A004",
-    name: "David Rodriguez",
-    email: "david.rod@example.com",
-    testType: "Quick",
-    date: "2025-05-22",
-    cefr: "B1",
-    score: 75,
-    reportUrl: "/reports/A004"
-  },
-  {
-    id: "F003",
-    name: "Lisa Wang",
-    email: "lisa.wang@tech.com",
-    testType: "Full",
-    date: "2025-05-21",
-    cefr: "C2",
-    score: 96,
-    reportUrl: "/reports/F003"
-  },
-  {
-    id: "A005",
-    name: "James Wilson",
-    email: "j.wilson@university.edu",
-    testType: "Quick",
-    date: "2025-05-21",
-    cefr: "B2",
-    score: 82,
-    reportUrl: "/reports/A005"
-  }
-];
+interface Assessment {
+  id: string;
+  name: string;
+  email: string;
+  testType: string;
+  date: string;
+  cefr: string;
+  score: number;
+  reportUrl: string;
+}
 
 const cefrColors = {
   "A1": "#ef4444",
@@ -108,10 +37,61 @@ const Dashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [testTypeFilter, setTestTypeFilter] = useState('all');
   const [cefrFilter, setCefrFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
+
+  // Fetch real assessment data
+  const fetchAssessments = async () => {
+    try {
+      setIsLoading(true);
+      const { data: sessions, error } = await supabase
+        .from('assessment_sessions')
+        .select(`
+          id,
+          session_type,
+          overall_score,
+          overall_cefr_level,
+          created_at,
+          student_info,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const formattedAssessments: Assessment[] = sessions?.map((session: any) => ({
+        id: session.id,
+        name: session.profiles?.full_name || session.student_info?.name || 'Anonymous User',
+        email: session.profiles?.email || session.student_info?.email || 'N/A',
+        testType: session.session_type === 'quick_assessment' ? 'Quick' : 'Full',
+        date: new Date(session.created_at).toISOString().split('T')[0],
+        cefr: session.overall_cefr_level || 'N/A',
+        score: Math.round(session.overall_score || 0),
+        reportUrl: `/reports/${session.id}`
+      })) || [];
+
+      setAssessments(formattedAssessments);
+    } catch (error) {
+      console.error('Error fetching assessments:', error);
+      toast.error('Failed to load assessments');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssessments();
+  }, []);
 
   // Filter assessments based on search and filters
   const filteredAssessments = useMemo(() => {
@@ -142,16 +122,18 @@ const Dashboard: React.FC = () => {
       
       return matchesSearch && matchesTestType && matchesCefr && matchesDate;
     });
-  }, [searchTerm, testTypeFilter, cefrFilter, dateFilter]);
+  }, [searchTerm, testTypeFilter, cefrFilter, dateFilter, assessments]);
 
   // Calculate analytics
   const totalAssessments = assessments.length;
-  const averageScore = Math.round(assessments.reduce((sum, a) => sum + a.score, 0) / totalAssessments);
+  const averageScore = totalAssessments > 0 ? Math.round(assessments.reduce((sum, a) => sum + a.score, 0) / totalAssessments) : 0;
   
   // CEFR distribution for charts
   const cefrDistribution = Object.entries(
     assessments.reduce((acc, assessment) => {
-      acc[assessment.cefr] = (acc[assessment.cefr] || 0) + 1;
+      if (assessment.cefr !== 'N/A') {
+        acc[assessment.cefr] = (acc[assessment.cefr] || 0) + 1;
+      }
       return acc;
     }, {} as Record<string, number>)
   ).map(([level, count]) => ({
@@ -206,7 +188,7 @@ const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-blue-900">{totalAssessments}</div>
-              <p className="text-xs text-blue-600 mt-1">+12% from last month</p>
+              <p className="text-xs text-blue-600 mt-1">Total completed assessments</p>
             </CardContent>
           </Card>
 
@@ -217,7 +199,7 @@ const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-900">{averageScore}%</div>
-              <p className="text-xs text-green-600 mt-1">+3% improvement</p>
+              <p className="text-xs text-green-600 mt-1">Overall performance</p>
             </CardContent>
           </Card>
 
@@ -227,8 +209,10 @@ const Dashboard: React.FC = () => {
               <Calendar className="h-5 w-5 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-900">2</div>
-              <p className="text-xs text-purple-600 mt-1">Assessment sessions</p>
+              <div className="text-3xl font-bold text-purple-900">
+                {assessments.filter(a => a.date === new Date().toISOString().split('T')[0]).length}
+              </div>
+              <p className="text-xs text-purple-600 mt-1">Today's assessments</p>
             </CardContent>
           </Card>
 
@@ -238,8 +222,10 @@ const Dashboard: React.FC = () => {
               <BarChart3 className="h-5 w-5 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-900">94%</div>
-              <p className="text-xs text-orange-600 mt-1">Completion rate</p>
+              <div className="text-3xl font-bold text-orange-900">
+                {totalAssessments > 0 ? Math.round((assessments.filter(a => a.score >= 60).length / totalAssessments) * 100) : 0}%
+              </div>
+              <p className="text-xs text-orange-600 mt-1">Pass rate (≥60%)</p>
             </CardContent>
           </Card>
         </div>
@@ -360,58 +346,65 @@ const Dashboard: React.FC = () => {
 
             {/* Assessment Table */}
             <div className="rounded-lg border border-gray-200 overflow-hidden">
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  <TableRow>
-                    <TableHead className="font-semibold">Name</TableHead>
-                    <TableHead className="font-semibold">Email</TableHead>
-                    <TableHead className="font-semibold">Test Type</TableHead>
-                    <TableHead className="font-semibold">Date</TableHead>
-                    <TableHead className="font-semibold">CEFR Level</TableHead>
-                    <TableHead className="font-semibold">Score</TableHead>
-                    <TableHead className="font-semibold">Report</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAssessments.map((assessment) => (
-                    <TableRow key={assessment.id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium">{assessment.name}</TableCell>
-                      <TableCell className="text-gray-600">{assessment.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={assessment.testType === 'Full' ? 'default' : 'secondary'}>
-                          {assessment.testType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{assessment.date}</TableCell>
-                      <TableCell>
-                        <Badge className={getCefrBadgeColor(assessment.cefr)}>
-                          {assessment.cefr}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-semibold ${assessment.score >= 80 ? 'text-green-600' : assessment.score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                          {assessment.score}%
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate(assessment.reportUrl)}
-                          className="text-assessment-blue hover:bg-blue-50"
-                        >
-                          View Report
-                        </Button>
-                      </TableCell>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-assessment-blue"></div>
+                  <span className="ml-2">Loading assessments...</span>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader className="bg-gray-50">
+                    <TableRow>
+                      <TableHead className="font-semibold">Name</TableHead>
+                      <TableHead className="font-semibold">Email</TableHead>
+                      <TableHead className="font-semibold">Test Type</TableHead>
+                      <TableHead className="font-semibold">Date</TableHead>
+                      <TableHead className="font-semibold">CEFR Level</TableHead>
+                      <TableHead className="font-semibold">Score</TableHead>
+                      <TableHead className="font-semibold">Report</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAssessments.map((assessment) => (
+                      <TableRow key={assessment.id} className="hover:bg-gray-50">
+                        <TableCell className="font-medium">{assessment.name}</TableCell>
+                        <TableCell className="text-gray-600">{assessment.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={assessment.testType === 'Full' ? 'default' : 'secondary'}>
+                            {assessment.testType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{assessment.date}</TableCell>
+                        <TableCell>
+                          <Badge className={getCefrBadgeColor(assessment.cefr)}>
+                            {assessment.cefr}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-semibold ${assessment.score >= 80 ? 'text-green-600' : assessment.score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {assessment.score}%
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(assessment.reportUrl)}
+                            className="text-assessment-blue hover:bg-blue-50"
+                          >
+                            View Report
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </div>
 
-            {filteredAssessments.length === 0 && (
+            {!isLoading && filteredAssessments.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                No assessments found matching your filters.
+                {assessments.length === 0 ? 'No assessments available.' : 'No assessments found matching your filters.'}
               </div>
             )}
           </CardContent>

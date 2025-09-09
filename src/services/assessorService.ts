@@ -49,8 +49,8 @@ export const assessorService = {
 
       // Try Edge Function first
       try {
-        const { data, error } = await supabase.functions.invoke('assessment-manager', {
-          body: { action: 'get-pending-sessions' }
+        const { data, error } = await supabase.functions.invoke('assessor-manager', {
+          body: {}
         });
 
         if (error) {
@@ -58,13 +58,13 @@ export const assessorService = {
         }
 
         if (!data?.success) {
-          throw new Error(data?.error || 'Failed to get pending sessions');
+          throw new Error(data?.error || 'Failed to get pending assessments');
         }
 
-        console.log('✅ [assessorService] Got pending assessments via Edge Function:', data.sessions?.length);
+        console.log('✅ [assessorService] Got pending assessments via Edge Function:', data.assessments?.length);
         return {
           success: true,
-          data: data.sessions || []
+          data: data.assessments || []
         };
       } catch (edgeError) {
         console.log('🔄 [assessorService] Edge Function failed, trying direct DB...', edgeError);
@@ -82,7 +82,6 @@ export const assessorService = {
             )
           `)
           .eq('status', 'completed')
-          .is('assigned_assessor', null)
           .order('created_at', { ascending: false });
 
         if (dbError) {
@@ -124,11 +123,11 @@ export const assessorService = {
         .from('assessment_sessions')
         .update({
           assigned_assessor: session.user.id,
+          status: 'under_review',
           reviewed_at: new Date().toISOString()
         })
         .eq('id', sessionId)
         .eq('status', 'completed')
-        .is('assigned_assessor', null)
         .select()
         .single();
 

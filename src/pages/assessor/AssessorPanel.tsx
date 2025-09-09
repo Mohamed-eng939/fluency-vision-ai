@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Clock, User, Globe, Languages } from 'lucide-react';
 import { assessorService, type PendingAssessment } from '@/services/assessorService';
+import AssessmentReviewModal from '@/components/assessor/AssessmentReviewModal';
 import { toast } from 'sonner';
 
 const AssessorPanel: React.FC = () => {
@@ -12,6 +13,8 @@ const AssessorPanel: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAssessments, setPendingAssessments] = useState<PendingAssessment[]>([]);
   const [isAssigning, setIsAssigning] = useState<string | null>(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedAssessmentDetails, setSelectedAssessmentDetails] = useState<any>(null);
   
   const fetchPendingAssessments = async () => {
     setIsLoading(true);
@@ -59,8 +62,8 @@ const AssessorPanel: React.FC = () => {
     try {
       const response = await assessorService.getAssessmentDetails(sessionId);
       if (response.success) {
-        console.log('Assessment details:', response.data);
-        toast.success('Assessment details loaded (check console for details)');
+        setSelectedAssessmentDetails(response.data);
+        setReviewModalOpen(true);
       } else {
         toast.error(response.error || 'Failed to load details');
       }
@@ -68,6 +71,12 @@ const AssessorPanel: React.FC = () => {
       console.error('Error loading details:', error);
       toast.error('Failed to load assessment details');
     }
+  };
+
+  const handleReviewSubmitted = () => {
+    fetchPendingAssessments(); // Refresh the list
+    setReviewModalOpen(false);
+    setSelectedAssessmentDetails(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -230,7 +239,7 @@ const AssessorPanel: React.FC = () => {
                           size="sm"
                           onClick={() => handleViewDetails(assessment.id)}
                         >
-                          View Details
+                          Review Assessment
                         </Button>
                         <Button
                           size="sm"
@@ -255,6 +264,17 @@ const AssessorPanel: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Assessment Review Modal */}
+      <AssessmentReviewModal
+        isOpen={reviewModalOpen}
+        onClose={() => {
+          setReviewModalOpen(false);
+          setSelectedAssessmentDetails(null);
+        }}
+        assessmentDetails={selectedAssessmentDetails}
+        onReviewSubmitted={handleReviewSubmitted}
+      />
     </div>
   );
 };
