@@ -215,38 +215,80 @@ export const sessionService = {
       const { data: { session }, error: authError } = await supabase.auth.getSession();
       
       if (authError || !session?.user) {
-        console.log('⚠️ [sessionService] No auth for finalization, using direct DB update');
+        console.log('⚠️ [sessionService] No authenticated user, finalizing as anonymous session');
         return await finalizeAnonymousSession(sessionData);
       }
 
-      // Use Supabase client function invoke
-      console.log('📡 [sessionService] Calling finalize-session Edge Function with user:', session.user.id);
-      const { data, error } = await supabase.functions.invoke('assessment-manager', {
-        body: {
-          action: 'finalize-session',
-          sessionId: sessionData.sessionId,
-          overallScores: sessionData.finalResult?.metrics || {},
-          cefrLevel: normalizeCEFRForDatabase(sessionData.finalResult?.cefrLevel),
-          studentInfo: sessionData.studentInfo
-        }
-      });
-
-      console.log('📡 [sessionService] Finalization response:', { data, error, success: data?.success });
+      console.log('🔐 [sessionService] Authenticated user found:', session.user.id);
       
+      // For authenticated users, finalize directly in database
+      // Add user_id to sessionData for proper finalization
+      const authenticatedSessionData = {
+        ...sessionData,
+        studentInfo: {
+          ...sessionData.studentInfo,
+          userId: session.user.id
+        }
+      };
+
+      const { data: updatedSession, error } = await supabase
+        .from('assessment_sessions')
+        .update({
+          status: 'completed',
+          overall_score: sessionData.finalResult?.metrics?.overall || 0,
+          fluency_score: sessionData.finalResult?.metrics?.fluency || 0,
+          pronunciation_score: sessionData.finalResult?.metrics?.pronunciation || 0,
+          grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
+          vocabulary_score: sessionData.finalResult?.metrics?.vocabulary || 0,
+          coherence_score: sessionData.finalResult?.metrics?.coherence || 0,
+          overall_cefr_level: normalizeCEFRForDatabase(sessionData.finalResult?.cefrLevel || 'A1'),
+          student_info: authenticatedSessionData.studentInfo
+        })
+        .eq('id', sessionData.sessionId)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
       if (error) {
-        console.log('🔄 [sessionService] Edge Function failed, falling back to direct DB...', error);
-        return await finalizeAnonymousSession(sessionData);
+        console.log('⚠️ [sessionService] Session update failed, trying to create session:', error);
+        
+        // If update fails, try to create the session for authenticated user
+        const { data: newSession, error: createError } = await supabase
+          .from('assessment_sessions')
+          .insert({
+            id: sessionData.sessionId,
+            user_id: session.user.id,
+            session_type: 'full_assessment',
+            status: 'completed',
+            overall_score: sessionData.finalResult?.metrics?.overall || 0,
+            fluency_score: sessionData.finalResult?.metrics?.fluency || 0,
+            pronunciation_score: sessionData.finalResult?.metrics?.pronunciation || 0,
+            grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
+            vocabulary_score: sessionData.finalResult?.metrics?.vocabulary || 0,
+            coherence_score: sessionData.finalResult?.metrics?.coherence || 0,
+            overall_cefr_level: normalizeCEFRForDatabase(sessionData.finalResult?.cefrLevel || 'A1'),
+            student_info: authenticatedSessionData.studentInfo,
+            metadata: { created_during_finalization: true }
+          })
+          .select()
+          .single();
+          
+        if (createError) {
+          console.error('❌ [sessionService] Authenticated session creation failed:', createError);
+          throw new Error('Failed to create authenticated session');
+        }
+        
+        console.log('✅ [sessionService] Created new authenticated session successfully');
+        return {
+          success: true,
+          data: { session: newSession }
+        };
       }
 
-      if (!data?.success) {
-        console.log('🔄 [sessionService] Edge Function unsuccessful, falling back to direct DB:', data?.error);
-        return await finalizeAnonymousSession(sessionData);
-      }
-
-      console.log('✅ [sessionService] Assessment finalized successfully via Edge Function');
+      console.log('✅ [sessionService] Authenticated session finalized successfully');
       return {
         success: true,
-        data
+        data: { session: updatedSession }
       };
     } catch (error: any) {
       console.error('❌ [sessionService] Assessment finalization failed:', error);

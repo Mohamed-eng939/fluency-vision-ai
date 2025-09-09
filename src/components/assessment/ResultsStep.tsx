@@ -31,16 +31,17 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
 }) => {
   const { storeAssessmentData } = useSessionManagement();
   const [storageError, setStorageError] = React.useState<string | null>(null);
+  const [storageAttempted, setStorageAttempted] = React.useState<string | null>(null);
   
   console.log("ResultsStep rendering with result:", result, "isProcessing:", isProcessing);
   
-  // Fallback storage: if we have a result but no evidence of storage, try to store it
+  // Fallback storage: if we have a result but no evidence of storage, try to store it ONCE
   useEffect(() => {
-    if (result && !isProcessing) {
-      console.log("🔍 ResultsStep: Checking if we need to store assessment data...");
+    if (result && !isProcessing && result.sessionId && storageAttempted !== result.sessionId) {
+      console.log("🔍 ResultsStep: Attempting to store assessment data for session:", result.sessionId);
       
-      // Simple check: if we have a result, try to store it as a fallback
-      // This ensures data gets saved even if the main flow missed it somehow
+      setStorageAttempted(result.sessionId); // Prevent multiple attempts for same session
+      
       const studentInfo = {
         name: result.learnerName || 'Anonymous User',
         sessionId: result.sessionId,
@@ -49,8 +50,8 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
       
       console.log("💾 ResultsStep: Attempting fallback storage of assessment data");
       storeAssessmentData(studentInfo, promptHistory, result)
-        .then(() => {
-          console.log("✅ ResultsStep: Fallback storage successful");
+        .then((response) => {
+          console.log("✅ ResultsStep: Fallback storage successful", response);
           setStorageError(null);
         })
         .catch((error) => {
@@ -58,7 +59,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
           setStorageError(error?.message || error?.toString() || "Failed to save assessment data");
         });
     }
-  }, [result, isProcessing, promptHistory, storeAssessmentData]);
+  }, [result, isProcessing, promptHistory, storeAssessmentData, storageAttempted]);
   
   // Show processing state if still processing
   if (isProcessing) {
