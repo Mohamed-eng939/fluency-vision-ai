@@ -48,8 +48,9 @@ export const useResponseBatchProcessor = () => {
             }
           );
           
-          // Apply CEFR calibration
-          const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis);
+          // Apply CEFR calibration with prompt history for level capping
+          const promptsForCalibration = processedHistory.map(h => h.prompt);
+          const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis, promptsForCalibration);
           
           // Upload audio to storage and store individual response in database
           let audioPath: string | undefined = undefined;
@@ -102,9 +103,9 @@ export const useResponseBatchProcessor = () => {
       
       console.log(`🎊 [BatchProcessor] All ${storedResponses.length} responses processed successfully!`);
       
-      // Calculate aggregated final result
+      // Calculate aggregated final result with prompt history for level capping
       console.log(`🧮 [BatchProcessor] Calculating aggregated result from ${allResults.length} results...`);
-      const aggregatedResult = await calculateAggregatedResult(allResults, sessionId, studentName);
+      const aggregatedResult = await calculateAggregatedResult(allResults, sessionId, studentName, processedHistory);
       console.log(`📊 [BatchProcessor] Aggregated result calculated:`, aggregatedResult ? 'Success' : 'Failed');
       
       // Store final assessment result in database

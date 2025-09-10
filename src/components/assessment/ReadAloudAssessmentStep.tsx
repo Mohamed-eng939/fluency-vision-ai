@@ -154,6 +154,7 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
           
           {readAloudPrompt && (
             <RecordingFlowController
+              key={`readAloud-${cefrLevel}-${currentIndex}`} // Force re-render for each task
               selectedPrompt={readAloudPrompt}
               onComplete={handleRecordingComplete}
               onCancel={onNext}

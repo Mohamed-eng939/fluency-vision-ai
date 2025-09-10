@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { SpeakingPrompt, CEFRLevel } from '@/types/assessment';
 import { mockPrompts } from '@/utils/speaking/promptUtils';
 
-export const usePromptManagement = (maxPrompts: number = 10) => {
+export const usePromptManagement = (maxPrompts: number = 38) => {
   // Group prompts by CEFR level with speaking prompts followed by read aloud tasks
   const groupedPrompts = () => {
     const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];

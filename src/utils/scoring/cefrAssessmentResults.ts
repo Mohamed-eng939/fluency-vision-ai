@@ -23,11 +23,45 @@ export interface CEFRCalibratedResult extends AssessmentResult {
 }
 
 /**
+ * Determine highest CEFR level attempted based on prompt history
+ */
+function getHighestAttemptedLevel(promptHistory?: any[]): string {
+  if (!promptHistory || promptHistory.length === 0) return 'A1';
+  
+  const levels = ['Pre-A1', 'A1', 'A1+', 'A2', 'A2+', 'B1', 'B1+', 'B2', 'B2+', 'C1', 'C1+', 'C2'];
+  let highestLevel = 'A1';
+  
+  promptHistory.forEach(item => {
+    const cefrLevel = item.prompt?.cefrLevel;
+    if (cefrLevel && levels.indexOf(cefrLevel) > levels.indexOf(highestLevel)) {
+      highestLevel = cefrLevel;
+    }
+  });
+  
+  return highestLevel;
+}
+
+/**
+ * Cap CEFR level based on highest level attempted
+ */
+function capCEFRLevel(calculatedLevel: string, maxLevel: string): string {
+  const levels = ['Pre-A1', 'A1', 'A1+', 'A2', 'A2+', 'B1', 'B1+', 'B2', 'B2+', 'C1', 'C1+', 'C2'];
+  const calculatedIndex = levels.indexOf(calculatedLevel);
+  const maxIndex = levels.indexOf(maxLevel);
+  
+  if (calculatedIndex > maxIndex) {
+    return maxLevel;
+  }
+  return calculatedLevel;
+}
+
+/**
  * Apply CEFR calibration to assessment results
  */
 export function applyCEFRCalibration(
   result: AssessmentResult,
-  audioAnalysis?: any
+  audioAnalysis?: any,
+  promptHistory?: any[]
 ): CEFRCalibratedResult {
   const { metrics } = result;
   
@@ -60,11 +94,23 @@ export function applyCEFRCalibration(
     skillScores.pronunciation = audioAnalysis.pronunciationDetails.pronunciation_score;
   }
   
-  // Generate CEFR levels for each skill
-  const cefrLevels = generateCEFRLevels(skillScores);
+  // Determine highest attempted level and cap scoring accordingly
+  const highestAttemptedLevel = getHighestAttemptedLevel(promptHistory);
   
-  // Calculate overall CEFR
-  const overallCEFR = calculateOverallCEFR(skillScores);
+  // Generate CEFR levels for each skill
+  const rawCefrLevels = generateCEFRLevels(skillScores);
+  
+  // Cap each skill level based on highest attempted level
+  const cefrLevels = Object.fromEntries(
+    Object.entries(rawCefrLevels).map(([skill, level]) => [
+      skill, 
+      level ? capCEFRLevel(level, highestAttemptedLevel) : 'A1'
+    ])
+  );
+  
+  // Calculate overall CEFR and cap it
+  const rawOverallCEFR = calculateOverallCEFR(skillScores);
+  const overallCEFR = capCEFRLevel(rawOverallCEFR, highestAttemptedLevel);
   
   // Calculate confidence score based on consistency of levels
   const cefrConfidence = calculateCEFRConfidence(cefrLevels);

@@ -51,7 +51,8 @@ const detectFallbackUsage = (results: AssessmentResult[]) => {
 export const calculateAggregatedResult = async (
   results: AssessmentResult[],
   sessionId: string,
-  studentName?: string
+  studentName?: string,
+  promptHistory?: { prompt: any; result: AssessmentResult }[]
 ): Promise<AssessmentResult | null> => {
   if (results.length === 0) return null;
 
@@ -113,7 +114,33 @@ export const calculateAggregatedResult = async (
   const aggregatedAudioAnalysis = aggregateAudioAnalysis(results);
   
   // Determine CEFR level from weighted score using enhanced thresholds
-  const cefrLevel = determineCEFRFromScore(totalScore);
+  let cefrLevel = determineCEFRFromScore(totalScore);
+  
+  // Cap CEFR level based on highest attempted level if prompt history is available
+  if (promptHistory && promptHistory.length > 0) {
+    const levels = ['Pre-A1', 'A1', 'A1+', 'A2', 'A2+', 'B1', 'B1+', 'B2', 'B2+', 'C1', 'C1+', 'C2'] as const;
+    let highestAttemptedLevel: typeof levels[number] = 'A1';
+    
+    promptHistory.forEach(item => {
+      const attemptedLevel = item.prompt?.cefrLevel;
+      // Only process valid CEFR levels that are in our levels array
+      if (attemptedLevel && levels.includes(attemptedLevel as any)) {
+        if (levels.indexOf(attemptedLevel as any) > levels.indexOf(highestAttemptedLevel)) {
+          highestAttemptedLevel = attemptedLevel as any;
+        }
+      }
+    });
+    
+    // Cap the calculated CEFR level if it's a valid level in our array
+    if (levels.includes(cefrLevel as any)) {
+      const cefrIndex = levels.indexOf(cefrLevel as any);
+      const maxIndex = levels.indexOf(highestAttemptedLevel);
+      if (cefrIndex > maxIndex) {
+        cefrLevel = highestAttemptedLevel;
+        console.log(`🎯 [Aggregation] CEFR level capped from ${determineCEFRFromScore(totalScore)} to ${cefrLevel} based on highest attempted level`);
+      }
+    }
+  }
 
   // Generate smart feedback based on actual performance metrics
   const aggregatedFeedback = await generateSmartFeedback(aggregatedMetrics, aggregatedAudioAnalysis, cefrLevel, results.length);
