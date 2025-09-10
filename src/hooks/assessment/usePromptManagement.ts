@@ -4,12 +4,29 @@ import { SpeakingPrompt, CEFRLevel } from '@/types/assessment';
 import { mockPrompts } from '@/utils/speaking/promptUtils';
 
 export const usePromptManagement = (maxPrompts: number = 10) => {
-  // Sort prompts by CEFR level for adaptive testing
-  const sortedPrompts = [...mockPrompts].sort((a, b) => {
-    // Order: A1, A2, B1, B2, C1, C2
-    const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-    return levels.indexOf(a.cefrLevel || 'A1') - levels.indexOf(b.cefrLevel || 'A1');
-  });
+  // Group prompts by CEFR level with speaking prompts followed by read aloud tasks
+  const groupedPrompts = () => {
+    const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
+    const orderedPrompts: SpeakingPrompt[] = [];
+    
+    levels.forEach(level => {
+      // Add speaking prompts for this level first
+      const speakingPrompts = mockPrompts.filter(p => 
+        p.cefrLevel === level && !p.isReadAloud
+      );
+      orderedPrompts.push(...speakingPrompts);
+      
+      // Then add read aloud tasks for this level
+      const readAloudTasks = mockPrompts.filter(p => 
+        p.cefrLevel === level && p.isReadAloud
+      );
+      orderedPrompts.push(...readAloudTasks);
+    });
+    
+    return orderedPrompts;
+  };
+  
+  const sortedPrompts = groupedPrompts();
   
   // Prompt queue and history
   const [promptQueue, setPromptQueue] = useState<SpeakingPrompt[]>([]);
@@ -21,7 +38,8 @@ export const usePromptManagement = (maxPrompts: number = 10) => {
   
   // Initialize prompts queue
   const initializePromptQueue = () => {
-    setPromptQueue(sortedPrompts.slice(0, maxPrompts));
+    const totalPrompts = Math.min(maxPrompts, sortedPrompts.length);
+    setPromptQueue(sortedPrompts.slice(0, totalPrompts));
     setPromptHistory([]);
     setCurrentPromptIndex(0);
   };

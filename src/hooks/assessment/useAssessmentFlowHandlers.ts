@@ -71,12 +71,6 @@ export const useAssessmentFlowHandlers = ({
     if (nextPrompt) {
       console.log(`Moving to next prompt (${currentPromptIndex + 1}/${totalPrompts}):`, nextPrompt.text.substring(0, 50));
       
-      // Check if we're transitioning to Read Aloud tasks (Q24+)
-      if (nextPrompt.isReadAloud && currentPromptIndex === 22) { // After Q23
-        console.log("Transitioning to Read Aloud phase");
-        setCurrentStep(AssessmentStep.READ_ALOUD);
-      }
-      
       handlePromptSelect(nextPrompt);
       handleReset(); // Clear previous recording state
     } else {

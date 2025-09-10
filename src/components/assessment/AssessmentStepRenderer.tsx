@@ -11,6 +11,28 @@ import ReadAloudAssessmentStep from './ReadAloudAssessmentStep';
 import { StudentInfo } from '@/hooks/assessment';
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
 
+// Helper function to calculate read aloud task index within CEFR level
+const getReadAloudTaskIndex = (currentPromptIndex: number, cefrLevel: string): number => {
+  // Calculate how many prompts come before the current CEFR level
+  const levelOrder = ['A1', 'A2', 'B1', 'B2', 'C1'];
+  const currentLevelIndex = levelOrder.indexOf(cefrLevel);
+  
+  // Count prompts per level: A1(4+3), A2(2+3), B1(5+3), B2(6+3), C1(6+3)
+  const promptsPerLevel = [7, 5, 8, 9, 9]; // speaking + read aloud per level
+  
+  let promptsBeforeCurrentLevel = 0;
+  for (let i = 0; i < currentLevelIndex; i++) {
+    promptsBeforeCurrentLevel += promptsPerLevel[i];
+  }
+  
+  // Find the read aloud start for current level
+  const speakingPromptsInLevel = [4, 2, 5, 6, 6][currentLevelIndex];
+  const readAloudStartInLevel = promptsBeforeCurrentLevel + speakingPromptsInLevel;
+  
+  // Calculate the index within the read aloud tasks of this level (0-2)
+  return currentPromptIndex - readAloudStartInLevel;
+};
+
 interface AssessmentStepRendererProps {
   currentStep: AssessmentStep;
   showAssessmentOptions: boolean;
@@ -98,13 +120,17 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
     case AssessmentStep.RECORDING:
       if (!currentPrompt) return null;
       
-      // If current prompt is a Read Aloud task, redirect to READ_ALOUD step
+      // If current prompt is a Read Aloud task, redirect to READ_aloud component
       if (currentPrompt.isReadAloud) {
+        // Calculate read aloud task index within the current CEFR level
+        const cefrLevel = currentPrompt.cefrLevel || 'A1';
+        const readAloudTaskIndex = getReadAloudTaskIndex(currentPromptIndex, cefrLevel);
+        
         return (
           <ReadAloudAssessmentStep
             sessionId={sessionId || ''}
-            currentIndex={currentPromptIndex - 23} // Adjust index for Read Aloud (0-14)
-            totalTasks={15} // 3 sentences × 5 CEFR levels
+            currentIndex={readAloudTaskIndex}
+            totalTasks={3} // 3 sentences per CEFR level
             onComplete={(result) => {
               // Store Read Aloud result with complete AudioAnalysisResult structure
               handleResponseComplete(result.audioBlob || new Blob(), result.transcript, {
@@ -145,8 +171,8 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
       return (
         <ReadAloudAssessmentStep
           sessionId={sessionId}
-          currentIndex={currentPromptIndex - 23} // Adjust index for Read Aloud (0-14)
-          totalTasks={15} // 3 sentences × 5 CEFR levels
+          currentIndex={getReadAloudTaskIndex(currentPromptIndex, currentPrompt.cefrLevel || 'A1')}
+          totalTasks={3} // 3 sentences per CEFR level
           cefrLevel={currentPrompt.cefrLevel || 'A1'}
           onComplete={(result) => {
             // Store Read Aloud result with complete AudioAnalysisResult structure

@@ -32,35 +32,41 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
   onFinish
 }) => {
   // Get the appropriate sentence based on current index and CEFR level
-  const getSentenceForIndex = (index: number): ReadAloudSentence | null => {
-    const tasksPerLevel = 3;
-    const levelIndex = Math.floor(index / tasksPerLevel);
-    const taskInLevel = index % tasksPerLevel;
+  const getSentenceForIndex = (index: number, level: string): ReadAloudSentence | null => {
+    const levelToSentences: Record<string, ReadAloudSentence[]> = {
+      'A1': a1Sentences,
+      'A2': a2Sentences,
+      'B1': b1Sentences,
+      'B2': b2Sentences,
+      'C1': c1Sentences
+    };
     
-    const sentenceGroups = [a1Sentences, a2Sentences, b1Sentences, b2Sentences, c1Sentences];
+    const sentences = levelToSentences[level] || [];
     
-    if (levelIndex < sentenceGroups.length) {
-      const sentences = sentenceGroups[levelIndex] ?? [];
-      if (Array.isArray(sentences) && taskInLevel < sentences.length) {
-        return sentences[taskInLevel] ?? null;
-      }
+    if (index >= 0 && index < sentences.length && Array.isArray(sentences)) {
+      return sentences[index] || null;
     }
+    
     return null;
   };
 
-  const currentSentence = getSentenceForIndex(currentIndex);
+  const currentSentence = getSentenceForIndex(currentIndex, cefrLevel);
   const currentLevel = currentSentence?.band || cefrLevel;
 
   // Debug instrumentation for RA sentence resolution
   React.useEffect(() => {
-    const tasksPerLevel = 3;
-    const levelIndex = Math.floor(currentIndex / tasksPerLevel);
-    const taskInLevel = currentIndex % tasksPerLevel;
-    console.info('[RA_STEP]', { sessionId, currentIndex, levelIndex, taskInLevel, totalTasks, hasSentence: !!currentSentence });
+    console.info('[RA_STEP]', { 
+      sessionId, 
+      currentIndex, 
+      cefrLevel, 
+      totalTasks, 
+      hasSentence: !!currentSentence,
+      sentenceId: currentSentence?.id 
+    });
     if (!currentSentence) {
-      console.warn('[RA_SENTENCE_NULL]', { currentIndex, levelIndex, taskInLevel });
+      console.warn('[RA_SENTENCE_NULL]', { currentIndex, cefrLevel, totalTasks });
     }
-  }, [sessionId, currentIndex, totalTasks, currentSentence]);
+  }, [sessionId, currentIndex, cefrLevel, totalTasks, currentSentence]);
 
   // Auto-advance if sentence cannot be resolved to avoid stall
   React.useEffect(() => {
@@ -76,7 +82,7 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
   const handleTaskComplete = (result: any) => {
     onComplete({
       ...result,
-      questionId: `Q${24 + currentIndex}_RA_${currentLevel}`,
+      questionId: `RA_${currentLevel}_${currentIndex + 1}`,
       cefrLevel: currentLevel,
       sentenceId: currentSentence?.id
     });
@@ -108,13 +114,13 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
       <Card>
         <CardHeader>
           <CardTitle>
-            Read Aloud Assessment - Task {currentIndex + 1} of {totalTasks} (Q{24 + currentIndex})
+            Read Aloud Assessment - {currentLevel} Task {currentIndex + 1} of {totalTasks}
           </CardTitle>
           <p className="text-muted-foreground">
             Read the sentence aloud clearly and naturally. Your pronunciation will be assessed.
           </p>
           <div className="text-sm text-muted-foreground">
-            CEFR Level: {currentLevel} | Progress: {Math.floor(currentIndex / 3) + 1}/5 bands completed
+            CEFR Level: {currentLevel} | Sentence {currentIndex + 1} of {totalTasks}
           </div>
         </CardHeader>
         <CardContent>

@@ -20,7 +20,7 @@ export interface AssessmentFlowConfig {
 
 // Default configuration
 export const DEFAULT_CONFIG: AssessmentFlowConfig = {
-  promptsCount: 38, // 23 free response + 15 read aloud tasks
+  promptsCount: 38, // All 23 speaking + 15 read aloud tasks grouped by CEFR level
   requiredConsistentScores: 4,
   emailDelay: 15 * 60 * 1000, // 15 minutes
   showAdminControls: false

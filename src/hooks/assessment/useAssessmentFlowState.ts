@@ -35,7 +35,7 @@ export const useAssessmentFlowState = (config: Partial<AssessmentFlowConfig> = {
     addToHistory,
     moveToNextPrompt,
     setPromptHistory
-  } = usePromptManagement(config.promptsCount || 10);
+  } = usePromptManagement(config.promptsCount || 38);
   
   // Assessment scoring
   const { 
