@@ -131,20 +131,10 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
             sessionId={sessionId || ''}
             currentIndex={readAloudTaskIndex}
             totalTasks={3} // 3 sentences per CEFR level
-            onComplete={(result) => {
+            cefrLevel={cefrLevel}
+            onComplete={(audioBlob, transcript, audioAnalysis) => {
               // Store Read Aloud result with complete AudioAnalysisResult structure
-              handleResponseComplete(result.audioBlob || new Blob(), result.transcript, {
-                wpm: 0,
-                totalWords: 0,
-                pauseCount: 0,
-                pauseDuration: 0,
-                pauseRatio: 0,
-                speakingDuration: 0,
-                totalDuration: 0,
-                readAloudScore: result.score,
-                pronunciationScore: result.score,
-                band: result.band
-              });
+              handleResponseComplete(audioBlob, transcript, audioAnalysis);
             }}
             onNext={skipToNextPrompt}
             onFinish={() => processBatchAndFinish?.()}
@@ -174,20 +164,9 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
           currentIndex={getReadAloudTaskIndex(currentPromptIndex, currentPrompt.cefrLevel || 'A1')}
           totalTasks={3} // 3 sentences per CEFR level
           cefrLevel={currentPrompt.cefrLevel || 'A1'}
-          onComplete={(result) => {
+          onComplete={(audioBlob, transcript, audioAnalysis) => {
             // Store Read Aloud result with complete AudioAnalysisResult structure
-            handleResponseComplete(result.audioBlob || new Blob(), result.transcript, {
-              wpm: 0,
-              totalWords: 0,
-              pauseCount: 0,
-              pauseDuration: 0,
-              pauseRatio: 0,
-              speakingDuration: 0,
-              totalDuration: 0,
-              readAloudScore: result.score,
-              pronunciationScore: result.score,
-              band: result.band
-            });
+            handleResponseComplete(audioBlob, transcript, audioAnalysis);
           }}
           onNext={skipToNextPrompt}
           onFinish={() => processBatchAndFinish?.()}

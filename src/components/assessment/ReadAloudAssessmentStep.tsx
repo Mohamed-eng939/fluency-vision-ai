@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useReadAloudTask } from '@/hooks/readAloud/useReadAloudTask';
-import { ReadAloudTask } from '../readAloud/ReadAloudTask';
+import RecordingContainer from './RecordingContainer';
+import RecordingFlowController from './RecordingFlowController';
 import { 
   a1Sentences, 
   a2Sentences, 
@@ -11,13 +11,14 @@ import {
   c1Sentences,
   ReadAloudSentence 
 } from '@/data/readAloud/sentenceBank';
+import { AudioAnalysisResult } from '@/types/assessment';
 
 interface ReadAloudAssessmentStepProps {
   sessionId: string;
   currentIndex: number;
   totalTasks: number;
-  cefrLevel?: string;
-  onComplete: (results: any) => void;
+  cefrLevel: string;
+  onComplete: (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => void;
   onNext: () => void;
   onFinish: () => void;
 }
@@ -26,7 +27,7 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
   sessionId,
   currentIndex,
   totalTasks,
-  cefrLevel = 'A1',
+  cefrLevel,
   onComplete,
   onNext,
   onFinish
@@ -51,7 +52,26 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
   };
 
   const currentSentence = getSentenceForIndex(currentIndex, cefrLevel);
-  const currentLevel = currentSentence?.band || cefrLevel;
+
+  // Create a mock prompt for the read aloud sentence
+  const readAloudPrompt = React.useMemo(() => {
+    if (!currentSentence) return null;
+    
+    const difficulty = (cefrLevel === 'A1' || cefrLevel === 'A2') ? 'beginner' : 
+                      (cefrLevel === 'B1' || cefrLevel === 'B2') ? 'intermediate' : 'advanced';
+    
+    return {
+      id: `RA_${cefrLevel}_${currentIndex + 1}`,
+      text: `Read the following sentence aloud clearly and naturally: "${currentSentence.sentence}"`,
+      category: 'read_aloud' as const,
+      difficulty: difficulty as 'beginner' | 'intermediate' | 'advanced',
+      timeLimit: 60,
+      cefrLevel: cefrLevel as any,
+      isReadAloud: true,
+      topic: 'Read Aloud',
+      sentence: currentSentence.sentence
+    };
+  }, [currentSentence, cefrLevel, currentIndex]);
 
   // Debug instrumentation for RA sentence resolution
   React.useEffect(() => {
@@ -79,21 +99,23 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
     }
   }, [currentSentence, currentIndex, totalTasks, onNext, onFinish]);
 
-  const handleTaskComplete = (result: any) => {
-    onComplete({
-      ...result,
-      questionId: `RA_${currentLevel}_${currentIndex + 1}`,
-      cefrLevel: currentLevel,
-      sentenceId: currentSentence?.id
+  const handleRecordingComplete = (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
+    console.log('Read Aloud recording completed:', { 
+      cefrLevel, 
+      currentIndex, 
+      sentence: currentSentence?.sentence,
+      transcriptLength: transcript?.length 
     });
     
-    // Check if we have more Read Aloud tasks
-    if (currentIndex < totalTasks - 1) {
-      onNext();
-    } else {
-      // All Read Aloud tasks completed
-      onFinish();
-    }
+    // Create enhanced audio analysis for read aloud
+    const enhancedAudioAnalysis: AudioAnalysisResult = {
+      ...audioAnalysis,
+      readAloudScore: 85, // Mock score for now
+      pronunciationScore: 85,
+      band: cefrLevel as any
+    };
+    
+    onComplete(audioBlob, transcript, enhancedAudioAnalysis);
   };
 
   if (!currentSentence) {
@@ -114,47 +136,46 @@ const ReadAloudAssessmentStep: React.FC<ReadAloudAssessmentStepProps> = ({
       <Card>
         <CardHeader>
           <CardTitle>
-            Read Aloud Assessment - {currentLevel} Task {currentIndex + 1} of {totalTasks}
+            Read Aloud Assessment - {cefrLevel} Task {currentIndex + 1} of {totalTasks}
           </CardTitle>
           <p className="text-muted-foreground">
             Read the sentence aloud clearly and naturally. Your pronunciation will be assessed.
           </p>
           <div className="text-sm text-muted-foreground">
-            CEFR Level: {currentLevel} | Sentence {currentIndex + 1} of {totalTasks}
+            CEFR Level: {cefrLevel} | Sentence {currentIndex + 1} of {totalTasks}
           </div>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="text-lg font-medium p-4 bg-muted rounded-lg">
               {currentSentence.sentence}
             </div>
           </div>
           
-          <ReadAloudTask
-            sessionId={sessionId}
-            onComplete={(results) => {
-              if (Array.isArray(results) && results.length > 0) {
-                handleTaskComplete(results[results.length - 1]);
-              } else if (results && !Array.isArray(results)) {
-                // Fallback: handle single result object
-                handleTaskComplete(results);
-              }
-            }}
-            onProgress={(current, total) => {
-              console.log(`Read Aloud progress: ${current}/${total}`);
-            }}
-          />
+          {readAloudPrompt && (
+            <RecordingFlowController
+              selectedPrompt={readAloudPrompt}
+              onComplete={handleRecordingComplete}
+              onCancel={onNext}
+              isProcessing={false}
+              delayAnalysis={false}
+            />
+          )}
         </CardContent>
       </Card>
 
       <div className="flex justify-between">
-        <Button variant="outline" onClick={() => onNext()}>
+        <Button variant="outline" onClick={onNext}>
           Skip Task
         </Button>
         
-        {currentIndex === totalTasks - 1 && (
+        {currentIndex === totalTasks - 1 ? (
           <Button onClick={onFinish}>
-            Complete Assessment
+            Complete Read Aloud Tasks
+          </Button>
+        ) : (
+          <Button onClick={onNext}>
+            Next Task
           </Button>
         )}
       </div>
