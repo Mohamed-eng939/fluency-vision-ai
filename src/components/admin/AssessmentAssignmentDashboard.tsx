@@ -40,12 +40,29 @@ const AssessmentAssignmentDashboard: React.FC = () => {
   const [selectedAssessor, setSelectedAssessor] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Fetch completed assessments and available assessors
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
+        // Check if user is authenticated and is admin
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error('You must be logged in to access the admin dashboard');
+        }
+
+        // Check user role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.role !== 'admin') {
+          throw new Error('You must be an admin to access this dashboard');
+        }
         // Fetch completed assessments
         const { data: assessmentData, error: assessmentError } = await supabase
           .from('assessment_sessions')
@@ -94,6 +111,7 @@ const AssessmentAssignmentDashboard: React.FC = () => {
         setAssessors(assessorData || []);
       } catch (error: any) {
         console.error('Error fetching data:', error);
+        setAuthError(error.message);
         toast.error('Failed to load data: ' + error.message);
       } finally {
         setIsLoading(false);
@@ -196,6 +214,17 @@ const AssessmentAssignmentDashboard: React.FC = () => {
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin" />
         <span className="ml-2">Loading assessments...</span>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="text-destructive mb-2">Access Denied</div>
+          <div className="text-muted-foreground">{authError}</div>
+        </div>
       </div>
     );
   }
