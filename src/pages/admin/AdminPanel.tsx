@@ -1,13 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Users, ClipboardList } from 'lucide-react';
+import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
 
 const AdminPanel: React.FC = () => {
   const { user, signOut } = useAuth();
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   
   React.useEffect(() => {
     // Simulate loading data
@@ -37,67 +39,86 @@ const AdminPanel: React.FC = () => {
           <span className="ml-2">Loading data...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>User Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">Manage user accounts, roles, and permissions</p>
-              <Button className="w-full">Manage Users</Button>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              System Overview
+            </TabsTrigger>
+            <TabsTrigger value="assignments" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Assessment Assignments
+            </TabsTrigger>
+          </TabsList>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Assessment Prompts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">Create and edit speaking assessment prompts</p>
-              <Button className="w-full">Manage Prompts</Button>
-            </CardContent>
-          </Card>
+          <TabsContent value="dashboard" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>User Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">Manage user accounts, roles, and permissions</p>
+                  <Button className="w-full">Manage Users</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>Assessment Prompts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">Create and edit speaking assessment prompts</p>
+                  <Button className="w-full">Manage Prompts</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>API Keys</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">Generate and manage API keys for external integrations</p>
+                  <Button className="w-full">Manage API Keys</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>Assessment Data</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">View and export assessment data and statistics</p>
+                  <Button className="w-full">View Data</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>Training Datasets</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">Manage datasets used for AI training</p>
+                  <Button className="w-full">Manage Datasets</Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>System Settings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">Configure system settings and parameters</p>
+                  <Button className="w-full">Configure Settings</Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>API Keys</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">Generate and manage API keys for external integrations</p>
-              <Button className="w-full">Manage API Keys</Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Assessment Data</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">View and export assessment data and statistics</p>
-              <Button className="w-full">View Data</Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Training Datasets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">Manage datasets used for AI training</p>
-              <Button className="w-full">Manage Datasets</Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>System Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-4">Configure system settings and parameters</p>
-              <Button className="w-full">Configure Settings</Button>
-            </CardContent>
-          </Card>
-        </div>
+          <TabsContent value="assignments" className="mt-6">
+            <AssessmentAssignmentDashboard />
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
