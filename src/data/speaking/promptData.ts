@@ -248,7 +248,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   // A1 Read Aloud Tasks (Q24-Q26)
   {
     id: 'Q24_RA_A1',
-    text: 'Read Aloud Task 1 (A1 Level)',
+    text: 'Read Aloud: The cat is on the bed.',
     category: 'read_aloud',
     difficulty: 'beginner',
     timeLimit: 30,
@@ -259,7 +259,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q25_RA_A1',
-    text: 'Read Aloud Task 2 (A1 Level)',
+    text: 'Read Aloud: I am a student.',
     category: 'read_aloud',
     difficulty: 'beginner',
     timeLimit: 30,
@@ -270,7 +270,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q26_RA_A1',
-    text: 'Read Aloud Task 3 (A1 Level)',
+    text: 'Read Aloud: She has a red bag.',
     category: 'read_aloud',
     difficulty: 'beginner',
     timeLimit: 30,
@@ -283,7 +283,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   // A2 Read Aloud Tasks (Q27-Q29)
   {
     id: 'Q27_RA_A2',
-    text: 'Read Aloud Task 1 (A2 Level)',
+    text: 'Read Aloud: My mother works in a hospital.',
     category: 'read_aloud',
     difficulty: 'beginner',
     timeLimit: 30,
@@ -294,7 +294,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q28_RA_A2',
-    text: 'Read Aloud Task 2 (A2 Level)',
+    text: 'Read Aloud: They went to the park yesterday afternoon.',
     category: 'read_aloud',
     difficulty: 'beginner',
     timeLimit: 30,
@@ -305,7 +305,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q29_RA_A2',
-    text: 'Read Aloud Task 3 (A2 Level)',
+    text: 'Read Aloud: I usually eat lunch at 1 o\'clock.',
     category: 'read_aloud',
     difficulty: 'beginner',
     timeLimit: 30,
@@ -318,7 +318,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   // B1 Read Aloud Tasks (Q30-Q32)
   {
     id: 'Q30_RA_B1',
-    text: 'Read Aloud Task 1 (B1 Level)',
+    text: 'Read Aloud: Although it was raining heavily, we decided to continue our hike.',
     category: 'read_aloud',
     difficulty: 'intermediate',
     timeLimit: 30,
@@ -329,7 +329,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q31_RA_B1',
-    text: 'Read Aloud Task 2 (B1 Level)',
+    text: 'Read Aloud: The conference will be postponed until further notice.',
     category: 'read_aloud',
     difficulty: 'intermediate',
     timeLimit: 30,
@@ -340,7 +340,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q32_RA_B1',
-    text: 'Read Aloud Task 3 (B1 Level)',
+    text: 'Read Aloud: She has been working as a nurse for over ten years.',
     category: 'read_aloud',
     difficulty: 'intermediate',
     timeLimit: 30,
@@ -353,7 +353,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   // B2 Read Aloud Tasks (Q33-Q35)
   {
     id: 'Q33_RA_B2',
-    text: 'Read Aloud Task 1 (B2 Level)',
+    text: 'Read Aloud: The implications of climate change on global agriculture are far-reaching and complex.',
     category: 'read_aloud',
     difficulty: 'intermediate',
     timeLimit: 30,
@@ -364,7 +364,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q34_RA_B2',
-    text: 'Read Aloud Task 2 (B2 Level)',
+    text: 'Read Aloud: Despite numerous challenges, the project was completed within the allocated timeframe.',
     category: 'read_aloud',
     difficulty: 'intermediate',
     timeLimit: 30,
@@ -375,7 +375,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q35_RA_B2',
-    text: 'Read Aloud Task 3 (B2 Level)',
+    text: 'Read Aloud: The government\'s implementation of new policies has resulted in significant economic improvements.',
     category: 'read_aloud',
     difficulty: 'intermediate',
     timeLimit: 30,
@@ -388,7 +388,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   // C1 Read Aloud Tasks (Q36-Q38)
   {
     id: 'Q36_RA_C1',
-    text: 'Read Aloud Task 1 (C1 Level)',
+    text: 'Read Aloud: Despite the initial resistance from the management team, the proposal gained traction after it demonstrated measurable improvements.',
     category: 'read_aloud',
     difficulty: 'advanced',
     timeLimit: 30,
@@ -399,7 +399,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q37_RA_C1',
-    text: 'Read Aloud Task 2 (C1 Level)',
+    text: 'Read Aloud: While the technology promises to revolutionize how we interact with information, privacy concerns remain a major obstacle.',
     category: 'read_aloud',
     difficulty: 'advanced',
     timeLimit: 30,
@@ -410,7 +410,7 @@ export const speakingPrompts: SpeakingPrompt[] = [
   },
   {
     id: 'Q38_RA_C1',
-    text: 'Read Aloud Task 3 (C1 Level)',
+    text: 'Read Aloud: Contrary to popular belief, multitasking often leads to reduced productivity as the brain struggles to switch between tasks.',
     category: 'read_aloud',
     difficulty: 'advanced',
     timeLimit: 30,

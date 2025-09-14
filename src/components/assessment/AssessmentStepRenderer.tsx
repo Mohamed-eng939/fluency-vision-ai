@@ -146,7 +146,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
         <RecordingStep 
           prompt={currentPrompt}
           currentIndex={currentPromptIndex}
-          totalPrompts={23} // Only count free response questions
+          totalPrompts={totalPrompts} // Show progress for all 38 questions
           onRecordingComplete={handleResponseComplete}
           onPause={() => {}} // This would be implemented for pausing functionality
           onFinishNow={() => processBatchAndFinish?.()}

@@ -44,11 +44,11 @@ export const useAssessmentFlowHandlers = ({
 
   // Handle recording completion - immediate storage without scoring
   const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
-    console.log("Response completed, storing immediately without scoring...");
+    console.info(`[FS_SAVE_START] Q${currentPromptIndex + 1}: Storing response without scoring...`);
     
     // Validate audio before storing
     if (!audioBlob || audioBlob.size === 0) {
-      console.error("Cannot proceed - invalid audio blob");
+      console.error(`[FS_SAVE_FAIL] Q${currentPromptIndex + 1}: Invalid audio blob - cannot proceed`);
       return;
     }
     
@@ -62,19 +62,21 @@ export const useAssessmentFlowHandlers = ({
     );
     
     if (!success) {
-      console.error("Failed to store response, not proceeding to next question");
+      console.error(`[FS_SAVE_FAIL] Q${currentPromptIndex + 1}: Failed to store response - not proceeding`);
       return;
     }
+    
+    console.info(`[FS_SAVE_OK] Q${currentPromptIndex + 1}: Response stored successfully`);
     
     // Move to next prompt immediately
     const nextPrompt = moveToNextPrompt();
     if (nextPrompt) {
-      console.log(`Moving to next prompt (${currentPromptIndex + 1}/${totalPrompts}):`, nextPrompt.text.substring(0, 50));
+      console.info(`[FS_NEXT] Moving from Q${currentPromptIndex}→Q${currentPromptIndex + 1}/${totalPrompts}: ${nextPrompt.text.substring(0, 50)}...`);
       
       handlePromptSelect(nextPrompt);
       handleReset(); // Clear previous recording state
     } else {
-      console.log("No more prompts, starting batch processing of all responses");
+      console.info("[ASSESSMENT_COMPLETE] All 38 questions completed - starting batch processing");
       await processBatchAndFinish();
     }
   };
@@ -128,13 +130,14 @@ export const useAssessmentFlowHandlers = ({
   
   // Skip to next prompt
   const skipToNextPrompt = () => {
-    console.log("Skipping to next prompt");
+    console.info(`[SKIP] Q${currentPromptIndex + 1}: Skipping to next prompt`);
     const nextPrompt = moveToNextPrompt();
     
     if (nextPrompt) {
       handlePromptSelect(nextPrompt);
       handleReset();
     } else {
+      console.info("[SKIP_COMPLETE] No more prompts - starting batch processing");
       processBatchAndFinish();
     }
   };
