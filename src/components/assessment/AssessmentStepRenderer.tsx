@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { AssessmentStep } from '@/hooks/assessment/useAssessmentFlow';
+import { ReadAloudStage } from '@/hooks/assessment/types/assessmentTypes';
 import TestEntryStep from './TestEntryStep';
 import WelcomeStep from './WelcomeStep';
 import RecordingStep from './RecordingStep';
@@ -50,6 +51,7 @@ interface AssessmentStepRendererProps {
   processingProgress?: { current: number; total: number };
   sessionId?: string;
   processBatchAndFinish?: () => void;
+  readAloudStage: ReadAloudStage;
 
   // Methods
   onSelectQuickAssessment: () => void;
@@ -81,6 +83,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
   processingProgress,
   sessionId,
   processBatchAndFinish,
+  readAloudStage,
   onSelectQuickAssessment,
   initializeAssessment,
   onStudentInfoSubmit,
@@ -115,6 +118,14 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
         <WelcomeStep 
           onStart={startAssessment}
         />
+      );
+
+    case AssessmentStep.READ_ALOUD_LOADING:
+      return (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Preparing Read-Aloud A1 stage...</p>
+        </div>
       );
     
     case AssessmentStep.RECORDING:
@@ -156,6 +167,51 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
       );
 
     case AssessmentStep.READ_ALOUD:
+      // Handle A1 Read-Aloud stage specifically
+      if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
+        const currentA1Item = readAloudStage.a1.items[readAloudStage.a1.index];
+        if (!currentA1Item || !sessionId) return null;
+        
+        return (
+          <div className="space-y-6">
+            {/* A1 Read-Aloud Header */}
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2">Read Aloud – A1</h2>
+              <p className="text-muted-foreground">
+                Item {readAloudStage.a1.index + 1}/3
+              </p>
+            </div>
+            
+            {/* Current sentence display */}
+            <div className="bg-muted/50 p-6 rounded-lg text-center">
+              <p className="text-lg font-medium mb-4">Please read this sentence aloud:</p>
+              <div className="text-xl font-semibold text-primary p-4 bg-background rounded-lg border">
+                {currentA1Item.text}
+              </div>
+            </div>
+            
+            {/* Recording controls */}
+            <RecordingStep 
+              prompt={{
+                id: currentA1Item.sentence_id,
+                text: currentA1Item.text,
+                cefrLevel: 'A1',
+                category: 'read_aloud',
+                isReadAloud: true
+              } as SpeakingPrompt}
+              currentIndex={readAloudStage.a1.index}
+              totalPrompts={3}
+              onRecordingComplete={handleResponseComplete}
+              onPause={() => {}}
+              onFinishNow={() => processBatchAndFinish?.()}
+              onNext={skipToNextPrompt}
+              isProcessing={isProcessing}
+            />
+          </div>
+        );
+      }
+      
+      // Fallback for other read-aloud scenarios
       if (!sessionId || !currentPrompt) return null;
       
       return (

@@ -1,6 +1,6 @@
 
 import { AudioAnalysisResult } from '@/types/assessment';
-import { AssessmentStep } from './types/assessmentTypes';
+import { AssessmentStep, ReadAloudStage, A1_READ_ALOUD_SENTENCES } from './types/assessmentTypes';
 
 interface AssessmentFlowHandlersProps {
   selectedPrompt: any;
@@ -20,6 +20,8 @@ interface AssessmentFlowHandlersProps {
   emailResults: boolean;
   bypassScoringDelay: boolean;
   sessionId: string;
+  readAloudStage: ReadAloudStage;
+  setReadAloudStage: (stage: ReadAloudStage) => void;
 }
 
 export const useAssessmentFlowHandlers = ({
@@ -39,7 +41,9 @@ export const useAssessmentFlowHandlers = ({
   promptHistory,
   emailResults,
   bypassScoringDelay,
-  sessionId
+  sessionId,
+  readAloudStage,
+  setReadAloudStage
 }: AssessmentFlowHandlersProps) => {
 
   // Handle recording completion - immediate storage without scoring
@@ -68,6 +72,20 @@ export const useAssessmentFlowHandlers = ({
     
     console.info(`[FS_SAVE_OK] Q${currentPromptIndex + 1}: Response stored successfully`);
     
+    // Check if we just completed Q4 (A1 free-speaking) - trigger A1 Read-Aloud
+    if (currentPromptIndex === 3) { // Q4 = index 3
+      console.info("[RA_A1_TRIGGER] Q4 completed - starting A1 Read-Aloud stage");
+      initializeA1ReadAloud();
+      return;
+    }
+    
+    // Check if we're in A1 Read-Aloud stage and need to continue
+    if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
+      console.info(`[RA_A1_CONTINUE] A1 Read-Aloud item ${readAloudStage.a1.index + 1}/3 completed`);
+      await handleA1ReadAloudProgress();
+      return;
+    }
+    
     // Move to next prompt immediately
     const nextPrompt = moveToNextPrompt();
     if (nextPrompt) {
@@ -81,8 +99,70 @@ export const useAssessmentFlowHandlers = ({
     }
   };
 
+  // Initialize A1 Read-Aloud stage after Q4
+  const initializeA1ReadAloud = () => {
+    console.info("[RA_A1_INIT] Initializing A1 Read-Aloud stage with 3 sentences");
+    
+    setCurrentStep(AssessmentStep.READ_ALOUD_LOADING);
+    
+    // Set up A1 Read-Aloud items
+    const updatedStage = {
+      ...readAloudStage,
+      a1: {
+        ready: true,
+        done: false,
+        index: 0,
+        items: [...A1_READ_ALOUD_SENTENCES]
+      }
+    };
+    
+    setReadAloudStage(updatedStage);
+    
+    // Transition to READ_ALOUD step
+    setTimeout(() => {
+      console.info("[RA_A1_START] Starting A1 Read-Aloud - item 1/3");
+      setCurrentStep(AssessmentStep.READ_ALOUD);
+    }, 500);
+  };
+
+  // Handle A1 Read-Aloud progress
+  const handleA1ReadAloudProgress = async () => {
+    const nextIndex = readAloudStage.a1.index + 1;
+    
+    if (nextIndex < 3) {
+      // Move to next A1 item
+      console.info(`[RA_A1_NEXT] Moving to A1 Read-Aloud item ${nextIndex + 1}/3`);
+      setReadAloudStage({
+        ...readAloudStage,
+        a1: { ...readAloudStage.a1, index: nextIndex }
+      });
+    } else {
+      // A1 Read-Aloud complete - return to free-speaking at Q5
+      console.info("[RA_A1_COMPLETE] A1 Read-Aloud stage completed - resuming at Q5");
+      setReadAloudStage({
+        ...readAloudStage,
+        a1: { ...readAloudStage.a1, done: true }
+      });
+      
+      // Move to Q5 (A2 free-speaking)
+      const nextPrompt = moveToNextPrompt(); // This should give us Q5
+      if (nextPrompt) {
+        console.info(`[FS_RESUME] Resuming free-speaking at Q5: ${nextPrompt.text.substring(0, 50)}...`);
+        handlePromptSelect(nextPrompt);
+        handleReset();
+        setCurrentStep(AssessmentStep.RECORDING);
+      }
+    }
+  };
+
   // Process all stored responses and finish assessment
   const processBatchAndFinish = async () => {
+    // Block processing if A1 Read-Aloud stage is not complete
+    if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
+      console.warn("[PROCESS_BLOCKED] A1 Read-Aloud stage not complete - blocking PROCESSING/RESULTS");
+      return;
+    }
+    
     console.log("🔄 Starting batch processing phase for all stored responses");
     console.log("🔄 Session ID:", sessionId);
     console.log("🔄 Student Info:", studentInfo);
@@ -145,6 +225,8 @@ export const useAssessmentFlowHandlers = ({
   return {
     handleResponseComplete,
     processBatchAndFinish,
-    skipToNextPrompt
+    skipToNextPrompt,
+    initializeA1ReadAloud,
+    handleA1ReadAloudProgress
   };
 };

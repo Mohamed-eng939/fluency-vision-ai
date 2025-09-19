@@ -36,6 +36,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     promptHistory,
     processingProgress,
     processBatchAndFinish,
+    readAloudStage,
     
     // Methods
     initializeAssessment,
@@ -159,6 +160,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         processingProgress={processingProgress}
         sessionId={sessionId}
         processBatchAndFinish={processBatchAndFinish}
+        readAloudStage={readAloudStage}
         onSelectQuickAssessment={handleSelectQuickAssessment}
         initializeAssessment={initializeAssessment}
         onStudentInfoSubmit={handleStudentInfoSubmit}
