@@ -132,10 +132,17 @@ export const useAssessmentFlowHandlers = ({
     if (nextIndex < 3) {
       // Move to next A1 item
       console.info(`[RA_A1_NEXT] Moving to A1 Read-Aloud item ${nextIndex + 1}/3`);
-      setReadAloudStage({
+      const updatedStage = {
         ...readAloudStage,
         a1: { ...readAloudStage.a1, index: nextIndex }
-      });
+      };
+      setReadAloudStage(updatedStage);
+      
+      // Force a brief step change to trigger re-render
+      setCurrentStep(AssessmentStep.READ_ALOUD_LOADING);
+      setTimeout(() => {
+        setCurrentStep(AssessmentStep.READ_ALOUD);
+      }, 100);
     } else {
       // A1 Read-Aloud complete - return to free-speaking at Q5
       console.info("[RA_A1_COMPLETE] A1 Read-Aloud stage completed - resuming at Q5");
