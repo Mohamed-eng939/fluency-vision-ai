@@ -48,11 +48,15 @@ export const useAssessmentFlowHandlers = ({
 
   // Handle recording completion - immediate storage without scoring
   const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
-    console.info(`[FS_SAVE_START] Q${currentPromptIndex + 1}: Storing response without scoring...`);
+    console.info(`[FS_SAVE_START] Current step: ${currentPromptIndex + 1}, A1 stage:`, {
+      ready: readAloudStage.a1.ready,
+      done: readAloudStage.a1.done,
+      index: readAloudStage.a1.index
+    });
     
     // Validate audio before storing
     if (!audioBlob || audioBlob.size === 0) {
-      console.error(`[FS_SAVE_FAIL] Q${currentPromptIndex + 1}: Invalid audio blob - cannot proceed`);
+      console.error(`[FS_SAVE_FAIL] Invalid audio blob - cannot proceed`);
       return;
     }
     
@@ -66,11 +70,11 @@ export const useAssessmentFlowHandlers = ({
     );
     
     if (!success) {
-      console.error(`[FS_SAVE_FAIL] Q${currentPromptIndex + 1}: Failed to store response - not proceeding`);
+      console.error(`[FS_SAVE_FAIL] Failed to store response - not proceeding`);
       return;
     }
     
-    console.info(`[FS_SAVE_OK] Q${currentPromptIndex + 1}: Response stored successfully`);
+    console.info(`[FS_SAVE_OK] Response stored successfully`);
     
     // Check if we just completed Q4 (A1 free-speaking) - trigger A1 Read-Aloud
     if (currentPromptIndex === 3) { // Q4 = index 3
@@ -81,7 +85,7 @@ export const useAssessmentFlowHandlers = ({
     
     // Check if we're in A1 Read-Aloud stage and need to continue
     if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
-      console.info(`[RA_A1_CONTINUE] A1 Read-Aloud item ${readAloudStage.a1.index + 1}/3 completed`);
+      console.info(`[RA_A1_CONTINUE] A1 Read-Aloud item ${readAloudStage.a1.index + 1}/3 completed - calling handleA1ReadAloudProgress`);
       await handleA1ReadAloudProgress();
       return;
     }
@@ -127,6 +131,7 @@ export const useAssessmentFlowHandlers = ({
 
   // Handle A1 Read-Aloud progress
   const handleA1ReadAloudProgress = async () => {
+    console.info(`[RA_A1_PROGRESS_START] Current index: ${readAloudStage.a1.index}`);
     const nextIndex = readAloudStage.a1.index + 1;
     
     if (nextIndex < 3) {
@@ -137,10 +142,12 @@ export const useAssessmentFlowHandlers = ({
         a1: { ...readAloudStage.a1, index: nextIndex }
       };
       setReadAloudStage(updatedStage);
+      console.info(`[RA_A1_STATE_UPDATED] New index: ${nextIndex}`);
       
       // Force a brief step change to trigger re-render
       setCurrentStep(AssessmentStep.READ_ALOUD_LOADING);
       setTimeout(() => {
+        console.info(`[RA_A1_STEP_TRANSITION] Back to READ_aloud with index ${nextIndex}`);
         setCurrentStep(AssessmentStep.READ_ALOUD);
       }, 100);
     } else {
