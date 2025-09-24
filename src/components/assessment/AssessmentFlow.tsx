@@ -84,7 +84,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
       console.log("Auto-populating student info from user profile:", defaultInfo);
       handleStudentInfoSubmit(defaultInfo);
     }
-  }, [user, studentInfo, sessionId, handleStudentInfoSubmit, currentStep]);
+  }, [user, sessionId, handleStudentInfoSubmit, currentStep]);
 
   const handleSelectQuickAssessment = () => {
     setShowAssessmentOptions(false);
