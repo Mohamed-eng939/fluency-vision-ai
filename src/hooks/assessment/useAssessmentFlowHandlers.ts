@@ -1,4 +1,3 @@
-
 import { AudioAnalysisResult } from '@/types/assessment';
 import { AssessmentStep, ReadAloudStage, A1_READ_ALOUD_SENTENCES } from './types/assessmentTypes';
 
@@ -10,18 +9,26 @@ interface AssessmentFlowHandlersProps {
   moveToNextPrompt: () => any;
   handlePromptSelect: (prompt: any) => void;
   handleReset: () => void;
-  processAllStoredResponses: (sessionId: string, studentName?: string, setPromptHistory?: (history: any[]) => void) => Promise<any>;
+  processAllStoredResponses: (sessionId?: string, studentName?: string, promptHistoryUpdate?: any) => Promise<any>;
   setCurrentStep: (step: AssessmentStep) => void;
-  finishAssessment: (result: any, setFinalResult: (result: any) => void, storeAssessmentData: (studentInfo: any, promptHistory: any[], finalResult: any) => void, studentInfo: any, promptHistory: any[], emailResults: boolean, bypassScoringDelay: boolean) => void;
+  finishAssessment: (
+    finalAssessmentResult: any,
+    setFinalResult: (result: any) => void,
+    storeAssessmentData: (studentInfo: any, promptHistory: any[], finalResult: any) => Promise<any>,
+    studentInfo: any,
+    promptHistory: any[],
+    emailResults: boolean,
+    bypassScoringDelay: boolean
+  ) => void;
   setFinalResult: (result: any) => void;
-  storeAssessmentData: (studentInfo: any, promptHistory: any[], finalResult: any) => void;
+  storeAssessmentData: (studentInfo: any, promptHistory: any[], finalResult: any) => Promise<any>;
   studentInfo: any;
   promptHistory: any[];
   emailResults: boolean;
   bypassScoringDelay: boolean;
-  sessionId: string;
+  sessionId?: string;
   readAloudStage: ReadAloudStage;
-  setReadAloudStage: (stage: ReadAloudStage) => void;
+  setReadAloudStage: (stage: ReadAloudStage | ((prev: ReadAloudStage) => ReadAloudStage)) => void;
 }
 
 export const useAssessmentFlowHandlers = ({
@@ -109,64 +116,69 @@ export const useAssessmentFlowHandlers = ({
     
     setCurrentStep(AssessmentStep.READ_ALOUD_LOADING);
     
-    // Set up A1 Read-Aloud items
-    const updatedStage = {
-      ...readAloudStage,
+    // Set up A1 Read-Aloud items using functional update
+    setReadAloudStage(prevStage => ({
+      ...prevStage,
       a1: {
         ready: true,
         done: false,
         index: 0,
         items: [...A1_READ_ALOUD_SENTENCES]
       }
-    };
-    
-    setReadAloudStage(updatedStage);
+    }));
     
     // Transition to READ_ALOUD step
     setTimeout(() => {
       console.info("[RA_A1_START] Starting A1 Read-Aloud - item 1/3");
       setCurrentStep(AssessmentStep.READ_ALOUD);
-    }, 500);
+    }, 300); // Reduced timeout for faster transition
   };
 
-  // Handle A1 Read-Aloud progress
+  // Handle A1 Read-Aloud progress - FIXED VERSION
   const handleA1ReadAloudProgress = async () => {
     console.info(`[RA_A1_PROGRESS_START] Current index: ${readAloudStage.a1.index}`);
-    const nextIndex = readAloudStage.a1.index + 1;
     
-    if (nextIndex < 3) {
-      // Move to next A1 item
-      console.info(`[RA_A1_NEXT] Moving to A1 Read-Aloud item ${nextIndex + 1}/3`);
-      const updatedStage = {
-        ...readAloudStage,
-        a1: { ...readAloudStage.a1, index: nextIndex }
-      };
-      setReadAloudStage(updatedStage);
-      console.info(`[RA_A1_STATE_UPDATED] New index: ${nextIndex}`);
+    // Use functional update to get fresh state and avoid stale closures
+    setReadAloudStage(prevStage => {
+      const currentIndex = prevStage.a1.index;
+      const nextIndex = currentIndex + 1;
       
-      // Force a brief step change to trigger re-render
-      setCurrentStep(AssessmentStep.READ_ALOUD_LOADING);
-      setTimeout(() => {
-        console.info(`[RA_A1_STEP_TRANSITION] Back to READ_aloud with index ${nextIndex}`);
-        setCurrentStep(AssessmentStep.READ_ALOUD);
-      }, 100);
-    } else {
-      // A1 Read-Aloud complete - return to free-speaking at Q5
-      console.info("[RA_A1_COMPLETE] A1 Read-Aloud stage completed - resuming at Q5");
-      setReadAloudStage({
-        ...readAloudStage,
-        a1: { ...readAloudStage.a1, done: true }
-      });
+      console.info(`[RA_A1_PROGRESS] Current: ${currentIndex}, Next: ${nextIndex}`);
       
-      // Move to Q5 (A2 free-speaking)
-      const nextPrompt = moveToNextPrompt(); // This should give us Q5
-      if (nextPrompt) {
-        console.info(`[FS_RESUME] Resuming free-speaking at Q5: ${nextPrompt.text.substring(0, 50)}...`);
-        handlePromptSelect(nextPrompt);
-        handleReset();
-        setCurrentStep(AssessmentStep.RECORDING);
+      if (nextIndex < 3) {
+        // Move to next A1 item
+        console.info(`[RA_A1_NEXT] Moving to A1 Read-Aloud item ${nextIndex + 1}/3`);
+        return {
+          ...prevStage,
+          a1: { 
+            ...prevStage.a1, 
+            index: nextIndex 
+          }
+        };
+      } else {
+        // A1 Read-Aloud complete - mark as done
+        console.info("[RA_A1_COMPLETE] A1 Read-Aloud stage completed - marking as done");
+        
+        // Schedule the transition to Q5 after state update
+        setTimeout(() => {
+          const nextPrompt = moveToNextPrompt(); // This should give us Q5
+          if (nextPrompt) {
+            console.info(`[FS_RESUME] Resuming free-speaking at Q5: ${nextPrompt.text.substring(0, 50)}...`);
+            handlePromptSelect(nextPrompt);
+            handleReset();
+            setCurrentStep(AssessmentStep.RECORDING);
+          }
+        }, 50);
+        
+        return {
+          ...prevStage,
+          a1: { 
+            ...prevStage.a1, 
+            done: true 
+          }
+        };
       }
-    }
+    });
   };
 
   // Process all stored responses and finish assessment
@@ -192,46 +204,47 @@ export const useAssessmentFlowHandlers = ({
       
       console.log("✅ Batch processing completed, result:", lastResult);
       
-      // Set the final result first
-      setFinalResult(lastResult);
-      
-      // Then call finishAssessment to transition to RESULTS step and store data
-      console.log("🏁 Calling finishAssessment with storage...");
-      finishAssessment(
-        lastResult,
-        setFinalResult,
-        storeAssessmentData,
-        studentInfo,
-        promptHistory,
-        emailResults,
-        bypassScoringDelay
-      );
+      if (lastResult) {
+        setFinalResult(lastResult);
+        
+        // Only store assessment data if student info is available
+        if (studentInfo) {
+          try {
+            const assessmentData = await storeAssessmentData(studentInfo, promptHistory, lastResult);
+            console.log("💾 Assessment data stored successfully:", assessmentData);
+          } catch (error) {
+            console.error("❌ Failed to store assessment data:", error);
+          }
+        }
+        
+        setCurrentStep(AssessmentStep.RESULTS);
+      } else {
+        console.warn("⚠️ No result from batch processing");
+        finishAssessment(null, setFinalResult, storeAssessmentData, studentInfo, promptHistory, emailResults, bypassScoringDelay); // Fallback to finish
+      }
     } catch (error) {
-      console.error("❌ Error in batch processing:", error);
-      // Even if processing fails, set null result and finish
-      setFinalResult(null);
-      finishAssessment(
-        null,
-        setFinalResult,
-        storeAssessmentData,
-        studentInfo,
-        promptHistory,
-        emailResults,
-        bypassScoringDelay
-      );
+      console.error("❌ Error during batch processing:", error);
+      finishAssessment(null, setFinalResult, storeAssessmentData, studentInfo, promptHistory, emailResults, bypassScoringDelay); // Fallback to finish on error
     }
   };
-  
-  // Skip to next prompt
+
+  // Skip to next prompt in the queue
   const skipToNextPrompt = () => {
-    console.info(`[SKIP] Q${currentPromptIndex + 1}: Skipping to next prompt`);
+    // Check if we're in A1 Read-Aloud stage
+    if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
+      console.info(`[RA_A1_SKIP] Skipping A1 Read-Aloud item ${readAloudStage.a1.index + 1}/3`);
+      handleA1ReadAloudProgress();
+      return;
+    }
+    
     const nextPrompt = moveToNextPrompt();
     
     if (nextPrompt) {
+      console.info(`[SKIP] Moving to Q${currentPromptIndex + 2}/${totalPrompts}: ${nextPrompt.text.substring(0, 50)}...`);
       handlePromptSelect(nextPrompt);
       handleReset();
     } else {
-      console.info("[SKIP_COMPLETE] No more prompts - starting batch processing");
+      console.info("[SKIP_COMPLETE] No more prompts - finishing assessment");
       processBatchAndFinish();
     }
   };
