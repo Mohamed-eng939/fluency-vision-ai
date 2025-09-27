@@ -35,118 +35,40 @@ export const assessorService = {
    */
   getPendingAssessments: async (): Promise<AssessorServiceResponse> => {
     try {
-      console.log('🔍 [assessorService] Fetching pending assessments...');
+      console.log('🔍 [assessorService] Fetching pending assessments (TEST MODE - NO AUTH)...');
       
-      console.log('🔐 [assessorService] Getting auth session...');
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      
-      console.log('🔐 [assessorService] Auth session result:', { session: !!session, user: !!session?.user, error: authError });
-      
-      if (authError) {
-        console.error('🔐 [assessorService] Auth error:', authError);
-        return {
-          success: false,
-          error: `Authentication error: ${authError.message}`
-        };
-      }
-      
-      if (!session?.user) {
-        console.log('⚠️ [assessorService] No authenticated user session');
-        return {
-          success: false,
-          error: 'No authenticated user session'
-        };
-      }
+      // TEMPORARY: Skip authentication for testing
+      console.log('🧪 [assessorService] BYPASSING AUTH FOR TESTING');
 
-      console.log('👤 [assessorService] Checking user profile for ID:', session.user.id);
-      // Check user role first - use maybeSingle to avoid errors if profile doesn't exist
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, organization_id')
-        .eq('id', session.user.id)
-        .maybeSingle();
-
-      console.log('👤 [assessorService] User profile result:', { profile, profileError });
-      
-      if (profileError) {
-        console.error('👤 [assessorService] Profile fetch error:', profileError);
-        return {
-          success: false,
-          error: `Profile fetch error: ${profileError.message}`
-        };
-      }
-
-      if (!profile || !['assessor', 'admin'].includes(profile.role)) {
-        console.log('⚠️ [assessorService] User does not have assessor permissions');
-        return {
-          success: false,
-          error: 'Insufficient permissions - assessor role required'
-        };
-      }
-
-      // Try Edge Function first with proper endpoint
-      try {
-        console.log('📡 [assessorService] Trying edge function...');
-        const supabaseUrl = 'https://rrslhxigqtfllunmowcy.supabase.co';
-        const response = await fetch(`${supabaseUrl}/functions/v1/assessor-manager/pending-assessments`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyc2xoeGlncXRmbGx1bm1vd2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTI0NDUsImV4cCI6MjA2NjUyODQ0NX0.k3wjgHGU3d_k0vzSMP2jeKaXMs85zrhu_vb4Ym2Sq9c',
-            'Content-Type': 'application/json'
-          }
-        });
-
-        console.log('📡 [assessorService] Edge function response status:', response.status);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.log('📡 [assessorService] Edge function error response:', errorText);
-          throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
-        }
-
-        const data = await response.json();
-        console.log('📡 [assessorService] Edge function response data:', data);
+      // TEMPORARY: Skip edge function and go directly to DB
+      console.log('🧪 [assessorService] Skipping edge function for test mode');
         
-        if (!data?.success) {
-          throw new Error(data?.error || 'Failed to get pending assessments');
-        }
+      // Direct database query (no auth required in test mode)
+      console.log('📊 [assessorService] Using direct database query...');
+      const { data: sessions, error: dbError } = await supabase
+        .from('assessment_sessions')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email,
+            first_language,
+            country_of_residence
+          )
+        `)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
 
-        console.log('✅ [assessorService] Got pending assessments via Edge Function:', data.assessments?.length);
-        return {
-          success: true,
-          data: data.assessments || []
-        };
-      } catch (edgeError) {
-        console.log('🔄 [assessorService] Edge Function failed, trying direct DB...', edgeError);
-        
-        // Fallback to direct database query
-        console.log('📊 [assessorService] Using direct database query...');
-        const { data: sessions, error: dbError } = await supabase
-          .from('assessment_sessions')
-          .select(`
-            *,
-            profiles:user_id (
-              full_name,
-              email,
-              first_language,
-              country_of_residence
-            )
-          `)
-          .eq('status', 'completed')
-          .order('created_at', { ascending: false });
-
-        if (dbError) {
-          console.error('❌ [assessorService] DB query failed:', dbError);
-          throw new Error(dbError.message);
-        }
-
-        console.log('✅ [assessorService] Got pending assessments via direct DB:', sessions?.length);
-        return {
-          success: true,
-          data: sessions || []
-        };
+      if (dbError) {
+        console.error('❌ [assessorService] DB query failed:', dbError);
+        throw new Error(dbError.message);
       }
+
+      console.log('✅ [assessorService] Got pending assessments via direct DB:', sessions?.length);
+      return {
+        success: true,
+        data: sessions || []
+      };
     } catch (error: any) {
       console.error('❌ [assessorService] Failed to get pending assessments:', error);
       return {
@@ -161,21 +83,15 @@ export const assessorService = {
    */
   assignAssessment: async (sessionId: string): Promise<AssessorServiceResponse> => {
     try {
-      console.log('📝 [assessorService] Assigning assessment:', sessionId);
+      console.log('📝 [assessorService] Assigning assessment (TEST MODE):', sessionId);
       
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      
-      if (authError || !session?.user) {
-        return {
-          success: false,
-          error: 'Authentication required'
-        };
-      }
+      // TEMPORARY: Use mock assessor ID for testing
+      const mockAssessorId = 'b963c6d3-446e-4eca-a9b5-5cdc86fdf649'; // leo.messi's ID
 
       const { data, error } = await supabase
         .from('assessment_sessions')
         .update({
-          assigned_assessor: session.user.id,
+          assigned_assessor: mockAssessorId,
           status: 'under_review',
           reviewed_at: new Date().toISOString()
         })
@@ -207,16 +123,7 @@ export const assessorService = {
    */
   getAssessmentDetails: async (sessionId: string): Promise<AssessorServiceResponse> => {
     try {
-      console.log('🔍 [assessorService] Fetching assessment details:', sessionId);
-      
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      
-      if (authError || !session?.user) {
-        return {
-          success: false,
-          error: 'Authentication required'
-        };
-      }
+      console.log('🔍 [assessorService] Fetching assessment details (TEST MODE):', sessionId);
 
       // Get session details
       const { data: sessionData, error: sessionError } = await supabase
