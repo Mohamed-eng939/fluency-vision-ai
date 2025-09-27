@@ -167,18 +167,18 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
       );
 
     case AssessmentStep.READ_ALOUD:
-      // Handle A1 Read-Aloud stage specifically
-      if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
-        const currentA1Item = readAloudStage.a1.items[readAloudStage.a1.index];
-        if (!currentA1Item || !sessionId) return null;
+      // Handle Read-Aloud stage with all 15 sentences
+      if (readAloudStage.ready && !readAloudStage.done) {
+        const currentItem = readAloudStage.items[readAloudStage.currentIndex];
+        if (!currentItem || !sessionId) return null;
         
         return (
           <div className="space-y-6">
-            {/* A1 Read-Aloud Header */}
+            {/* Read-Aloud Header */}
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Read Aloud – A1</h2>
+              <h2 className="text-2xl font-bold mb-2">Read Aloud – {currentItem.band}</h2>
               <p className="text-muted-foreground">
-                Item {readAloudStage.a1.index + 1}/3
+                Item {readAloudStage.currentIndex + 1}/{readAloudStage.totalItems}
               </p>
             </div>
             
@@ -186,21 +186,21 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
             <div className="bg-muted/50 p-6 rounded-lg text-center">
               <p className="text-lg font-medium mb-4">Please read this sentence aloud:</p>
               <div className="text-xl font-semibold text-primary p-4 bg-background rounded-lg border">
-                {currentA1Item.text}
+                {currentItem.text}
               </div>
             </div>
             
             {/* Recording controls */}
             <RecordingStep 
               prompt={{
-                id: currentA1Item.sentence_id,
-                text: currentA1Item.text,
-                cefrLevel: 'A1',
+                id: currentItem.sentence_id,
+                text: currentItem.text,
+                cefrLevel: currentItem.band as any,
                 category: 'read_aloud',
                 isReadAloud: true
               } as SpeakingPrompt}
-              currentIndex={readAloudStage.a1.index}
-              totalPrompts={3}
+              currentIndex={readAloudStage.currentIndex}
+              totalPrompts={readAloudStage.totalItems}
               onRecordingComplete={handleResponseComplete}
               onPause={() => {}}
               onFinishNow={() => processBatchAndFinish?.()}

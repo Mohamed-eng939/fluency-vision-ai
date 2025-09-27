@@ -9,12 +9,16 @@ import { useAdminControls } from './useAdminControls';
 import { useSessionManagement } from './useSessionManagement';
 import { useResponseStorage } from './useResponseStorage';
 import { useAssessmentControl } from './useAssessmentControl';
-import { AssessmentFlowConfig, ReadAloudStage, A1_READ_ALOUD_SENTENCES } from './types/assessmentTypes';
+import { AssessmentFlowConfig, ReadAloudStage, READ_ALOUD_SENTENCES } from './types/assessmentTypes';
 
 export const useAssessmentFlowState = (config: Partial<AssessmentFlowConfig> = {}) => {
   // Read-Aloud stage state
   const [readAloudStage, setReadAloudStage] = useState<ReadAloudStage>({
-    a1: { ready: false, done: false, index: 0, items: [] }
+    ready: false,
+    done: false,
+    currentIndex: 0,
+    totalItems: 0,
+    items: []
   });
 
   // Student information state

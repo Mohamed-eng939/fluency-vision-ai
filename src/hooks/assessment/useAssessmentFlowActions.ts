@@ -60,7 +60,11 @@ export const useAssessmentFlowActions = ({
     
     // Reset read-aloud stage
     setReadAloudStage({
-      a1: { ready: false, done: false, index: 0, items: [] }
+      ready: false,
+      done: false,
+      currentIndex: 0,
+      totalItems: 0,
+      items: []
     });
   };
 

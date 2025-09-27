@@ -35,8 +35,8 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     handleResponseComplete,
     processBatchAndFinish,
     skipToNextPrompt,
-    initializeA1ReadAloud,
-    handleA1ReadAloudProgress
+    initializeReadAloudStage,
+    handleReadAloudProgress
   } = useAssessmentFlowHandlers({
     selectedPrompt: state.selectedPrompt,
     storeResponse: state.storeResponse,
@@ -95,8 +95,8 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     handleStudentInfoSubmit: state.handleStudentInfoSubmit,
     processAllStoredResponses: processBatchAndFinish,
     processBatchAndFinish,
-    initializeA1ReadAloud,
-    handleA1ReadAloudProgress,
+    initializeReadAloudStage,
+    handleReadAloudProgress,
     
     // Configuration
     flowConfig: state.flowConfig,

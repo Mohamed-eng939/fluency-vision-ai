@@ -1,5 +1,5 @@
 import { AudioAnalysisResult } from '@/types/assessment';
-import { AssessmentStep, ReadAloudStage, A1_READ_ALOUD_SENTENCES } from './types/assessmentTypes';
+import { AssessmentStep, ReadAloudStage, READ_ALOUD_SENTENCES } from './types/assessmentTypes';
 
 interface AssessmentFlowHandlersProps {
   selectedPrompt: any;
@@ -55,15 +55,16 @@ export const useAssessmentFlowHandlers = ({
 
   // Handle recording completion - immediate storage without scoring
   const handleResponseComplete = async (audioBlob: Blob, transcript?: string, audioAnalysis?: AudioAnalysisResult) => {
-    console.info(`[FS_SAVE_START] Current step: ${currentPromptIndex + 1}, A1 stage:`, {
-      ready: readAloudStage.a1.ready,
-      done: readAloudStage.a1.done,
-      index: readAloudStage.a1.index
+    console.info(`[RESPONSE_COMPLETE] Q${currentPromptIndex + 1}, ReadAloud stage:`, {
+      ready: readAloudStage.ready,
+      done: readAloudStage.done,
+      currentIndex: readAloudStage.currentIndex,
+      totalItems: readAloudStage.totalItems
     });
     
     // Validate audio before storing
     if (!audioBlob || audioBlob.size === 0) {
-      console.error(`[FS_SAVE_FAIL] Invalid audio blob - cannot proceed`);
+      console.error(`[SAVE_FAIL] Invalid audio blob - cannot proceed`);
       return;
     }
     
@@ -77,115 +78,92 @@ export const useAssessmentFlowHandlers = ({
     );
     
     if (!success) {
-      console.error(`[FS_SAVE_FAIL] Failed to store response - not proceeding`);
+      console.error(`[SAVE_FAIL] Failed to store response - not proceeding`);
       return;
     }
     
-    console.info(`[FS_SAVE_OK] Response stored successfully`);
+    console.info(`[SAVE_OK] Response stored successfully`);
     
-    // Check if we just completed Q4 (A1 free-speaking) - trigger A1 Read-Aloud
-    if (currentPromptIndex === 3) { // Q4 = index 3
-      console.info("[RA_A1_TRIGGER] Q4 completed - starting A1 Read-Aloud stage");
-      initializeA1ReadAloud();
+    // Check if we just completed Q23 (last free-speaking) - trigger Read-Aloud stage
+    if (currentPromptIndex === 22) { // Q23 = index 22
+      console.info("[RA_TRIGGER] Q23 completed - starting Read-Aloud stage with all 15 sentences");
+      initializeReadAloudStage();
       return;
     }
     
-    // Check if we're in A1 Read-Aloud stage and need to continue
-    if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
-      console.info(`[RA_A1_CONTINUE] A1 Read-Aloud item ${readAloudStage.a1.index + 1}/3 completed - calling handleA1ReadAloudProgress`);
-      await handleA1ReadAloudProgress();
+    // Check if we're in Read-Aloud stage and need to continue
+    if (readAloudStage.ready && !readAloudStage.done) {
+      console.info(`[RA_CONTINUE] Read-Aloud item ${readAloudStage.currentIndex + 1}/${readAloudStage.totalItems} completed`);
+      await handleReadAloudProgress();
       return;
     }
     
     // Move to next prompt immediately
     const nextPrompt = moveToNextPrompt();
     if (nextPrompt) {
-      console.info(`[FS_NEXT] Moving from Q${currentPromptIndex}→Q${currentPromptIndex + 1}/${totalPrompts}: ${nextPrompt.text.substring(0, 50)}...`);
+      console.info(`[NEXT] Moving from Q${currentPromptIndex + 1}→Q${currentPromptIndex + 2}/${totalPrompts}: ${nextPrompt.text.substring(0, 50)}...`);
       
       handlePromptSelect(nextPrompt);
       handleReset(); // Clear previous recording state
     } else {
-      console.info("[ASSESSMENT_COMPLETE] All 38 questions completed - starting batch processing");
+      console.info("[ASSESSMENT_COMPLETE] All questions completed - starting batch processing");
       await processBatchAndFinish();
     }
   };
 
-  // Initialize A1 Read-Aloud stage after Q4
-  const initializeA1ReadAloud = () => {
-    console.info("[RA_A1_INIT] Initializing A1 Read-Aloud stage with 3 sentences");
+  // Initialize Read-Aloud stage after Q23 with all 15 sentences
+  const initializeReadAloudStage = () => {
+    console.info("[RA_INIT] Initializing Read-Aloud stage with all 15 sentences");
     
     setCurrentStep(AssessmentStep.READ_ALOUD_LOADING);
     
-    // Set up A1 Read-Aloud items using functional update
-    setReadAloudStage(prevStage => ({
-      ...prevStage,
-      a1: {
-        ready: true,
-        done: false,
-        index: 0,
-        items: [...A1_READ_ALOUD_SENTENCES]
-      }
-    }));
+    // Set up all 15 Read-Aloud items
+    setReadAloudStage({
+      ready: true,
+      done: false,
+      currentIndex: 0,
+      totalItems: READ_ALOUD_SENTENCES.length,
+      items: [...READ_ALOUD_SENTENCES]
+    });
     
     // Transition to READ_ALOUD step
-    setTimeout(() => {
-      console.info("[RA_A1_START] Starting A1 Read-Aloud - item 1/3");
-      setCurrentStep(AssessmentStep.READ_ALOUD);
-    }, 300); // Reduced timeout for faster transition
+    console.info("[RA_START] Starting Read-Aloud - item 1/15");
+    setCurrentStep(AssessmentStep.READ_ALOUD);
   };
 
-  // Handle A1 Read-Aloud progress - FIXED VERSION
-  const handleA1ReadAloudProgress = async () => {
-    console.info(`[RA_A1_PROGRESS_START] Current index: ${readAloudStage.a1.index}`);
+  // Handle Read-Aloud progress through all 15 sentences
+  const handleReadAloudProgress = async () => {
+    const currentIndex = readAloudStage.currentIndex;
+    const nextIndex = currentIndex + 1;
     
-    // Use functional update to get fresh state and avoid stale closures
-    setReadAloudStage(prevStage => {
-      const currentIndex = prevStage.a1.index;
-      const nextIndex = currentIndex + 1;
+    console.info(`[RA_PROGRESS] Current: ${currentIndex + 1}, Next: ${nextIndex + 1}, Total: ${readAloudStage.totalItems}`);
+    
+    if (nextIndex < readAloudStage.totalItems) {
+      // Move to next Read-Aloud item
+      console.info(`[RA_NEXT] Moving to Read-Aloud item ${nextIndex + 1}/${readAloudStage.totalItems}`);
+      setReadAloudStage(prevStage => ({
+        ...prevStage,
+        currentIndex: nextIndex
+      }));
+    } else {
+      // Read-Aloud stage complete - mark as done and finish assessment
+      console.info("[RA_COMPLETE] Read-Aloud stage completed - finishing assessment");
       
-      console.info(`[RA_A1_PROGRESS] Current: ${currentIndex}, Next: ${nextIndex}`);
+      setReadAloudStage(prevStage => ({
+        ...prevStage,
+        done: true
+      }));
       
-      if (nextIndex < 3) {
-        // Move to next A1 item
-        console.info(`[RA_A1_NEXT] Moving to A1 Read-Aloud item ${nextIndex + 1}/3`);
-        return {
-          ...prevStage,
-          a1: { 
-            ...prevStage.a1, 
-            index: nextIndex 
-          }
-        };
-      } else {
-        // A1 Read-Aloud complete - mark as done
-        console.info("[RA_A1_COMPLETE] A1 Read-Aloud stage completed - marking as done");
-        
-        // Schedule the transition to Q5 after state update
-        setTimeout(() => {
-          const nextPrompt = moveToNextPrompt(); // This should give us Q5
-          if (nextPrompt) {
-            console.info(`[FS_RESUME] Resuming free-speaking at Q5: ${nextPrompt.text.substring(0, 50)}...`);
-            handlePromptSelect(nextPrompt);
-            handleReset();
-            setCurrentStep(AssessmentStep.RECORDING);
-          }
-        }, 50);
-        
-        return {
-          ...prevStage,
-          a1: { 
-            ...prevStage.a1, 
-            done: true 
-          }
-        };
-      }
-    });
+      // Proceed to final processing
+      await processBatchAndFinish();
+    }
   };
 
   // Process all stored responses and finish assessment
   const processBatchAndFinish = async () => {
-    // Block processing if A1 Read-Aloud stage is not complete
-    if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
-      console.warn("[PROCESS_BLOCKED] A1 Read-Aloud stage not complete - blocking PROCESSING/RESULTS");
+    // Block processing if Read-Aloud stage is not complete
+    if (readAloudStage.ready && !readAloudStage.done) {
+      console.warn("[PROCESS_BLOCKED] Read-Aloud stage not complete - blocking PROCESSING/RESULTS");
       return;
     }
     
@@ -230,10 +208,10 @@ export const useAssessmentFlowHandlers = ({
 
   // Skip to next prompt in the queue
   const skipToNextPrompt = () => {
-    // Check if we're in A1 Read-Aloud stage
-    if (readAloudStage.a1.ready && !readAloudStage.a1.done) {
-      console.info(`[RA_A1_SKIP] Skipping A1 Read-Aloud item ${readAloudStage.a1.index + 1}/3`);
-      handleA1ReadAloudProgress();
+    // Check if we're in Read-Aloud stage
+    if (readAloudStage.ready && !readAloudStage.done) {
+      console.info(`[RA_SKIP] Skipping Read-Aloud item ${readAloudStage.currentIndex + 1}/${readAloudStage.totalItems}`);
+      handleReadAloudProgress();
       return;
     }
     
@@ -253,7 +231,7 @@ export const useAssessmentFlowHandlers = ({
     handleResponseComplete,
     processBatchAndFinish,
     skipToNextPrompt,
-    initializeA1ReadAloud,
-    handleA1ReadAloudProgress
+    initializeReadAloudStage,
+    handleReadAloudProgress
   };
 };
