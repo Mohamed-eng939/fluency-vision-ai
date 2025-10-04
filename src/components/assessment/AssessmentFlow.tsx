@@ -36,8 +36,6 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     promptHistory,
     processingProgress,
     processBatchAndFinish,
-    readAloudStage,
-    
     // Methods
     initializeAssessment,
     startAssessment,
@@ -51,7 +49,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     // Configuration
     totalPrompts
   } = useAssessmentFlow({
-    promptsCount: 38, // Use all 38 questions: 23 free-speaking + 15 read-aloud
+    promptsCount: 23, // Use all 23 free-speaking prompts
     requiredConsistentScores: 4,
     showAdminControls: true
   });
@@ -160,7 +158,6 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         processingProgress={processingProgress}
         sessionId={sessionId}
         processBatchAndFinish={processBatchAndFinish}
-        readAloudStage={readAloudStage}
         onSelectQuickAssessment={handleSelectQuickAssessment}
         initializeAssessment={initializeAssessment}
         onStudentInfoSubmit={handleStudentInfoSubmit}

@@ -9,11 +9,6 @@ export const calculatePronunciationCriterion = (
   audioMetrics: any,
   transcript: string
 ): number => {
-  // Check if Read Aloud score is available (new system)
-  if (audioMetrics.readAloudScore !== undefined) {
-    return audioMetrics.readAloudScore;
-  }
-  
   // Use enhanced pronunciation score if available
   if (audioMetrics.pronunciationScore !== undefined) {
     return audioMetrics.pronunciationScore;

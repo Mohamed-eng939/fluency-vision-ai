@@ -26,17 +26,14 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     setCurrentStep: state.setCurrentStep,
     handleReset: state.handleReset,
     resetSession: state.resetSession,
-    setPromptHistory: state.setPromptHistory,
-    setReadAloudStage: state.setReadAloudStage
+    setPromptHistory: state.setPromptHistory
   });
 
   // Get assessment flow handlers
   const {
     handleResponseComplete,
     processBatchAndFinish,
-    skipToNextPrompt,
-    initializeReadAloudStage,
-    handleReadAloudProgress
+    skipToNextPrompt
   } = useAssessmentFlowHandlers({
     selectedPrompt: state.selectedPrompt,
     storeResponse: state.storeResponse,
@@ -54,9 +51,7 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     promptHistory: state.promptHistory,
     emailResults: state.emailResults,
     bypassScoringDelay: state.bypassScoringDelay,
-    sessionId: state.sessionId,
-    readAloudStage: state.readAloudStage,
-    setReadAloudStage: state.setReadAloudStage
+    sessionId: state.sessionId
   });
   
   return {
@@ -78,7 +73,6 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     storedResponses: state.storedResponses,
     storedResponsesCount: state.storedResponses.length,
     processingProgress: state.processingProgress,
-    readAloudStage: state.readAloudStage,
     
     // Assessment result state
     assessmentResult: state.assessmentResult,
@@ -95,8 +89,6 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     handleStudentInfoSubmit: state.handleStudentInfoSubmit,
     processAllStoredResponses: processBatchAndFinish,
     processBatchAndFinish,
-    initializeReadAloudStage,
-    handleReadAloudProgress,
     
     // Configuration
     flowConfig: state.flowConfig,

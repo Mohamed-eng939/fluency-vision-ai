@@ -1,5 +1,5 @@
 
-import { AssessmentStep, ReadAloudStage } from './types/assessmentTypes';
+import { AssessmentStep } from './types/assessmentTypes';
 
 interface AssessmentFlowActionsProps {
   initializeSession: (withEmail: boolean) => Promise<string>;
@@ -12,7 +12,6 @@ interface AssessmentFlowActionsProps {
   handleReset: () => void;
   resetSession: () => void;
   setPromptHistory: (history: any[]) => void;
-  setReadAloudStage: (stage: ReadAloudStage) => void;
 }
 
 export const useAssessmentFlowActions = ({
@@ -25,8 +24,7 @@ export const useAssessmentFlowActions = ({
   setCurrentStep,
   handleReset,
   resetSession,
-  setPromptHistory,
-  setReadAloudStage
+  setPromptHistory
 }: AssessmentFlowActionsProps) => {
   
   // Initialize the assessment
@@ -57,15 +55,6 @@ export const useAssessmentFlowActions = ({
     resetScoring();
     setPromptHistory([]);
     resetStoredResponses();
-    
-    // Reset read-aloud stage
-    setReadAloudStage({
-      ready: false,
-      done: false,
-      currentIndex: 0,
-      totalItems: 0,
-      items: []
-    });
   };
 
   return {
