@@ -33,14 +33,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   const [reviewStatus, setReviewStatus] = useState<'approved' | 'rejected' | 'needs_revision'>('approved');
   const [assessorFeedback, setAssessorFeedback] = useState('');
   const [recommendation, setRecommendation] = useState('');
-  const [overrideScores, setOverrideScores] = useState({
-    overall_score: '',
-    fluency_score: '',
-    grammar_score: '',
-    pronunciation_score: '',
-    vocabulary_score: '',
-    coherence_score: ''
-  });
+  const [responseReviews, setResponseReviews] = useState<Record<string, { cefr_level: string; notes: string }>>({});
 
   const handleSubmitReview = async () => {
     if (!assessmentDetails?.session?.id) {
@@ -56,22 +49,44 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     try {
       setIsSubmitting(true);
 
-      // Prepare override scores (only include non-empty values)
-      const scoreOverrides = Object.entries(overrideScores).reduce((acc, [key, value]) => {
-        if (value && !isNaN(Number(value))) {
-          acc[key] = Number(value);
+      // Update individual responses with assessor reviews
+      const responseUpdatePromises = Object.entries(responseReviews).map(([responseId, review]) => {
+        const updateData: any = {};
+        
+        if (review.cefr_level) {
+          updateData.cefr_level = review.cefr_level;
         }
-        return acc;
-      }, {} as Record<string, number>);
+        
+        if (review.notes) {
+          // Store assessor notes in detailed_feedback
+          updateData.detailed_feedback = {
+            ...(assessmentDetails.responses.find((r: any) => r.id === responseId)?.detailed_feedback || {}),
+            assessor_notes: review.notes
+          };
+        }
+        
+        if (Object.keys(updateData).length > 0) {
+          return supabase
+            .from('assessment_responses')
+            .update(updateData)
+            .eq('id', responseId);
+        }
+        return null;
+      }).filter(Boolean);
 
-      const { data, error } = await supabase
+      if (responseUpdatePromises.length > 0) {
+        await Promise.all(responseUpdatePromises);
+      }
+
+      // Insert assessor review
+      const { error } = await supabase
         .from('assessor_reviews')
         .insert({
           session_id: assessmentDetails.session.id,
           review_status: reviewStatus,
           assessor_feedback: assessorFeedback,
           recommendation: recommendation,
-          override_scores: Object.keys(scoreOverrides).length > 0 ? scoreOverrides : null
+          override_scores: null
         });
 
       if (error) {
@@ -84,8 +99,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           .from('assessment_sessions')
           .update({
             status: reviewStatus,
-            reviewed_at: new Date().toISOString(),
-            has_score_override: Object.keys(scoreOverrides).length > 0
+            reviewed_at: new Date().toISOString()
           })
           .eq('id', assessmentDetails.session.id);
       }
@@ -98,14 +112,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       setAssessorFeedback('');
       setRecommendation('');
       setReviewStatus('approved');
-      setOverrideScores({
-        overall_score: '',
-        fluency_score: '',
-        grammar_score: '',
-        pronunciation_score: '',
-        vocabulary_score: '',
-        coherence_score: ''
-      });
+      setResponseReviews({});
 
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -113,6 +120,17 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleResponseReviewChange = (responseId: string, field: 'cefr_level' | 'notes', value: string) => {
+    setResponseReviews(prev => ({
+      ...prev,
+      [responseId]: {
+        ...prev[responseId],
+        cefr_level: field === 'cefr_level' ? value : (prev[responseId]?.cefr_level || ''),
+        notes: field === 'notes' ? value : (prev[responseId]?.notes || '')
+      }
+    }));
   };
 
   const formatDate = (dateString: string) => {
@@ -245,29 +263,32 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
             </CardContent>
           </Card>
 
-          {/* Responses Preview */}
+          {/* Individual Response Reviews */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AudioLines className="h-5 w-5" />
-                Student Responses
+                Review Each Response
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {responses.map((response, index) => (
-                  <div key={response.id} className="border rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Response {index + 1}</span>
+                  <div key={response.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold">Response {index + 1}</span>
                       <Badge variant="outline" className="text-xs">
-                        {response.cefr_level || 'N/A'}
+                        Original: {response.cefr_level || 'N/A'}
                       </Badge>
                     </div>
+                    
                     {response.transcript && (
-                      <p className="text-sm text-gray-700 mb-2">
-                        <strong>Transcript:</strong> {response.transcript}
-                      </p>
+                      <div className="bg-gray-50 rounded p-3">
+                        <p className="text-xs font-medium text-gray-600 mb-1">Transcript:</p>
+                        <p className="text-sm text-gray-800">{response.transcript}</p>
+                      </div>
                     )}
+                    
                     {response.audio_url && (
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <AudioLines className="h-3 w-3" />
@@ -277,6 +298,44 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                         )}
                       </div>
                     )}
+
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                      <div>
+                        <Label htmlFor={`cefr-${response.id}`} className="text-xs mb-1">
+                          Assessor CEFR Level
+                        </Label>
+                        <Select 
+                          value={responseReviews[response.id]?.cefr_level || ''}
+                          onValueChange={(value) => handleResponseReviewChange(response.id, 'cefr_level', value)}
+                        >
+                          <SelectTrigger id={`cefr-${response.id}`} className="h-9">
+                            <SelectValue placeholder="Select level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="A1">A1</SelectItem>
+                            <SelectItem value="A2">A2</SelectItem>
+                            <SelectItem value="B1">B1</SelectItem>
+                            <SelectItem value="B2">B2</SelectItem>
+                            <SelectItem value="C1">C1</SelectItem>
+                            <SelectItem value="C2">C2</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <Label htmlFor={`notes-${response.id}`} className="text-xs mb-1">
+                          Assessor Notes
+                        </Label>
+                        <Textarea
+                          id={`notes-${response.id}`}
+                          placeholder="Add your notes for this response..."
+                          value={responseReviews[response.id]?.notes || ''}
+                          onChange={(e) => handleResponseReviewChange(response.id, 'notes', e.target.value)}
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -329,85 +388,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                   onChange={(e) => setRecommendation(e.target.value)}
                   rows={3}
                 />
-              </div>
-
-              {/* Score Overrides */}
-              <div>
-                <Label className="text-sm font-medium mb-2 block">Score Overrides (Optional)</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="overall-override" className="text-xs">Overall Score</Label>
-                    <Input
-                      id="overall-override"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0-100"
-                      value={overrideScores.overall_score}
-                      onChange={(e) => setOverrideScores(prev => ({ ...prev, overall_score: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="fluency-override" className="text-xs">Fluency</Label>
-                    <Input
-                      id="fluency-override"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0-100"
-                      value={overrideScores.fluency_score}
-                      onChange={(e) => setOverrideScores(prev => ({ ...prev, fluency_score: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="grammar-override" className="text-xs">Grammar</Label>
-                    <Input
-                      id="grammar-override"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0-100"
-                      value={overrideScores.grammar_score}
-                      onChange={(e) => setOverrideScores(prev => ({ ...prev, grammar_score: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="pronunciation-override" className="text-xs">Pronunciation</Label>
-                    <Input
-                      id="pronunciation-override"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0-100"
-                      value={overrideScores.pronunciation_score}
-                      onChange={(e) => setOverrideScores(prev => ({ ...prev, pronunciation_score: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="vocabulary-override" className="text-xs">Vocabulary</Label>
-                    <Input
-                      id="vocabulary-override"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0-100"
-                      value={overrideScores.vocabulary_score}
-                      onChange={(e) => setOverrideScores(prev => ({ ...prev, vocabulary_score: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="coherence-override" className="text-xs">Coherence</Label>
-                    <Input
-                      id="coherence-override"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0-100"
-                      value={overrideScores.coherence_score}
-                      onChange={(e) => setOverrideScores(prev => ({ ...prev, coherence_score: e.target.value }))}
-                    />
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
