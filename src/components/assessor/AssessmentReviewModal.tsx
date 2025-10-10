@@ -107,11 +107,18 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       // Check if final level was overridden
       const isOverridden = finalCEFRLevel !== calculatedCEFR;
 
+      // Get current user for assessor_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       // Insert assessor review
       const { error } = await supabase
         .from('assessor_reviews')
         .insert({
           session_id: assessmentDetails.session.id,
+          assessor_id: user.id,
           review_status: reviewStatus,
           assessor_feedback: assessorFeedback,
           recommendation: recommendation,
