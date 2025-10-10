@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Star, AudioLines, FileText, User } from 'lucide-react';
+import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { cefrToNumber, numberToCefr, type CEFRLevel } from '@/utils/scoring/cefrUtils';
 
 interface AssessmentDetails {
   session: any;
@@ -34,6 +35,28 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   const [assessorFeedback, setAssessorFeedback] = useState('');
   const [recommendation, setRecommendation] = useState('');
   const [responseReviews, setResponseReviews] = useState<Record<string, { cefr_level: string; notes: string }>>({});
+  const [finalCEFRLevel, setFinalCEFRLevel] = useState<string>('');
+  const [finalCEFRReason, setFinalCEFRReason] = useState('');
+  const [calculatedCEFR, setCalculatedCEFR] = useState<string>('');
+
+  // Calculate average CEFR whenever response reviews change
+  useEffect(() => {
+    const reviewedLevels = Object.values(responseReviews)
+      .map(r => r.cefr_level)
+      .filter(Boolean);
+    
+    if (reviewedLevels.length > 0) {
+      const numericLevels = reviewedLevels.map(level => cefrToNumber(level as CEFRLevel));
+      const average = numericLevels.reduce((a, b) => a + b, 0) / numericLevels.length;
+      const calculatedLevel = numberToCefr(average);
+      setCalculatedCEFR(calculatedLevel);
+      
+      // Set final level to calculated if not manually set
+      if (!finalCEFRLevel) {
+        setFinalCEFRLevel(calculatedLevel);
+      }
+    }
+  }, [responseReviews, finalCEFRLevel]);
 
   const handleSubmitReview = async () => {
     if (!assessmentDetails?.session?.id) {
@@ -78,6 +101,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         await Promise.all(responseUpdatePromises);
       }
 
+      // Check if final level was overridden
+      const isOverridden = finalCEFRLevel !== calculatedCEFR;
+
       // Insert assessor review
       const { error } = await supabase
         .from('assessor_reviews')
@@ -86,25 +112,31 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           review_status: reviewStatus,
           assessor_feedback: assessorFeedback,
           recommendation: recommendation,
-          override_scores: null
+          override_scores: {
+            final_cefr_level: finalCEFRLevel,
+            calculated_average: calculatedCEFR,
+            is_overridden: isOverridden,
+            override_reason: isOverridden ? finalCEFRReason : null
+          }
         });
 
       if (error) {
         throw error;
       }
 
-      // Update session status if approved/rejected
+      // Update session status and final CEFR level
       if (reviewStatus === 'approved' || reviewStatus === 'rejected') {
         await supabase
           .from('assessment_sessions')
           .update({
             status: reviewStatus,
-            reviewed_at: new Date().toISOString()
+            reviewed_at: new Date().toISOString(),
+            overall_cefr_level: finalCEFRLevel
           })
           .eq('id', assessmentDetails.session.id);
       }
 
-      toast.success('Review submitted successfully');
+      toast.success(`Review submitted successfully - Final Level: ${finalCEFRLevel}`);
       onReviewSubmitted();
       onClose();
       
@@ -113,6 +145,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       setRecommendation('');
       setReviewStatus('approved');
       setResponseReviews({});
+      setFinalCEFRLevel('');
+      setFinalCEFRReason('');
+      setCalculatedCEFR('');
 
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -160,6 +195,10 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   }
 
   const { session, responses } = assessmentDetails;
+  
+  const reviewedCount = Object.keys(responseReviews).length;
+  const totalResponses = responses?.length || 0;
+  const isOverridden = finalCEFRLevel && finalCEFRLevel !== calculatedCEFR;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -266,9 +305,14 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           {/* Individual Response Reviews */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AudioLines className="h-5 w-5" />
-                Review Each Response
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <AudioLines className="h-5 w-5" />
+                  Review Each Response
+                </span>
+                <Badge variant="outline">
+                  {reviewedCount}/{totalResponses} Reviewed
+                </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -277,25 +321,43 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                   <div key={response.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold">Response {index + 1}</span>
-                      <Badge variant="outline" className="text-xs">
-                        Original: {response.cefr_level || 'N/A'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        {responseReviews[response.id]?.cefr_level && (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        )}
+                        <Badge variant="outline" className="text-xs">
+                          Original: {response.cefr_level || 'N/A'}
+                        </Badge>
+                      </div>
                     </div>
+                    
+                    {/* Audio Player */}
+                    {response.audio_url && (
+                      <div className="bg-slate-50 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                          <AudioLines className="h-4 w-4" />
+                          <span>Audio Recording</span>
+                          {response.audio_duration && (
+                            <span className="text-slate-500">({Math.round(response.audio_duration)}s)</span>
+                          )}
+                        </div>
+                        <audio 
+                          controls 
+                          className="w-full h-10"
+                          preload="metadata"
+                        >
+                          <source src={response.audio_url} type="audio/webm" />
+                          <source src={response.audio_url} type="audio/mp3" />
+                          <source src={response.audio_url} type="audio/wav" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </div>
+                    )}
                     
                     {response.transcript && (
                       <div className="bg-gray-50 rounded p-3">
                         <p className="text-xs font-medium text-gray-600 mb-1">Transcript:</p>
                         <p className="text-sm text-gray-800">{response.transcript}</p>
-                      </div>
-                    )}
-                    
-                    {response.audio_url && (
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <AudioLines className="h-3 w-3" />
-                        <span>Audio available</span>
-                        {response.audio_duration && (
-                          <span>({Math.round(response.audio_duration)}s)</span>
-                        )}
                       </div>
                     )}
 
@@ -339,6 +401,100 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Final Result Calculation & Override */}
+          <Card className={isOverridden ? "border-amber-300 bg-amber-50/30" : "border-green-300 bg-green-50/30"}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Star className="h-5 w-5" />
+                  Final CEFR Assessment
+                </span>
+                {isOverridden && (
+                  <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Manual Override
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Progress Info */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                {reviewedCount === totalResponses ? (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                )}
+                <span>
+                  {reviewedCount === totalResponses 
+                    ? "All responses reviewed" 
+                    : `Please review remaining ${totalResponses - reviewedCount} response(s)`}
+                </span>
+              </div>
+
+              {/* Calculated CEFR */}
+              {calculatedCEFR && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Auto-Calculated Level</Label>
+                    <div className="mt-1">
+                      <Badge className={getCEFRColor(calculatedCEFR)}>
+                        {calculatedCEFR}
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Based on average of {reviewedCount} reviewed response{reviewedCount !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="final-cefr" className="text-sm font-medium">
+                      Final CEFR Level *
+                    </Label>
+                    <Select 
+                      value={finalCEFRLevel}
+                      onValueChange={setFinalCEFRLevel}
+                    >
+                      <SelectTrigger id="final-cefr" className="mt-1">
+                        <SelectValue placeholder="Confirm or override level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A1">A1 - Beginner</SelectItem>
+                        <SelectItem value="A2">A2 - Elementary</SelectItem>
+                        <SelectItem value="B1">B1 - Intermediate</SelectItem>
+                        <SelectItem value="B2">B2 - Upper Intermediate</SelectItem>
+                        <SelectItem value="C1">C1 - Advanced</SelectItem>
+                        <SelectItem value="C2">C2 - Proficient</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* Override Reasoning */}
+              {isOverridden && (
+                <div>
+                  <Label htmlFor="override-reason" className="text-sm font-medium">
+                    Override Reasoning *
+                  </Label>
+                  <Textarea
+                    id="override-reason"
+                    placeholder="Please explain why you are overriding the calculated level..."
+                    value={finalCEFRReason}
+                    onChange={(e) => setFinalCEFRReason(e.target.value)}
+                    rows={3}
+                    className="mt-1"
+                  />
+                  {!finalCEFRReason && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Reasoning is required when overriding the calculated level
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -397,7 +553,15 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button onClick={handleSubmitReview} disabled={isSubmitting || !assessorFeedback.trim()}>
+          <Button 
+            onClick={handleSubmitReview} 
+            disabled={
+              isSubmitting || 
+              !assessorFeedback.trim() || 
+              !finalCEFRLevel ||
+              (isOverridden && !finalCEFRReason.trim())
+            }
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
