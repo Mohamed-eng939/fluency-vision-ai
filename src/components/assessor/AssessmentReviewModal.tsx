@@ -39,7 +39,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   const [finalCEFRReason, setFinalCEFRReason] = useState('');
   const [calculatedCEFR, setCalculatedCEFR] = useState<string>('');
 
-  // Calculate average CEFR whenever response reviews change
+  // Calculate average CEFR whenever response reviews change, or use session level as fallback
   useEffect(() => {
     const reviewedLevels = Object.values(responseReviews)
       .map(r => r.cefr_level)
@@ -55,8 +55,11 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       if (!finalCEFRLevel) {
         setFinalCEFRLevel(calculatedLevel);
       }
+    } else if (assessmentDetails?.session?.overall_cefr_level && !finalCEFRLevel) {
+      // If no individual responses reviewed, use session-level CEFR as default
+      setFinalCEFRLevel(assessmentDetails.session.overall_cefr_level);
     }
-  }, [responseReviews, finalCEFRLevel]);
+  }, [responseReviews, finalCEFRLevel, assessmentDetails]);
 
   const handleSubmitReview = async () => {
     if (!assessmentDetails?.session?.id) {
@@ -316,8 +319,22 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {responses.map((response, index) => (
+              {responses.length === 0 ? (
+                <div className="text-center py-8 space-y-4">
+                  <AlertCircle className="h-12 w-12 text-amber-500 mx-auto" />
+                  <div>
+                    <p className="font-medium text-gray-900">No Individual Responses Found</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      This assessment session was completed but individual responses were not stored.
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      You can still review the session based on the overall scores and provide feedback below.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {responses.map((response, index) => (
                   <div key={response.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold">Response {index + 1}</span>
@@ -399,8 +416,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -435,17 +453,21 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 </span>
               </div>
 
-              {/* Calculated CEFR */}
-              {calculatedCEFR && (
+              {/* Calculated CEFR or Session CEFR */}
+              {(calculatedCEFR || session.overall_cefr_level) && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium">Auto-Calculated Level</Label>
+                    <Label className="text-sm font-medium">
+                      {calculatedCEFR ? 'Auto-Calculated Level' : 'Current Session Level'}
+                    </Label>
                     <div className="mt-1">
-                      <Badge className={getCEFRColor(calculatedCEFR)}>
-                        {calculatedCEFR}
+                      <Badge className={getCEFRColor(calculatedCEFR || session.overall_cefr_level)}>
+                        {calculatedCEFR || session.overall_cefr_level}
                       </Badge>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Based on average of {reviewedCount} reviewed response{reviewedCount !== 1 ? 's' : ''}
+                        {calculatedCEFR 
+                          ? `Based on average of ${reviewedCount} reviewed response${reviewedCount !== 1 ? 's' : ''}`
+                          : 'Original assessment result'}
                       </p>
                     </div>
                   </div>
