@@ -137,7 +137,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       }
 
       // Update session status and final CEFR level
-      // Always update status after review submission
+      console.log('🔄 Updating session status to:', reviewStatus);
       const { error: updateError } = await supabase
         .from('assessment_sessions')
         .update({
@@ -148,13 +148,21 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         .eq('id', assessmentDetails.session.id);
 
       if (updateError) {
-        console.error('Failed to update session status:', updateError);
+        console.error('❌ Failed to update session status:', updateError);
+        toast.error('Failed to update session status');
         throw updateError;
       }
 
+      console.log('✅ Session status updated successfully');
       toast.success(`Review submitted successfully - Final Level: ${finalCEFRLevel}`);
-      onReviewSubmitted();
+      
+      // Close modal first
       onClose();
+      
+      // Wait a moment before triggering refresh to ensure DB updates complete
+      setTimeout(() => {
+        onReviewSubmitted();
+      }, 500);
       
       // Reset form
       setAssessorFeedback('');

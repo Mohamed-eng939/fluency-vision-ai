@@ -127,7 +127,8 @@ const AssessmentResults: React.FC = () => {
     );
   }
 
-  const isReviewed = session.status === 'approved' || session.status === 'rejected';
+  // Check if reviewed by looking at reviewed_at timestamp AND if there's a review record
+  const isReviewed = (session.reviewed_at && review) || session.status === 'approved' || session.status === 'rejected';
   const finalCEFR = review?.override_scores?.final_cefr_level || session.overall_cefr_level;
 
   return (
