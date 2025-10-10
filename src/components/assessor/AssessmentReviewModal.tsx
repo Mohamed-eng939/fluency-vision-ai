@@ -11,6 +11,7 @@ import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle } f
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cefrToNumber, numberToCefr, type CEFRLevel } from '@/utils/scoring/cefrUtils';
+import { useAuth } from '@/contexts/auth';
 
 interface AssessmentDetails {
   session: any;
@@ -30,6 +31,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   assessmentDetails,
   onReviewSubmitted
 }) => {
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviewStatus, setReviewStatus] = useState<'approved' | 'rejected' | 'needs_revision'>('approved');
   const [assessorFeedback, setAssessorFeedback] = useState('');
@@ -107,9 +109,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       // Check if final level was overridden
       const isOverridden = finalCEFRLevel !== calculatedCEFR;
 
-      // Get current user for assessor_id
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      if (!user?.id) {
         throw new Error('User not authenticated');
       }
 
