@@ -109,26 +109,28 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       // Check if final level was overridden
       const isOverridden = finalCEFRLevel !== calculatedCEFR;
 
-      if (!user?.id) {
-        throw new Error('User not authenticated');
+      // Insert assessor review (TESTING MODE - allows unauthenticated submission)
+      const reviewData: any = {
+        session_id: assessmentDetails.session.id,
+        review_status: reviewStatus,
+        assessor_feedback: assessorFeedback,
+        recommendation: recommendation,
+        override_scores: {
+          final_cefr_level: finalCEFRLevel,
+          calculated_average: calculatedCEFR,
+          is_overridden: isOverridden,
+          override_reason: isOverridden ? finalCEFRReason : null
+        }
+      };
+
+      // Add assessor_id only if user is authenticated
+      if (user?.id) {
+        reviewData.assessor_id = user.id;
       }
 
-      // Insert assessor review
       const { error } = await supabase
         .from('assessor_reviews')
-        .insert({
-          session_id: assessmentDetails.session.id,
-          assessor_id: user.id,
-          review_status: reviewStatus,
-          assessor_feedback: assessorFeedback,
-          recommendation: recommendation,
-          override_scores: {
-            final_cefr_level: finalCEFRLevel,
-            calculated_average: calculatedCEFR,
-            is_overridden: isOverridden,
-            override_reason: isOverridden ? finalCEFRReason : null
-          }
-        });
+        .insert(reviewData);
 
       if (error) {
         throw error;
