@@ -323,12 +323,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 <div className="text-center py-8 space-y-4">
                   <AlertCircle className="h-12 w-12 text-amber-500 mx-auto" />
                   <div>
-                    <p className="font-medium text-gray-900">No Individual Responses Found</p>
+                    <p className="font-medium text-gray-900">Loading Audio Responses...</p>
                     <p className="text-sm text-gray-500 mt-1">
-                      This assessment session was completed but individual responses were not stored.
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      You can still review the session based on the overall scores and provide feedback below.
+                      Checking for audio recordings in storage...
                     </p>
                   </div>
                 </div>
@@ -342,9 +339,16 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                         {responseReviews[response.id]?.cefr_level && (
                           <CheckCircle className="h-4 w-4 text-green-500" />
                         )}
-                        <Badge variant="outline" className="text-xs">
-                          Original: {response.cefr_level || 'N/A'}
-                        </Badge>
+                        {response.reconstructed && (
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                            Audio Only
+                          </Badge>
+                        )}
+                        {response.cefr_level && (
+                          <Badge variant="outline" className="text-xs">
+                            Original: {response.cefr_level}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                     
@@ -375,6 +379,14 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                       <div className="bg-gray-50 rounded p-3">
                         <p className="text-xs font-medium text-gray-600 mb-1">Transcript:</p>
                         <p className="text-sm text-gray-800">{response.transcript}</p>
+                      </div>
+                    )}
+
+                    {response.reconstructed && !response.transcript && (
+                      <div className="bg-amber-50 rounded p-3 border border-amber-200">
+                        <p className="text-xs font-medium text-amber-700">
+                          ℹ️ No transcript available - This response was reconstructed from audio storage
+                        </p>
                       </div>
                     )}
 

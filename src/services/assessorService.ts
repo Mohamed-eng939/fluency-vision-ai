@@ -144,7 +144,7 @@ export const assessorService = {
         throw new Error(sessionError.message);
       }
 
-      // Get responses
+      // Get responses from database
       const { data: responses, error: responsesError } = await supabase
         .from('assessment_responses')
         .select('*')
@@ -155,12 +155,32 @@ export const assessorService = {
         console.error('Error fetching responses:', responsesError);
       }
 
+      let finalResponses = responses || [];
+
+      // If no responses in database, try to reconstruct from storage
+      if (!finalResponses || finalResponses.length === 0) {
+        console.log('📂 [assessorService] No DB responses, checking storage for audio files...');
+        try {
+          const { data: storageData, error: storageError } = await supabase.functions.invoke(
+            'get-session-audio-files',
+            { body: { sessionId } }
+          );
+
+          if (!storageError && storageData?.responses) {
+            console.log(`✅ [assessorService] Reconstructed ${storageData.responses.length} responses from storage`);
+            finalResponses = storageData.responses;
+          }
+        } catch (storageErr) {
+          console.warn('⚠️ [assessorService] Could not reconstruct from storage:', storageErr);
+        }
+      }
+
       console.log('✅ [assessorService] Got assessment details');
       return {
         success: true,
         data: {
           session: sessionData,
-          responses: responses || []
+          responses: finalResponses
         }
       };
     } catch (error: any) {
