@@ -137,15 +137,19 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       }
 
       // Update session status and final CEFR level
-      if (reviewStatus === 'approved' || reviewStatus === 'rejected') {
-        await supabase
-          .from('assessment_sessions')
-          .update({
-            status: reviewStatus,
-            reviewed_at: new Date().toISOString(),
-            overall_cefr_level: finalCEFRLevel
-          })
-          .eq('id', assessmentDetails.session.id);
+      // Always update status after review submission
+      const { error: updateError } = await supabase
+        .from('assessment_sessions')
+        .update({
+          status: reviewStatus, // approved, rejected, or needs_revision
+          reviewed_at: new Date().toISOString(),
+          overall_cefr_level: finalCEFRLevel
+        })
+        .eq('id', assessmentDetails.session.id);
+
+      if (updateError) {
+        console.error('Failed to update session status:', updateError);
+        throw updateError;
       }
 
       toast.success(`Review submitted successfully - Final Level: ${finalCEFRLevel}`);

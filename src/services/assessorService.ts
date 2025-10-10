@@ -44,6 +44,7 @@ export const assessorService = {
       console.log('🧪 [assessorService] Skipping edge function for test mode');
         
       // Direct database query (no auth required in test mode)
+      // Only fetch sessions that haven't been reviewed yet
       console.log('📊 [assessorService] Using direct database query...');
       const { data: sessions, error: dbError } = await supabase
         .from('assessment_sessions')
@@ -57,6 +58,7 @@ export const assessorService = {
           )
         `)
         .in('status', ['completed', 'under_review'])
+        .is('reviewed_at', null) // Only unreviewed sessions
         .order('created_at', { ascending: false });
 
       if (dbError) {
