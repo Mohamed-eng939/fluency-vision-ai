@@ -11,6 +11,7 @@ import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import ReportPage from "./pages/ReportPage";
+import AssessmentResults from "./pages/AssessmentResults";
 
 // Import Dashboard pages
 import Dashboard from "./pages/Dashboard";
@@ -33,6 +34,7 @@ const AppContent: React.FC = () => {
         <Route path="/admin/*" element={<AdminPanel />} />
         <Route path="/assessor/*" element={<AssessorPanel />} />
         <Route path="/reports/:reportId" element={<ReportPage />} />
+        <Route path="/results" element={<AssessmentResults />} />
         
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />

@@ -56,7 +56,7 @@ export const assessorService = {
             country_of_residence
           )
         `)
-        .eq('status', 'completed')
+        .in('status', ['completed', 'under_review'])
         .order('created_at', { ascending: false });
 
       if (dbError) {
