@@ -271,7 +271,7 @@ export type Database = {
       assessor_reviews: {
         Row: {
           assessor_feedback: string | null
-          assessor_id: string
+          assessor_id: string | null
           created_at: string
           id: string
           organization_id: string | null
@@ -284,7 +284,7 @@ export type Database = {
         }
         Insert: {
           assessor_feedback?: string | null
-          assessor_id: string
+          assessor_id?: string | null
           created_at?: string
           id?: string
           organization_id?: string | null
@@ -297,7 +297,7 @@ export type Database = {
         }
         Update: {
           assessor_feedback?: string | null
-          assessor_id?: string
+          assessor_id?: string | null
           created_at?: string
           id?: string
           organization_id?: string | null
