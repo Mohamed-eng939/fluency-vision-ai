@@ -4,9 +4,11 @@ import { supabase } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, Clock, FileText, AudioLines, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, FileText, AudioLines, ChevronDown, ChevronUp, User, BookOpen, AlertCircle, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Separator } from '@/components/ui/separator';
+import { generateRecommendations } from '@/utils/scoring/recommendationsGenerator';
 
 const AssessmentResults: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -131,6 +133,18 @@ const AssessmentResults: React.FC = () => {
   const isReviewed = (session.reviewed_at && review) || session.status === 'approved' || session.status === 'rejected';
   const finalCEFR = review?.override_scores?.final_cefr_level || session.overall_cefr_level;
 
+  // Generate learning recommendations based on scores
+  const metrics = {
+    fluency: session.fluency_score || 0,
+    grammar: session.grammar_score || 0,
+    pronunciation: session.pronunciation_score || 0,
+    prosody: 0,
+    vocabulary: session.vocabulary_score || 0,
+    syntax: 0,
+    coherence: session.coherence_score || 0,
+  };
+  const recommendations = generateRecommendations(metrics, 3);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-5xl mx-auto">
@@ -238,36 +252,100 @@ const AssessmentResults: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Assessor Feedback */}
-        {review && (
+        {/* Student Information */}
+        {session.student_info && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Assessor Feedback</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Student Information
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">General Feedback</p>
-                  <p className="text-gray-600">{review.assessor_feedback}</p>
-                </div>
-                
-                {review.recommendation && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {session.student_info.name && (
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Recommendations</p>
-                    <p className="text-gray-600">{review.recommendation}</p>
+                    <p className="text-sm text-gray-600">Name</p>
+                    <p className="font-medium">{session.student_info.name}</p>
                   </div>
                 )}
-
-                {review.override_scores?.override_reason && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-blue-900 mb-1">Level Adjustment Note</p>
-                    <p className="text-sm text-blue-800">{review.override_scores.override_reason}</p>
+                {session.student_info.email && (
+                  <div>
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="font-medium">{session.student_info.email}</p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
         )}
+
+        {/* Assessor Feedback */}
+        {review && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                Assessor Review
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">General Feedback</p>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-gray-800">{review.assessor_feedback || 'No feedback provided'}</p>
+                  </div>
+                </div>
+                
+                {review.recommendation && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Assessor Recommendations</p>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-gray-800">{review.recommendation}</p>
+                    </div>
+                  </div>
+                )}
+
+                {review.override_scores?.override_reason && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Level Adjustment Note</p>
+                    <div className="bg-amber-50 p-4 rounded-lg">
+                      <p className="text-gray-800">{review.override_scores.override_reason}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Learning Recommendations */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Personalized Learning Recommendations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recommendations.map((rec, index) => (
+                <div key={index} className="border-l-4 border-assessment-blue pl-4">
+                  <p className="font-medium text-gray-900 mb-2">Focus Area: {rec.area}</p>
+                  <ul className="space-y-1">
+                    {rec.tips.map((tip, tipIndex) => (
+                      <li key={tipIndex} className="text-sm text-gray-600 flex items-start gap-2">
+                        <span className="text-assessment-blue mt-1">•</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Individual Responses */}
         <Card>
@@ -309,13 +387,16 @@ const AssessmentResults: React.FC = () => {
                       </CollapsibleTrigger>
 
                       <CollapsibleContent>
-                        <div className="px-4 pb-4 space-y-3 border-t pt-3">
+                        <div className="px-4 pb-4 space-y-4 border-t pt-4">
                           {/* Audio Player */}
                           {response.audio_url && (
                             <div className="bg-gray-50 rounded-lg p-3">
                               <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                                 <AudioLines className="h-4 w-4" />
                                 <span>Your Recording</span>
+                                {response.audio_duration && (
+                                  <span className="text-xs">({Math.round(response.audio_duration)}s)</span>
+                                )}
                               </div>
                               <audio controls className="w-full">
                                 <source src={response.audio_url} type="audio/webm" />
@@ -327,53 +408,114 @@ const AssessmentResults: React.FC = () => {
                           {/* Transcript */}
                           {response.transcript && (
                             <div>
-                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 <FileText className="h-4 w-4" />
                                 <span>Transcript</span>
                               </div>
-                              <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">
-                                {response.transcript}
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Assessor Notes */}
-                          {response.detailed_feedback?.assessor_notes && (
-                            <div className="bg-blue-50 p-3 rounded-lg">
-                              <p className="text-sm font-medium text-blue-900 mb-1">Assessor Notes</p>
-                              <p className="text-sm text-blue-800">
-                                {response.detailed_feedback.assessor_notes}
-                              </p>
+                              <div className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-gray-800 leading-relaxed">{response.transcript}</p>
+                              </div>
                             </div>
                           )}
 
                           {/* Scores for this response */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t">
-                            {response.overall_score && (
-                              <div>
-                                <p className="text-xs text-gray-600">Overall</p>
-                                <p className="font-semibold">{Math.round(response.overall_score)}</p>
-                              </div>
-                            )}
-                            {response.fluency_score && (
-                              <div>
-                                <p className="text-xs text-gray-600">Fluency</p>
-                                <p className="font-semibold">{Math.round(response.fluency_score)}</p>
-                              </div>
-                            )}
-                            {response.pronunciation_score && (
-                              <div>
-                                <p className="text-xs text-gray-600">Pronunciation</p>
-                                <p className="font-semibold">{Math.round(response.pronunciation_score)}</p>
-                              </div>
-                            )}
-                            {response.grammar_score && (
-                              <div>
-                                <p className="text-xs text-gray-600">Grammar</p>
-                                <p className="font-semibold">{Math.round(response.grammar_score)}</p>
-                              </div>
-                            )}
+                          <div>
+                            <p className="text-sm font-medium text-gray-700 mb-3">Performance Scores</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg">
+                              {response.overall_score !== null && response.overall_score !== undefined && (
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Overall</p>
+                                  <p className="text-xl font-bold text-assessment-blue">{Math.round(response.overall_score)}</p>
+                                </div>
+                              )}
+                              {response.fluency_score !== null && response.fluency_score !== undefined && (
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Fluency</p>
+                                  <p className="text-xl font-bold text-assessment-blue">{Math.round(response.fluency_score)}</p>
+                                </div>
+                              )}
+                              {response.pronunciation_score !== null && response.pronunciation_score !== undefined && (
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Pronunciation</p>
+                                  <p className="text-xl font-bold text-assessment-blue">{Math.round(response.pronunciation_score)}</p>
+                                </div>
+                              )}
+                              {response.grammar_score !== null && response.grammar_score !== undefined && (
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Grammar</p>
+                                  <p className="text-xl font-bold text-assessment-blue">{Math.round(response.grammar_score)}</p>
+                                </div>
+                              )}
+                              {response.vocabulary_score !== null && response.vocabulary_score !== undefined && (
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Vocabulary</p>
+                                  <p className="text-xl font-bold text-assessment-blue">{Math.round(response.vocabulary_score)}</p>
+                                </div>
+                              )}
+                              {response.coherence_score !== null && response.coherence_score !== undefined && (
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Coherence</p>
+                                  <p className="text-xl font-bold text-assessment-blue">{Math.round(response.coherence_score)}</p>
+                                </div>
+                              )}
+                            </div>
                           </div>
+
+                          {/* Detailed Feedback */}
+                          {response.detailed_feedback && Object.keys(response.detailed_feedback).length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                <BookOpen className="h-4 w-4" />
+                                <span>Detailed Feedback</span>
+                              </div>
+                              <div className="space-y-3">
+                                {Object.entries(response.detailed_feedback).map(([key, value]) => {
+                                  if (typeof value === 'string' && value.trim()) {
+                                    return (
+                                      <div key={key} className="bg-blue-50 p-3 rounded-lg">
+                                        <p className="text-xs font-semibold text-blue-900 uppercase mb-1">
+                                          {key.replace(/_/g, ' ')}
+                                        </p>
+                                        <p className="text-sm text-blue-800">{value}</p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Mistakes Analysis */}
+                          {response.mistakes_analysis && Object.keys(response.mistakes_analysis).length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                <AlertCircle className="h-4 w-4" />
+                                <span>Mistakes & Areas for Improvement</span>
+                              </div>
+                              <div className="space-y-2">
+                                {Object.entries(response.mistakes_analysis).map(([category, mistakes]: [string, any]) => {
+                                  if (Array.isArray(mistakes) && mistakes.length > 0) {
+                                    return (
+                                      <div key={category} className="border border-orange-200 bg-orange-50 p-3 rounded-lg">
+                                        <p className="text-sm font-semibold text-orange-900 mb-2 capitalize">
+                                          {category.replace(/_/g, ' ')}
+                                        </p>
+                                        <ul className="space-y-1 ml-4">
+                                          {mistakes.map((mistake: any, idx: number) => (
+                                            <li key={idx} className="text-sm text-orange-800 list-disc">
+                                              {typeof mistake === 'string' ? mistake : mistake.description || JSON.stringify(mistake)}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </CollapsibleContent>
                     </Card>
