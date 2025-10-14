@@ -280,41 +280,71 @@ const AssessmentResults: React.FC = () => {
           </Card>
         )}
 
-        {/* Assessor Feedback */}
+        {/* Assessor Feedback - Prominent Display */}
         {review && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                Assessor Review
+          <Card className="mb-6 border-2 border-assessment-blue shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-assessment-blue/10 to-assessment-lightBlue/10">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <CheckCircle className="h-6 w-6 text-assessment-blue" />
+                Professional Assessor Review
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Expert feedback and personalized recommendations from your assessor
+              </p>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pt-6">
+              <div className="space-y-6">
+                {/* Assessor's Notes/Feedback */}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">General Feedback</p>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-gray-800">{review.assessor_feedback || 'No feedback provided'}</p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <BookOpen className="h-5 w-5 text-assessment-blue" />
+                    <h3 className="text-lg font-semibold text-gray-900">Assessor's Notes</h3>
+                  </div>
+                  <div className="bg-blue-50 border-l-4 border-assessment-blue p-5 rounded-r-lg">
+                    <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                      {review.assessor_feedback || 'No detailed notes provided'}
+                    </p>
                   </div>
                 </div>
                 
+                {/* Assessor Recommendations */}
                 {review.recommendation && (
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Assessor Recommendations</p>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-gray-800">{review.recommendation}</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                      <h3 className="text-lg font-semibold text-gray-900">Assessor's Recommendations</h3>
+                    </div>
+                    <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-r-lg">
+                      <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                        {review.recommendation}
+                      </p>
                     </div>
                   </div>
                 )}
 
+                {/* Level Adjustment Explanation */}
                 {review.override_scores?.override_reason && (
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Level Adjustment Note</p>
-                    <div className="bg-amber-50 p-4 rounded-lg">
-                      <p className="text-gray-800">{review.override_scores.override_reason}</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertCircle className="h-5 w-5 text-amber-600" />
+                      <h3 className="text-lg font-semibold text-gray-900">Level Adjustment Note</h3>
+                    </div>
+                    <div className="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-r-lg">
+                      <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                        {review.override_scores.override_reason}
+                      </p>
                     </div>
                   </div>
                 )}
+
+                {/* Review Metadata */}
+                <Separator />
+                <div className="flex items-center justify-between text-sm text-muted-foreground pt-2">
+                  <span>Review Status: <Badge variant="outline" className="ml-1">{review.review_status}</Badge></span>
+                  {review.reviewed_at && (
+                    <span>Reviewed: {formatDate(review.reviewed_at)}</span>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
