@@ -1,49 +1,14 @@
 
 /**
  * CEFR Vocabulary Data
- * Contains reference wordlists for CEFR levels
+ * Loaded from official CEFR word list JSON
+ * STRICT MODE: No fallback or guessing logic
  */
 
-// Sample words for each CEFR level (abbreviated lists for demonstration)
-// In a production environment, these would be much more comprehensive
-export const cefrVocabulary = {
-  A1: [
-    'go', 'school', 'like', 'eat', 'book', 'cat', 'run', 'house', 'car', 'big', 'small', 'good', 'bad',
-    'happy', 'sad', 'hello', 'goodbye', 'yes', 'no', 'thank', 'please', 'sorry', 'day', 'night', 'today',
-    'tomorrow', 'morning', 'afternoon', 'evening', 'friend', 'family', 'mother', 'father', 'brother', 'sister',
-    'water', 'food', 'drink', 'hot', 'cold', 'new', 'old', 'young', 'name', 'live', 'work', 'play'
-  ],
-  A2: [
-    'usually', 'write', 'travel', 'simple', 'always', 'help', 'sometimes', 'often', 'never', 'everything',
-    'nothing', 'everyone', 'nobody', 'somewhere', 'anywhere', 'early', 'late', 'busy', 'free', 'difficult',
-    'easy', 'interesting', 'boring', 'important', 'different', 'same', 'show', 'tell', 'ask', 'answer',
-    'understand', 'speak', 'listen', 'read', 'write', 'learn', 'study', 'teach', 'begin', 'end', 'continue'
-  ],
-  B1: [
-    'explain', 'prefer', 'describe', 'suggestion', 'communicate', 'probably', 'possibly', 'necessary',
-    'unnecessary', 'improve', 'increase', 'decrease', 'develop', 'achieve', 'discuss', 'argue', 'agree',
-    'disagree', 'opinion', 'reason', 'result', 'cause', 'effect', 'solution', 'problem', 'advantage',
-    'disadvantage', 'benefit', 'organize', 'arrange', 'prepare', 'plan', 'experience', 'compare', 'contrast'
-  ],
-  B2: [
-    'development', 'contrast', 'advantage', 'despite', 'however', 'furthermore', 'moreover', 'nevertheless',
-    'therefore', 'consequently', 'apparently', 'evidently', 'surprisingly', 'unfortunately', 'significantly',
-    'relatively', 'approximately', 'occasionally', 'primarily', 'essentially', 'ultimately', 'presumably',
-    'alternatively', 'subsequently', 'previously', 'eventually', 'gradually', 'accurately', 'deliberately'
-  ],
-  C1: [
-    'consequently', 'assumption', 'sophisticated', 'criticise', 'nevertheless', 'illuminate', 'meticulous',
-    'articulate', 'comprehensive', 'substantial', 'rigorous', 'scrutiny', 'substantiate', 'detrimental',
-    'conducive', 'indispensable', 'alleviate', 'exacerbate', 'exemplify', 'predominant', 'impediment',
-    'discretion', 'contingent', 'pertinent', 'divergent', 'profound', 'reconcile', 'enumerate', 'deduce'
-  ],
-  C2: [
-    'simultaneously', 'philosophical', 'disproportionate', 'hypothesis', 'albeit', 'paradigm', 'enigmatic',
-    'quintessential', 'juxtaposition', 'dichotomy', 'paradoxical', 'idiosyncratic', 'axiomatic', 'ubiquitous',
-    'paramount', 'interminable', 'surreptitious', 'incontrovertible', 'inexorable', 'esoteric', 'tacit',
-    'ephemeral', 'euphemistic', 'nuanced', 'idiomatic', 'amalgamation', 'rhetoric', 'fallacy'
-  ]
-};
+import cefrWordsData from '@/data/assessment/cefrWords.json';
+
+// Import the official CEFR word list
+export const cefrVocabulary: Record<string, string[]> = cefrWordsData;
 
 // Common words to ignore in assessments (stop words)
 export const stopWords = [

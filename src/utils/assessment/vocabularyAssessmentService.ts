@@ -53,11 +53,12 @@ export const assessVocabulary = async (
               vocabularyScore: evaluation.vocabularyScore,
               cefrVocabularyLevel: evaluation.cefrVocabularyLevel,
               vocabularyJustification: evaluation.vocabularyJustification,
-              // Add placeholder values for additional metrics
               wordDistribution: { 'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0, 'C1': 0, 'C2': 0 },
               lexicalDiversity: 0,
               uniqueWordCount: 0,
-              totalWordCount: transcript.split(/\s+/).filter(w => w.length > 0).length
+              totalWordCount: transcript.split(/\s+/).filter(w => w.length > 0).length,
+              recognizedWordCount: 0,
+              unrecognizedWordCount: 0
             };
           }
         } catch (error) {

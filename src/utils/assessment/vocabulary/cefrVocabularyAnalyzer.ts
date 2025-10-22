@@ -1,11 +1,10 @@
 
 /**
  * CEFR Vocabulary Analyzer
- * Analyzes vocabulary usage according to CEFR levels
+ * STRICT MODE: Uses official CEFR word list only, no fallback guessing
  */
 
 import { cefrVocabulary, stopWords, cefrLevelToScoreRange, cefrVocabularyIndicators } from './cefrVocabularyData';
-import { lemmatize } from './lemmatizer';
 
 /**
  * Interface for vocabulary analysis result
@@ -14,10 +13,12 @@ export interface VocabularyAnalysisResult {
   vocabularyScore: number;
   cefrVocabularyLevel: string;
   vocabularyJustification: string;
-  wordDistribution: Record<string, number>; // Distribution of words by CEFR level
+  wordDistribution: Record<string, number>;
   lexicalDiversity: number;
   uniqueWordCount: number;
   totalWordCount: number;
+  recognizedWordCount: number; // Words found in CEFR list
+  unrecognizedWordCount: number; // Words not in CEFR list
 }
 
 /**
@@ -26,35 +27,35 @@ export interface VocabularyAnalysisResult {
 const tokenizeText = (text: string): string[] => {
   if (!text) return [];
   
-  // Remove punctuation and split into words
   return text
     .toLowerCase()
-    .replace(/[^\w\s'-]/g, ' ')  // Keep apostrophes and hyphens
+    .replace(/[^\w\s'-]/g, ' ')
     .split(/\s+/)
     .filter(word => word.length > 0 && !stopWords.includes(word));
 };
 
 /**
- * Determine the CEFR level of a word
+ * Get the CEFR level for a given word
+ * STRICT MODE: Returns null if word not found in CEFR list
  */
-const getWordCefrLevel = (word: string): string => {
-  const lemma = lemmatize(word);
+const getWordCefrLevel = (word: string): string | null => {
+  const normalizedWord = word.toLowerCase();
   
   // Check each CEFR level from highest to lowest
-  if (cefrVocabulary.C2.includes(lemma)) return 'C2';
-  if (cefrVocabulary.C1.includes(lemma)) return 'C1';
-  if (cefrVocabulary.B2.includes(lemma)) return 'B2';
-  if (cefrVocabulary.B1.includes(lemma)) return 'B1';
-  if (cefrVocabulary.A2.includes(lemma)) return 'A2';
-  if (cefrVocabulary.A1.includes(lemma)) return 'A1';
+  if (cefrVocabulary.C2?.some(w => w.toLowerCase() === normalizedWord)) return 'C2';
+  if (cefrVocabulary.C1?.some(w => w.toLowerCase() === normalizedWord)) return 'C1';
+  if (cefrVocabulary.B2?.some(w => w.toLowerCase() === normalizedWord)) return 'B2';
+  if (cefrVocabulary.B1?.some(w => w.toLowerCase() === normalizedWord)) return 'B1';
+  if (cefrVocabulary.A2?.some(w => w.toLowerCase() === normalizedWord)) return 'A2';
+  if (cefrVocabulary.A1?.some(w => w.toLowerCase() === normalizedWord)) return 'A1';
   
-  // Default to A1 for unknown words (in a production system,
-  // we would use a more comprehensive word frequency list)
-  return 'A1';
+  // STRICT MODE: Return null if not found
+  return null;
 };
 
 /**
  * Calculate vocabulary distribution by CEFR level
+ * STRICT MODE: Only counts words found in CEFR list
  */
 const calculateVocabularyDistribution = (words: string[]): Record<string, number> => {
   const distribution: Record<string, number> = {
@@ -63,12 +64,17 @@ const calculateVocabularyDistribution = (words: string[]): Record<string, number
     'B1': 0,
     'B2': 0,
     'C1': 0,
-    'C2': 0
+    'C2': 0,
+    'not_found': 0
   };
   
   words.forEach(word => {
     const level = getWordCefrLevel(word);
-    distribution[level]++;
+    if (level) {
+      distribution[level]++;
+    } else {
+      distribution['not_found']++;
+    }
   });
   
   return distribution;
@@ -76,48 +82,42 @@ const calculateVocabularyDistribution = (words: string[]): Record<string, number
 
 /**
  * Determine the dominant CEFR level based on vocabulary distribution
+ * STRICT MODE: Only considers words found in CEFR list
  */
 const determineCefrLevel = (distribution: Record<string, number>): string => {
-  // Calculate weighted score
-  // We give higher weight to higher-level vocabulary to recognize advanced usage
-  const weightedScores = {
-    'A1': distribution['A1'] * 1,
-    'A2': distribution['A2'] * 2,
-    'B1': distribution['B1'] * 4,
-    'B2': distribution['B2'] * 8,
-    'C1': distribution['C1'] * 16,
-    'C2': distribution['C2'] * 32
+  // Calculate total recognized words (excluding 'not_found')
+  const recognizedTotal = Object.entries(distribution)
+    .filter(([level]) => level !== 'not_found')
+    .reduce((sum, [_, count]) => sum + count, 0);
+    
+  if (recognizedTotal === 0) return 'A1';
+  
+  // Calculate weighted scores for each level
+  const levelWeights = {
+    A1: 1,
+    A2: 2,
+    B1: 3,
+    B2: 4,
+    C1: 5,
+    C2: 6
   };
   
-  // Get the total count and advanced counts
-  const totalWords = Object.values(distribution).reduce((sum, count) => sum + count, 0);
-  const advancedCount = distribution['B2'] + distribution['C1'] + distribution['C2'];
-  
-  // If very few words in total, limit the maximum level
-  if (totalWords < 30) {
-    if (advancedCount > 0) return 'B1';
-    return 'A2';
-  }
-  
-  // If significant advanced vocabulary is used
-  if (advancedCount / totalWords > 0.1) {
-    if (distribution['C2'] > 1) return 'C1';
-    if (distribution['C1'] > 2) return 'B2';
-    return 'B1';
-  }
-  
-  // Find the highest weighted level
-  let maxLevel = 'A1';
-  let maxScore = 0;
-  
-  Object.entries(weightedScores).forEach(([level, score]) => {
-    if (score > maxScore) {
-      maxScore = score;
-      maxLevel = level;
+  let weightedSum = 0;
+  Object.entries(distribution).forEach(([level, count]) => {
+    if (level in levelWeights) {
+      weightedSum += levelWeights[level as keyof typeof levelWeights] * count;
     }
   });
   
-  return maxLevel;
+  const averageWeight = weightedSum / recognizedTotal;
+  
+  // Map back to CEFR level based on average weight
+  if (averageWeight >= 5.5) return 'C2';
+  if (averageWeight >= 4.5) return 'C1';
+  if (averageWeight >= 3.5) return 'B2';
+  if (averageWeight >= 2.5) return 'B1';
+  if (averageWeight >= 1.5) return 'A2';
+  return 'A1';
 };
 
 /**
@@ -126,158 +126,133 @@ const determineCefrLevel = (distribution: Record<string, number>): string => {
 const calculateVocabularyScore = (
   cefrLevel: string,
   lexicalDiversity: number,
-  uniqueCount: number,
+  recognizedCount: number,
+  totalCount: number,
   distribution: Record<string, number>
 ): number => {
   // Get base score from CEFR level
   const { base, min, max } = cefrLevelToScoreRange[cefrLevel];
   
-  // Adjust score based on lexical diversity
   let adjustedScore = base;
   
-  // Penalize for very low lexical diversity
-  if (lexicalDiversity < 0.4) {
+  // Adjust for lexical diversity
+  if (lexicalDiversity > 0.7) {
+    adjustedScore += 0.5;
+  } else if (lexicalDiversity < 0.4) {
     adjustedScore -= 0.5;
-  } 
-  // Reward high lexical diversity
-  else if (lexicalDiversity > 0.7) {
+  }
+  
+  // Penalize if very few words recognized from CEFR list
+  const recognitionRate = recognizedCount / totalCount;
+  if (recognitionRate < 0.3) {
+    adjustedScore -= 1;
+  } else if (recognitionRate > 0.7) {
     adjustedScore += 0.5;
   }
   
-  // Adjust for very small vocabulary size
-  if (uniqueCount < 20) {
-    adjustedScore = Math.min(adjustedScore, 5.0);
-  }
-  
-  // Adjust for higher level vocabulary usage
-  const higherLevelCount = 
-    (cefrLevel === 'A1' ? distribution['A2'] + distribution['B1'] + distribution['B2'] + distribution['C1'] + distribution['C2'] : 0) +
-    (cefrLevel === 'A2' ? distribution['B1'] + distribution['B2'] + distribution['C1'] + distribution['C2'] : 0) +
-    (cefrLevel === 'B1' ? distribution['B2'] + distribution['C1'] + distribution['C2'] : 0) +
-    (cefrLevel === 'B2' ? distribution['C1'] + distribution['C2'] : 0) +
-    (cefrLevel === 'C1' ? distribution['C2'] : 0);
-  
-  if (higherLevelCount > 5) {
-    adjustedScore += 0.5;
-  }
-  
-  // Ensure the score stays within the range for this CEFR level
+  // Ensure score stays within range
   adjustedScore = Math.max(min, Math.min(max, adjustedScore));
   
-  // Final rounding to 1 decimal place
   return Math.round(adjustedScore * 10) / 10;
 };
 
 /**
- * Generate justification for the vocabulary assessment
+ * Generate justification for vocabulary assessment
  */
 const generateVocabularyJustification = (
   cefrLevel: string,
   distribution: Record<string, number>,
   lexicalDiversity: number,
-  uniqueCount: number,
+  recognizedCount: number,
   totalCount: number
 ): string => {
-  const indicators = cefrVocabularyIndicators[cefrLevel];
+  const recognitionRate = Math.round((recognizedCount / totalCount) * 100);
   
-  // Calculate percentages of words at each level
-  const totalWords = Object.values(distribution).reduce((sum, count) => sum + count, 0);
+  let justification = `CEFR ${cefrLevel}: `;
+  justification += `${recognitionRate}% of vocabulary recognized from official CEFR word list. `;
+  
+  // Distribution breakdown
   const percentages = Object.fromEntries(
-    Object.entries(distribution).map(([level, count]) => 
-      [level, Math.round((count / totalWords) * 100)]
-    )
+    Object.entries(distribution)
+      .filter(([level]) => level !== 'not_found')
+      .map(([level, count]) => [level, Math.round((count / recognizedCount) * 100)])
   );
   
-  // Count higher and lower level words relative to assigned level
-  const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-  const levelIndex = cefrLevels.indexOf(cefrLevel);
+  const dominantLevels = Object.entries(percentages)
+    .filter(([_, pct]) => pct > 20)
+    .map(([level, pct]) => `${level} (${pct}%)`)
+    .join(', ');
   
-  const higherLevelWords = cefrLevels
-    .slice(levelIndex + 1)
-    .reduce((sum, level) => sum + distribution[level], 0);
-  
-  const lowerLevelWords = cefrLevels
-    .slice(0, levelIndex)
-    .reduce((sum, level) => sum + distribution[level], 0);
-  
-  // Build justification
-  let justification = `CEFR ${cefrLevel}: Used vocabulary primarily at ${cefrLevel} level (${percentages[cefrLevel]}%) `;
-  
-  if (higherLevelWords > 0) {
-    justification += `with some higher-level terms (${Math.round((higherLevelWords / totalWords) * 100)}%). `;
-  } else {
-    justification += `without higher-level terms. `;
+  if (dominantLevels) {
+    justification += `Dominant levels: ${dominantLevels}. `;
   }
   
-  // Add lexical diversity comment
+  // Lexical diversity
   if (lexicalDiversity > 0.7) {
     justification += "Good lexical variety. ";
   } else if (lexicalDiversity < 0.5) {
-    justification += "Limited lexical variety with repetition. ";
-  } else {
-    justification += "Moderate lexical variety. ";
+    justification += "Limited lexical variety. ";
   }
-  
-  // Add vocabulary size comment if notable
-  if (uniqueCount < 20) {
-    justification += "Limited vocabulary range. ";
-  } else if (uniqueCount > 100) {
-    justification += "Extensive vocabulary range. ";
-  }
-  
-  // Add a note about key features observed
-  justification += `Shows ${cefrLevel} features: ${indicators.keyFeatures[0]}.`;
   
   return justification;
 };
 
 /**
  * Analyze vocabulary in transcript according to CEFR standards
+ * STRICT MODE: Only uses official CEFR word list
  */
 export const analyzeCefrVocabulary = (transcript: string): VocabularyAnalysisResult => {
   if (!transcript) {
     return {
-      vocabularyScore: 3.0,
-      cefrVocabularyLevel: 'A2',
-      vocabularyJustification: "Insufficient vocabulary sample to make a reliable assessment.",
-      wordDistribution: { 'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0, 'C1': 0, 'C2': 0 },
+      vocabularyScore: 1.0,
+      cefrVocabularyLevel: 'A1',
+      vocabularyJustification: "No transcript provided.",
+      wordDistribution: { 'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0, 'C1': 0, 'C2': 0, 'not_found': 0 },
       lexicalDiversity: 0,
       uniqueWordCount: 0,
-      totalWordCount: 0
+      totalWordCount: 0,
+      recognizedWordCount: 0,
+      unrecognizedWordCount: 0
     };
   }
   
-  // Tokenize and clean the text
+  // Tokenize and clean
   const words = tokenizeText(transcript);
   
-  // If no words after filtering, return default
   if (words.length === 0) {
     return {
-      vocabularyScore: 3.0,
-      cefrVocabularyLevel: 'A2',
-      vocabularyJustification: "Insufficient meaningful vocabulary after removing common words.",
-      wordDistribution: { 'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0, 'C1': 0, 'C2': 0 },
+      vocabularyScore: 1.0,
+      cefrVocabularyLevel: 'A1',
+      vocabularyJustification: "No meaningful words after filtering.",
+      wordDistribution: { 'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0, 'C1': 0, 'C2': 0, 'not_found': 0 },
       lexicalDiversity: 0,
       uniqueWordCount: 0,
-      totalWordCount: 0
+      totalWordCount: 0,
+      recognizedWordCount: 0,
+      unrecognizedWordCount: 0
     };
   }
   
-  // Calculate unique words and lexical diversity
+  // Calculate metrics
   const uniqueWords = new Set(words);
   const lexicalDiversity = uniqueWords.size / words.length;
   
-  // Get distribution of words by CEFR level
+  // Get distribution
   const distribution = calculateVocabularyDistribution(words);
+  const recognizedCount = Object.entries(distribution)
+    .filter(([level]) => level !== 'not_found')
+    .reduce((sum, [_, count]) => sum + count, 0);
+  const unrecognizedCount = distribution['not_found'];
   
   // Determine CEFR level
   const cefrLevel = determineCefrLevel(distribution);
   
-  // Calculate vocabulary score
+  // Calculate score
   const vocabularyScore = calculateVocabularyScore(
     cefrLevel,
     lexicalDiversity,
-    uniqueWords.size,
+    recognizedCount,
+    words.length,
     distribution
   );
   
@@ -286,7 +261,7 @@ export const analyzeCefrVocabulary = (transcript: string): VocabularyAnalysisRes
     cefrLevel,
     distribution,
     lexicalDiversity,
-    uniqueWords.size,
+    recognizedCount,
     words.length
   );
   
@@ -297,6 +272,8 @@ export const analyzeCefrVocabulary = (transcript: string): VocabularyAnalysisRes
     wordDistribution: distribution,
     lexicalDiversity,
     uniqueWordCount: uniqueWords.size,
-    totalWordCount: words.length
+    totalWordCount: words.length,
+    recognizedWordCount: recognizedCount,
+    unrecognizedWordCount: unrecognizedCount
   };
 };
