@@ -121,7 +121,8 @@ const determineCefrLevel = (distribution: Record<string, number>): string => {
 };
 
 /**
- * Calculate vocabulary score based on CEFR level and metrics
+ * Calculate vocabulary score based on CEFR level and recognition rate
+ * Uses neutral approach: final_score = base_score × (recognized_words / total_words)
  */
 const calculateVocabularyScore = (
   cefrLevel: string,
@@ -133,31 +134,28 @@ const calculateVocabularyScore = (
   // Get base score from CEFR level
   const { base, min, max } = cefrLevelToScoreRange[cefrLevel];
   
-  let adjustedScore = base;
+  // Calculate recognition rate (what % of words were found in CEFR list)
+  const recognitionRate = totalCount > 0 ? recognizedCount / totalCount : 0;
   
-  // Adjust for lexical diversity
+  // Apply neutral adjustment: multiply base score by recognition rate
+  // This ensures fairness without penalizing rare/advanced/misspelled words
+  let adjustedScore = base * recognitionRate;
+  
+  // Minor adjustment for lexical diversity (variety of vocabulary)
   if (lexicalDiversity > 0.7) {
-    adjustedScore += 0.5;
+    adjustedScore += 0.3;
   } else if (lexicalDiversity < 0.4) {
-    adjustedScore -= 0.5;
+    adjustedScore -= 0.3;
   }
   
-  // Penalize if very few words recognized from CEFR list
-  const recognitionRate = recognizedCount / totalCount;
-  if (recognitionRate < 0.3) {
-    adjustedScore -= 1;
-  } else if (recognitionRate > 0.7) {
-    adjustedScore += 0.5;
-  }
-  
-  // Ensure score stays within range
+  // Ensure score stays within valid range
   adjustedScore = Math.max(min, Math.min(max, adjustedScore));
   
   return Math.round(adjustedScore * 10) / 10;
 };
 
 /**
- * Generate justification for vocabulary assessment
+ * Generate justification for vocabulary assessment with clear metrics
  */
 const generateVocabularyJustification = (
   cefrLevel: string,
@@ -167,32 +165,34 @@ const generateVocabularyJustification = (
   totalCount: number
 ): string => {
   const recognitionRate = Math.round((recognizedCount / totalCount) * 100);
+  const unrecognizedRate = Math.round((distribution['not_found'] / totalCount) * 100);
   
-  let justification = `CEFR ${cefrLevel}: `;
-  justification += `${recognitionRate}% of vocabulary recognized from official CEFR word list. `;
+  let justification = `**CEFR Level: ${cefrLevel}**\n\n`;
   
-  // Distribution breakdown
-  const percentages = Object.fromEntries(
-    Object.entries(distribution)
-      .filter(([level]) => level !== 'not_found')
-      .map(([level, count]) => [level, Math.round((count / recognizedCount) * 100)])
-  );
+  // Recognition rate
+  justification += `**Recognition Rate:** ${recognitionRate}% of words found in CEFR word list\n`;
+  if (unrecognizedRate > 0) {
+    justification += `**Unrecognized:** ${unrecognizedRate}% (not in CEFR database)\n`;
+  }
+  justification += `\n`;
   
-  const dominantLevels = Object.entries(percentages)
-    .filter(([_, pct]) => pct > 20)
-    .map(([level, pct]) => `${level} (${pct}%)`)
-    .join(', ');
-  
-  if (dominantLevels) {
-    justification += `Dominant levels: ${dominantLevels}. `;
+  // CEFR distribution breakdown (only for recognized words)
+  if (recognizedCount > 0) {
+    justification += `**CEFR Distribution:**\n`;
+    const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    levels.forEach(level => {
+      const count = distribution[level] || 0;
+      if (count > 0) {
+        const percentage = Math.round((count / recognizedCount) * 100);
+        justification += `- ${level}: ${percentage}%\n`;
+      }
+    });
+    justification += `\n`;
   }
   
   // Lexical diversity
-  if (lexicalDiversity > 0.7) {
-    justification += "Good lexical variety. ";
-  } else if (lexicalDiversity < 0.5) {
-    justification += "Limited lexical variety. ";
-  }
+  const diversityPercent = Math.round(lexicalDiversity * 100);
+  justification += `**Lexical Variety:** ${diversityPercent}% (unique words / total words)`;
   
   return justification;
 };
