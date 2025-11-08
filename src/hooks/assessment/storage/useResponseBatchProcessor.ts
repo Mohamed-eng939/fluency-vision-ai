@@ -7,6 +7,8 @@ import { StoredResponse, ProcessingProgress } from './types';
 import { calculateAggregatedResult } from './responseAggregation';
 import { useSupabaseStorageResponse } from '../useSupabaseStorageResponse';
 import { useAudioUpload } from '@/hooks/useAudioUpload';
+import { analyzeCefrVocabulary } from '@/utils/assessment/vocabulary/cefrVocabularyAnalyzer';
+import { createVocabularyDetail, mapVocabularyScoreToCEFR } from '@/utils/assessment/vocabulary/vocabularyAggregation';
 export const useResponseBatchProcessor = () => {
   const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress>({ current: 0, total: 0 });
@@ -29,6 +31,7 @@ export const useResponseBatchProcessor = () => {
     try {
       const processedHistory: { prompt: SpeakingPrompt; result: AssessmentResult }[] = [];
       const allResults: AssessmentResult[] = [];
+      const updatedResponses: StoredResponse[] = [];
       
       // Process each response with full scoring pipeline
       for (const [index, response] of storedResponses.entries()) {
@@ -51,6 +54,34 @@ export const useResponseBatchProcessor = () => {
           // Apply CEFR calibration with prompt history for level capping
           const promptsForCalibration = processedHistory.map(h => h.prompt);
           const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis, promptsForCalibration);
+          
+          // Extract vocabulary details for aggregation
+          let vocabularyDetail;
+          if (response.transcript) {
+            const vocabAnalysis = analyzeCefrVocabulary(response.transcript);
+            const promptDifficulty = response.prompt.cefrLevel || 'B1';
+            const vocabCEFR = mapVocabularyScoreToCEFR(vocabAnalysis.vocabularyScore);
+            const recognitionRate = vocabAnalysis.totalWordCount > 0 
+              ? (vocabAnalysis.recognizedWordCount / vocabAnalysis.totalWordCount) * 100 
+              : 0;
+            
+            vocabularyDetail = createVocabularyDetail(
+              index,
+              vocabAnalysis.vocabularyScore,
+              vocabCEFR,
+              promptDifficulty,
+              recognitionRate,
+              vocabAnalysis.vocabularyJustification
+            );
+            
+            console.log(`📚 [BatchProcessor] Vocabulary detail for Q${index + 1}:`, {
+              score: vocabularyDetail.vocabularyScore,
+              cefrLevel: vocabularyDetail.cefrLevel,
+              difficulty: vocabularyDetail.promptDifficulty,
+              weight: vocabularyDetail.weight,
+              recognitionRate: vocabularyDetail.recognitionRate
+            });
+          }
           
           // Upload audio to storage and store individual response in database
           let audioPath: string | undefined = undefined;
@@ -95,6 +126,12 @@ export const useResponseBatchProcessor = () => {
           
           allResults.push(enhancedResult);
           
+          // Store updated response with vocabulary detail
+          updatedResponses.push({
+            ...response,
+            vocabularyDetail
+          });
+          
         } catch (error) {
           console.error(`💥 [BatchProcessor] Error processing response ${index + 1}:`, error);
           // Continue with next response even if one fails
@@ -105,7 +142,13 @@ export const useResponseBatchProcessor = () => {
       
       // Calculate aggregated final result with prompt history for level capping
       console.log(`🧮 [BatchProcessor] Calculating aggregated result from ${allResults.length} results...`);
-      const aggregatedResult = await calculateAggregatedResult(allResults, sessionId, studentName, processedHistory);
+      const aggregatedResult = await calculateAggregatedResult(
+        allResults, 
+        sessionId, 
+        studentName, 
+        processedHistory,
+        updatedResponses // Pass responses with vocabulary details
+      );
       console.log(`📊 [BatchProcessor] Aggregated result calculated:`, aggregatedResult ? 'Success' : 'Failed');
       
       // Store final assessment result in database

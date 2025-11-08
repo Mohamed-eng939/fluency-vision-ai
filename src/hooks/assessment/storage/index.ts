@@ -5,3 +5,15 @@ export { calculateAggregatedResult, aggregateAudioAnalysis, determineCEFRFromSco
 export { generateSmartFeedback } from './feedbackGeneration';
 export { validateStoredResponse, createStoredResponse } from './responseBatchUtils';
 export type { StoredResponse, ProcessingProgress } from './types';
+
+// Re-export vocabulary aggregation utilities
+export { 
+  aggregateVocabularyScores, 
+  createVocabularyDetail,
+  getDifficultyWeight,
+  mapVocabularyScoreToCEFR
+} from '@/utils/assessment/vocabulary/vocabularyAggregation';
+export type { 
+  QuestionVocabularyDetail, 
+  AggregatedVocabularyResult 
+} from '@/utils/assessment/vocabulary/vocabularyAggregation';

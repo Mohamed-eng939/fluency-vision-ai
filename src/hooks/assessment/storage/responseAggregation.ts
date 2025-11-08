@@ -2,6 +2,8 @@
 import { AssessmentResult, CEFRLevel } from '@/types/assessment';
 import { generateSmartFeedback } from './feedbackGeneration';
 import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
+import { aggregateVocabularyScores, QuestionVocabularyDetail } from '@/utils/assessment/vocabulary/vocabularyAggregation';
+import { StoredResponse } from './types';
 
 /**
  * Skill weights for CEFR-aligned assessment
@@ -52,7 +54,8 @@ export const calculateAggregatedResult = async (
   results: AssessmentResult[],
   sessionId: string,
   studentName?: string,
-  promptHistory?: { prompt: any; result: AssessmentResult }[]
+  promptHistory?: { prompt: any; result: AssessmentResult }[],
+  storedResponses?: StoredResponse[]
 ): Promise<AssessmentResult | null> => {
   if (results.length === 0) return null;
 
@@ -145,6 +148,27 @@ export const calculateAggregatedResult = async (
   // Generate smart feedback based on actual performance metrics
   const aggregatedFeedback = await generateSmartFeedback(aggregatedMetrics, aggregatedAudioAnalysis, cefrLevel, results.length);
 
+  // Aggregate vocabulary scores if stored responses with vocabulary details are available
+  let vocabularyAggregation;
+  if (storedResponses && storedResponses.length > 0) {
+    const vocabularyDetails = storedResponses
+      .filter(r => r.vocabularyDetail)
+      .map(r => r.vocabularyDetail!);
+    
+    if (vocabularyDetails.length > 0) {
+      const vocabAgg = aggregateVocabularyScores(vocabularyDetails);
+      vocabularyAggregation = {
+        perQuestionDetails: vocabAgg.perQuestionDetails,
+        overallVocabularyScore: vocabAgg.overallVocabularyScore,
+        overallVocabularyPercentage: vocabAgg.overallVocabularyPercentage,
+        overallCEFRBand: vocabAgg.overallCEFRBand,
+        summary: vocabAgg.summary
+      };
+      
+      console.log('📚 Vocabulary Aggregation Complete:', vocabularyAggregation);
+    }
+  }
+
   console.log("Aggregated metrics:", aggregatedMetrics);
   console.log("Difficulty-weighted aggregation:", {
     individual: aggregatedMetrics,
@@ -169,7 +193,9 @@ export const calculateAggregatedResult = async (
     // Include fallback information for transparency
     fallbackInfo: Object.keys(fallbackFlags).some(key => fallbackFlags[key as keyof typeof fallbackFlags]) 
       ? fallbackFlags 
-      : undefined
+      : undefined,
+    // Include vocabulary aggregation data
+    vocabularyAggregation
   };
 };
 

@@ -71,4 +71,12 @@ export interface AssessmentResult {
   coherenceAnalysis?: CoherenceAnalysis;
   // Fallback detection flags
   fallbackInfo?: FallbackInfo;
+  // Vocabulary aggregation data
+  vocabularyAggregation?: {
+    perQuestionDetails: any[]; // QuestionVocabularyDetail[]
+    overallVocabularyScore: number;
+    overallVocabularyPercentage: number;
+    overallCEFRBand: CEFRLevel;
+    summary: string;
+  };
 }

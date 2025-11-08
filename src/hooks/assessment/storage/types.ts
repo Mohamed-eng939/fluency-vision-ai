@@ -1,5 +1,6 @@
 
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
+import { QuestionVocabularyDetail } from '@/utils/assessment/vocabulary/vocabularyAggregation';
 
 export interface StoredResponse {
   prompt: SpeakingPrompt;
@@ -8,6 +9,7 @@ export interface StoredResponse {
   audioAnalysis?: AudioAnalysisResult;
   timestamp: number;
   questionIndex: number;
+  vocabularyDetail?: QuestionVocabularyDetail; // Per-question vocabulary analysis
 }
 
 export interface ProcessingProgress {
