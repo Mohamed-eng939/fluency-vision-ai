@@ -18,12 +18,24 @@ import {
 
 /**
  * Enhanced grammar scoring based on error analysis and sentence structure
- * Now with CEFR-aligned criteria
+ * Now with CEFR-aligned criteria and API integration
  */
 export const calculateGrammarScore = (
   audioMetrics: any,
   transcript: string
 ): number => {
+  // If we have API analysis results, use them
+  if (audioMetrics.grammarApiAnalysis?.apiUsed) {
+    const api = audioMetrics.grammarApiAnalysis;
+    
+    // Store CEFR level and justification from API
+    audioMetrics.cefrGrammarLevel = api.cefr;
+    audioMetrics.grammarJustification = api.comments.join(' ');
+    
+    // Return API accuracy score (already 0-10 scale)
+    return api.accuracy;
+  }
+  
   // If we have CEFR-based analysis available
   if (audioMetrics.cefrGrammarLevel || audioMetrics.grammarScore) {
     return audioMetrics.grammarScore || convertCEFRLevelToScore(audioMetrics.cefrGrammarLevel);

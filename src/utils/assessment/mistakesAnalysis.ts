@@ -31,8 +31,8 @@ export const analyzeMistakes = (result: AssessmentResult): MistakeCategory[] => 
     });
   }
 
-  // Grammar mistakes
-  const grammarMistakes = analyzeGrammarMistakes(transcript);
+  // Grammar mistakes (uses API if available)
+  const grammarMistakes = analyzeGrammarMistakes(transcript, result.audioAnalysis);
   if (grammarMistakes.length > 0) {
     categories.push({
       name: 'Grammar',
