@@ -2,10 +2,28 @@
 import { MistakeItem } from '@/components/assessment/mistakes/types';
 
 /**
- * Analyze grammar mistakes using current detection methods
+ * Analyze grammar mistakes using API results or current detection methods
  */
-export const analyzeGrammarMistakes = (transcript: string): MistakeItem[] => {
+export const analyzeGrammarMistakes = (transcript: string, audioMetrics?: any): MistakeItem[] => {
   const mistakes: MistakeItem[] = [];
+  
+  // Check if we have API results
+  if (audioMetrics?.grammarApiAnalysis?.apiUsed && audioMetrics.grammarApiAnalysis.detailedErrors) {
+    // Use API errors for detailed feedback
+    audioMetrics.grammarApiAnalysis.detailedErrors.forEach((error: any) => {
+      mistakes.push({
+        original: error.bad,
+        correction: error.better[0] || error.bad,
+        suggestion: error.description,
+        cefrLevel: audioMetrics.grammarApiAnalysis.cefr || 'A2',
+        context: error.type === 'grammar' ? 'Grammar error' : 'Spelling error'
+      });
+    });
+    
+    return mistakes;
+  }
+  
+  // Fallback to local detection if API not used
   
   // Detect subject-verb agreement errors
   const svAgreementErrors = [

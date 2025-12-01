@@ -61,6 +61,23 @@ export interface AudioAnalysisResult {
   promptCEFRLevel?: string;
   levelDiscrepancy?: number;
   needsReview?: boolean;
+  // Grammar API analysis results
+  grammarApiAnalysis?: {
+    accuracy: number;
+    range: number;
+    cefr: string;
+    errorCount: number;
+    comments: string[];
+    detailedErrors: Array<{
+      type: 'grammar' | 'spelling';
+      bad: string;
+      better: string[];
+      description: string;
+      offset: number;
+      length: number;
+    }>;
+    apiUsed: boolean;
+  };
   // Pronunciation data
   pronunciationScore?: number;
   cefrLevel?: string;

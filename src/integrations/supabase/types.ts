@@ -580,26 +580,11 @@ export type Database = {
         Args: { session_uuid: string; user_uuid: string }
         Returns: boolean
       }
-      get_current_user_organization: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      has_role: {
-        Args: { _role: string; _user_id: string }
-        Returns: boolean
-      }
-      is_admin_or_assessor: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      same_organization: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      get_current_user_organization: { Args: never; Returns: string }
+      get_current_user_role: { Args: never; Returns: string }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      is_admin_or_assessor: { Args: never; Returns: boolean }
+      same_organization: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       assessment_status:
