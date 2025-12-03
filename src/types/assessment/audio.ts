@@ -87,6 +87,7 @@ export interface AudioAnalysisResult {
   cefrVocabularyLevel?: string;
   vocabularyJustification?: string;
   vocabularyDistribution?: Record<string, number>;
+  lexicalDiversity?: number;
   // Pause quality analysis
   pauseAnalysis?: any;
   fluencyScore?: number;
