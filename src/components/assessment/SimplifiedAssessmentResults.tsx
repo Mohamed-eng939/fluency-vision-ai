@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,7 +10,7 @@ import {
   AlertCircle, 
   CheckCircle2,
   FileText,
-  Download
+  XCircle
 } from 'lucide-react';
 import { AssessmentResult } from '@/types/assessment';
 
@@ -37,34 +36,43 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
   onReset,
   onTakeFullAssessment
 }) => {
-  // Extract Grammar API data
+  // Extract Grammar API data - NO fallbacks
   const grammarAnalysis = result.audioAnalysis?.grammarApiAnalysis;
-  const grammarScore = grammarAnalysis?.accuracy ?? result.metrics.grammar;
-  const grammarCefr = grammarAnalysis?.cefr ?? result.cefrLevel;
-  const grammarRange = grammarAnalysis?.range ?? 0;
-  const grammarErrors = grammarAnalysis?.detailedErrors as GrammarError[] ?? [];
-  const grammarComments = grammarAnalysis?.comments ?? [];
-  const grammarApiUsed = grammarAnalysis?.apiUsed ?? false;
+  const grammarApiUsed = grammarAnalysis?.apiUsed === true;
+  const grammarCefr = grammarApiUsed ? grammarAnalysis.cefr : null;
+  const grammarAccuracy = grammarApiUsed ? grammarAnalysis.accuracy : null;
+  const grammarRange = grammarApiUsed ? grammarAnalysis.range : null;
+  const grammarErrors = grammarApiUsed ? (grammarAnalysis.detailedErrors as GrammarError[] ?? []) : [];
+  const grammarComments = grammarApiUsed ? (grammarAnalysis.comments ?? []) : [];
+  const grammarErrorMessage = !grammarApiUsed ? grammarAnalysis?.error : null;
 
-  // Extract Vocabulary data from audioMetrics
-  const vocabularyScore = result.metrics.vocabulary;
-  const vocabularyCefr = result.audioAnalysis?.cefrVocabularyLevel ?? result.cefrLevel;
+  // Extract Vocabulary data - CEFR mapping only, NO numeric scores
+  const vocabularyCefr = result.audioAnalysis?.cefrVocabularyLevel ?? 'A1';
   const vocabularyDistribution = result.audioAnalysis?.vocabularyDistribution ?? {};
   const vocabularyJustification = result.audioAnalysis?.vocabularyJustification ?? '';
   const lexicalDiversity = result.audioAnalysis?.lexicalDiversity ?? 0;
+  const recognizedWordCount = result.audioAnalysis?.recognizedWordCount ?? 0;
+  const unrecognizedWordCount = result.audioAnalysis?.unrecognizedWordCount ?? 0;
+  const totalWordCount = result.audioAnalysis?.totalWordCount ?? 0;
 
   // Calculate Overall CEFR from Grammar and Vocabulary
   const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-  const grammarIndex = cefrLevels.indexOf(grammarCefr);
-  const vocabIndex = cefrLevels.indexOf(vocabularyCefr);
-  const averageIndex = Math.round((grammarIndex + vocabIndex) / 2);
-  const overallCefr = cefrLevels[averageIndex] || result.cefrLevel;
-
-  // Calculate overall score (average of grammar and vocabulary)
-  const overallScore = ((grammarScore + vocabularyScore) / 2).toFixed(1);
+  
+  let overallCefr: string;
+  if (grammarApiUsed && grammarCefr) {
+    // Both available - average them
+    const grammarIndex = cefrLevels.indexOf(grammarCefr);
+    const vocabIndex = cefrLevels.indexOf(vocabularyCefr);
+    const averageIndex = Math.round((grammarIndex + vocabIndex) / 2);
+    overallCefr = cefrLevels[averageIndex] || vocabularyCefr;
+  } else {
+    // Only vocabulary available
+    overallCefr = vocabularyCefr;
+  }
 
   // Get CEFR color
-  const getCefrColor = (level: string) => {
+  const getCefrColor = (level: string | null) => {
+    if (!level) return 'bg-muted';
     switch (level) {
       case 'C2': return 'bg-purple-500';
       case 'C1': return 'bg-blue-600';
@@ -74,14 +82,6 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
       case 'A1': return 'bg-orange-500';
       default: return 'bg-muted';
     }
-  };
-
-  // Get score color
-  const getScoreColor = (score: number) => {
-    if (score >= 8) return 'bg-emerald-500';
-    if (score >= 6) return 'bg-teal-500';
-    if (score >= 4) return 'bg-amber-500';
-    return 'bg-red-500';
   };
 
   if (isProcessing) {
@@ -101,7 +101,7 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
 
   return (
     <div className="space-y-6">
-      {/* Overall Score Card */}
+      {/* Overall CEFR Card */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex justify-between items-center">
@@ -116,8 +116,12 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <div className="text-5xl font-bold text-primary mb-2">{overallScore}</div>
-            <div className="text-muted-foreground">Overall Score (out of 10)</div>
+            <div className="text-3xl font-bold text-primary mb-2">Overall CEFR Level</div>
+            <div className="text-muted-foreground text-sm">
+              {grammarApiUsed 
+                ? 'Based on Grammar API and Vocabulary Analysis'
+                : 'Based on Vocabulary Analysis (Grammar API unavailable)'}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -139,7 +143,7 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
           </TabsTrigger>
         </TabsList>
 
-        {/* Grammar Tab */}
+        {/* Grammar Tab - API data only */}
         <TabsContent value="grammar">
           <Card>
             <CardHeader>
@@ -148,69 +152,70 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                   <Languages className="h-5 w-5 text-primary" />
                   Grammar Analysis
                 </span>
-                <Badge className={`${getCefrColor(grammarCefr)} text-white`}>
-                  {grammarCefr}
-                </Badge>
+                {grammarApiUsed && grammarCefr && (
+                  <Badge className={`${getCefrColor(grammarCefr)} text-white`}>
+                    {grammarCefr}
+                  </Badge>
+                )}
               </CardTitle>
-              {grammarApiUsed && (
-                <p className="text-xs text-muted-foreground">
-                  Powered by Grammar Service API
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Powered by Grammar Service API
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Accuracy Score */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Accuracy</span>
-                  <span className="text-sm font-bold">{grammarScore.toFixed(1)}/10</span>
-                </div>
-                <Progress 
-                  value={grammarScore * 10} 
-                  className={`h-3 ${getScoreColor(grammarScore)}`}
-                />
-              </div>
-
-              {/* Range Score */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Grammar Range</span>
-                  <span className="text-sm font-bold">{grammarRange.toFixed(1)}/10</span>
-                </div>
-                <Progress 
-                  value={grammarRange * 10} 
-                  className={`h-3 ${getScoreColor(grammarRange)}`}
-                />
-              </div>
-
-              {/* Error Count */}
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Errors Found</span>
-                  <Badge variant={grammarErrors.length === 0 ? "default" : "destructive"}>
-                    {grammarErrors.length}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Comments from API */}
-              {grammarComments.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Feedback</h4>
-                  <div className="space-y-2">
-                    {grammarComments.map((comment, idx) => (
-                      <div key={idx} className="bg-muted/50 p-3 rounded-lg text-sm">
-                        {comment}
-                      </div>
-                    ))}
+              {grammarApiUsed ? (
+                <>
+                  {/* API Results - displayed exactly as received */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{grammarAccuracy?.toFixed(1)}</div>
+                      <div className="text-sm text-muted-foreground">Accuracy (0-10)</div>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{grammarRange?.toFixed(1)}</div>
+                      <div className="text-sm text-muted-foreground">Range (0-10)</div>
+                    </div>
                   </div>
+
+                  {/* Error Count */}
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Errors Found</span>
+                      <Badge variant={grammarErrors.length === 0 ? "default" : "destructive"}>
+                        {grammarErrors.length}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Comments from API */}
+                  {grammarComments.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">Feedback</h4>
+                      <div className="space-y-2">
+                        {grammarComments.map((comment, idx) => (
+                          <div key={idx} className="bg-muted/50 p-3 rounded-lg text-sm">
+                            {comment}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Grammar API not available - show message */
+                <div className="text-center py-8">
+                  <XCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium text-muted-foreground">Grammar Analysis Not Available</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {grammarErrorMessage || 'The grammar service could not be reached.'}
+                  </p>
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Vocabulary Tab */}
+        {/* Vocabulary Tab - CEFR mapping only, NO numeric scores */}
         <TabsContent value="vocabulary">
           <Card>
             <CardHeader>
@@ -224,32 +229,35 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                 </Badge>
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Based on CEFR Word List
+                Based on CEFR Word List Mapping
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Vocabulary Score */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Vocabulary Score</span>
-                  <span className="text-sm font-bold">{vocabularyScore.toFixed(1)}/10</span>
+              {/* Word Recognition Stats */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-muted/50 p-4 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-primary">{totalWordCount}</div>
+                  <div className="text-xs text-muted-foreground">Total Words</div>
                 </div>
-                <Progress 
-                  value={vocabularyScore * 10} 
-                  className={`h-3 ${getScoreColor(vocabularyScore)}`}
-                />
+                <div className="bg-muted/50 p-4 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-emerald-600">{recognizedWordCount}</div>
+                  <div className="text-xs text-muted-foreground">Recognized</div>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-amber-600">{unrecognizedWordCount}</div>
+                  <div className="text-xs text-muted-foreground">Not in List</div>
+                </div>
               </div>
 
               {/* Lexical Diversity */}
-              <div className="space-y-2">
+              <div className="bg-muted/50 p-4 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Lexical Diversity</span>
                   <span className="text-sm font-bold">{(lexicalDiversity * 100).toFixed(0)}%</span>
                 </div>
-                <Progress 
-                  value={lexicalDiversity * 100} 
-                  className={`h-3 ${lexicalDiversity > 0.6 ? 'bg-emerald-500' : lexicalDiversity > 0.4 ? 'bg-amber-500' : 'bg-red-500'}`}
-                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ratio of unique words to total words
+                </p>
               </div>
 
               {/* CEFR Distribution */}
@@ -286,7 +294,7 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
           </Card>
         </TabsContent>
 
-        {/* Errors Tab */}
+        {/* Errors Tab - API errors only */}
         <TabsContent value="errors">
           <Card>
             <CardHeader>
@@ -296,7 +304,13 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {grammarErrors.length === 0 ? (
+              {!grammarApiUsed ? (
+                <div className="text-center py-8">
+                  <XCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium text-muted-foreground">Error analysis not available</p>
+                  <p className="text-sm text-muted-foreground">Grammar API was not accessible.</p>
+                </div>
+              ) : grammarErrors.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
                   <p className="text-lg font-medium">No errors found!</p>
@@ -317,7 +331,7 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                         </span>
                         <span className="text-muted-foreground">→</span>
                         <span className="text-emerald-600 font-medium">
-                          {error.better.join(' / ')}
+                          {Array.isArray(error.better) ? error.better.join(' / ') : error.better}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground">{error.description}</p>

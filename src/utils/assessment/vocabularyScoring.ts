@@ -1,50 +1,44 @@
 
 /**
- * Enhanced vocabulary scoring using CEFR standards
+ * Vocabulary scoring - CEFR word list mapping ONLY
+ * NO numeric scores, NO fallbacks
  */
 import { analyzeCefrVocabulary } from './vocabulary/cefrVocabularyAnalyzer';
 
 /**
- * Calculate vocabulary score based on CEFR standards and sample bank comparison
+ * Analyze vocabulary and return CEFR level - NO numeric score
+ */
+export const analyzeVocabulary = (transcript: string): {
+  cefrLevel: string;
+  distribution: Record<string, number>;
+  justification: string;
+  lexicalDiversity: number;
+  recognizedWords: Record<string, string[]>;
+  unrecognizedWords: string[];
+} => {
+  const analysis = analyzeCefrVocabulary(transcript);
+  
+  return {
+    cefrLevel: analysis.cefrVocabularyLevel,
+    distribution: analysis.wordDistribution,
+    justification: analysis.vocabularyJustification,
+    lexicalDiversity: analysis.lexicalDiversity,
+    recognizedWords: analysis.recognizedWords,
+    unrecognizedWords: analysis.unrecognizedWords
+  };
+};
+
+/**
+ * @deprecated - Use analyzeVocabulary instead. Kept for backward compatibility.
+ * Returns a dummy value - actual CEFR level is in audioMetrics.cefrVocabularyLevel
  */
 export const calculateVocabularyScore = (
   audioMetrics: any,
   transcript: string,
   promptId?: string
 ): number => {
-  // If we already have a vocabulary score from API or external analysis
-  if (audioMetrics.vocabularyScore !== undefined) {
-    return audioMetrics.vocabularyScore;
-  }
-  
-  // If transcript is available, use the enhanced CEFR vocabulary analyzer
-  if (transcript) {
-    const analysis = analyzeCefrVocabulary(transcript);
-    
-    // ENHANCEMENT: Use CEFR sample bank for calibration if prompt ID available
-    if (promptId) {
-      const { calibrateScoreWithSample } = require('../../data/assessment/cefrSampleBank');
-      const calibration = calibrateScoreWithSample(transcript, promptId, { vocabulary: analysis.vocabularyScore });
-      
-      if (calibration.referenceSample) {
-        console.log('Vocabulary score calibrated using sample bank:', {
-          original: analysis.vocabularyScore,
-          calibrated: calibration.adjustedScores.vocabulary,
-          reference: calibration.referenceSample.cefrLevel,
-          justification: calibration.justification
-        });
-        return calibration.adjustedScores.vocabulary;
-      }
-    }
-    
-    return analysis.vocabularyScore;
-  }
-  
-  // STRICT MODE: No fallback - if no transcript, return minimum score
-  return 1;
+  // This function is deprecated - vocabulary is now CEFR-only
+  // Return 0 to indicate no numeric score is used
+  console.warn('calculateVocabularyScore is deprecated - use CEFR level from audioMetrics.cefrVocabularyLevel');
+  return 0;
 };
-
-/**
- * DEPRECATED: No longer used - strict CEFR word list matching only
- * Kept for reference but not called in current implementation
- */

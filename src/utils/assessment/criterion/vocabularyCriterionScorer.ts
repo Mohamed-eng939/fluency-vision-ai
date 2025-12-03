@@ -1,34 +1,39 @@
 
-import { calculateVocabularyScore } from "../vocabularyScoring";
 import { analyzeCefrVocabulary } from "../vocabulary/cefrVocabularyAnalyzer";
 
 /**
- * Calculate the vocabulary criterion score based on audio metrics and transcript
+ * Calculate the vocabulary criterion - CEFR mapping only, NO numeric score
+ * Returns the CEFR level as the result, stores full analysis in audioMetrics
  */
 export const calculateVocabularyCriterion = (
   audioMetrics: any,
   transcript: string
-): number => {
-  // If vocabulary score already available, use it
-  if (audioMetrics.vocabularyScore !== undefined) {
-    return audioMetrics.vocabularyScore;
+): string => {
+  if (!transcript || transcript.trim().length === 0) {
+    audioMetrics.cefrVocabularyLevel = 'A1';
+    audioMetrics.vocabularyJustification = 'No transcript provided';
+    audioMetrics.vocabularyDistribution = {};
+    audioMetrics.lexicalDiversity = 0;
+    audioMetrics.recognizedWords = {};
+    audioMetrics.unrecognizedWords = [];
+    return 'A1';
   }
+
+  // Use the enhanced CEFR vocabulary analyzer - NO numeric scoring
+  const analysis = analyzeCefrVocabulary(transcript);
   
-  // If transcript is available, use the enhanced CEFR vocabulary analyzer
-  // and also store additional vocabulary metrics in audioMetrics for later use
-  if (transcript) {
-    const analysis = analyzeCefrVocabulary(transcript);
-    
-    // Add vocabulary analysis results to audioMetrics for use in feedback generation
-    if (audioMetrics) {
-      audioMetrics.cefrVocabularyLevel = analysis.cefrVocabularyLevel;
-      audioMetrics.vocabularyJustification = analysis.vocabularyJustification;
-      audioMetrics.vocabularyDistribution = analysis.wordDistribution;
-      audioMetrics.lexicalDiversity = analysis.lexicalDiversity;
-    }
-    
-    return analysis.vocabularyScore;
-  }
+  // Store vocabulary analysis results in audioMetrics for UI display
+  audioMetrics.cefrVocabularyLevel = analysis.cefrVocabularyLevel;
+  audioMetrics.vocabularyJustification = analysis.vocabularyJustification;
+  audioMetrics.vocabularyDistribution = analysis.wordDistribution;
+  audioMetrics.lexicalDiversity = analysis.lexicalDiversity;
+  audioMetrics.recognizedWords = analysis.recognizedWords;
+  audioMetrics.unrecognizedWords = analysis.unrecognizedWords;
+  audioMetrics.recognizedWordCount = analysis.recognizedWordCount;
+  audioMetrics.unrecognizedWordCount = analysis.unrecognizedWordCount;
+  audioMetrics.totalWordCount = analysis.totalWordCount;
+  audioMetrics.uniqueWordCount = analysis.uniqueWordCount;
   
-  return calculateVocabularyScore(audioMetrics, transcript);
+  // Return CEFR level only - NO numeric score
+  return analysis.cefrVocabularyLevel;
 };
