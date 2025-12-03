@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { AssessmentResult, SpeakingPrompt } from '@/types/assessment';
+import { AssessmentResult, SpeakingPrompt, CEFRLevel } from '@/types/assessment';
 import { processRecordingForAssessment } from '@/utils/assessment/audioProcessingUtils';
 import { applyCEFRCalibration } from '@/utils/scoring/cefrAssessmentResults';
 import { StoredResponse, ProcessingProgress } from './types';
@@ -8,7 +8,7 @@ import { calculateAggregatedResult } from './responseAggregation';
 import { useSupabaseStorageResponse } from '../useSupabaseStorageResponse';
 import { useAudioUpload } from '@/hooks/useAudioUpload';
 import { analyzeCefrVocabulary } from '@/utils/assessment/vocabulary/cefrVocabularyAnalyzer';
-import { createVocabularyDetail, mapVocabularyScoreToCEFR } from '@/utils/assessment/vocabulary/vocabularyAggregation';
+import { createVocabularyDetail } from '@/utils/assessment/vocabulary/vocabularyAggregation';
 export const useResponseBatchProcessor = () => {
   const [isProcessingAllResponses, setIsProcessingAllResponses] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress>({ current: 0, total: 0 });
@@ -55,19 +55,19 @@ export const useResponseBatchProcessor = () => {
           const promptsForCalibration = processedHistory.map(h => h.prompt);
           const enhancedResult = applyCEFRCalibration(result, response.audioAnalysis, promptsForCalibration);
           
-          // Extract vocabulary details for aggregation
+          // Extract vocabulary details for aggregation - CEFR only, no numeric scores
           let vocabularyDetail;
           if (response.transcript) {
             const vocabAnalysis = analyzeCefrVocabulary(response.transcript);
-            const promptDifficulty = response.prompt.cefrLevel || 'B1';
-            const vocabCEFR = mapVocabularyScoreToCEFR(vocabAnalysis.vocabularyScore);
+            const promptDifficulty = (response.prompt.cefrLevel || 'B1') as CEFRLevel;
+            const vocabCEFR = vocabAnalysis.cefrVocabularyLevel as CEFRLevel;
             const recognitionRate = vocabAnalysis.totalWordCount > 0 
               ? (vocabAnalysis.recognizedWordCount / vocabAnalysis.totalWordCount) * 100 
               : 0;
             
             vocabularyDetail = createVocabularyDetail(
               index,
-              vocabAnalysis.vocabularyScore,
+              0, // No numeric score - using CEFR level only
               vocabCEFR,
               promptDifficulty,
               recognitionRate,
@@ -75,7 +75,6 @@ export const useResponseBatchProcessor = () => {
             );
             
             console.log(`📚 [BatchProcessor] Vocabulary detail for Q${index + 1}:`, {
-              score: vocabularyDetail.vocabularyScore,
               cefrLevel: vocabularyDetail.cefrLevel,
               difficulty: vocabularyDetail.promptDifficulty,
               weight: vocabularyDetail.weight,

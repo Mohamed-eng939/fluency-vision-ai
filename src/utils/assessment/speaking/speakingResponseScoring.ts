@@ -43,10 +43,9 @@ export const scoreSpeakingResponse = async (
   // Create a metrics object that includes optional properties
   const enhancedMetrics = processedAudio.metrics as any;
   
-  // If we have a transcript, enhance the audio metrics with vocabulary analysis
+  // If we have a transcript, enhance the audio metrics with vocabulary analysis - CEFR only
   if (transcript) {
     const vocabularyAnalysis = analyzeCefrVocabulary(transcript);
-    enhancedMetrics.vocabularyScore = vocabularyAnalysis.vocabularyScore;
     enhancedMetrics.cefrVocabularyLevel = vocabularyAnalysis.cefrVocabularyLevel;
     enhancedMetrics.vocabularyJustification = vocabularyAnalysis.vocabularyJustification;
     enhancedMetrics.vocabularyDistribution = vocabularyAnalysis.wordDistribution;

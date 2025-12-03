@@ -1,14 +1,13 @@
 
 /**
  * Vocabulary Assessment Service
- * Orchestrates different methods of vocabulary assessment
+ * CEFR word list mapping ONLY - no numeric scores
  */
 
 import { analyzeCefrVocabulary, VocabularyAnalysisResult } from './vocabulary/cefrVocabularyAnalyzer';
 import { 
   createVocabularyEvaluationPrompt, 
-  processGptVocabularyEvaluation, 
-  GPTVocabularyEvaluation 
+  processGptVocabularyEvaluation
 } from './vocabulary/gptVocabularyEvaluation';
 
 /**
@@ -26,6 +25,7 @@ export interface VocabularyAssessmentOptions {
 
 /**
  * Assess vocabulary using the specified method
+ * Returns CEFR mapping only - no numeric scores
  */
 export const assessVocabulary = async (
   transcript: string, 
@@ -48,17 +48,18 @@ export const assessVocabulary = async (
           const evaluation = processGptVocabularyEvaluation(response);
           
           if (evaluation) {
-            // Convert GPT evaluation to our analysis result format
+            // Convert GPT evaluation to our analysis result format - NO numeric scores
             return {
-              vocabularyScore: evaluation.vocabularyScore,
               cefrVocabularyLevel: evaluation.cefrVocabularyLevel,
               vocabularyJustification: evaluation.vocabularyJustification,
-              wordDistribution: { 'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0, 'C1': 0, 'C2': 0 },
+              wordDistribution: { 'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0, 'C1': 0, 'C2': 0, 'not_found': 0 },
               lexicalDiversity: 0,
               uniqueWordCount: 0,
               totalWordCount: transcript.split(/\s+/).filter(w => w.length > 0).length,
               recognizedWordCount: 0,
-              unrecognizedWordCount: 0
+              unrecognizedWordCount: 0,
+              recognizedWords: { 'A1': [], 'A2': [], 'B1': [], 'B2': [], 'C1': [], 'C2': [] },
+              unrecognizedWords: []
             };
           }
         } catch (error) {
@@ -80,10 +81,9 @@ export const assessVocabulary = async (
           const gptEvaluation = processGptVocabularyEvaluation(response);
           
           if (gptEvaluation) {
-            // Average the scores from both methods
+            // Use GPT's CEFR level and justification with local word distribution
             return {
               ...localAnalysis,
-              vocabularyScore: (localAnalysis.vocabularyScore + gptEvaluation.vocabularyScore) / 2,
               vocabularyJustification: gptEvaluation.vocabularyJustification,
               cefrVocabularyLevel: gptEvaluation.cefrVocabularyLevel
             };
@@ -97,7 +97,7 @@ export const assessVocabulary = async (
       
     case 'local':
     default:
-      // Use local rule-based analysis
+      // Use local CEFR word list mapping
       return analyzeCefrVocabulary(transcript);
   }
 };

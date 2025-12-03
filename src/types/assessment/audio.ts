@@ -77,17 +77,23 @@ export interface AudioAnalysisResult {
       length: number;
     }>;
     apiUsed: boolean;
+    error?: string; // Error message when API fails
   };
   // Pronunciation data
   pronunciationScore?: number;
   cefrLevel?: string;
   pronunciationDetails?: any;
-  // Vocabulary analysis
-  vocabularyScore?: number;
+  // Vocabulary analysis - CEFR mapping only, NO numeric scores
   cefrVocabularyLevel?: string;
   vocabularyJustification?: string;
   vocabularyDistribution?: Record<string, number>;
   lexicalDiversity?: number;
+  recognizedWordCount?: number;
+  unrecognizedWordCount?: number;
+  totalWordCount?: number;
+  uniqueWordCount?: number;
+  recognizedWords?: Record<string, string[]>;
+  unrecognizedWords?: string[];
   // Pause quality analysis
   pauseAnalysis?: any;
   fluencyScore?: number;
