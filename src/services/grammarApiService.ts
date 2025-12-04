@@ -3,7 +3,7 @@
  * Calls external grammar API for detailed error detection and CEFR scoring
  */
 
-const GRAMMAR_API_URL = 'https://grammer-service-1hja.vercel.app/grammar';
+const GRAMMAR_API_URL = 'https://grammer-service-ekbs.vercel.app/grammar';
 
 export interface GrammarApiError {
   id: string;
