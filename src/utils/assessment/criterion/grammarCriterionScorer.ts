@@ -1,22 +1,19 @@
-import { analyzeGrammarWithApi, GrammarApiResponse } from "@/services/grammarApiService";
+import { analyzeGrammarWithApi } from "@/services/grammarApiService";
 
 /**
  * Grammar API analysis result stored in audioMetrics
  */
 export interface GrammarApiAnalysisResult {
-  accuracy: number;
-  range: number;
   cefr: string;
-  errorCount: number;
+  scores: {
+    accuracy: number;
+    complexity: number;
+    lexical: number;
+    structure: number;
+    final: number;
+  };
+  errors: number;
   comments: string[];
-  detailedErrors: Array<{
-    type: string;
-    bad: string;
-    better: string[];
-    description: string;
-    offset: number;
-    length: number;
-  }>;
   apiUsed: true;
 }
 
@@ -35,7 +32,7 @@ export interface GrammarApiNotAvailable {
 export const calculateGrammarCriterion = async (
   audioMetrics: any,
   transcript: string
-): Promise<number | null> => {
+): Promise<string | null> => {
   if (!transcript || transcript.trim().length === 0) {
     audioMetrics.grammarApiAnalysis = { apiUsed: false, error: 'No transcript provided' };
     return null;
@@ -44,26 +41,17 @@ export const calculateGrammarCriterion = async (
   try {
     const apiResult = await analyzeGrammarWithApi(transcript);
     
-    // Store API analysis in audioMetrics for later use - direct mapping only
+    // Store API analysis in audioMetrics for later use
     audioMetrics.grammarApiAnalysis = {
-      accuracy: apiResult.accuracy,
-      range: apiResult.range,
       cefr: apiResult.cefr,
-      errorCount: apiResult.errors,
+      scores: apiResult.scores,
+      errors: apiResult.errors,
       comments: apiResult.comments,
-      detailedErrors: apiResult.raw.errors.map(err => ({
-        type: err.type,
-        bad: err.bad,
-        better: err.better,
-        description: err.description.en,
-        offset: err.offset,
-        length: err.length,
-      })),
       apiUsed: true,
     };
     
-    // Return accuracy score directly from API (already 0-10 scale)
-    return apiResult.accuracy;
+    // Return CEFR level from API
+    return apiResult.cefr;
   } catch (error) {
     console.error('Grammar API failed - NO FALLBACK:', error);
     
@@ -73,7 +61,6 @@ export const calculateGrammarCriterion = async (
       error: error instanceof Error ? error.message : 'Grammar API unavailable'
     };
     
-    // Return null to indicate grammar analysis not available
     return null;
   }
 };

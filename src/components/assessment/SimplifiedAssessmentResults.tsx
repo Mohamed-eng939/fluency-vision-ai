@@ -10,7 +10,8 @@ import {
   AlertCircle, 
   CheckCircle2,
   FileText,
-  XCircle
+  XCircle,
+  Mic
 } from 'lucide-react';
 import { AssessmentResult } from '@/types/assessment';
 
@@ -19,15 +20,6 @@ interface SimplifiedAssessmentResultsProps {
   isProcessing: boolean;
   onReset: () => void;
   onTakeFullAssessment: () => void;
-}
-
-interface GrammarError {
-  type: 'grammar' | 'spelling';
-  bad: string;
-  better: string[];
-  description: string;
-  offset: number;
-  length: number;
 }
 
 const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = ({
@@ -40,11 +32,16 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
   const grammarAnalysis = result.audioAnalysis?.grammarApiAnalysis;
   const grammarApiUsed = grammarAnalysis?.apiUsed === true;
   const grammarCefr = grammarApiUsed ? grammarAnalysis.cefr : null;
-  const grammarAccuracy = grammarApiUsed ? grammarAnalysis.accuracy : null;
-  const grammarRange = grammarApiUsed ? grammarAnalysis.range : null;
-  const grammarErrors = grammarApiUsed ? (grammarAnalysis.detailedErrors as GrammarError[] ?? []) : [];
+  const grammarScores = grammarApiUsed ? grammarAnalysis.scores : null;
+  const grammarErrorCount = grammarApiUsed ? grammarAnalysis.errors : 0;
   const grammarComments = grammarApiUsed ? (grammarAnalysis.comments ?? []) : [];
-  const grammarErrorMessage = !grammarApiUsed ? grammarAnalysis?.error : null;
+  const grammarErrorMessage = !grammarApiUsed ? (grammarAnalysis as any)?.error : null;
+
+  // Extract Fluency API data - NO fallbacks
+  const fluencyAnalysis = result.audioAnalysis?.fluencyApiAnalysis;
+  const fluencyApiUsed = fluencyAnalysis?.apiUsed === true;
+  const fluencyCefr = fluencyApiUsed ? fluencyAnalysis.cefr : null;
+  const fluencyErrorMessage = !fluencyApiUsed ? (fluencyAnalysis as any)?.error : null;
 
   // Extract Vocabulary data - CEFR mapping only, NO numeric scores
   const vocabularyCefr = result.audioAnalysis?.cefrVocabularyLevel ?? 'A1';
@@ -55,18 +52,22 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
   const unrecognizedWordCount = result.audioAnalysis?.unrecognizedWordCount ?? 0;
   const totalWordCount = result.audioAnalysis?.totalWordCount ?? 0;
 
-  // Calculate Overall CEFR from Grammar and Vocabulary
+  // Calculate Overall CEFR from Grammar, Fluency, and Vocabulary
   const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   
+  const availableCefrLevels: string[] = [];
+  if (grammarApiUsed && grammarCefr) availableCefrLevels.push(grammarCefr);
+  if (fluencyApiUsed && fluencyCefr) availableCefrLevels.push(fluencyCefr);
+  availableCefrLevels.push(vocabularyCefr);
+
   let overallCefr: string;
-  if (grammarApiUsed && grammarCefr) {
-    // Both available - average them
-    const grammarIndex = cefrLevels.indexOf(grammarCefr);
-    const vocabIndex = cefrLevels.indexOf(vocabularyCefr);
-    const averageIndex = Math.round((grammarIndex + vocabIndex) / 2);
+  if (availableCefrLevels.length > 0) {
+    const totalIndex = availableCefrLevels.reduce((sum, level) => {
+      return sum + cefrLevels.indexOf(level);
+    }, 0);
+    const averageIndex = Math.round(totalIndex / availableCefrLevels.length);
     overallCefr = cefrLevels[averageIndex] || vocabularyCefr;
   } else {
-    // Only vocabulary available
     overallCefr = vocabularyCefr;
   }
 
@@ -84,6 +85,15 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
     }
   };
 
+  // Get sources text
+  const getSourcesText = () => {
+    const sources: string[] = [];
+    if (grammarApiUsed) sources.push('Grammar API');
+    if (fluencyApiUsed) sources.push('Fluency API');
+    sources.push('Vocabulary Analysis');
+    return `Based on ${sources.join(', ')}`;
+  };
+
   if (isProcessing) {
     return (
       <Card className="mb-8">
@@ -91,7 +101,7 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
           <div className="animate-pulse text-primary">
             <p className="text-lg font-medium">Analyzing your response...</p>
             <p className="text-sm mt-2 text-muted-foreground">
-              Processing grammar and vocabulary analysis.
+              Processing grammar, fluency, and vocabulary analysis.
             </p>
           </div>
         </CardContent>
@@ -117,29 +127,29 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
         <CardContent>
           <div className="text-center py-4">
             <div className="text-3xl font-bold text-primary mb-2">Overall CEFR Level</div>
-            <div className="text-muted-foreground text-sm">
-              {grammarApiUsed 
-                ? 'Based on Grammar API and Vocabulary Analysis'
-                : 'Based on Vocabulary Analysis (Grammar API unavailable)'}
-            </div>
+            <div className="text-muted-foreground text-sm">{getSourcesText()}</div>
           </div>
         </CardContent>
       </Card>
 
       {/* Main Tabs */}
       <Tabs defaultValue="grammar" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-4 mb-4">
           <TabsTrigger value="grammar" className="flex items-center gap-2">
             <Languages className="h-4 w-4" />
             Grammar
+          </TabsTrigger>
+          <TabsTrigger value="fluency" className="flex items-center gap-2">
+            <Mic className="h-4 w-4" />
+            Fluency
           </TabsTrigger>
           <TabsTrigger value="vocabulary" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
             Vocabulary
           </TabsTrigger>
-          <TabsTrigger value="errors" className="flex items-center gap-2">
+          <TabsTrigger value="feedback" className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
-            Errors ({grammarErrors.length})
+            Feedback
           </TabsTrigger>
         </TabsList>
 
@@ -163,17 +173,29 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {grammarApiUsed ? (
+              {grammarApiUsed && grammarScores ? (
                 <>
                   {/* API Results - displayed exactly as received */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-muted/50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-primary">{grammarAccuracy?.toFixed(1)}</div>
-                      <div className="text-sm text-muted-foreground">Accuracy (0-10)</div>
+                      <div className="text-2xl font-bold text-primary">{(grammarScores.accuracy * 100).toFixed(0)}%</div>
+                      <div className="text-xs text-muted-foreground">Accuracy</div>
                     </div>
                     <div className="bg-muted/50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-primary">{grammarRange?.toFixed(1)}</div>
-                      <div className="text-sm text-muted-foreground">Range (0-10)</div>
+                      <div className="text-2xl font-bold text-primary">{(grammarScores.complexity * 100).toFixed(0)}%</div>
+                      <div className="text-xs text-muted-foreground">Complexity</div>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{(grammarScores.lexical * 100).toFixed(0)}%</div>
+                      <div className="text-xs text-muted-foreground">Lexical</div>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{(grammarScores.structure * 100).toFixed(0)}%</div>
+                      <div className="text-xs text-muted-foreground">Structure</div>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{(grammarScores.final * 100).toFixed(0)}%</div>
+                      <div className="text-xs text-muted-foreground">Final Score</div>
                     </div>
                   </div>
 
@@ -181,8 +203,8 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                   <div className="bg-muted/50 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Errors Found</span>
-                      <Badge variant={grammarErrors.length === 0 ? "default" : "destructive"}>
-                        {grammarErrors.length}
+                      <Badge variant={grammarErrorCount === 0 ? "default" : "destructive"}>
+                        {grammarErrorCount}
                       </Badge>
                     </div>
                   </div>
@@ -208,6 +230,49 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                   <p className="text-lg font-medium text-muted-foreground">Grammar Analysis Not Available</p>
                   <p className="text-sm text-muted-foreground mt-2">
                     {grammarErrorMessage || 'The grammar service could not be reached.'}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Fluency Tab - API data only */}
+        <TabsContent value="fluency">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span className="flex items-center gap-2">
+                  <Mic className="h-5 w-5 text-primary" />
+                  Fluency Analysis
+                </span>
+                {fluencyApiUsed && fluencyCefr && (
+                  <Badge className={`${getCefrColor(fluencyCefr)} text-white`}>
+                    {fluencyCefr}
+                  </Badge>
+                )}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Powered by Fluency Service API
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {fluencyApiUsed && fluencyCefr ? (
+                <div className="text-center py-8">
+                  <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${getCefrColor(fluencyCefr)} text-white mb-4`}>
+                    <span className="text-3xl font-bold">{fluencyCefr}</span>
+                  </div>
+                  <p className="text-lg font-medium">Fluency Level</p>
+                  <p className="text-muted-foreground text-sm mt-2">
+                    Based on speech patterns and timing analysis
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <XCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium text-muted-foreground">Fluency Analysis Not Available</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {fluencyErrorMessage || 'The fluency service could not be reached.'}
                   </p>
                 </div>
               )}
@@ -294,47 +359,27 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
           </Card>
         </TabsContent>
 
-        {/* Errors Tab - API errors only */}
-        <TabsContent value="errors">
+        {/* Feedback Tab - Comments from APIs */}
+        <TabsContent value="feedback">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-destructive" />
-                Grammar & Spelling Errors
+                <AlertCircle className="h-5 w-5 text-primary" />
+                Feedback & Suggestions
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {!grammarApiUsed ? (
-                <div className="text-center py-8">
-                  <XCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-lg font-medium text-muted-foreground">Error analysis not available</p>
-                  <p className="text-sm text-muted-foreground">Grammar API was not accessible.</p>
-                </div>
-              ) : grammarErrors.length === 0 ? (
+              {grammarComments.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
-                  <p className="text-lg font-medium">No errors found!</p>
-                  <p className="text-muted-foreground">Your grammar and spelling are correct.</p>
+                  <p className="text-lg font-medium">Great job!</p>
+                  <p className="text-muted-foreground">No specific improvement suggestions.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {grammarErrors.map((error, idx) => (
-                    <div key={idx} className="border rounded-lg p-4 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={error.type === 'grammar' ? 'default' : 'secondary'}>
-                          {error.type}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-destructive line-through font-medium">
-                          {error.bad}
-                        </span>
-                        <span className="text-muted-foreground">→</span>
-                        <span className="text-emerald-600 font-medium">
-                          {Array.isArray(error.better) ? error.better.join(' / ') : error.better}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{error.description}</p>
+                  {grammarComments.map((comment, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <p className="text-sm">{comment}</p>
                     </div>
                   ))}
                 </div>

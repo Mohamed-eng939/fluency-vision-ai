@@ -12,6 +12,21 @@ import { analyzeCefrVocabulary } from '../vocabulary/cefrVocabularyAnalyzer';
 import { getCriterionFeedback } from '../feedbackScoring';
 
 /**
+ * CEFR to numeric score mapping (0-10 scale)
+ */
+const cefrToNumber: Record<string, number> = { 
+  'A1': 2, 'A2': 4, 'B1': 5, 'B2': 7, 'C1': 8.5, 'C2': 10 
+};
+
+/**
+ * Convert CEFR level string to numeric score
+ */
+const cefrToScore = (cefr: string | null): number => {
+  if (!cefr) return 5; // Default to B1 level if not available
+  return cefrToNumber[cefr] ?? 5;
+};
+
+/**
  * Score a speaking response
  */
 export const scoreSpeakingResponse = async (
@@ -75,15 +90,16 @@ const scorePhoneNumberResponse = async (
   // Process audio to get pronunciation metrics
   const processedAudio = await processAudioForAssessment(audioBlob);
   
-  // For phone numbers, focus primarily on pronunciation clarity
-  const pronunciationScore = await calculateCriterionScore('Pronunciation', processedAudio.metrics, transcript || '');
+  // For phone numbers, we don't use API - use a fixed score for pronunciation
+  // (Pronunciation API is not available in the simplified flow)
+  const pronunciationScore = 7.0; // Default moderate score
   
   // Check if transcript contains digits/numbers
   const hasNumbers = transcript && /\d/.test(transcript);
   const numberClarity = hasNumbers ? 8.5 : 6.0; // Bonus for clear number pronunciation
   
   // Simple scoring focused on pronunciation and clarity
-  const detailedScores = {
+  const detailedScores: Record<string, number> = {
     pronunciation: pronunciationScore,
     clarity: numberClarity,
     task_completion: transcript && transcript.length > 5 ? 8.0 : 6.0
@@ -143,20 +159,21 @@ const scoreWithRubric = async (
   const feedback: Record<string, string> = {};
   
   if (enhancedRubric) {
-    // Process criteria sequentially to handle async coherence scoring
+    // Process criteria sequentially to handle async API calls
     for (const criterion of enhancedRubric.criteria) {
       // Calculate a score based on audio metrics and transcript analysis
-      const score = await calculateCriterionScore(
+      const cefrResult = await calculateCriterionScore(
         criterion, 
         enhancedMetrics, 
         transcript || '',
         question.text // Pass the question text as prompt reference
       );
       
-      detailedScores[criterion] = score;
+      // Convert CEFR to numeric score for compatibility
+      detailedScores[criterion] = cefrToScore(cefrResult);
       
       // Generate feedback for this criterion
-      feedback[criterion] = getCriterionFeedback(criterion, score, level as any);
+      feedback[criterion] = getCriterionFeedback(criterion, detailedScores[criterion], level as any);
     }
   }
   
@@ -191,17 +208,19 @@ const basicScoring = async (
   detailedScores: Record<string, number>,
   feedback: Record<string, string>
 }> => {
-  const metrics = {
-    fluency: basicMetrics.fluency,
-    // Use the updated pronunciation scoring logic
-    pronunciation: await calculateCriterionScore('Pronunciation', basicMetrics, transcript || ''),
-    prosody: basicMetrics.prosody,
-    // Use enhanced vocabulary scoring if transcript is available
-    vocabulary: transcript ? await calculateCriterionScore('Vocabulary', enhancedMetrics, transcript) : 7.5,
-    // Basic estimates for other metrics
-    grammar: 7.5,
-    syntax: 7.5,
-    coherence: transcript ? await calculateCriterionScore('Coherence', enhancedMetrics, transcript) : 7.5
+  // Get CEFR levels from APIs
+  const fluencyCefr = transcript ? await calculateCriterionScore('Fluency', enhancedMetrics, transcript) : null;
+  const grammarCefr = transcript ? await calculateCriterionScore('Grammar', enhancedMetrics, transcript) : null;
+  const vocabularyCefr = transcript ? await calculateCriterionScore('Vocabulary', enhancedMetrics, transcript) : null;
+
+  const metrics: Record<string, number> = {
+    fluency: cefrToScore(fluencyCefr),
+    pronunciation: 7.0, // Default - no pronunciation API in simplified flow
+    prosody: basicMetrics.prosody ?? 7.0,
+    vocabulary: cefrToScore(vocabularyCefr),
+    grammar: cefrToScore(grammarCefr),
+    syntax: 7.0, // Default - not scored by API
+    coherence: 7.0 // Default - not scored by API
   };
   
   const totalScore = Object.values(metrics).reduce((sum, score) => sum + score, 0) / 
@@ -214,7 +233,7 @@ const basicScoring = async (
     cefrLevel,
     detailedScores: metrics,
     feedback: Object.keys(metrics).reduce((acc, key) => {
-      acc[key] = getFeedbackForMetric(key, metrics[key as keyof typeof metrics], cefrLevel);
+      acc[key] = getFeedbackForMetric(key, metrics[key], cefrLevel);
       return acc;
     }, {} as Record<string, string>)
   };
