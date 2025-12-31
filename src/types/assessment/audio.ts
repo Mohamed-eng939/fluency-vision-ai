@@ -63,21 +63,28 @@ export interface AudioAnalysisResult {
   needsReview?: boolean;
   // Grammar API analysis results
   grammarApiAnalysis?: {
-    accuracy: number;
-    range: number;
     cefr: string;
-    errorCount: number;
+    scores: {
+      accuracy: number;
+      complexity: number;
+      lexical: number;
+      structure: number;
+      final: number;
+    };
+    errors: number;
     comments: string[];
-    detailedErrors: Array<{
-      type: 'grammar' | 'spelling';
-      bad: string;
-      better: string[];
-      description: string;
-      offset: number;
-      length: number;
-    }>;
-    apiUsed: boolean;
-    error?: string; // Error message when API fails
+    apiUsed: true;
+  } | {
+    apiUsed: false;
+    error: string;
+  };
+  // Fluency API analysis results
+  fluencyApiAnalysis?: {
+    cefr: string;
+    apiUsed: true;
+  } | {
+    apiUsed: false;
+    error: string;
   };
   // Pronunciation data
   pronunciationScore?: number;
