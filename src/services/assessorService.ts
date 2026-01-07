@@ -28,48 +28,45 @@ export interface AssessorServiceResponse {
 
 /**
  * Assessor Service - Handle assessor-specific operations
+ * All operations require authenticated user with assessor/admin role
  */
 export const assessorService = {
   /**
    * Get pending assessments for review
+   * Requires authenticated user with assessor or admin role
    */
   getPendingAssessments: async (): Promise<AssessorServiceResponse> => {
     try {
-      console.log('🔍 [assessorService] Fetching pending assessments (TEST MODE - NO AUTH)...');
+      console.log('🔍 [assessorService] Fetching pending assessments...');
       
-      // TEMPORARY: Skip authentication for testing
-      console.log('🧪 [assessorService] BYPASSING AUTH FOR TESTING');
-
-      // TEMPORARY: Skip edge function and go directly to DB
-      console.log('🧪 [assessorService] Skipping edge function for test mode');
-        
-      // Direct database query (no auth required in test mode)
-      // Only fetch sessions that haven't been reviewed yet
-      console.log('📊 [assessorService] Using direct database query...');
-      const { data: sessions, error: dbError } = await supabase
-        .from('assessment_sessions')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            email,
-            first_language,
-            country_of_residence
-          )
-        `)
-        .in('status', ['completed', 'under_review'])
-        .is('reviewed_at', null) // Only unreviewed sessions
-        .order('created_at', { ascending: false });
-
-      if (dbError) {
-        console.error('❌ [assessorService] DB query failed:', dbError);
-        throw new Error(dbError.message);
+      // Verify user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('❌ [assessorService] Not authenticated');
+        return {
+          success: false,
+          error: 'Authentication required'
+        };
       }
 
-      console.log('✅ [assessorService] Got pending assessments via direct DB:', sessions?.length);
+      // Call the assessor-manager edge function for secure access
+      const { data, error } = await supabase.functions.invoke('assessor-manager', {
+        body: { action: 'getPending' }
+      });
+
+      if (error) {
+        console.error('❌ [assessorService] Edge function error:', error);
+        throw new Error(error.message);
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to fetch pending assessments');
+      }
+
+      console.log('✅ [assessorService] Got pending assessments:', data.data?.length);
       return {
         success: true,
-        data: sessions || []
+        data: data.data || []
       };
     } catch (error: any) {
       console.error('❌ [assessorService] Failed to get pending assessments:', error);
@@ -82,34 +79,44 @@ export const assessorService = {
 
   /**
    * Assign an assessment to current assessor
+   * Requires authenticated user with assessor or admin role
    */
   assignAssessment: async (sessionId: string): Promise<AssessorServiceResponse> => {
     try {
-      console.log('📝 [assessorService] Assigning assessment (TEST MODE):', sessionId);
+      console.log('📝 [assessorService] Assigning assessment:', sessionId);
       
-      // TEMPORARY: Use mock assessor ID for testing
-      const mockAssessorId = 'b963c6d3-446e-4eca-a9b5-5cdc86fdf649'; // leo.messi's ID
+      // Verify user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('❌ [assessorService] Not authenticated');
+        return {
+          success: false,
+          error: 'Authentication required'
+        };
+      }
 
-      const { data, error } = await supabase
-        .from('assessment_sessions')
-        .update({
-          assigned_assessor: mockAssessorId,
-          status: 'under_review',
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', sessionId)
-        .eq('status', 'completed')
-        .select()
-        .single();
+      // Call the assessor-manager edge function for secure assignment
+      const { data, error } = await supabase.functions.invoke('assessor-manager', {
+        body: { 
+          action: 'assign',
+          sessionId,
+          assessorId: user.id // Use authenticated user's ID
+        }
+      });
 
       if (error) {
+        console.error('❌ [assessorService] Edge function error:', error);
         throw new Error(error.message);
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to assign assessment');
       }
 
       console.log('✅ [assessorService] Assessment assigned successfully');
       return {
         success: true,
-        data
+        data: data.data
       };
     } catch (error: any) {
       console.error('❌ [assessorService] Failed to assign assessment:', error);
@@ -122,12 +129,23 @@ export const assessorService = {
 
   /**
    * Get assessment details for review
+   * Requires authenticated user with access to the session
    */
   getAssessmentDetails: async (sessionId: string): Promise<AssessorServiceResponse> => {
     try {
-      console.log('🔍 [assessorService] Fetching assessment details (TEST MODE):', sessionId);
+      console.log('🔍 [assessorService] Fetching assessment details:', sessionId);
 
-      // Get session details
+      // Verify user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('❌ [assessorService] Not authenticated');
+        return {
+          success: false,
+          error: 'Authentication required'
+        };
+      }
+
+      // Get session details (RLS will enforce access control)
       const { data: sessionData, error: sessionError } = await supabase
         .from('assessment_sessions')
         .select(`
@@ -146,7 +164,7 @@ export const assessorService = {
         throw new Error(sessionError.message);
       }
 
-      // Get responses from database
+      // Get responses from database (RLS will enforce access control)
       const { data: responses, error: responsesError } = await supabase
         .from('assessment_responses')
         .select('*')

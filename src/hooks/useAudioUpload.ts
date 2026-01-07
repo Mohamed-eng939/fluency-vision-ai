@@ -66,24 +66,30 @@ export const useAudioUpload = () => {
   };
   
   /**
-   * Get a URL for an audio recording by its path
+   * Get a signed URL for an audio recording by its path
+   * Uses signed URLs for secure, time-limited access to private storage
    */
   const getAudioUrl = async (path: string): Promise<string | null> => {
     try {
-      // Try Edge Function first
+      // Try Edge Function first (preferred for authenticated access)
       const response = await audioService.getAudioUrl(path);
       
       if (response.success && response.url) {
         return response.url;
       } else {
-        // Fallback to direct storage access
-        console.warn('Edge Function failed, falling back to direct storage access:', response.error);
+        // Fallback to signed URL (1 hour expiry) - requires authentication
+        console.warn('Edge Function failed, falling back to signed URL:', response.error);
         
-        const { data } = await supabase.storage
+        const { data, error } = await supabase.storage
           .from('assessment-audio')
-          .getPublicUrl(path);
+          .createSignedUrl(path, 3600); // 1 hour expiry
           
-        return data?.publicUrl || null;
+        if (error) {
+          console.error('Failed to create signed URL:', error);
+          return null;
+        }
+        
+        return data?.signedUrl || null;
       }
     } catch (error) {
       console.error("Error getting audio URL:", error);
