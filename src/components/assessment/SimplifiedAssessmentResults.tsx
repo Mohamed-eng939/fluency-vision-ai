@@ -41,6 +41,8 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
   const fluencyAnalysis = result.audioAnalysis?.fluencyApiAnalysis;
   const fluencyApiUsed = fluencyAnalysis?.apiUsed === true;
   const fluencyCefr = fluencyApiUsed ? fluencyAnalysis.cefr : null;
+  const fluencySyllables = fluencyApiUsed ? (fluencyAnalysis as any).syllables : null;
+  const fluencySpm = fluencyApiUsed ? (fluencyAnalysis as any).spm : null;
   const fluencyErrorMessage = !fluencyApiUsed ? (fluencyAnalysis as any)?.error : null;
 
   // Extract Vocabulary data - CEFR mapping only, NO numeric scores
@@ -258,12 +260,27 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
             </CardHeader>
             <CardContent className="space-y-6">
               {fluencyApiUsed && fluencyCefr ? (
-                <div className="text-center py-8">
-                  <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${getCefrColor(fluencyCefr)} text-white mb-4`}>
-                    <span className="text-3xl font-bold">{fluencyCefr}</span>
+                <div className="space-y-6">
+                  <div className="text-center py-4">
+                    <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${getCefrColor(fluencyCefr)} text-white mb-4`}>
+                      <span className="text-3xl font-bold">{fluencyCefr}</span>
+                    </div>
+                    <p className="text-lg font-medium">Fluency Level</p>
                   </div>
-                  <p className="text-lg font-medium">Fluency Level</p>
-                  <p className="text-muted-foreground text-sm mt-2">
+
+                  {/* Fluency Metrics */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{fluencySyllables ?? '-'}</div>
+                      <div className="text-xs text-muted-foreground">Syllables</div>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{fluencySpm ?? '-'}</div>
+                      <div className="text-xs text-muted-foreground">Syllables per Minute</div>
+                    </div>
+                  </div>
+
+                  <p className="text-muted-foreground text-sm text-center">
                     Based on speech patterns and timing analysis
                   </p>
                 </div>
