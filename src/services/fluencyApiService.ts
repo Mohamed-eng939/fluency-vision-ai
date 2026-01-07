@@ -11,8 +11,9 @@ export interface FluencyApiRequest {
 }
 
 export interface FluencyApiResponse {
-  cefr: string;  // "A1", "A2", "B1", etc.
-  // Additional fields may be returned by the API
+  syllables: number;
+  spm: number;  // Syllables per minute
+  cefr_level: string;  // "A1", "A2", "B1", etc.
 }
 
 /**

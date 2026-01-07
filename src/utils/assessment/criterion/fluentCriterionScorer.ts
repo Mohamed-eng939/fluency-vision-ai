@@ -37,12 +37,14 @@ export const calculateFluencyCriterion = async (
     
     // Store API analysis in audioMetrics for later use
     audioMetrics.fluencyApiAnalysis = {
-      cefr: apiResult.cefr,
+      cefr: apiResult.cefr_level,
+      syllables: apiResult.syllables,
+      spm: apiResult.spm,
       apiUsed: true,
     };
     
     // Return CEFR level from API
-    return apiResult.cefr;
+    return apiResult.cefr_level;
   } catch (error) {
     console.error('Fluency API failed - NO FALLBACK:', error);
     
