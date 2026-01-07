@@ -130,6 +130,13 @@ serve(async (req) => {
   }
 });
 
+// Generate a secure access token for session access
+function generateAccessToken(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 // Create a new assessment session
 async function createAssessmentSession(supabase: any, userId: string, requestBody: any) {
   try {
@@ -137,13 +144,20 @@ async function createAssessmentSession(supabase: any, userId: string, requestBod
 
     console.log(`[Assessment Manager] Creating session for user ${userId}, type: ${sessionType}`);
 
+    // Generate access token for secure session access
+    const accessToken = generateAccessToken();
+    const sessionMetadata = {
+      ...(metadata || {}),
+      access_token: accessToken
+    };
+
     const { data: session, error } = await supabase
       .from('assessment_sessions')
       .insert({
         user_id: userId,
         session_type: sessionType || 'full_assessment',
         student_info: studentInfo,
-        metadata: metadata || {},
+        metadata: sessionMetadata,
         status: 'in_progress'
       })
       .select()
@@ -158,8 +172,9 @@ async function createAssessmentSession(supabase: any, userId: string, requestBod
     }
 
     console.log(`[Assessment Manager] Session created successfully: ${session.id}`);
+    // Return access token to client for session access
     return new Response(
-      JSON.stringify({ success: true, sessionId: session.id, session }),
+      JSON.stringify({ success: true, sessionId: session.id, session, accessToken }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
