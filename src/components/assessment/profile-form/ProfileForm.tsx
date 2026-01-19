@@ -198,14 +198,15 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       };
 
       console.log('🎉 Submitting to parent component');
-      
+
+      // Call the parent callback FIRST to avoid auth state change re-render race conditions
+      onSubmit(studentInfoData);
+
+      // Then show success feedback
       toast({
         title: "Success",
         description: "Profile created successfully!",
       });
-      
-      // Call the parent callback
-      onSubmit(studentInfoData);
 
     } catch (err: any) {
       console.error('❌ Profile submission error:', err);
