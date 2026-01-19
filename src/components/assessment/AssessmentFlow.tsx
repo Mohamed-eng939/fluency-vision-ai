@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AssessmentStep, useAssessmentFlow } from '@/hooks/assessment/useAssessmentFlow';
 import { StudentInfo } from '@/hooks/assessment';
 import AdminControls from './AdminControls';
@@ -18,6 +18,9 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   const [showAssessmentOptions, setShowAssessmentOptions] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
+  
+  // Track if we came from profile form to prevent auto-population overwriting
+  const isFromProfileForm = useRef(false);
   
   // Initialize the assessment flow
   const {
@@ -69,6 +72,12 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
 
   // Auto-populate student info if user is logged in (but only when not coming from profile form)
   useEffect(() => {
+    // Skip auto-population if we came from the profile form signup flow
+    if (isFromProfileForm.current) {
+      console.log("Skipping auto-population - came from profile form");
+      return;
+    }
+    
     if (user && !studentInfo && currentStep === 'entry') {
       // Only auto-populate if we're on the entry step and haven't manually submitted student info
       const defaultInfo = {
@@ -82,7 +91,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
       console.log("Auto-populating student info from user profile:", defaultInfo);
       handleStudentInfoSubmit(defaultInfo);
     }
-  }, [user, sessionId, handleStudentInfoSubmit, currentStep]);
+  }, [user, sessionId, handleStudentInfoSubmit, currentStep, studentInfo]);
 
   const handleSelectQuickAssessment = () => {
     setShowAssessmentOptions(false);
@@ -99,6 +108,10 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
 
   const handleSignUpSuccess = (studentInfo: StudentInfo) => {
     console.log("AssessmentFlow: SignUp successful, starting assessment with:", studentInfo);
+    
+    // Mark that we came from profile form to prevent auto-population
+    isFromProfileForm.current = true;
+    
     // Submit student info and start assessment
     handleStudentInfoSubmit(studentInfo);
     setShowSignUpDialog(false);
