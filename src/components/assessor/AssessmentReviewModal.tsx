@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cefrToNumber, numberToCefr, type CEFRLevel } from '@/utils/scoring/cefrUtils';
 import { useAuth } from '@/contexts/auth';
@@ -141,9 +141,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       const { error: updateError } = await supabase
         .from('assessment_sessions')
         .update({
-          status: reviewStatus, // approved, rejected, or needs_revision
+          status: reviewStatus as 'approved' | 'rejected' | 'under_review', // Cast to valid status
           reviewed_at: new Date().toISOString(),
-          overall_cefr_level: finalCEFRLevel
+          overall_cefr_level: finalCEFRLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
         })
         .eq('id', assessmentDetails.session.id);
 

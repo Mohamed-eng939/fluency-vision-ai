@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { generateReportPdf } from '@/utils/reports/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import ReportHeader from '@/components/reports/ReportHeader';
 import ReportInfo from '@/components/reports/ReportInfo';
 import SkillsBreakdown from '@/components/reports/SkillsBreakdown';
@@ -85,10 +85,14 @@ const ReportPage: React.FC = () => {
         }
 
         // Convert database session to report format
+        const profiles = session.profiles as { full_name?: string; email?: string } | null;
+        const studentInfo = session.student_info as { name?: string; email?: string } | null;
+        const metadata = session.metadata as { feedback?: string } | null;
+        
         const reportData: AssessmentReport = {
           id: session.id,
-          name: session.profiles?.full_name || session.student_info?.name || 'Anonymous User',
-          email: session.profiles?.email || session.student_info?.email || 'N/A',
+          name: profiles?.full_name || studentInfo?.name || 'Anonymous User',
+          email: profiles?.email || studentInfo?.email || 'N/A',
           date: new Date(session.created_at).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -106,7 +110,7 @@ const ReportPage: React.FC = () => {
           cefr: session.overall_cefr_level || 'N/A',
           overallCefr: session.overall_cefr_level,
           feedback: {
-            overall: session.metadata?.feedback || 'Assessment completed successfully. Detailed feedback will be provided by your instructor.'
+            overall: metadata?.feedback || 'Assessment completed successfully. Detailed feedback will be provided by your instructor.'
           }
         };
 

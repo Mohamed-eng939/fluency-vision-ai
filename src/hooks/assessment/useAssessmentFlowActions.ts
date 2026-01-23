@@ -29,11 +29,29 @@ export const useAssessmentFlowActions = ({
   
   // Initialize the assessment
   const initializeAssessmentFlow = async (withEmail: boolean = false) => {
-    console.log("Initializing assessment with email:", withEmail);
-    await initializeSession(withEmail);
-    initializePromptQueue();
-    resetScoring();
-    resetStoredResponses();
+    console.log("🚀 INIT: Starting assessment initialization with email:", withEmail);
+    
+    try {
+      // Initialize session (fallback to anonymous if auth fails)
+      const sessionId = await initializeSession(withEmail);
+      console.log("✅ INIT: Session initialized with ID:", sessionId);
+      
+      // Initialize prompt queue
+      initializePromptQueue();
+      console.log("✅ INIT: Prompt queue initialized, count:", promptQueue.length);
+      
+      // Reset scoring and stored responses
+      resetScoring();
+      resetStoredResponses();
+      console.log("✅ INIT: Scoring and responses reset");
+      
+    } catch (error) {
+      console.error("❌ INIT: Error during initialization:", error);
+      // Continue anyway - we still want to show the welcome step
+    }
+    
+    // ALWAYS transition to WELCOME step, even if some init steps failed
+    console.log("🎯 INIT: setCurrentStep(WELCOME)");
     setCurrentStep(AssessmentStep.WELCOME);
   };
 
