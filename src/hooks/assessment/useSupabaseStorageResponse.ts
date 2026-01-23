@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { SpeakingPrompt, AssessmentResult } from '@/types/assessment';
 
 /**
@@ -104,7 +104,7 @@ export const useSupabaseStorageResponse = () => {
           grammar_score: result.metrics?.grammar || 0,
           vocabulary_score: result.metrics?.vocabulary || 0,
           coherence_score: result.metrics?.coherence || 0,
-          cefr_level: result.cefrLevel || 'A1',
+          cefr_level: (result.cefrLevel || 'A1') as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
           detailed_feedback: result.feedback || {},
           mistakes_analysis: result.audioAnalysis || {},
           is_final: false
