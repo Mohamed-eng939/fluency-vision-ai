@@ -1,125 +1,183 @@
 
-Goal: Fix the “profile saves but assessment never starts” bug (both “Create Profile & Start Assessment” and “Skip Profile & Start Test”), where console shows auth SIGNED_IN + prompt init logs, but AssessmentFlow still renders `user: null`, `studentInfo: null`, `currentStep: entry`.
+# Fix Plan: Assessment Flow Not Advancing After Profile Save
 
-What the logs imply
-- `initializeAssessment()` is being called (because `[PROMPT_INIT] ...` logs only happen when `initializePromptQueue()` runs inside `initializeAssessmentFlow`).
-- Yet `currentStep` stays `entry` (it should switch to `welcome`), and `studentInfo` resets to `null`.
-- This is classic behavior when the component/hook tree is effectively using different Supabase auth clients (or the auth session isn’t shared), causing state to appear “lost” across parts of the app.
+## Problem Summary
+After creating a profile or clicking "Skip Profile & Start Test", the assessment gets stuck on the entry step despite successful authentication and prompt initialization. The console shows:
+- `Auth state changed: SIGNED_IN`
+- `[PROMPT_INIT]` logs (from hook re-execution, not actual initialization)
+- But `currentStep` remains `entry` and `user` shows as `null`
 
-Root cause (most likely, confirmed in code)
-- The project currently uses TWO Supabase clients:
-  - `src/integrations/supabase/client.ts` (used by AuthProvider, ProfileForm, some hooks)
-  - `src/lib/supabase/client.ts` (used by sessionService and many other parts)
-- Even though each file tries to be a singleton, they are separate singletons → two GoTrue clients sharing the same storage.
-- This often causes “signed in” events to be observed in one place, while `getSession()`/`getUser()` elsewhere returns null or flips unexpectedly. It also causes re-renders that look like “state reset”.
+## Root Cause Analysis
 
-Evidence in this project
-- `ProfileForm.tsx` uses `@/integrations/supabase/client` (good).
-- `AuthProvider` uses `@/integrations/supabase/client` (good).
-- But `sessionService.ts` uses `@/lib/supabase/client` (bad) and `initializeSession()` relies on `supabase.auth.getSession()`. If that call returns “no session”, it falls back to anonymous flow.
-- There are 10 files importing `@/lib/supabase/client` (43 matches), so the app is still mixed-mode.
+### Issue 1: Stale Closure with Async State Updates
+The `initializeAssessmentFlow` function is async, but the auth state change from `supabase.auth.signUp()` triggers an immediate re-render BEFORE the async function completes:
 
-Implementation plan (code changes)
+```
+ProfileForm.handleSubmit()
+  ↓
+supabase.auth.signUp() → triggers onAuthStateChange
+  ↓
+onAuthStateChange sets user in AuthContext
+  ↓
+AssessmentFlow re-renders with new hook instances
+  ↓
+OLD initializeAssessmentFlow continues with STALE closure references
+  ↓
+setCurrentStep(WELCOME) may not work properly
+```
 
-Phase 1 — Fully consolidate Supabase client usage (highest priority)
-1) Replace ALL imports of:
-   - `import { supabase } from '@/lib/supabase/client'`
-   with:
-   - `import { supabase } from '@/integrations/supabase/client'`
+### Issue 2: Misleading Log Messages
+The `[PROMPT_INIT]` logs appear on every hook execution (line 27 of `usePromptManagement.ts`), not when `initializePromptQueue()` is called. This creates confusion about what's actually executing.
 
-   Files found (at minimum) that must be updated:
-   - `src/services/sessionService.ts` (critical for this bug)
-   - `src/services/profileService.ts`
-   - `src/services/assessorService.ts`
-   - `src/hooks/assessment/useSupabaseStorageResponse.ts`
-   - `src/hooks/useAudioUpload.ts`
-   - `src/pages/Dashboard.tsx`
-   - `src/pages/AssessmentResults.tsx`
-   - `src/pages/ReportPage.tsx`
-   - `src/components/admin/AssessmentAssignmentDashboard.tsx`
-   - `src/components/assessor/AssessmentReviewModal.tsx`
+### Issue 3: No State Persistence Across Auth Changes
+The assessment state is managed by hooks that reinitialize on each render. When auth state changes cause re-renders, there's no mechanism to preserve the in-progress initialization.
 
-2) Remove the duplicate Supabase client implementation:
-   - Delete `src/lib/supabase/client.ts`
-   - Confirm no remaining imports reference it (project-wide search should return 0).
+## Solution
 
-   Note: If `src/lib/supabase/database.types.ts` exists only to support that old client, it should be removed too (optional but recommended). The canonical generated types are in `src/integrations/supabase/types.ts`.
+### Phase 1: Make State Transitions Synchronous and Guaranteed
 
-Why this should fix your exact symptom
-- After consolidation, AuthProvider, ProfileForm, sessionService, and the assessment flow hooks will all read/write the same auth session, and step state won’t “appear to reset” due to conflicting auth refresh / storage events.
+**File: `src/hooks/assessment/useAssessmentFlowActions.ts`**
 
-Phase 2 — Add hard “step transition” guarantees + better diagnostics
-Even with a single client, we should make the assessment start flow resilient and easier to debug.
+Restructure `initializeAssessmentFlow` to set the step FIRST (synchronously), then do async operations:
 
-3) Strengthen `initializeAssessmentFlow()` to guarantee step transition:
-   - In `useAssessmentFlowActions.ts`, wrap `initializeSession()` and `initializePromptQueue()` in try/catch.
-   - Ensure `setCurrentStep(AssessmentStep.WELCOME)` always runs (even if session init fails), and log explicit markers:
-     - “INIT: setCurrentStep(WELCOME)”
-     - current sessionId after init
-     - promptQueue length after init
+```typescript
+const initializeAssessmentFlow = async (withEmail: boolean = false) => {
+  console.log("🚀 INIT: Starting assessment initialization with email:", withEmail);
+  
+  // CRITICAL: Set step to WELCOME FIRST, synchronously, before any async operations
+  console.log("🎯 INIT: setCurrentStep(WELCOME) - SYNCHRONOUS");
+  setCurrentStep(AssessmentStep.WELCOME);
+  
+  // Now do async operations - they won't affect the step
+  try {
+    const sessionId = await initializeSession(withEmail);
+    console.log("✅ INIT: Session initialized with ID:", sessionId);
+    
+    initializePromptQueue();
+    resetScoring();
+    resetStoredResponses();
+    console.log("✅ INIT: All initializations complete");
+  } catch (error) {
+    console.error("❌ INIT: Error during initialization (step already set to WELCOME):", error);
+  }
+};
+```
 
-4) Add a temporary in-UI debug strip (admin-only or behind a query param) on `/assessment`:
-   Show:
-   - `currentStep`
-   - `showAssessmentOptions`
-   - `studentInfo?.name`
-   - `sessionId`
-   - `auth.user?.id` from AuthContext
-   This gives immediate visibility when it gets “stuck” again.
+### Phase 2: Fix Misleading Logs in usePromptManagement
 
-5) Verify the “Skip Profile & Start Test” path:
-   - In `TestEntryStep`, clicking Skip triggers `onStudentInfoSubmit()` and `onStart(false)` which should call initializeAssessment.
-   - After Phase 1, this should reliably transition to Welcome.
-   - If it still doesn’t, the debug strip will tell us exactly which state is not changing.
+**File: `src/hooks/assessment/usePromptManagement.ts`**
 
-Phase 3 — Retest end-to-end backend communication (system scan, functional)
-Once the client is consolidated, we’ll re-validate that the front-end truly talks to the backend correctly:
+Move the logging inside `initializePromptQueue` and make `orderedPrompts` a memoized value:
 
-6) Test cases (must pass)
-A) Anonymous flow
-- Go to `/assessment`
-- Choose quick assessment
-- Click “Skip Profile & Start Test”
-- Expected:
-  - step: entry → welcome
-  - then Start → recording
-  - session created (either edge function or anon DB insert fallback)
+```typescript
+import { useState, useMemo } from 'react';
 
-B) New user signup flow
-- Open Sign Up
-- Submit profile
-- Expected:
-  - AuthContext user becomes non-null
-  - studentInfo becomes non-null
-  - step: entry → welcome
-  - Start → recording
+export const usePromptManagement = (maxPrompts: number = 38) => {
+  // Memoize sorted prompts to prevent recalculation on every render
+  const sortedPrompts = useMemo(() => {
+    const freeSpeakingPrompts = mockPrompts.filter(p => !p.isReadAloud);
+    const readAloudPrompts = mockPrompts.filter(p => p.isReadAloud);
+    return [...freeSpeakingPrompts, ...readAloudPrompts];
+  }, []);
+  
+  // ... rest of hook ...
+  
+  const initializePromptQueue = () => {
+    console.info('[PROMPT_QUEUE_INIT] Actually initializing queue now');
+    console.info('[PROMPT_QUEUE_INIT] Available prompts:', sortedPrompts.length);
+    // ... rest of function
+  };
+};
+```
 
-C) Existing user login flow
-- Login modal
-- Expected:
-  - user not null
-  - studentInfo auto-populates only when appropriate
-  - Start works
+### Phase 3: Add useRef Flag to Prevent Auth Re-render Issues
 
-D) Data persistence checks
-- Confirm `assessment_sessions` is created for the run
-- Confirm `assessment_responses` entries appear after recordings (or after finalization, depending on your flow)
+**File: `src/components/assessment/AssessmentFlow.tsx`**
 
-What I will look for during verification
-- Console should show:
-  - AuthProvider “Auth state changed … hasUser true”
-  - “INIT: setCurrentStep(WELCOME)”
-  - AssessmentFlow re-render with `user != null` (after profile fetch) and `studentInfo != null`
-- No more “Multiple GoTrueClient instances” warnings.
+Add a ref to track initialization state that persists across re-renders:
 
-If it still fails after Phase 1
-Then the next most likely causes are:
-- AssessmentFlow is being remounted (state reset) due to a parent key/route change or StrictMode double-invocation side effects.
-- A second AuthContext exists elsewhere (less likely, but we’ll re-search if needed).
-In that case, we’ll use the new debug strip + a session replay to pinpoint the exact remount trigger.
+```typescript
+const isInitializing = useRef(false);
+const hasInitialized = useRef(false);
 
-Deliverables
-- Single Supabase client used everywhere (`@/integrations/supabase/client`)
-- Deleted duplicate client file(s)
-- Hardened assessment initialization so it can’t silently remain on ENTRY
-- A quick “state inspector” UI to confirm everything is flowing correctly during your acceptance test
+const handleSignUpSuccess = (studentInfo: StudentInfo) => {
+  console.log("AssessmentFlow: SignUp successful");
+  
+  if (isInitializing.current || hasInitialized.current) {
+    console.log("AssessmentFlow: Already initializing/initialized, skipping");
+    return;
+  }
+  
+  isInitializing.current = true;
+  isFromProfileForm.current = true;
+  
+  handleStudentInfoSubmit(studentInfo);
+  setShowSignUpDialog(false);
+  setShowAssessmentOptions(false);
+  
+  // Initialize assessment
+  initializeAssessment(studentInfo.emailResults || false).finally(() => {
+    isInitializing.current = false;
+    hasInitialized.current = true;
+  });
+};
+```
+
+### Phase 4: Add Debug Panel for Visibility
+
+**File: `src/components/assessment/AssessmentFlow.tsx`**
+
+Add a debug panel (shown with `?debug=true` query param) to track state in real-time:
+
+```typescript
+const [searchParams] = useSearchParams();
+const showDebug = searchParams.get('debug') === 'true';
+
+// In render:
+{showDebug && (
+  <div className="fixed bottom-4 right-4 bg-black/80 text-white p-4 rounded-lg text-xs font-mono z-50">
+    <div>Step: {currentStep}</div>
+    <div>User: {user?.id || 'null'}</div>
+    <div>StudentInfo: {studentInfo?.name || 'null'}</div>
+    <div>SessionId: {sessionId || 'null'}</div>
+    <div>PromptQueue: {promptQueue?.length || 0}</div>
+  </div>
+)}
+```
+
+### Phase 5: Clean Up Duplicate AuthContext File
+
+**File to delete: `src/contexts/AuthContext.tsx`**
+
+This file is not being imported anywhere but could cause confusion. Delete it to prevent future issues.
+
+## Files to Modify
+
+1. `src/hooks/assessment/useAssessmentFlowActions.ts` - Move `setCurrentStep(WELCOME)` to be synchronous and first
+2. `src/hooks/assessment/usePromptManagement.ts` - Fix misleading logs, memoize sorted prompts
+3. `src/components/assessment/AssessmentFlow.tsx` - Add initialization guards and debug panel
+4. `src/contexts/AuthContext.tsx` - Delete (unused duplicate file)
+
+## Testing Verification
+
+After implementation:
+1. Go to `/assessment?debug=true`
+2. Click "Quick Assessment" → "Skip Profile & Start Test"
+3. Debug panel should show: Step changes from `entry` → `welcome`
+4. Click "Start" → Step changes to `recording`
+5. Verify no duplicate initialization logs
+
+For signup flow:
+1. Click "Sign Up" → Fill form → Submit
+2. Debug panel should show user ID after auth
+3. Step should be `welcome` (not stuck on `entry`)
+
+## Why This Will Work
+
+1. **Synchronous step change**: By setting `currentStep` to `WELCOME` synchronously BEFORE any async operations (like `initializeSession`), the state is set before auth triggers any re-renders
+
+2. **Ref guards**: Using refs to track initialization state persists across re-renders and prevents duplicate initializations
+
+3. **Better logging**: Moving logs inside actual function calls rather than hook body prevents misleading output
+
+4. **Debug visibility**: The debug panel allows immediate verification of state during testing
