@@ -31,28 +31,25 @@ export const useAssessmentFlowActions = ({
   const initializeAssessmentFlow = async (withEmail: boolean = false) => {
     console.log("🚀 INIT: Starting assessment initialization with email:", withEmail);
     
+    // CRITICAL: Set step to WELCOME FIRST, synchronously, before any async operations
+    // This ensures the step changes even if auth triggers re-renders
+    console.log("🎯 INIT: setCurrentStep(WELCOME) - SYNCHRONOUS");
+    setCurrentStep(AssessmentStep.WELCOME);
+    
+    // Now do async operations - they won't affect the step
     try {
-      // Initialize session (fallback to anonymous if auth fails)
       const sessionId = await initializeSession(withEmail);
       console.log("✅ INIT: Session initialized with ID:", sessionId);
       
-      // Initialize prompt queue
       initializePromptQueue();
-      console.log("✅ INIT: Prompt queue initialized, count:", promptQueue.length);
+      console.log("✅ INIT: Prompt queue initialized");
       
-      // Reset scoring and stored responses
       resetScoring();
       resetStoredResponses();
-      console.log("✅ INIT: Scoring and responses reset");
-      
+      console.log("✅ INIT: All initializations complete");
     } catch (error) {
-      console.error("❌ INIT: Error during initialization:", error);
-      // Continue anyway - we still want to show the welcome step
+      console.error("❌ INIT: Error during initialization (step already set to WELCOME):", error);
     }
-    
-    // ALWAYS transition to WELCOME step, even if some init steps failed
-    console.log("🎯 INIT: setCurrentStep(WELCOME)");
-    setCurrentStep(AssessmentStep.WELCOME);
   };
 
   // Start the assessment

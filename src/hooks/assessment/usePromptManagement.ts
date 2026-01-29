@@ -1,30 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { SpeakingPrompt, CEFRLevel } from '@/types/assessment';
 import { mockPrompts } from '@/utils/speaking/promptUtils';
 
 export const usePromptManagement = (maxPrompts: number = 38) => {
-  // Order prompts: ALL free-speaking first (Q1-Q23), then ALL read-aloud (Q24-Q38)
-  const orderedPrompts = () => {
-    console.info('[PROMPT_INIT] Initializing prompt queue with all 38 items');
-    
-    // First, get all free-speaking prompts in CEFR order (Q1-Q23)
+  // Memoize sorted prompts to prevent recalculation on every render
+  // Order: ALL free-speaking first (Q1-Q23), then ALL read-aloud (Q24-Q38)
+  const sortedPrompts = useMemo(() => {
     const freeSpeakingPrompts = mockPrompts.filter(p => !p.isReadAloud);
-    console.info('[PROMPT_INIT] Free-speaking prompts found:', freeSpeakingPrompts.length);
-    
-    // Then, get all read-aloud prompts in CEFR order (Q24-Q38)
     const readAloudPrompts = mockPrompts.filter(p => p.isReadAloud);
-    console.info('[PROMPT_INIT] Read-aloud prompts found:', readAloudPrompts.length);
-    
-    // Combine: free-speaking first, then read-aloud
-    const finalOrder = [...freeSpeakingPrompts, ...readAloudPrompts];
-    console.info('[PROMPT_INIT] Final prompt order - Total:', finalOrder.length, 'questions');
-    console.info('[PROMPT_INIT] Free-speaking range: Q1-Q23, Read-aloud range: Q24-Q38');
-    
-    return finalOrder;
-  };
-  
-  const sortedPrompts = orderedPrompts();
+    return [...freeSpeakingPrompts, ...readAloudPrompts];
+  }, []);
   
   // Prompt queue and history
   const [promptQueue, setPromptQueue] = useState<SpeakingPrompt[]>([]);
@@ -36,12 +22,12 @@ export const usePromptManagement = (maxPrompts: number = 38) => {
   
   // Initialize prompts queue - NO CAPS/FILTERS, use ALL prompts
   const initializePromptQueue = () => {
-    console.info('[PROMPT_QUEUE_INIT] Removing all caps/filters - using full assessment');
+    console.info('[PROMPT_QUEUE_INIT] Actually initializing queue now');
     console.info('[PROMPT_QUEUE_INIT] Available prompts:', sortedPrompts.length);
-    console.info('[PROMPT_QUEUE_INIT] MaxPrompts setting:', maxPrompts, '(ignored, using all available)');
+    console.info('[PROMPT_QUEUE_INIT] Free-speaking: Q1-Q23, Read-aloud: Q24-Q38');
     
-    // Use ALL available prompts, ignore maxPrompts cap
-    const totalPrompts = sortedPrompts.length; // No Math.min limitation
+    // Use ALL available prompts
+    const totalPrompts = sortedPrompts.length;
     setPromptQueue(sortedPrompts.slice(0, totalPrompts));
     setPromptHistory([]);
     setCurrentPromptIndex(0);
