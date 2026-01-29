@@ -47,17 +47,22 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const hasProceededRef = React.useRef(false);
+  const authPhaseRef = React.useRef<'idle' | 'waiting_session' | 'proceeded'>('idle');
 
   // Safety: never allow an infinite "Saving..." state
   React.useEffect(() => {
     if (!loading) return;
     const t = window.setTimeout(() => {
       if (!hasProceededRef.current) {
-        console.error('⏱️ ProfileForm watchdog: still loading after 15s (before proceeding).');
-        setErrorMsg('Request is taking too long. Please try again.');
-        setLoading(false);
+        // Allow longer when we're waiting for Supabase to finalize session storage.
+        const phase = authPhaseRef.current;
+        console.error(`⏱️ ProfileForm watchdog: still loading (phase=${phase}).`);
+        if (phase !== 'waiting_session') {
+          setErrorMsg('Request is taking too long. Please try again.');
+          setLoading(false);
+        }
       }
-    }, 15000);
+    }, 35000);
     return () => window.clearTimeout(t);
   }, [loading]);
 
@@ -83,11 +88,13 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
     // Fast path
     const existing = await supabase.auth.getSession();
+    console.log('🔎 waitForSession: initial getSession hasSession=', !!existing.data.session);
     if (existing.data.session) return existing.data.session;
 
     return await new Promise<NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>>(
       (resolve, reject) => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          console.log('🔔 waitForSession onAuthStateChange:', { event: _event, hasSession: !!session });
           if (session) {
             subscription.unsubscribe();
             resolve(session);
@@ -97,6 +104,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         const t = window.setInterval(async () => {
           // Also poll, because onAuthStateChange can be missed during rapid remounts
           const s = await supabase.auth.getSession();
+          console.log('🔁 waitForSession poll getSession hasSession=', !!s.data.session);
           if (s.data.session) {
             window.clearInterval(t);
             subscription.unsubscribe();
@@ -140,6 +148,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
     setLoading(true);
     setErrorMsg(null);
     hasProceededRef.current = false;
+    authPhaseRef.current = 'idle';
 
     try {
       // Validate required fields first
@@ -202,6 +211,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
       // Proceed when the session is actually available.
       console.log('⏳ Waiting for Supabase session...');
+      authPhaseRef.current = 'waiting_session';
       session = await waitForSession(25000);
       console.log('✅ Session available. Proceeding.');
 
