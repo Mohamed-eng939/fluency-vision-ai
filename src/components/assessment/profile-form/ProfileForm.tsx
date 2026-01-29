@@ -48,6 +48,19 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const hasProceededRef = React.useRef(false);
 
+  // Safety: never allow an infinite "Saving..." state
+  React.useEffect(() => {
+    if (!loading) return;
+    const t = window.setTimeout(() => {
+      if (!hasProceededRef.current) {
+        console.error('⏱️ ProfileForm watchdog: still loading after 15s (before proceeding).');
+        setErrorMsg('Request is taking too long. Please try again.');
+        setLoading(false);
+      }
+    }, 15000);
+    return () => window.clearTimeout(t);
+  }, [loading]);
+
   const withTimeout = async <T,>(promiseLike: PromiseLike<T>, ms: number, label: string): Promise<T> => {
     let timeoutId: number | undefined;
     const timeoutPromise = new Promise<T>((_, reject) => {
@@ -109,16 +122,23 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       
       // 1️⃣ Try to sign up first
       let session;
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: { 
-          data: { 
-            name: values.name, 
-            phone: values.phone 
+      console.time('⏱️ supabase.auth.signUp');
+      const { data: signUpData, error: signUpError } = await withTimeout(
+        supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            data: {
+              name: values.name,
+              phone: values.phone
+            },
+            emailRedirectTo: `${window.location.origin}/assessment`
           },
-          emailRedirectTo: `${window.location.origin}/assessment`
-        },
+        }),
+        12000,
+        'Sign up'
+      ).finally(() => {
+        console.timeEnd('⏱️ supabase.auth.signUp');
       });
 
       console.log('🔐 SignUp result:', signUpData, signUpError);
@@ -128,10 +148,17 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         
         if (signUpError.message.includes('User already registered')) {
           console.log('👤 User exists, attempting sign in...');
-          
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: values.email,
-            password: values.password,
+
+          console.time('⏱️ supabase.auth.signInWithPassword');
+          const { data: signInData, error: signInError } = await withTimeout(
+            supabase.auth.signInWithPassword({
+              email: values.email,
+              password: values.password,
+            }),
+            12000,
+            'Sign in'
+          ).finally(() => {
+            console.timeEnd('⏱️ supabase.auth.signInWithPassword');
           });
           
           console.log('🔑 SignIn result:', signInData, signInError);
