@@ -78,6 +78,39 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
     }
   };
 
+  const waitForSession = async (ms: number) => {
+    const start = Date.now();
+
+    // Fast path
+    const existing = await supabase.auth.getSession();
+    if (existing.data.session) return existing.data.session;
+
+    return await new Promise<NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>>(
+      (resolve, reject) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (session) {
+            subscription.unsubscribe();
+            resolve(session);
+          }
+        });
+
+        const t = window.setInterval(async () => {
+          // Also poll, because onAuthStateChange can be missed during rapid remounts
+          const s = await supabase.auth.getSession();
+          if (s.data.session) {
+            window.clearInterval(t);
+            subscription.unsubscribe();
+            resolve(s.data.session);
+          } else if (Date.now() - start > ms) {
+            window.clearInterval(t);
+            subscription.unsubscribe();
+            reject(new Error(`Session not available after ${ms}ms`));
+          }
+        }, 500);
+      }
+    );
+  };
+
   // Auto-generate username
   React.useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -123,23 +156,32 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       // 1️⃣ Try to sign up first
       let session;
       console.time('⏱️ supabase.auth.signUp');
-      const { data: signUpData, error: signUpError } = await withTimeout(
-        supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            data: {
-              name: values.name,
-              phone: values.phone
+      let signUpData: any = null;
+      let signUpError: any = null;
+      try {
+        const res = await withTimeout(
+          supabase.auth.signUp({
+            email: values.email,
+            password: values.password,
+            options: {
+              data: {
+                name: values.name,
+                phone: values.phone
+              },
+              emailRedirectTo: `${window.location.origin}/assessment`
             },
-            emailRedirectTo: `${window.location.origin}/assessment`
-          },
-        }),
-        12000,
-        'Sign up'
-      ).finally(() => {
+          }),
+          20000,
+          'Sign up'
+        );
+        signUpData = (res as any).data;
+        signUpError = (res as any).error;
+      } catch (e) {
+        // If signup is slow but auth succeeded (SIGNED_IN), we still want to proceed.
+        console.warn('⚠️ signUp request did not finish in time; will attempt to proceed using session event.', e);
+      } finally {
         console.timeEnd('⏱️ supabase.auth.signUp');
-      });
+      }
 
       console.log('🔐 SignUp result:', signUpData, signUpError);
 
@@ -155,7 +197,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
               email: values.email,
               password: values.password,
             }),
-            12000,
+            20000,
             'Sign in'
           ).finally(() => {
             console.timeEnd('⏱️ supabase.auth.signInWithPassword');
@@ -167,7 +209,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
             console.log('❌ SignIn error:', signInError.message);
             throw new Error(`Sign in failed: ${signInError.message}`);
           }
-          
+
           session = signInData.session;
         } else {
           throw new Error(`Sign up failed: ${signUpError.message}`);
@@ -175,6 +217,13 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       } else {
         console.log('✅ SignUp successful');
         session = signUpData?.session;
+      }
+
+      // If the auth request is slow/returns without session, rely on the session event.
+      if (!session) {
+        console.log('⏳ No session from auth response; waiting for auth session...');
+        session = await waitForSession(20000);
+        console.log('✅ Obtained session from auth listener/poll.');
       }
 
       if (!session) {
