@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AssessmentStep, useAssessmentFlow } from '@/hooks/assessment/useAssessmentFlow';
 import { StudentInfo } from '@/hooks/assessment';
@@ -8,6 +8,11 @@ import LoginModal from './auth/LoginModal';
 import SignUpSheet from './auth/SignUpSheet';
 import AssessmentStepRenderer from './AssessmentStepRenderer';
 import { useAuth } from '@/contexts/auth';
+
+// Module-level flags to persist across re-renders caused by auth state changes
+let moduleInitializing = false;
+let moduleHasInitialized = false;
+let modulePendingStudentInfo: StudentInfo | null = null;
 
 interface AssessmentFlowProps {
   onTakeFullAssessment: () => void;
@@ -26,10 +31,6 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   
   // Track if we came from profile form to prevent auto-population overwriting
   const isFromProfileForm = useRef(false);
-  
-  // Initialization guards - persist across re-renders
-  const isInitializing = useRef(false);
-  const hasInitialized = useRef(false);
   
   // Initialize the assessment flow
   const {
@@ -65,6 +66,28 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     requiredConsistentScores: 4,
     showAdminControls: true
   });
+
+  // Handle pending initialization after auth-triggered re-renders
+  useEffect(() => {
+    if (modulePendingStudentInfo && currentStep === 'entry' && !moduleInitializing) {
+      console.log("📦 Processing pending student info after re-render:", modulePendingStudentInfo);
+      const pendingInfo = modulePendingStudentInfo;
+      modulePendingStudentInfo = null;
+      
+      moduleInitializing = true;
+      isFromProfileForm.current = true;
+      
+      handleStudentInfoSubmit(pendingInfo);
+      setShowSignUpDialog(false);
+      setShowAssessmentOptions(false);
+      
+      initializeAssessment(pendingInfo.emailResults || false).finally(() => {
+        moduleInitializing = false;
+        moduleHasInitialized = true;
+        console.log("✅ Pending initialization complete");
+      });
+    }
+  }, [currentStep, handleStudentInfoSubmit, initializeAssessment]);
   
   // Toggle admin controls visibility with keyboard shortcut
   useEffect(() => {
@@ -82,8 +105,8 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   // Auto-populate student info if user is logged in (but only when not coming from profile form)
   useEffect(() => {
     // Skip auto-population if we came from the profile form signup flow
-    if (isFromProfileForm.current) {
-      console.log("Skipping auto-population - came from profile form");
+    if (isFromProfileForm.current || moduleHasInitialized || moduleInitializing) {
+      console.log("Skipping auto-population - profile form flow active");
       return;
     }
     
@@ -115,38 +138,48 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     setShowAssessmentOptions(false);
   };
 
-  const handleSignUpSuccess = (studentInfo: StudentInfo) => {
-    console.log("AssessmentFlow: SignUp successful, starting assessment with:", studentInfo);
+  const handleSignUpSuccess = useCallback((info: StudentInfo) => {
+    console.log("🎯 AssessmentFlow: SignUp callback received:", info.name);
     
     // Guard against duplicate initialization
-    if (isInitializing.current || hasInitialized.current) {
-      console.log("AssessmentFlow: Already initializing/initialized, skipping duplicate call");
+    if (moduleInitializing || moduleHasInitialized) {
+      console.log("⚠️ AssessmentFlow: Already initializing/initialized, skipping");
       return;
     }
     
-    isInitializing.current = true;
+    // Store the student info for processing after any auth-triggered re-render
+    // This persists across component re-mounts caused by auth state changes
+    modulePendingStudentInfo = info;
+    moduleInitializing = true;
     isFromProfileForm.current = true;
     
-    // Submit student info and start assessment
-    handleStudentInfoSubmit(studentInfo);
+    // Submit student info and close dialogs
+    handleStudentInfoSubmit(info);
     setShowSignUpDialog(false);
     setShowAssessmentOptions(false);
     
     // Initialize assessment to move to welcome step
-    initializeAssessment(studentInfo.emailResults || false).finally(() => {
-      isInitializing.current = false;
-      hasInitialized.current = true;
+    console.log("🚀 Starting assessment initialization...");
+    initializeAssessment(info.emailResults || false).then(() => {
+      console.log("✅ Assessment initialization complete");
+      moduleInitializing = false;
+      moduleHasInitialized = true;
+      modulePendingStudentInfo = null;
+    }).catch((err) => {
+      console.error("❌ Assessment initialization failed:", err);
+      moduleInitializing = false;
+      modulePendingStudentInfo = null;
     });
-  };
+  }, [handleStudentInfoSubmit, initializeAssessment]);
 
-  const handleLoginSuccess = (user: any) => {
+  const handleLoginSuccess = (loginUser: any) => {
     // Create student info from login data
     handleStudentInfoSubmit({
-      name: user.name || 'Anonymous User',
-      email: user.email || '',
+      name: loginUser.name || 'Anonymous User',
+      email: loginUser.email || '',
       sessionId: sessionId || `session-${Date.now()}`,
-      countryCode: user.country || '',
-      phoneNumber: user.phone || '',
+      countryCode: loginUser.country || '',
+      phoneNumber: loginUser.phone || '',
     });
     setShowLoginModal(false);
     setShowAssessmentOptions(false);
@@ -154,9 +187,10 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   };
 
   const handleAfterReset = () => {
-    // Reset refs to allow re-initialization
-    isInitializing.current = false;
-    hasInitialized.current = false;
+    // Reset module-level flags to allow re-initialization
+    moduleInitializing = false;
+    moduleHasInitialized = false;
+    modulePendingStudentInfo = null;
     isFromProfileForm.current = false;
     
     resetAssessment();
@@ -171,15 +205,15 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     <div className="container mx-auto py-6 px-4">
       {/* Debug Panel - show with ?debug=true */}
       {showDebug && (
-        <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg text-xs font-mono z-50 max-w-xs">
-          <div className="font-bold mb-2 text-yellow-400">🔧 Debug Panel</div>
-          <div>Step: <span className="text-green-400">{currentStep}</span></div>
-          <div>User: <span className="text-blue-400">{user?.id?.slice(0, 8) || 'null'}</span></div>
-          <div>StudentInfo: <span className="text-purple-400">{studentInfo?.name || 'null'}</span></div>
-          <div>SessionId: <span className="text-orange-400">{sessionId?.slice(0, 12) || 'null'}</span></div>
-          <div>PromptQueue: <span className="text-cyan-400">{totalPrompts || 0}</span></div>
-          <div>Initializing: <span className={isInitializing.current ? 'text-yellow-400' : 'text-gray-400'}>{String(isInitializing.current)}</span></div>
-          <div>HasInitialized: <span className={hasInitialized.current ? 'text-green-400' : 'text-gray-400'}>{String(hasInitialized.current)}</span></div>
+        <div className="fixed bottom-4 right-4 bg-background/95 border border-border text-foreground p-4 rounded-lg text-xs font-mono z-50 max-w-xs shadow-lg">
+          <div className="font-bold mb-2 text-primary">🔧 Debug Panel</div>
+          <div>Step: <span className="text-accent-foreground font-semibold">{currentStep}</span></div>
+          <div>User: <span className="text-muted-foreground">{user?.id?.slice(0, 8) || 'null'}</span></div>
+          <div>StudentInfo: <span className="text-muted-foreground">{studentInfo?.name || 'null'}</span></div>
+          <div>SessionId: <span className="text-muted-foreground">{sessionId?.slice(0, 12) || 'null'}</span></div>
+          <div>PromptQueue: <span className="text-muted-foreground">{totalPrompts || 0}</span></div>
+          <div>Initializing: <span className={moduleInitializing ? 'text-primary' : 'text-muted-foreground'}>{String(moduleInitializing)}</span></div>
+          <div>HasInitialized: <span className={moduleHasInitialized ? 'text-primary' : 'text-muted-foreground'}>{String(moduleHasInitialized)}</span></div>
         </div>
       )}
 
