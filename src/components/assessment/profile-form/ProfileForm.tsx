@@ -152,79 +152,58 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       }
 
       console.log('📧 Starting authentication with:', values.email);
-      
-      // 1️⃣ Try to sign up first
-      let session;
-      console.time('⏱️ supabase.auth.signUp');
-      let signUpData: any = null;
-      let signUpError: any = null;
-      try {
-        const res = await withTimeout(
-          supabase.auth.signUp({
-            email: values.email,
-            password: values.password,
-            options: {
-              data: {
-                name: values.name,
-                phone: values.phone
-              },
-              emailRedirectTo: `${window.location.origin}/assessment`
-            },
-          }),
-          20000,
-          'Sign up'
-        );
-        signUpData = (res as any).data;
-        signUpError = (res as any).error;
-      } catch (e) {
-        // If signup is slow but auth succeeded (SIGNED_IN), we still want to proceed.
-        console.warn('⚠️ signUp request did not finish in time; will attempt to proceed using session event.', e);
-      } finally {
-        console.timeEnd('⏱️ supabase.auth.signUp');
-      }
 
+      // Auth strategy:
+      // - Fire signUp first.
+      // - If user already exists, fire signIn.
+      // - Do NOT block the UX on those promises; instead proceed when Supabase session becomes available.
+      let session;
+
+      console.time('⏱️ supabase.auth.signUp (best-effort)');
+      const signUpRes = await withTimeout<any>(
+        supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            data: {
+              name: values.name,
+              phone: values.phone,
+            },
+            emailRedirectTo: `${window.location.origin}/assessment`,
+          },
+        }) as any,
+        12000,
+        'Sign up'
+      ).catch((e) => {
+        console.warn('⚠️ signUp best-effort timed out/failed (will still wait for session):', e);
+        return null;
+      }).finally(() => {
+        console.timeEnd('⏱️ supabase.auth.signUp (best-effort)');
+      });
+
+      const signUpError = signUpRes?.error;
+      const signUpData = signUpRes?.data;
       console.log('🔐 SignUp result:', signUpData, signUpError);
 
-      if (signUpError) {
-        console.log('❌ SignUp error:', signUpError.message);
-        
-        if (signUpError.message.includes('User already registered')) {
-          console.log('👤 User exists, attempting sign in...');
-
-          console.time('⏱️ supabase.auth.signInWithPassword');
-          const { data: signInData, error: signInError } = await withTimeout(
-            supabase.auth.signInWithPassword({
-              email: values.email,
-              password: values.password,
-            }),
-            20000,
-            'Sign in'
-          ).finally(() => {
-            console.timeEnd('⏱️ supabase.auth.signInWithPassword');
-          });
-          
-          console.log('🔑 SignIn result:', signInData, signInError);
-          
-          if (signInError) {
-            console.log('❌ SignIn error:', signInError.message);
-            throw new Error(`Sign in failed: ${signInError.message}`);
-          }
-
-          session = signInData.session;
-        } else {
-          throw new Error(`Sign up failed: ${signUpError.message}`);
-        }
-      } else {
-        console.log('✅ SignUp successful');
-        session = signUpData?.session;
+      if (signUpError && String(signUpError.message || '').includes('User already registered')) {
+        console.log('👤 User exists, firing sign in (best-effort)...');
+        console.time('⏱️ supabase.auth.signInWithPassword (best-effort)');
+        void supabase.auth
+          .signInWithPassword({ email: values.email, password: values.password })
+          .then(({ data, error }) => {
+            console.log('🔑 SignIn result:', data, error);
+          })
+          .catch((e) => console.error('❌ SignIn exception:', e))
+          .finally(() => console.timeEnd('⏱️ supabase.auth.signInWithPassword (best-effort)'));
+      } else if (signUpError) {
+        // For other signup errors, stop early.
+        throw new Error(`Sign up failed: ${signUpError.message}`);
       }
 
-      // If the auth request is slow/returns without session, rely on the session event.
-      if (!session) {
-        console.log('⏳ No session from auth response; waiting for auth session...');
-        session = await waitForSession(20000);
-        console.log('✅ Obtained session from auth listener/poll.');
-      }
+      // Proceed when the session is actually available.
+      console.log('⏳ Waiting for Supabase session...');
+      session = await waitForSession(25000);
+      console.log('✅ Session available. Proceeding.');
 
       if (!session) {
         console.error('❌ No session after auth');
