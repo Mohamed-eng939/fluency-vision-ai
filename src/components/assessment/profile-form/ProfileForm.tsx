@@ -46,6 +46,24 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const hasProceededRef = React.useRef(false);
+
+  const withTimeout = async <T,>(promiseLike: PromiseLike<T>, ms: number, label: string): Promise<T> => {
+    let timeoutId: number | undefined;
+    const timeoutPromise = new Promise<T>((_, reject) => {
+      timeoutId = window.setTimeout(() => {
+        reject(new Error(`${label} timed out after ${ms}ms`));
+      }, ms);
+    });
+
+    try {
+      // Supabase query builders are PromiseLike (thenable) but not typed as Promise.
+      const promise = Promise.resolve(promiseLike);
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    }
+  };
 
   // Auto-generate username
   React.useEffect(() => {
@@ -75,6 +93,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
     console.log('🚀 Form submission started with values:', values);
     setLoading(true);
     setErrorMsg(null);
+    hasProceededRef.current = false;
 
     try {
       // Validate required fields first
@@ -139,6 +158,34 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       const userId = session.user.id;
       console.log('✅ Authentication successful, userId:', userId);
 
+      // 4️⃣ Convert to StudentInfo format
+      // IMPORTANT: Proceed to assessment immediately after auth to avoid UI getting stuck
+      // if profile upsert/select stalls due to network/RLS/timing.
+      const studentInfoData: StudentInfo = {
+        name: values.name,
+        email: values.email,
+        username: values.username,
+        phone: values.phone,
+        citizenshipCountry: values.citizenshipCountry,
+        residenceCountry: values.residenceCountry,
+        dateOfBirth: values.dateOfBirth,
+        firstLanguage: values.firstLanguage,
+        testReason: values.testReason,
+        otherReason: values.otherReason,
+        estimatedLevel: values.estimatedLevel,
+        preferredContact: values.preferredContact,
+        pronunciationPreference: values.pronunciationPreference,
+        promoCode: values.promoCode,
+        dataConsent: values.dataConsent,
+        emailResults: values.emailResults,
+      };
+
+      if (!hasProceededRef.current) {
+        hasProceededRef.current = true;
+        console.log('🎉 Proceeding to assessment (onSubmit) before DB upsert');
+        onSubmit(studentInfoData);
+      }
+
       // 2️⃣ Prepare profile data
       const profileData = {
         id: userId,
@@ -163,12 +210,14 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       console.log('💾 Saving profile data:', profileData);
       
       // 3️⃣ Save to database
-      const { data: profileResult, error: dbError } = await supabase
+      // Avoid `.select()` here—if it fails or stalls, the user experience should still proceed.
+      const upsertQuery = supabase
         .from('profiles')
-        .upsert([profileData])
-        .select();
+        .upsert([profileData]);
 
-      console.log('🗃️ Database result:', profileResult, dbError);
+      const { error: dbError } = await withTimeout<any>(upsertQuery as any, 8000, 'Profile save');
+
+      console.log('🗃️ Database result:', { ok: !dbError }, dbError);
 
       if (dbError) {
         console.error('❌ Database error:', dbError);
@@ -176,31 +225,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       }
 
       console.log('✅ Profile saved successfully');
-
-      // 4️⃣ Convert to StudentInfo format
-      const studentInfoData: StudentInfo = {
-        name: values.name,
-        email: values.email,
-        username: values.username,
-        phone: values.phone,
-        citizenshipCountry: values.citizenshipCountry,
-        residenceCountry: values.residenceCountry,
-        dateOfBirth: values.dateOfBirth,
-        firstLanguage: values.firstLanguage,
-        testReason: values.testReason,
-        otherReason: values.otherReason,
-        estimatedLevel: values.estimatedLevel,
-        preferredContact: values.preferredContact,
-        pronunciationPreference: values.pronunciationPreference,
-        promoCode: values.promoCode,
-        dataConsent: values.dataConsent,
-        emailResults: values.emailResults,
-      };
-
-      console.log('🎉 Submitting to parent component');
-
-      // Call the parent callback FIRST to avoid auth state change re-render race conditions
-      onSubmit(studentInfoData);
 
       // Then show success feedback
       toast({
@@ -215,10 +239,14 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       
       setErrorMsg(errorMessage);
       
+      // If we already proceeded to assessment, don't block the user with a hard failure.
+      // Still surface the error for visibility.
       toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
+        title: hasProceededRef.current ? "Saved with warning" : "Error",
+        description: hasProceededRef.current
+          ? `Assessment started, but profile save had an issue: ${errorMessage}`
+          : errorMessage,
+        variant: hasProceededRef.current ? undefined : "destructive",
       });
     } finally {
       console.log('🏁 Setting loading to false');
