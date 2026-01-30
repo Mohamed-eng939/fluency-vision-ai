@@ -194,25 +194,38 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       const signUpData = signUpRes?.data;
       console.log('🔐 SignUp result:', signUpData, signUpError);
 
-      if (signUpError && String(signUpError.message || '').includes('User already registered')) {
-        console.log('👤 User exists, firing sign in (best-effort)...');
-        console.time('⏱️ supabase.auth.signInWithPassword (best-effort)');
-        void supabase.auth
-          .signInWithPassword({ email: values.email, password: values.password })
-          .then(({ data, error }) => {
-            console.log('🔑 SignIn result:', data, error);
-          })
-          .catch((e) => console.error('❌ SignIn exception:', e))
-          .finally(() => console.timeEnd('⏱️ supabase.auth.signInWithPassword (best-effort)'));
+      // Use session from signUp if available
+      if (signUpData?.session) {
+        console.log('✅ Got session directly from signUp response');
+        session = signUpData.session;
+      } else if (signUpError && String(signUpError.message || '').includes('User already registered')) {
+        console.log('👤 User exists, attempting sign in...');
+        console.time('⏱️ supabase.auth.signInWithPassword');
+        try {
+          const signInRes = await withTimeout<any>(
+            supabase.auth.signInWithPassword({ email: values.email, password: values.password }) as any,
+            15000,
+            'Sign in'
+          );
+          console.log('🔑 SignIn result:', signInRes?.data, signInRes?.error);
+          if (signInRes?.error) {
+            throw new Error(`Sign in failed: ${signInRes.error.message}`);
+          }
+          session = signInRes?.data?.session;
+        } finally {
+          console.timeEnd('⏱️ supabase.auth.signInWithPassword');
+        }
       } else if (signUpError) {
         // For other signup errors, stop early.
         throw new Error(`Sign up failed: ${signUpError.message}`);
       }
 
-      // Proceed when the session is actually available.
-      console.log('⏳ Waiting for Supabase session...');
-      authPhaseRef.current = 'waiting_session';
-      session = await waitForSession(25000);
+      // Only wait for session if we don't have one yet
+      if (!session) {
+        console.log('⏳ No session from auth response; waiting for Supabase session...');
+        authPhaseRef.current = 'waiting_session';
+        session = await waitForSession(25000);
+      }
       console.log('✅ Session available. Proceeding.');
 
       if (!session) {
