@@ -3,6 +3,7 @@ import { AssessmentResult, CEFRLevel } from '@/types/assessment';
 import { generateSmartFeedback } from './feedbackGeneration';
 import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
 import { aggregateVocabularyScores, QuestionVocabularyDetail } from '@/utils/assessment/vocabulary/vocabularyAggregation';
+import { analyzeCefrVocabulary } from '@/utils/assessment/vocabulary/cefrVocabularyAnalyzer';
 import { StoredResponse } from './types';
 
 /**
@@ -115,6 +116,67 @@ export const calculateAggregatedResult = async (
 
   // Aggregate audio analysis data
   const aggregatedAudioAnalysis = aggregateAudioAnalysis(results);
+
+  // --- Ensure aggregated audioAnalysis includes the fields expected by the results UI ---
+  // The UI reads:
+  // - audioAnalysis.grammarApiAnalysis
+  // - audioAnalysis.fluencyApiAnalysis
+  // - audioAnalysis.cefrVocabularyLevel + related vocab fields
+  // In multi-question flows, those fields may exist only on per-question analyses.
+  // We copy the most recent available API payloads and compute vocabulary mapping from
+  // the combined transcript.
+
+  // Pick the most recent (last) API payload; prefer one where apiUsed===true.
+  const pickLatestApiPayload = <T extends { apiUsed?: boolean }>(
+    payloads: Array<T | undefined>
+  ): T | undefined => {
+    const used = payloads.filter((p): p is T => Boolean(p && p.apiUsed === true));
+    if (used.length > 0) return used[used.length - 1];
+    const any = payloads.filter((p): p is T => Boolean(p));
+    return any.length > 0 ? any[any.length - 1] : undefined;
+  };
+
+  const perQuestionAnalyses = results
+    .map(r => r.audioAnalysis)
+    .filter((a): a is NonNullable<AssessmentResult['audioAnalysis']> => Boolean(a));
+
+  (aggregatedAudioAnalysis as any).grammarApiAnalysis = pickLatestApiPayload(
+    perQuestionAnalyses.map((a: any) => a.grammarApiAnalysis)
+  );
+  (aggregatedAudioAnalysis as any).fluencyApiAnalysis = pickLatestApiPayload(
+    perQuestionAnalyses.map((a: any) => a.fluencyApiAnalysis)
+  );
+
+  const combinedTranscript = results
+    .map(r => r.transcript)
+    .filter(Boolean)
+    .join(' ');
+
+  if (combinedTranscript.trim().length > 0) {
+    const vocab = analyzeCefrVocabulary(combinedTranscript);
+    (aggregatedAudioAnalysis as any).cefrVocabularyLevel = vocab.cefrVocabularyLevel;
+    (aggregatedAudioAnalysis as any).vocabularyJustification = vocab.vocabularyJustification;
+    (aggregatedAudioAnalysis as any).vocabularyDistribution = vocab.wordDistribution;
+    (aggregatedAudioAnalysis as any).lexicalDiversity = vocab.lexicalDiversity;
+    (aggregatedAudioAnalysis as any).recognizedWords = vocab.recognizedWords;
+    (aggregatedAudioAnalysis as any).unrecognizedWords = vocab.unrecognizedWords;
+    (aggregatedAudioAnalysis as any).recognizedWordCount = vocab.recognizedWordCount;
+    (aggregatedAudioAnalysis as any).unrecognizedWordCount = vocab.unrecognizedWordCount;
+    (aggregatedAudioAnalysis as any).totalWordCount = vocab.totalWordCount;
+    (aggregatedAudioAnalysis as any).uniqueWordCount = vocab.uniqueWordCount;
+  } else {
+    // Keep a consistent shape so UI doesn't show 0 due to missing keys
+    (aggregatedAudioAnalysis as any).cefrVocabularyLevel = 'A1';
+    (aggregatedAudioAnalysis as any).vocabularyJustification = 'No transcript provided';
+    (aggregatedAudioAnalysis as any).vocabularyDistribution = {};
+    (aggregatedAudioAnalysis as any).lexicalDiversity = 0;
+    (aggregatedAudioAnalysis as any).recognizedWords = {};
+    (aggregatedAudioAnalysis as any).unrecognizedWords = [];
+    (aggregatedAudioAnalysis as any).recognizedWordCount = 0;
+    (aggregatedAudioAnalysis as any).unrecognizedWordCount = 0;
+    (aggregatedAudioAnalysis as any).totalWordCount = 0;
+    (aggregatedAudioAnalysis as any).uniqueWordCount = 0;
+  }
   
   // Determine CEFR level from weighted score using enhanced thresholds
   let cefrLevel = determineCEFRFromScore(totalScore);
