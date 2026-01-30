@@ -132,14 +132,61 @@ export const calculateAggregatedResult = async (
     .filter((a): a is NonNullable<AssessmentResult['audioAnalysis']> => Boolean(a));
 
   // --- Aggregate Grammar API results ---
-  // Pick the latest grammar API payload (grammar is text-based, last response is representative)
+  // Average scores across all grammar API payloads, sum errors, combine comments
   const grammarPayloads = perQuestionAnalyses
     .map((a: any) => a.grammarApiAnalysis)
     .filter((p: any) => p && p.apiUsed === true);
   
   if (grammarPayloads.length > 0) {
-    // Use the last grammar result as representative
-    (aggregatedAudioAnalysis as any).grammarApiAnalysis = grammarPayloads[grammarPayloads.length - 1];
+    // Calculate average scores across all grammar results
+    let totalAccuracy = 0, totalComplexity = 0, totalLexical = 0, totalStructure = 0, totalFinal = 0;
+    let totalErrors = 0;
+    const allComments: string[] = [];
+    let validScoreCount = 0;
+    
+    grammarPayloads.forEach((p: any) => {
+      if (p.scores) {
+        totalAccuracy += p.scores.accuracy || 0;
+        totalComplexity += p.scores.complexity || 0;
+        totalLexical += p.scores.lexical || 0;
+        totalStructure += p.scores.structure || 0;
+        totalFinal += p.scores.final || 0;
+        validScoreCount++;
+      }
+      totalErrors += p.errors || 0;
+      if (p.comments && Array.isArray(p.comments)) {
+        allComments.push(...p.comments);
+      }
+    });
+    
+    const avgAccuracy = validScoreCount > 0 ? totalAccuracy / validScoreCount : 0;
+    const avgComplexity = validScoreCount > 0 ? totalComplexity / validScoreCount : 0;
+    const avgLexical = validScoreCount > 0 ? totalLexical / validScoreCount : 0;
+    const avgStructure = validScoreCount > 0 ? totalStructure / validScoreCount : 0;
+    const avgFinal = validScoreCount > 0 ? totalFinal / validScoreCount : 0;
+    
+    // Determine CEFR from average final score (0-1 scale)
+    let grammarCefr = 'A1';
+    if (avgFinal >= 0.9) grammarCefr = 'C2';
+    else if (avgFinal >= 0.8) grammarCefr = 'C1';
+    else if (avgFinal >= 0.65) grammarCefr = 'B2';
+    else if (avgFinal >= 0.5) grammarCefr = 'B1';
+    else if (avgFinal >= 0.35) grammarCefr = 'A2';
+    else grammarCefr = 'A1';
+    
+    (aggregatedAudioAnalysis as any).grammarApiAnalysis = {
+      cefr: grammarCefr,
+      scores: {
+        accuracy: avgAccuracy,
+        complexity: avgComplexity,
+        lexical: avgLexical,
+        structure: avgStructure,
+        final: avgFinal,
+      },
+      errors: totalErrors,
+      comments: [...new Set(allComments)], // Deduplicate comments
+      apiUsed: true,
+    };
   }
 
   // --- Aggregate Fluency API results ---
