@@ -1,9 +1,9 @@
 /**
  * Grammar Analysis API Service
- * Calls external grammar API for detailed error detection and CEFR scoring
+ * Calls grammar API via Edge Function proxy to avoid CORS issues
  */
 
-const GRAMMAR_API_URL = 'https://grammer-service-gb41.vercel.app/grammar';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface GrammarApiScores {
   accuracy: number;     // 0-1 scale
@@ -21,21 +21,20 @@ export interface GrammarApiResponse {
 }
 
 /**
- * Analyze grammar using external API
+ * Analyze grammar using Edge Function proxy
  */
 export async function analyzeGrammarWithApi(text: string): Promise<GrammarApiResponse> {
-  const response = await fetch(GRAMMAR_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text }),
+  const { data, error } = await supabase.functions.invoke('grammar-proxy', {
+    body: { text },
   });
 
-  if (!response.ok) {
-    throw new Error(`Grammar API error: ${response.status}`);
+  if (error) {
+    throw new Error(`Grammar API error: ${error.message}`);
   }
 
-  const data = await response.json();
+  if (data?.error) {
+    throw new Error(`Grammar API error: ${data.error}`);
+  }
+
   return data;
 }
