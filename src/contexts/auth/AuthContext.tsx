@@ -26,23 +26,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // Fetch user profile from profiles table
+          // IMPORTANT: Never block auth state on a profile fetch.
+          // If PostgREST/RLS/network stalls here, the app would keep `user=null` forever.
+          const basicUser: UserProfile = {
+            id: session.user.id,
+            full_name: session.user.user_metadata?.name || '',
+            email: session.user.email || '',
+            role: 'learner',
+            phone: '',
+            country_of_citizenship: '',
+            country_of_residence: '',
+            first_language: '',
+            username: '',
+            date_of_birth: null,
+          };
+          setUser(basicUser);
+
+          // Fetch user profile from profiles table (best-effort with timeout)
           try {
-            const { data: profile, error } = await supabase
+            console.time('⏱️ auth: fetch profile');
+            const profilePromise = supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
-            
-            if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-              console.error('Error fetching profile:', error);
+
+            const { data: profile, error } = await Promise.race([
+              Promise.resolve(profilePromise as any),
+              new Promise<{ data: null; error: Error }>((_, reject) =>
+                setTimeout(() => reject(new Error('Profile fetch timed out after 8000ms')), 8000)
+              ),
+            ]);
+
+            if (error && (error as any).code !== 'PGRST116') {
+              console.error('❌ Error fetching profile:', error);
             }
-            
-            const userProfile: UserProfile = {
-              id: session.user.id,
-              full_name: profile?.full_name || session.user.user_metadata?.name || '',
-              email: session.user.email || profile?.email || '',
-              role: (profile?.role as UserRole) || 'learner',
+
+            const mergedUser: UserProfile = {
+              ...basicUser,
+              full_name: profile?.full_name || basicUser.full_name,
+              email: profile?.email || basicUser.email,
+              role: (profile?.role as UserRole) || basicUser.role,
               phone: profile?.phone || '',
               country_of_citizenship: profile?.country_of_citizenship || '',
               country_of_residence: profile?.country_of_residence || '',
@@ -50,24 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               username: profile?.username || '',
               date_of_birth: profile?.date_of_birth || null,
             };
-            
-            setUser(userProfile);
+            setUser(mergedUser);
           } catch (error) {
-            console.error('Error processing user profile:', error);
-            // Set basic user info even if profile fetch fails
-            const basicUser: UserProfile = {
-              id: session.user.id,
-              full_name: session.user.user_metadata?.name || '',
-              email: session.user.email || '',
-              role: 'learner',
-              phone: '',
-              country_of_citizenship: '',
-              country_of_residence: '',
-              first_language: '',
-              username: '',
-              date_of_birth: null,
-            };
-            setUser(basicUser);
+            console.error('⚠️ Profile fetch failed (continuing with basic user):', error);
+          } finally {
+            console.timeEnd('⏱️ auth: fetch profile');
           }
         } else {
           setUser(null);
