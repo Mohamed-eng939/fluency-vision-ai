@@ -36,8 +36,9 @@ export const calculateFluencyCriterion = async (
     const apiResult = await analyzeFluencyWithApi(transcript, durationSeconds);
     
     // Store API analysis in audioMetrics for later use
+    // IMPORTANT: Use 'cefr' as the key - this is what the UI expects
     audioMetrics.fluencyApiAnalysis = {
-      cefr: apiResult.cefr_level,
+      cefr: apiResult.cefr_level,  // Map cefr_level -> cefr for UI consistency
       syllables: apiResult.syllables,
       spm: apiResult.spm,
       apiUsed: true,
