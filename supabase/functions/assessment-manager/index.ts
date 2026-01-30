@@ -190,9 +190,44 @@ async function createAssessmentSession(supabase: any, userId: string, requestBod
 // Save individual assessment response
 async function saveAssessmentResponse(supabase: any, userId: string, requestBody: any) {
   try {
-    const { sessionId, promptId, promptIdentifier, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal, studentInfo } = requestBody;
+    const { sessionId, promptId: providedPromptId, promptIdentifier, promptOrder, userResponse, transcript, audioUrl, audioDuration, scores, detailedFeedback, mistakesAnalysis, isFinal, studentInfo } = requestBody;
 
     console.log(`[Assessment Manager] Saving response for session ${sessionId}, prompt order ${promptOrder}`);
+
+    // Look up the real prompt_id from the database using the promptIdentifier
+    // This handles cases where the frontend sends a fake UUID
+    let promptId = providedPromptId;
+    
+    if (promptIdentifier) {
+      // Try to find prompt by matching title prefix (e.g., "Q1_A1" matches "Q1_A1 - Personal Info")
+      const { data: matchingPrompt, error: promptError } = await supabase
+        .from('prompts')
+        .select('id, title')
+        .ilike('title', `${promptIdentifier}%`)
+        .maybeSingle();
+      
+      if (matchingPrompt) {
+        console.log(`[Assessment Manager] Found prompt by identifier: ${promptIdentifier} -> ${matchingPrompt.id}`);
+        promptId = matchingPrompt.id;
+      } else if (promptError) {
+        console.warn(`[Assessment Manager] Error looking up prompt by identifier: ${promptError.message}`);
+      }
+    }
+    
+    // If still no valid promptId, try to find by prompt order
+    if (!promptId || promptId === providedPromptId) {
+      const { data: promptByOrder } = await supabase
+        .from('prompts')
+        .select('id')
+        .order('created_at', { ascending: true })
+        .range(promptOrder, promptOrder)
+        .maybeSingle();
+      
+      if (promptByOrder) {
+        console.log(`[Assessment Manager] Found prompt by order ${promptOrder}: ${promptByOrder.id}`);
+        promptId = promptByOrder.id;
+      }
+    }
 
     // First try to find existing session
     const { data: existingSession, error: findError } = await supabase
