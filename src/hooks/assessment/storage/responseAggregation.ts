@@ -126,26 +126,59 @@ export const calculateAggregatedResult = async (
   // We copy the most recent available API payloads and compute vocabulary mapping from
   // the combined transcript.
 
-  // Pick the most recent (last) API payload; prefer one where apiUsed===true.
-  const pickLatestApiPayload = <T extends { apiUsed?: boolean }>(
-    payloads: Array<T | undefined>
-  ): T | undefined => {
-    const used = payloads.filter((p): p is T => Boolean(p && p.apiUsed === true));
-    if (used.length > 0) return used[used.length - 1];
-    const any = payloads.filter((p): p is T => Boolean(p));
-    return any.length > 0 ? any[any.length - 1] : undefined;
-  };
-
+  // Get all per-question analyses
   const perQuestionAnalyses = results
     .map(r => r.audioAnalysis)
     .filter((a): a is NonNullable<AssessmentResult['audioAnalysis']> => Boolean(a));
 
-  (aggregatedAudioAnalysis as any).grammarApiAnalysis = pickLatestApiPayload(
-    perQuestionAnalyses.map((a: any) => a.grammarApiAnalysis)
-  );
-  (aggregatedAudioAnalysis as any).fluencyApiAnalysis = pickLatestApiPayload(
-    perQuestionAnalyses.map((a: any) => a.fluencyApiAnalysis)
-  );
+  // --- Aggregate Grammar API results ---
+  // Pick the latest grammar API payload (grammar is text-based, last response is representative)
+  const grammarPayloads = perQuestionAnalyses
+    .map((a: any) => a.grammarApiAnalysis)
+    .filter((p: any) => p && p.apiUsed === true);
+  
+  if (grammarPayloads.length > 0) {
+    // Use the last grammar result as representative
+    (aggregatedAudioAnalysis as any).grammarApiAnalysis = grammarPayloads[grammarPayloads.length - 1];
+  }
+
+  // --- Aggregate Fluency API results ---
+  // For fluency, we need to SUM syllables and CALCULATE weighted average SPM
+  const fluencyPayloads = perQuestionAnalyses
+    .map((a: any) => a.fluencyApiAnalysis)
+    .filter((p: any) => p && p.apiUsed === true);
+  
+  if (fluencyPayloads.length > 0) {
+    // Sum all syllables
+    const totalSyllables = fluencyPayloads.reduce((sum: number, p: any) => sum + (p.syllables || 0), 0);
+    
+    // Calculate weighted average SPM (weight by syllables count)
+    let weightedSpmSum = 0;
+    let totalWeight = 0;
+    fluencyPayloads.forEach((p: any) => {
+      if (p.spm && p.syllables) {
+        weightedSpmSum += p.spm * p.syllables;
+        totalWeight += p.syllables;
+      }
+    });
+    const averageSpm = totalWeight > 0 ? Math.round(weightedSpmSum / totalWeight * 10) / 10 : 0;
+    
+    // Determine CEFR from average SPM (using standard thresholds)
+    let fluencyCefr = 'A1';
+    if (averageSpm >= 150) fluencyCefr = 'C2';
+    else if (averageSpm >= 130) fluencyCefr = 'C1';
+    else if (averageSpm >= 110) fluencyCefr = 'B2';
+    else if (averageSpm >= 90) fluencyCefr = 'B1';
+    else if (averageSpm >= 70) fluencyCefr = 'A2';
+    else fluencyCefr = 'A1';
+    
+    (aggregatedAudioAnalysis as any).fluencyApiAnalysis = {
+      cefr: fluencyCefr,
+      syllables: totalSyllables,
+      spm: averageSpm,
+      apiUsed: true,
+    };
+  }
 
   const combinedTranscript = results
     .map(r => r.transcript)
