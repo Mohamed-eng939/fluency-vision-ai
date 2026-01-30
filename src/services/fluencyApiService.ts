@@ -1,9 +1,9 @@
 /**
  * Fluency Analysis API Service
- * Calls external fluency API for CEFR scoring based on speech patterns
+ * Calls fluency API via Edge Function proxy to avoid CORS issues
  */
 
-const FLUENCY_API_URL = 'https://fluency-service-v3xh.vercel.app/evaluate';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface FluencyApiRequest {
   transcript: string;
@@ -17,27 +17,23 @@ export interface FluencyApiResponse {
 }
 
 /**
- * Analyze fluency using external API
+ * Analyze fluency using Edge Function proxy
  */
 export async function analyzeFluencyWithApi(
   transcript: string,
   durationSeconds: number
 ): Promise<FluencyApiResponse> {
-  const response = await fetch(FLUENCY_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      transcript,
-      duration_seconds: durationSeconds,
-    }),
+  const { data, error } = await supabase.functions.invoke('fluency-proxy', {
+    body: { transcript, duration_seconds: durationSeconds },
   });
 
-  if (!response.ok) {
-    throw new Error(`Fluency API error: ${response.status}`);
+  if (error) {
+    throw new Error(`Fluency API error: ${error.message}`);
   }
 
-  const data = await response.json();
+  if (data?.error) {
+    throw new Error(`Fluency API error: ${data.error}`);
+  }
+
   return data;
 }
