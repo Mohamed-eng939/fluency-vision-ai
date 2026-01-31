@@ -50,8 +50,8 @@ export const assessorService = {
       }
 
       // Call the assessor-manager edge function for secure access
-      const { data, error } = await supabase.functions.invoke('assessor-manager', {
-        body: { action: 'getPending' }
+      const { data, error } = await supabase.functions.invoke('assessor-manager/pending-assessments', {
+        method: 'GET'
       });
 
       if (error) {
@@ -96,9 +96,9 @@ export const assessorService = {
       }
 
       // Call the assessor-manager edge function for secure assignment
-      const { data, error } = await supabase.functions.invoke('assessor-manager', {
+      const { data, error } = await supabase.functions.invoke('assessor-manager/assign-assessment', {
+        method: 'POST',
         body: { 
-          action: 'assign',
           sessionId,
           assessorId: user.id // Use authenticated user's ID
         }
