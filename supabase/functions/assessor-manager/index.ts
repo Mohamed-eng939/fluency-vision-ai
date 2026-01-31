@@ -12,9 +12,21 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    // Use anon key for auth verification
+    const anonClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false,
+        }
+      }
+    );
+
+    // Use service role for database operations (bypasses RLS)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
           persistSession: false,
@@ -31,7 +43,7 @@ serve(async (req) => {
     }
 
     const jwt = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+    const { data: { user }, error: authError } = await anonClient.auth.getUser(jwt);
     
     if (authError || !user) {
       return new Response(
@@ -40,16 +52,18 @@ serve(async (req) => {
       );
     }
 
-    // Verify user is assessor or admin
-    const { data: profile } = await supabase
+    // Verify user is assessor or admin using service role client
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role, organization_id')
       .eq('id', user.id)
       .single();
 
-    if (!profile || !['assessor', 'admin'].includes(profile.role)) {
+    console.log('Profile check for user:', user.id, 'Result:', profile, 'Error:', profileError);
+
+    if (profileError || !profile || !['assessor', 'admin'].includes(profile.role)) {
       return new Response(
-        JSON.stringify({ error: 'Insufficient permissions' }),
+        JSON.stringify({ error: 'Insufficient permissions', details: profileError?.message }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
