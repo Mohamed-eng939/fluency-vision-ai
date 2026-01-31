@@ -242,25 +242,10 @@ const AssessorPanel: React.FC = () => {
                       
                       <div className="flex gap-2 ml-4">
                         <Button
-                          variant="outline"
                           size="sm"
                           onClick={() => handleViewDetails(assessment.id)}
                         >
                           Review Assessment
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleAssignAssessment(assessment.id)}
-                          disabled={isAssigning === assessment.id}
-                        >
-                          {isAssigning === assessment.id ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                              Assigning...
-                            </>
-                          ) : (
-                            'Assign to Me'
-                          )}
                         </Button>
                       </div>
                     </div>
