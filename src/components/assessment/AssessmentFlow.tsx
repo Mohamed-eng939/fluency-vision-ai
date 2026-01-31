@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/auth';
 let moduleInitializing = false;
 let moduleHasInitialized = false;
 let modulePendingStudentInfo: StudentInfo | null = null;
+let moduleShowAssessmentOptions = true;
 
 interface AssessmentFlowProps {
   onTakeFullAssessment: () => void;
@@ -22,8 +23,13 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [showAdminControls, setShowAdminControls] = useState(false);
-  const [showAssessmentOptions, setShowAssessmentOptions] = useState(true);
+  const [showAssessmentOptions, setShowAssessmentOptions] = useState(moduleShowAssessmentOptions);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  // Sync module-level flag whenever state changes
+  useEffect(() => {
+    moduleShowAssessmentOptions = showAssessmentOptions;
+  }, [showAssessmentOptions]);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
   
   // Debug mode via URL param
@@ -191,6 +197,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     moduleInitializing = false;
     moduleHasInitialized = false;
     modulePendingStudentInfo = null;
+    moduleShowAssessmentOptions = true;
     isFromProfileForm.current = false;
     
     resetAssessment();
