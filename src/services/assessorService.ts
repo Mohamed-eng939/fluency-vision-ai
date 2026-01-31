@@ -59,14 +59,16 @@ export const assessorService = {
         throw new Error(error.message);
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'Failed to fetch pending assessments');
-      }
+       if (!data?.success) {
+         throw new Error(data?.error || 'Failed to fetch pending assessments');
+       }
 
-      console.log('✅ [assessorService] Got pending assessments:', data.data?.length);
+       const assessments = data.assessments || [];
+
+       console.log('✅ [assessorService] Got pending assessments:', assessments.length);
       return {
         success: true,
-        data: data.data || []
+         data: assessments
       };
     } catch (error: any) {
       console.error('❌ [assessorService] Failed to get pending assessments:', error);
