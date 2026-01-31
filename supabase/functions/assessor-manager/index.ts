@@ -132,9 +132,9 @@ async function getPendingAssessments(supabase: any, userId: string, profile: any
       .in('status', ['completed', 'under_review'])
       .order('created_at', { ascending: false });
 
-    // If user is assessor (not admin), filter by organization if they have one
-    if (profile.role === 'assessor' && profile.organization_id) {
-      query = query.eq('organization_id', profile.organization_id);
+    // If user is assessor (not admin), only show assessments assigned to them
+    if (profile.role === 'assessor') {
+      query = query.eq('assigned_assessor', userId);
     }
 
     const { data: assessments, error } = await query;
