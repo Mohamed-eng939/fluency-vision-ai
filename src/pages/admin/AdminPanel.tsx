@@ -29,6 +29,7 @@ const AdminPanel: React.FC = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => window.location.href = '/'}>Home</Button>
+          <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>Dashboard</Button>
           {user && <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>}
         </div>
       </div>
