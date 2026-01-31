@@ -2,10 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, UserCheck, Clock, FileText } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, UserCheck, Clock, FileText, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -41,6 +55,16 @@ const AssessmentAssignmentDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+
+  // Handle opening assign dialog with validation
+  const handleOpenAssignDialog = () => {
+    if (selectedAssessments.size === 0) {
+      toast.error('You should select assessments first');
+      return;
+    }
+    setIsAssignDialogOpen(true);
+  };
 
   // Fetch completed assessments and available assessors
   useEffect(() => {
@@ -63,6 +87,7 @@ const AssessmentAssignmentDashboard: React.FC = () => {
         if (profile?.role !== 'admin') {
           throw new Error('You must be an admin to access this dashboard');
         }
+        
         // Fetch completed assessments
         const { data: assessmentData, error: assessmentError } = await supabase
           .from('assessment_sessions')
@@ -144,10 +169,10 @@ const AssessmentAssignmentDashboard: React.FC = () => {
     }
   };
 
-  // Handle batch assignment
-  const handleBatchAssign = async () => {
-    if (!selectedAssessor || selectedAssessments.size === 0) {
-      toast.error('Please select an assessor and at least one assessment');
+  // Handle batch assignment from dialog
+  const handleConfirmAssignment = async () => {
+    if (!selectedAssessor) {
+      toast.error('Please select an assessor');
       return;
     }
 
@@ -162,8 +187,7 @@ const AssessmentAssignmentDashboard: React.FC = () => {
           status: 'under_review',
           reviewed_at: new Date().toISOString()
         })
-        .in('id', assessmentIds)
-        .eq('status', 'completed');
+        .in('id', assessmentIds);
 
       if (error) {
         throw error;
@@ -176,11 +200,13 @@ const AssessmentAssignmentDashboard: React.FC = () => {
           : assessment
       ));
 
+      const assignedAssessor = assessors.find(a => a.id === selectedAssessor);
+      toast.success(`Successfully assigned ${assessmentIds.length} assessment${assessmentIds.length !== 1 ? 's' : ''} to ${assignedAssessor?.full_name || 'assessor'}`);
+      
+      // Reset state
       setSelectedAssessments(new Set());
       setSelectedAssessor('');
-      
-      const assignedAssessor = assessors.find(a => a.id === selectedAssessor);
-      toast.success(`Successfully assigned ${assessmentIds.length} assessments to ${assignedAssessor?.full_name}`);
+      setIsAssignDialogOpen(false);
     } catch (error: any) {
       console.error('Error assigning assessments:', error);
       toast.error('Failed to assign assessments: ' + error.message);
@@ -247,10 +273,10 @@ const AssessmentAssignmentDashboard: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-orange-500" />
+              <Clock className="h-5 w-5 text-destructive" />
               <div>
                 <p className="text-sm font-medium">Pending Assignment</p>
-                <p className="text-2xl font-bold text-orange-500">{unassignedCount}</p>
+                <p className="text-2xl font-bold text-destructive">{unassignedCount}</p>
               </div>
             </div>
           </CardContent>
@@ -258,66 +284,33 @@ const AssessmentAssignmentDashboard: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <UserCheck className="h-5 w-5 text-blue-500" />
+              <UserCheck className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm font-medium">Under Review</p>
-                <p className="text-2xl font-bold text-blue-500">{underReviewCount}</p>
+                <p className="text-2xl font-bold text-primary">{underReviewCount}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Assignment Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Batch Assignment</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1">
-              <Select value={selectedAssessor} onValueChange={setSelectedAssessor}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an assessor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {assessors.map((assessor) => (
-                    <SelectItem key={assessor.id} value={assessor.id}>
-                      {assessor.full_name} ({assessor.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={handleBatchAssign}
-              disabled={isAssigning || selectedAssessments.size === 0 || !selectedAssessor}
-              className="shrink-0"
-            >
-              {isAssigning ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Assigning...
-                </>
-              ) : (
-                `Assign ${selectedAssessments.size} Assessment${selectedAssessments.size !== 1 ? 's' : ''}`
-              )}
-            </Button>
-          </div>
-          {selectedAssessments.size > 0 && (
-            <p className="text-sm text-muted-foreground">
-              {selectedAssessments.size} assessment{selectedAssessments.size !== 1 ? 's' : ''} selected
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Assessments Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Assessment Management</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle>Assessment Data</CardTitle>
+          <Button onClick={handleOpenAssignDialog} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Assign To
+          </Button>
         </CardHeader>
         <CardContent>
+          {selectedAssessments.size > 0 && (
+            <div className="mb-4 p-3 bg-muted rounded-md">
+              <p className="text-sm font-medium">
+                {selectedAssessments.size} assessment{selectedAssessments.size !== 1 ? 's' : ''} selected
+              </p>
+            </div>
+          )}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -399,6 +392,62 @@ const AssessmentAssignmentDashboard: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Assign To Dialog */}
+      <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assign Assessments</DialogTitle>
+            <DialogDescription>
+              Select an assessor to review {selectedAssessments.size} selected assessment{selectedAssessments.size !== 1 ? 's' : ''}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Select value={selectedAssessor} onValueChange={setSelectedAssessor}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select an assessor" />
+              </SelectTrigger>
+              <SelectContent>
+                {assessors.length > 0 ? (
+                  assessors.map((assessor) => (
+                    <SelectItem key={assessor.id} value={assessor.id}>
+                      {assessor.full_name || assessor.email}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="p-2 text-sm text-muted-foreground">
+                    No assessors available
+                  </div>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAssignDialogOpen(false);
+                setSelectedAssessor('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmAssignment}
+              disabled={isAssigning || !selectedAssessor}
+            >
+              {isAssigning ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Assigning...
+                </>
+              ) : (
+                'Confirm Assignment'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
