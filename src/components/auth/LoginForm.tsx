@@ -44,14 +44,9 @@ const LoginForm: React.FC = () => {
     try {
       // Check if input is email or username
       const isEmail = values.emailOrUsername.includes('@');
+      let loginEmail = values.emailOrUsername;
       
-      if (isEmail) {
-        const { error } = await signIn(values.emailOrUsername, values.password);
-        
-        if (!error) {
-          navigate('/dashboard');
-        }
-      } else {
+      if (!isEmail) {
         // For username login, we need to get the email first from profiles table
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -68,10 +63,30 @@ const LoginForm: React.FC = () => {
           setIsSubmitting(false);
           return;
         }
-        
-        const { error } = await signIn(profile.email, values.password);
-        
-        if (!error) {
+        loginEmail = profile.email;
+      }
+      
+      const { error } = await signIn(loginEmail, values.password);
+      
+      if (!error) {
+        // Fetch user profile to determine redirect based on role
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          
+          // Navigate based on role
+          if (profile?.role === 'admin') {
+            navigate('/admin');
+          } else if (profile?.role === 'assessor') {
+            navigate('/assessor');
+          } else {
+            navigate('/dashboard');
+          }
+        } else {
           navigate('/dashboard');
         }
       }
