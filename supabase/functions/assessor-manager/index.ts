@@ -132,8 +132,8 @@ async function getPendingAssessments(supabase: any, userId: string, profile: any
       .in('status', ['completed', 'under_review'])
       .order('created_at', { ascending: false });
 
-    // If user is assessor (not admin), filter by organization
-    if (profile.role === 'assessor') {
+    // If user is assessor (not admin), filter by organization if they have one
+    if (profile.role === 'assessor' && profile.organization_id) {
       query = query.eq('organization_id', profile.organization_id);
     }
 
@@ -177,8 +177,8 @@ async function getAssessmentForReview(supabase: any, userId: string, sessionId: 
       `)
       .eq('id', sessionId);
 
-    // If user is assessor (not admin), filter by organization
-    if (profile.role === 'assessor') {
+    // If user is assessor (not admin), filter by organization if they have one
+    if (profile.role === 'assessor' && profile.organization_id) {
       sessionQuery = sessionQuery.eq('organization_id', profile.organization_id);
     }
 
