@@ -1,183 +1,204 @@
 
-# Fix Plan: Assessment Flow Not Advancing After Profile Save
+# Fix Plan: Navigation to Start Assessment After Profile Form
 
 ## Problem Summary
-After creating a profile or clicking "Skip Profile & Start Test", the assessment gets stuck on the entry step despite successful authentication and prompt initialization. The console shows:
-- `Auth state changed: SIGNED_IN`
-- `[PROMPT_INIT]` logs (from hook re-execution, not actual initialization)
-- But `currentStep` remains `entry` and `user` shows as `null`
+
+After successfully authenticating and saving profile data, the assessment flow is not navigating to the "Welcome" step (start assessment page). The user remains stuck, likely seeing the assessment options screen instead of proceeding.
 
 ## Root Cause Analysis
 
-### Issue 1: Stale Closure with Async State Updates
-The `initializeAssessmentFlow` function is async, but the auth state change from `supabase.auth.signUp()` triggers an immediate re-render BEFORE the async function completes:
+After tracing the code flow, I identified **two related issues**:
 
-```
-ProfileForm.handleSubmit()
-  ↓
-supabase.auth.signUp() → triggers onAuthStateChange
-  ↓
-onAuthStateChange sets user in AuthContext
-  ↓
-AssessmentFlow re-renders with new hook instances
-  ↓
-OLD initializeAssessmentFlow continues with STALE closure references
-  ↓
-setCurrentStep(WELCOME) may not work properly
+### Issue 1: `showAssessmentOptions` State Not Persisted
+
+In `AssessmentFlow.tsx`, the `showAssessmentOptions` state is initialized with `useState(true)`:
+```javascript
+const [showAssessmentOptions, setShowAssessmentOptions] = useState(true);
 ```
 
-### Issue 2: Misleading Log Messages
-The `[PROMPT_INIT]` logs appear on every hook execution (line 27 of `usePromptManagement.ts`), not when `initializePromptQueue()` is called. This creates confusion about what's actually executing.
+While `currentStep` changes are handled with module-level flags (`moduleInitializing`, `moduleHasInitialized`, `modulePendingStudentInfo`) to persist across auth-triggered re-renders, `showAssessmentOptions` is NOT similarly protected.
 
-### Issue 3: No State Persistence Across Auth Changes
-The assessment state is managed by hooks that reinitialize on each render. When auth state changes cause re-renders, there's no mechanism to preserve the in-progress initialization.
+When authentication succeeds:
+1. `ProfileForm` completes auth and calls `onSubmit()`
+2. `handleProfileSubmit` → `onStart()` → `initializeAssessmentFlow()`
+3. `setShowAssessmentOptions(false)` is called
+4. `setCurrentStep(WELCOME)` is called
+5. **BUT** auth state change triggers re-render
+6. If the component remounts, `showAssessmentOptions` resets to `true`
+
+### Issue 2: `showAssessmentOptions` Check Blocks Step Rendering
+
+In `AssessmentStepRenderer.tsx` lines 72-78:
+```javascript
+if (showAssessmentOptions) {
+  return <AssessmentOptions ... />;
+}
+switch (currentStep) { ... }
+```
+
+Even if `currentStep` is correctly set to `WELCOME`, if `showAssessmentOptions` is `true`, the user sees `AssessmentOptions` instead of the welcome screen.
+
+### Issue 3: TestEntryStep vs SignUpSheet Flow Mismatch
+
+There are **two paths** to profile submission:
+1. **SignUpSheet path**: Uses module-level guards and `handleSignUpSuccess` callback
+2. **TestEntryStep path**: Directly calls `onStart()` without the same guards
+
+The `TestEntryStep` path (triggered when user clicks "Quick Assessment" → fills profile) doesn't have the same protection mechanisms.
 
 ## Solution
 
-### Phase 1: Make State Transitions Synchronous and Guaranteed
+### Phase 1: Persist `showAssessmentOptions` at Module Level
+
+Similar to how `moduleInitializing` and `moduleHasInitialized` are module-level, add a module-level flag for the assessment options state.
+
+**File: `src/components/assessment/AssessmentFlow.tsx`**
+
+```typescript
+// Module-level flags to persist across re-renders caused by auth state changes
+let moduleInitializing = false;
+let moduleHasInitialized = false;
+let modulePendingStudentInfo: StudentInfo | null = null;
+let moduleShowAssessmentOptions = true; // ADD THIS
+
+// Inside the component:
+const [showAssessmentOptions, setShowAssessmentOptions] = useState(moduleShowAssessmentOptions);
+
+// Sync module-level flag whenever state changes
+useEffect(() => {
+  moduleShowAssessmentOptions = showAssessmentOptions;
+}, [showAssessmentOptions]);
+```
+
+### Phase 2: Add Guard for TestEntryStep Path
+
+The `TestEntryStep.handleProfileSubmit` path needs the same initialization guards.
+
+**File: `src/components/assessment/AssessmentStepRenderer.tsx`**
+
+Create a wrapper callback that mimics `handleSignUpSuccess` behavior:
+
+```typescript
+// Wrap the initializeAssessment call with guards
+const handleTestEntryStart = (withEmail: boolean) => {
+  if (moduleInitializing || moduleHasInitialized) {
+    console.log("Already initializing, skipping duplicate call");
+    return;
+  }
+  initializeAssessment(withEmail);
+};
+```
+
+Then pass this wrapper to `TestEntryStep`:
+```typescript
+<TestEntryStep 
+  onStart={handleTestEntryStart}
+  onStudentInfoSubmit={onStudentInfoSubmit}
+/>
+```
+
+### Phase 3: Ensure Step Change Happens Before Auth Triggers Re-render
+
+The current code sets `currentStep` to `WELCOME` synchronously, which is correct. However, we need to ensure the `showAssessmentOptions = false` also persists.
 
 **File: `src/hooks/assessment/useAssessmentFlowActions.ts`**
 
-Restructure `initializeAssessmentFlow` to set the step FIRST (synchronously), then do async operations:
+No changes needed here - the synchronous `setCurrentStep(WELCOME)` is already correct.
 
-```typescript
-const initializeAssessmentFlow = async (withEmail: boolean = false) => {
-  console.log("🚀 INIT: Starting assessment initialization with email:", withEmail);
-  
-  // CRITICAL: Set step to WELCOME FIRST, synchronously, before any async operations
-  console.log("🎯 INIT: setCurrentStep(WELCOME) - SYNCHRONOUS");
-  setCurrentStep(AssessmentStep.WELCOME);
-  
-  // Now do async operations - they won't affect the step
-  try {
-    const sessionId = await initializeSession(withEmail);
-    console.log("✅ INIT: Session initialized with ID:", sessionId);
-    
-    initializePromptQueue();
-    resetScoring();
-    resetStoredResponses();
-    console.log("✅ INIT: All initializations complete");
-  } catch (error) {
-    console.error("❌ INIT: Error during initialization (step already set to WELCOME):", error);
-  }
-};
-```
+### Phase 4: Reset Module Flags on Full Reset
 
-### Phase 2: Fix Misleading Logs in usePromptManagement
-
-**File: `src/hooks/assessment/usePromptManagement.ts`**
-
-Move the logging inside `initializePromptQueue` and make `orderedPrompts` a memoized value:
-
-```typescript
-import { useState, useMemo } from 'react';
-
-export const usePromptManagement = (maxPrompts: number = 38) => {
-  // Memoize sorted prompts to prevent recalculation on every render
-  const sortedPrompts = useMemo(() => {
-    const freeSpeakingPrompts = mockPrompts.filter(p => !p.isReadAloud);
-    const readAloudPrompts = mockPrompts.filter(p => p.isReadAloud);
-    return [...freeSpeakingPrompts, ...readAloudPrompts];
-  }, []);
-  
-  // ... rest of hook ...
-  
-  const initializePromptQueue = () => {
-    console.info('[PROMPT_QUEUE_INIT] Actually initializing queue now');
-    console.info('[PROMPT_QUEUE_INIT] Available prompts:', sortedPrompts.length);
-    // ... rest of function
-  };
-};
-```
-
-### Phase 3: Add useRef Flag to Prevent Auth Re-render Issues
+When the assessment is reset, ensure all module-level flags are reset.
 
 **File: `src/components/assessment/AssessmentFlow.tsx`**
 
-Add a ref to track initialization state that persists across re-renders:
-
+The `handleAfterReset` function already resets module flags, but add the new one:
 ```typescript
-const isInitializing = useRef(false);
-const hasInitialized = useRef(false);
-
-const handleSignUpSuccess = (studentInfo: StudentInfo) => {
-  console.log("AssessmentFlow: SignUp successful");
+const handleAfterReset = () => {
+  moduleInitializing = false;
+  moduleHasInitialized = false;
+  modulePendingStudentInfo = null;
+  moduleShowAssessmentOptions = true; // ADD THIS
+  isFromProfileForm.current = false;
   
-  if (isInitializing.current || hasInitialized.current) {
-    console.log("AssessmentFlow: Already initializing/initialized, skipping");
-    return;
-  }
-  
-  isInitializing.current = true;
-  isFromProfileForm.current = true;
-  
-  handleStudentInfoSubmit(studentInfo);
-  setShowSignUpDialog(false);
-  setShowAssessmentOptions(false);
-  
-  // Initialize assessment
-  initializeAssessment(studentInfo.emailResults || false).finally(() => {
-    isInitializing.current = false;
-    hasInitialized.current = true;
-  });
+  resetAssessment();
+  setShowAssessmentOptions(true);
 };
 ```
-
-### Phase 4: Add Debug Panel for Visibility
-
-**File: `src/components/assessment/AssessmentFlow.tsx`**
-
-Add a debug panel (shown with `?debug=true` query param) to track state in real-time:
-
-```typescript
-const [searchParams] = useSearchParams();
-const showDebug = searchParams.get('debug') === 'true';
-
-// In render:
-{showDebug && (
-  <div className="fixed bottom-4 right-4 bg-black/80 text-white p-4 rounded-lg text-xs font-mono z-50">
-    <div>Step: {currentStep}</div>
-    <div>User: {user?.id || 'null'}</div>
-    <div>StudentInfo: {studentInfo?.name || 'null'}</div>
-    <div>SessionId: {sessionId || 'null'}</div>
-    <div>PromptQueue: {promptQueue?.length || 0}</div>
-  </div>
-)}
-```
-
-### Phase 5: Clean Up Duplicate AuthContext File
-
-**File to delete: `src/contexts/AuthContext.tsx`**
-
-This file is not being imported anywhere but could cause confusion. Delete it to prevent future issues.
 
 ## Files to Modify
 
-1. `src/hooks/assessment/useAssessmentFlowActions.ts` - Move `setCurrentStep(WELCOME)` to be synchronous and first
-2. `src/hooks/assessment/usePromptManagement.ts` - Fix misleading logs, memoize sorted prompts
-3. `src/components/assessment/AssessmentFlow.tsx` - Add initialization guards and debug panel
-4. `src/contexts/AuthContext.tsx` - Delete (unused duplicate file)
+| File | Changes |
+|------|---------|
+| `src/components/assessment/AssessmentFlow.tsx` | Add `moduleShowAssessmentOptions` module-level flag, sync with state, update reset function |
+| `src/components/assessment/AssessmentStepRenderer.tsx` | Add guarded wrapper for `initializeAssessment` (optional, depends on architecture preference) |
+
+## Implementation Details
+
+### AssessmentFlow.tsx Changes
+
+```typescript
+// Line 12-15: Add new module-level flag
+let moduleInitializing = false;
+let moduleHasInitialized = false;
+let modulePendingStudentInfo: StudentInfo | null = null;
+let moduleShowAssessmentOptions = true; // NEW
+
+// Line 25: Initialize from module-level
+const [showAssessmentOptions, setShowAssessmentOptions] = useState(moduleShowAssessmentOptions);
+
+// Add new useEffect after line 27:
+useEffect(() => {
+  moduleShowAssessmentOptions = showAssessmentOptions;
+}, [showAssessmentOptions]);
+
+// Line 189-197: Update handleAfterReset
+const handleAfterReset = () => {
+  moduleInitializing = false;
+  moduleHasInitialized = false;
+  modulePendingStudentInfo = null;
+  moduleShowAssessmentOptions = true; // NEW
+  isFromProfileForm.current = false;
+  
+  resetAssessment();
+  setShowAssessmentOptions(true);
+};
+```
 
 ## Testing Verification
 
 After implementation:
-1. Go to `/assessment?debug=true`
-2. Click "Quick Assessment" → "Skip Profile & Start Test"
-3. Debug panel should show: Step changes from `entry` → `welcome`
-4. Click "Start" → Step changes to `recording`
-5. Verify no duplicate initialization logs
 
-For signup flow:
-1. Click "Sign Up" → Fill form → Submit
-2. Debug panel should show user ID after auth
-3. Step should be `welcome` (not stuck on `entry`)
+1. **Test Quick Assessment Flow:**
+   - Go to `/assessment`
+   - Click "Quick Assessment" → "Create Profile"
+   - Fill in the profile form with valid data
+   - Click "Create Profile & Start Assessment"
+   - Verify: Should navigate to Welcome step (not stuck on options)
 
-## Why This Will Work
+2. **Test Skip Profile Flow:**
+   - Go to `/assessment`
+   - Click "Quick Assessment"
+   - Click "Skip Profile & Start Test"
+   - Verify: Should navigate to Welcome step immediately
 
-1. **Synchronous step change**: By setting `currentStep` to `WELCOME` synchronously BEFORE any async operations (like `initializeSession`), the state is set before auth triggers any re-renders
+3. **Test Sign Up Sheet Flow:**
+   - Go to `/assessment`
+   - Click "Sign Up" button
+   - Fill in profile form
+   - Submit
+   - Verify: Should navigate to Welcome step
 
-2. **Ref guards**: Using refs to track initialization state persists across re-renders and prevents duplicate initializations
+4. **Use Debug Panel:**
+   - Add `?debug=true` to URL
+   - Watch the debug panel to see step changes in real-time
+   - Confirm `Step: welcome` appears after form submission
 
-3. **Better logging**: Moving logs inside actual function calls rather than hook body prevents misleading output
+## Why This Fix Works
 
-4. **Debug visibility**: The debug panel allows immediate verification of state during testing
+1. **Module-level persistence**: By storing `showAssessmentOptions` at module level, the value survives any component remounts caused by auth state changes
+
+2. **Sync on change**: The `useEffect` keeps the module-level flag in sync with React state, ensuring consistency
+
+3. **Proper reset**: The reset function clears all module-level flags, ensuring clean state for new assessments
+
+4. **No race conditions**: Since `setCurrentStep(WELCOME)` is already synchronous and happens first, the step is set before any async auth operations can trigger re-renders
