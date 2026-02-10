@@ -3,16 +3,10 @@ import React from 'react';
 import { AssessmentResult, AudioAnalysisResult, CEFRLevel, FullAssessment } from '@/types/assessment';
 import ReportHeader from './sections/ReportHeader';
 import CandidateProfile from './sections/CandidateProfile';
-import FullSkillsOverview from './sections/FullSkillsOverview';
-import SpeechAnalysis from './sections/SpeechAnalysis';
-import SpeakerConsistency from './sections/SpeakerConsistency';
-import LearningRecommendations from './sections/LearningRecommendations';
 import CEFRBadge from './elements/CEFRBadge';
-import FallbackWarning from './FallbackWarning';
 import { Card } from '../ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import SkillScoresOverview from './sections/SkillScoresOverview';
-import { mapScoreToCEFR } from '@/utils/reports/reportUtils';
+import { Badge } from '../ui/badge';
+import { Languages, Mic, BookOpen } from 'lucide-react';
 
 interface FullAssessmentReportProps {
   result: AssessmentResult;
@@ -23,34 +17,41 @@ interface FullAssessmentReportProps {
   dateOfTest: string;
 }
 
+const getCEFRBadgeColor = (level: string) => {
+  const colors: Record<string, string> = {
+    'A1': 'bg-orange-100 text-orange-800',
+    'A2': 'bg-amber-100 text-amber-800',
+    'B1': 'bg-teal-100 text-teal-800',
+    'B2': 'bg-emerald-100 text-emerald-800',
+    'C1': 'bg-blue-100 text-blue-800',
+    'C2': 'bg-purple-100 text-purple-800'
+  };
+  return colors[level] || 'bg-gray-100 text-gray-800';
+};
+
 const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
   result,
-  fullAssessmentData,
-  audioAnalysis,
   learnerName,
   sessionId,
   dateOfTest
 }) => {
-  const { cefrLevel, metrics, totalScore, feedback } = result;
-  
-  // Extract justifications for each skill
-  const justifications = {
-    fluency: feedback?.fluency || 'No feedback available',
-    grammar: feedback?.grammar || 'No feedback available',
-    vocabulary: feedback?.vocabulary || 'No feedback available',
-    pronunciation: feedback?.pronunciation || 'No feedback available',
-    coherence: feedback?.coherence || 'No feedback available',
-    syntax: feedback?.syntax || 'No feedback available',
-    listening: feedback?.listening || 'No feedback available',
-    reading: feedback?.reading || 'No feedback available',
-    writing: feedback?.writing || 'No feedback available',
-  };
+  const { cefrLevel } = result;
+
+  // Extract the 3 real scoring criteria from audioAnalysis
+  const grammarApi = result.audioAnalysis?.grammarApiAnalysis;
+  const grammarCefr = grammarApi?.apiUsed ? grammarApi.cefr : null;
+  const grammarScores = grammarApi?.apiUsed ? grammarApi.scores : null;
+
+  const fluencyApi = result.audioAnalysis?.fluencyApiAnalysis;
+  const fluencyCefr = fluencyApi?.apiUsed ? fluencyApi.cefr : null;
+  const fluencySpm = fluencyApi?.apiUsed ? (fluencyApi as any).spm : null;
+
+  const vocabCefr = result.audioAnalysis?.cefrVocabularyLevel || null;
+  const vocabDistribution = result.audioAnalysis?.vocabularyDistribution || {};
 
   return (
     <div className="report-container space-y-8 print:text-black">
-      <ReportHeader title="Full Assessment Report" />
-      
-      <FallbackWarning fallbackInfo={result.fallbackInfo} />
+      <ReportHeader title="Assessment Report" />
       
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">
@@ -58,7 +59,7 @@ const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
             name={learnerName}
             sessionId={sessionId}
             dateOfTest={dateOfTest}
-            overallScore={totalScore}
+            overallScore={0}
             cefrLevel={cefrLevel}
           />
         </div>
@@ -67,113 +68,84 @@ const FullAssessmentReport: React.FC<FullAssessmentReportProps> = ({
         </div>
       </div>
       
+      {/* 3-Criteria Breakdown */}
       <Card className="p-6">
-        <h2 className="text-xl font-bold mb-4 text-assessment-blue border-b pb-2">Communication Skills Assessment</h2>
+        <h2 className="text-xl font-bold mb-4 border-b pb-2">Scoring Breakdown</h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          Results from Grammar API, Fluency API, and Vocabulary Analysis only
+        </p>
         
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid grid-cols-5 mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="speaking">Speaking</TabsTrigger>
-            <TabsTrigger value="listening">Listening</TabsTrigger>
-            <TabsTrigger value="reading">Reading</TabsTrigger>
-            <TabsTrigger value="writing">Writing</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="overview">
-            <FullSkillsOverview 
-              metrics={metrics}
-              justifications={justifications}
-              assessmentSections={fullAssessmentData?.sections || []}
-            />
-          </TabsContent>
-          
-          <TabsContent value="speaking">
-            <div className="space-y-6">
-              <SkillScoresOverview 
-                metrics={metrics}
-                justifications={{
-                  fluency: justifications.fluency,
-                  grammar: justifications.grammar,
-                  vocabulary: justifications.vocabulary,
-                  pronunciation: justifications.pronunciation,
-                  coherence: justifications.coherence,
-                  syntax: justifications.syntax
-                }}
-                title="Speaking Skills"
-              />
-              
-              {audioAnalysis && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-2">Speech Analysis</h3>
-                  <SpeechAnalysis audioAnalysis={audioAnalysis} compact={true} />
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Grammar */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Languages className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Grammar</h3>
+              {grammarCefr && (
+                <Badge className={`ml-auto ${getCEFRBadgeColor(grammarCefr)}`}>{grammarCefr}</Badge>
               )}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="listening">
-            <div className="p-4">
-              <h3 className="text-lg font-semibold mb-4">Listening Skills</h3>
-              <p className="mb-4">Overall Listening Score: {metrics.listening !== undefined ? Math.round(metrics.listening * 10) : 'Not Available'}%</p>
-              <p className="mb-2">CEFR Level: {metrics.listening !== undefined ? mapScoreToCEFR(metrics.listening * 10) : 'Not Assessed'}</p>
-              <p>{justifications.listening}</p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="reading">
-            <div className="p-4">
-              <h3 className="text-lg font-semibold mb-4">Reading Skills</h3>
-              <p className="mb-4">Overall Reading Score: {metrics.reading !== undefined ? Math.round(metrics.reading * 10) : 'Not Available'}%</p>
-              <p className="mb-2">CEFR Level: {metrics.reading !== undefined ? mapScoreToCEFR(metrics.reading * 10) : 'Not Assessed'}</p>
-              <p>{justifications.reading}</p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="writing">
-            <div className="p-4">
-              <h3 className="text-lg font-semibold mb-4">Writing Skills</h3>
-              <p className="mb-4">Overall Writing Score: {metrics.writing !== undefined ? Math.round(metrics.writing * 10) : 'Not Available'}%</p>
-              <p className="mb-2">CEFR Level: {metrics.writing !== undefined ? mapScoreToCEFR(metrics.writing * 10) : 'Not Assessed'}</p>
-              <p>{justifications.writing}</p>
-              
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="border rounded p-3">
-                  <h4 className="font-medium">Coherence and Cohesion</h4>
-                  <p className="text-sm">{justifications.coherence}</p>
-                </div>
-                <div className="border rounded p-3">
-                  <h4 className="font-medium">Grammar and Syntax</h4>
-                  <p className="text-sm">{justifications.grammar}</p>
-                </div>
+            {grammarScores ? (
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Accuracy</span><span>{(grammarScores.accuracy * 100).toFixed(0)}%</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Complexity</span><span>{(grammarScores.complexity * 100).toFixed(0)}%</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Lexical</span><span>{(grammarScores.lexical * 100).toFixed(0)}%</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Structure</span><span>{(grammarScores.structure * 100).toFixed(0)}%</span></div>
               </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Not available</p>
+            )}
+          </div>
+
+          {/* Fluency */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Mic className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Fluency</h3>
+              {fluencyCefr && (
+                <Badge className={`ml-auto ${getCEFRBadgeColor(fluencyCefr)}`}>{fluencyCefr}</Badge>
+              )}
             </div>
-          </TabsContent>
-        </Tabs>
+            {fluencyCefr ? (
+              <div className="space-y-2 text-sm">
+                {fluencySpm && <div className="flex justify-between"><span className="text-muted-foreground">SPM</span><span>{fluencySpm}</span></div>}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Not available</p>
+            )}
+          </div>
+
+          {/* Vocabulary */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Vocabulary</h3>
+              {vocabCefr && (
+                <Badge className={`ml-auto ${getCEFRBadgeColor(vocabCefr)}`}>{vocabCefr}</Badge>
+              )}
+            </div>
+            {Object.keys(vocabDistribution).length > 0 ? (
+              <div className="space-y-1 text-sm">
+                {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(level => {
+                  const count = vocabDistribution[level] || 0;
+                  if (count === 0) return null;
+                  return (
+                    <div key={level} className="flex justify-between">
+                      <span className="text-muted-foreground">{level} words</span>
+                      <span>{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Not available</p>
+            )}
+          </div>
+        </div>
       </Card>
       
-      {audioAnalysis && (
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-4 text-assessment-blue border-b pb-2">Speaker Verification</h2>
-          <SpeakerConsistency 
-            micTestCompleted={true}
-            confidenceScore={100} // Placeholder
-            mismatchDetected={false} // Placeholder
-          />
-        </Card>
-      )}
-      
-      <Card className="p-6">
-        <h2 className="text-xl font-bold mb-4 text-assessment-blue border-b pb-2">Learning Recommendations</h2>
-        <LearningRecommendations 
-          metrics={metrics}
-          cefrLevel={cefrLevel as CEFRLevel}
-          isQuickAssessment={false}
-          assessmentSections={fullAssessmentData?.sections || []}
-        />
-      </Card>
-      
-      <div className="text-center text-sm text-gray-500 mt-8 pt-4 border-t">
-        <p>This report is generated by LinguaSpeak AI Assessment System</p>
+      <div className="text-center text-sm text-muted-foreground mt-8 pt-4 border-t">
+        <p>Generated by LinguaSpeak AI Assessment System</p>
         <p>Report Date: {new Date().toLocaleDateString()}</p>
       </div>
     </div>
