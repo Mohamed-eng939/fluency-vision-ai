@@ -1,204 +1,88 @@
 
-# Fix Plan: Navigation to Start Assessment After Profile Form
 
-## Problem Summary
+## Timed Assessment Flow with Auto-Recording and Silence Detection
 
-After successfully authenticating and saving profile data, the assessment flow is not navigating to the "Welcome" step (start assessment page). The user remains stuck, likely seeing the assessment options screen instead of proceeding.
+### Overview
+Replace the current manual "Start Recording / Stop Recording / Submit" flow with a fully timed, automated question-by-question experience:
+1. **10-second reading phase** -- question is displayed with a countdown; recording has not started yet
+2. **60-second recording phase** -- recording starts automatically; a visible countdown shows remaining time; the test taker can submit early
+3. **Auto-advance** -- when 60 seconds expire OR the user submits, the response is saved and the next question loads (back to step 1)
 
-## Root Cause Analysis
+For detecting when a test taker finishes speaking without clicking submit, the existing **Voice Activity Detector (VAD)** will be enhanced: after speech is first detected and then silence persists for **4 seconds**, the recording will auto-submit (same as clicking "Submit"). This is already partially implemented (VAD triggers `stopRecording`), but it currently only stops recording without submitting. The change will wire it through to auto-submit.
 
-After tracing the code flow, I identified **two related issues**:
+### Regarding Fluency Calculation
+Fluency is already calculated via the external API using transcript + duration to derive SPM. With this change, the **actual recording duration** (from recording start to stop/auto-stop) will be passed as the duration, ensuring accurate SPM even when auto-submitted via silence detection.
 
-### Issue 1: `showAssessmentOptions` State Not Persisted
+---
 
-In `AssessmentFlow.tsx`, the `showAssessmentOptions` state is initialized with `useState(true)`:
-```javascript
-const [showAssessmentOptions, setShowAssessmentOptions] = useState(true);
+### Technical Plan
+
+#### 1. New Component: `TimedRecordingStep.tsx`
+Replaces `RecordingFlowController` inside `RecordingStep` for the assessment flow. This component manages the two-phase timer:
+
+- **Reading phase (10s)**: Shows the question text, a "Get Ready" countdown, microphone icon greyed out. No recording.
+- **Recording phase (60s)**: Auto-starts recording + speech recognition. Shows countdown timer (60s to 0). Provides a "Submit Response" button for early submission. When timer hits 0, auto-stops and submits.
+- **VAD auto-submit**: If the user speaks and then goes silent for 4 seconds, auto-submit the response (don't just stop recording -- actually call the submit handler).
+
+#### 2. Modify `RecordingStep.tsx`
+- Replace `RecordingFlowController` with the new `TimedRecordingStep` component
+- Pass `onRecordingComplete` to handle auto-submission
+- Remove the manual "Start Recording" button flow
+
+#### 3. Modify `useRecordingFlow.ts` (or create a new `useTimedRecordingFlow` hook)
+- Add `autoStart` capability so recording begins programmatically (no user click)
+- Add `maxDurationMs` parameter (60000) that auto-stops and submits when reached
+- Enhance VAD integration: on silence-detected stop, also trigger `handleSubmit` (not just `stopRecording`)
+- Track actual speech duration for accurate fluency calculation
+
+#### 4. Modify `useAudioRecorder.ts`
+- Add optional `maxDurationSeconds` parameter
+- When `maxDurationSeconds` is reached, automatically call `stopRecording`
+- Expose actual recording duration (not just the timer display) for fluency
+
+#### 5. Update `RecordingControls.tsx`
+- Accept new props for the timed mode: `timeRemaining`, `isReadingPhase`, `readingTimeRemaining`
+- Show countdown instead of elapsed time
+- Show "Submit Response" button instead of "Start/Stop Recording" during recording phase
+
+#### 6. Flow Sequence
+
+```text
+[Question Appears]
+       |
+       v
+[Reading Phase: 10s countdown]
+  - Question text visible
+  - "Recording starts in X seconds..."
+       |
+       v (10s elapsed)
+[Recording Phase: 60s countdown]
+  - Auto-start microphone + speech recognition
+  - Show "Submit Response" button
+  - VAD monitors for silence
+       |
+       +---> User clicks "Submit" --> save & next question
+       +---> 60s timer expires --> auto-stop, save & next question
+       +---> 4s silence after speech --> auto-stop, save & next question
+       |
+       v
+[Next Question: back to Reading Phase]
 ```
 
-While `currentStep` changes are handled with module-level flags (`moduleInitializing`, `moduleHasInitialized`, `modulePendingStudentInfo`) to persist across auth-triggered re-renders, `showAssessmentOptions` is NOT similarly protected.
+#### 7. Silence Detection Strategy (answering your question)
+The recommended approach uses the **existing VAD (Voice Activity Detector)** already in the codebase:
+- It analyzes the microphone's audio stream in real-time using Web Audio API frequency analysis
+- It tracks speech-band energy (85-255 Hz) to determine if someone is speaking
+- When `speaking = true` transitions to `speaking = false` for 4 consecutive seconds, it fires `onSpeechEnd`
+- Currently this only stops the recorder; the change will make it also auto-submit the response
+- This works well because it operates on raw audio energy, not transcription -- so there is no delay or API dependency
 
-When authentication succeeds:
-1. `ProfileForm` completes auth and calls `onSubmit()`
-2. `handleProfileSubmit` → `onStart()` → `initializeAssessmentFlow()`
-3. `setShowAssessmentOptions(false)` is called
-4. `setCurrentStep(WELCOME)` is called
-5. **BUT** auth state change triggers re-render
-6. If the component remounts, `showAssessmentOptions` resets to `true`
+#### Files to Create
+- `src/components/assessment/TimedRecordingStep.tsx` -- new timed recording UI component
 
-### Issue 2: `showAssessmentOptions` Check Blocks Step Rendering
+#### Files to Modify
+- `src/components/assessment/RecordingStep.tsx` -- use `TimedRecordingStep` instead of `RecordingFlowController`
+- `src/hooks/useAudioRecorder.ts` -- add `maxDurationSeconds` auto-stop
+- `src/hooks/recording/useRecordingFlow.ts` -- add auto-start and auto-submit-on-silence capabilities
+- `src/components/assessment/RecordingControls.tsx` -- add timed mode with countdown display
 
-In `AssessmentStepRenderer.tsx` lines 72-78:
-```javascript
-if (showAssessmentOptions) {
-  return <AssessmentOptions ... />;
-}
-switch (currentStep) { ... }
-```
-
-Even if `currentStep` is correctly set to `WELCOME`, if `showAssessmentOptions` is `true`, the user sees `AssessmentOptions` instead of the welcome screen.
-
-### Issue 3: TestEntryStep vs SignUpSheet Flow Mismatch
-
-There are **two paths** to profile submission:
-1. **SignUpSheet path**: Uses module-level guards and `handleSignUpSuccess` callback
-2. **TestEntryStep path**: Directly calls `onStart()` without the same guards
-
-The `TestEntryStep` path (triggered when user clicks "Quick Assessment" → fills profile) doesn't have the same protection mechanisms.
-
-## Solution
-
-### Phase 1: Persist `showAssessmentOptions` at Module Level
-
-Similar to how `moduleInitializing` and `moduleHasInitialized` are module-level, add a module-level flag for the assessment options state.
-
-**File: `src/components/assessment/AssessmentFlow.tsx`**
-
-```typescript
-// Module-level flags to persist across re-renders caused by auth state changes
-let moduleInitializing = false;
-let moduleHasInitialized = false;
-let modulePendingStudentInfo: StudentInfo | null = null;
-let moduleShowAssessmentOptions = true; // ADD THIS
-
-// Inside the component:
-const [showAssessmentOptions, setShowAssessmentOptions] = useState(moduleShowAssessmentOptions);
-
-// Sync module-level flag whenever state changes
-useEffect(() => {
-  moduleShowAssessmentOptions = showAssessmentOptions;
-}, [showAssessmentOptions]);
-```
-
-### Phase 2: Add Guard for TestEntryStep Path
-
-The `TestEntryStep.handleProfileSubmit` path needs the same initialization guards.
-
-**File: `src/components/assessment/AssessmentStepRenderer.tsx`**
-
-Create a wrapper callback that mimics `handleSignUpSuccess` behavior:
-
-```typescript
-// Wrap the initializeAssessment call with guards
-const handleTestEntryStart = (withEmail: boolean) => {
-  if (moduleInitializing || moduleHasInitialized) {
-    console.log("Already initializing, skipping duplicate call");
-    return;
-  }
-  initializeAssessment(withEmail);
-};
-```
-
-Then pass this wrapper to `TestEntryStep`:
-```typescript
-<TestEntryStep 
-  onStart={handleTestEntryStart}
-  onStudentInfoSubmit={onStudentInfoSubmit}
-/>
-```
-
-### Phase 3: Ensure Step Change Happens Before Auth Triggers Re-render
-
-The current code sets `currentStep` to `WELCOME` synchronously, which is correct. However, we need to ensure the `showAssessmentOptions = false` also persists.
-
-**File: `src/hooks/assessment/useAssessmentFlowActions.ts`**
-
-No changes needed here - the synchronous `setCurrentStep(WELCOME)` is already correct.
-
-### Phase 4: Reset Module Flags on Full Reset
-
-When the assessment is reset, ensure all module-level flags are reset.
-
-**File: `src/components/assessment/AssessmentFlow.tsx`**
-
-The `handleAfterReset` function already resets module flags, but add the new one:
-```typescript
-const handleAfterReset = () => {
-  moduleInitializing = false;
-  moduleHasInitialized = false;
-  modulePendingStudentInfo = null;
-  moduleShowAssessmentOptions = true; // ADD THIS
-  isFromProfileForm.current = false;
-  
-  resetAssessment();
-  setShowAssessmentOptions(true);
-};
-```
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/assessment/AssessmentFlow.tsx` | Add `moduleShowAssessmentOptions` module-level flag, sync with state, update reset function |
-| `src/components/assessment/AssessmentStepRenderer.tsx` | Add guarded wrapper for `initializeAssessment` (optional, depends on architecture preference) |
-
-## Implementation Details
-
-### AssessmentFlow.tsx Changes
-
-```typescript
-// Line 12-15: Add new module-level flag
-let moduleInitializing = false;
-let moduleHasInitialized = false;
-let modulePendingStudentInfo: StudentInfo | null = null;
-let moduleShowAssessmentOptions = true; // NEW
-
-// Line 25: Initialize from module-level
-const [showAssessmentOptions, setShowAssessmentOptions] = useState(moduleShowAssessmentOptions);
-
-// Add new useEffect after line 27:
-useEffect(() => {
-  moduleShowAssessmentOptions = showAssessmentOptions;
-}, [showAssessmentOptions]);
-
-// Line 189-197: Update handleAfterReset
-const handleAfterReset = () => {
-  moduleInitializing = false;
-  moduleHasInitialized = false;
-  modulePendingStudentInfo = null;
-  moduleShowAssessmentOptions = true; // NEW
-  isFromProfileForm.current = false;
-  
-  resetAssessment();
-  setShowAssessmentOptions(true);
-};
-```
-
-## Testing Verification
-
-After implementation:
-
-1. **Test Quick Assessment Flow:**
-   - Go to `/assessment`
-   - Click "Quick Assessment" → "Create Profile"
-   - Fill in the profile form with valid data
-   - Click "Create Profile & Start Assessment"
-   - Verify: Should navigate to Welcome step (not stuck on options)
-
-2. **Test Skip Profile Flow:**
-   - Go to `/assessment`
-   - Click "Quick Assessment"
-   - Click "Skip Profile & Start Test"
-   - Verify: Should navigate to Welcome step immediately
-
-3. **Test Sign Up Sheet Flow:**
-   - Go to `/assessment`
-   - Click "Sign Up" button
-   - Fill in profile form
-   - Submit
-   - Verify: Should navigate to Welcome step
-
-4. **Use Debug Panel:**
-   - Add `?debug=true` to URL
-   - Watch the debug panel to see step changes in real-time
-   - Confirm `Step: welcome` appears after form submission
-
-## Why This Fix Works
-
-1. **Module-level persistence**: By storing `showAssessmentOptions` at module level, the value survives any component remounts caused by auth state changes
-
-2. **Sync on change**: The `useEffect` keeps the module-level flag in sync with React state, ensuring consistency
-
-3. **Proper reset**: The reset function clears all module-level flags, ensuring clean state for new assessments
-
-4. **No race conditions**: Since `setCurrentStep(WELCOME)` is already synchronous and happens first, the step is set before any async auth operations can trigger re-renders
