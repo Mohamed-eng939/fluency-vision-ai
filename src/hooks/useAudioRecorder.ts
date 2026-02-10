@@ -7,6 +7,8 @@ import { convertToWav } from '@/utils/audio/convertToWav';
 interface UseAudioRecorderOptions {
   onRecordingComplete?: (blob: Blob, analysis?: AudioAnalysisResult) => void;
   autoStopSilenceMs?: number; // Time in ms to auto-stop after silence
+  maxDurationSeconds?: number; // Max recording duration before auto-stop
+  onSilenceAutoStop?: () => void; // Callback when VAD detects silence and auto-stops
 }
 
 export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
@@ -19,6 +21,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const maxDurationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const vadRef = useRef<VoiceActivityDetector | null>(null);
   
@@ -139,9 +142,20 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         vadRef.current.setOnSpeechEnd(() => {
           console.log(`Auto-stopping recording after ${silenceTimeThreshold/1000} seconds of silence detected`);
           stopRecording();
+          if (options.onSilenceAutoStop) {
+            options.onSilenceAutoStop();
+          }
         });
         
         vadRef.current.init(stream);
+      }
+
+      // Max duration auto-stop
+      if (options.maxDurationSeconds && options.maxDurationSeconds > 0) {
+        maxDurationTimerRef.current = setTimeout(() => {
+          console.log(`Max recording duration of ${options.maxDurationSeconds}s reached, auto-stopping`);
+          stopRecording();
+        }, options.maxDurationSeconds * 1000);
       }
       
       return true;
@@ -159,6 +173,12 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
+      }
+
+      // Clear max duration timer
+      if (maxDurationTimerRef.current) {
+        clearTimeout(maxDurationTimerRef.current);
+        maxDurationTimerRef.current = null;
       }
       
       setIsRecording(false);
