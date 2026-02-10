@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle, Languages, Mic, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cefrToNumber, numberToCefr, type CEFRLevel } from '@/utils/scoring/cefrUtils';
@@ -25,6 +24,18 @@ interface AssessmentReviewModalProps {
   onReviewSubmitted: () => void;
 }
 
+const getCEFRColor = (level: string) => {
+  const colors: Record<string, string> = {
+    'A1': 'bg-orange-100 text-orange-800',
+    'A2': 'bg-amber-100 text-amber-800',
+    'B1': 'bg-teal-100 text-teal-800',
+    'B2': 'bg-emerald-100 text-emerald-800',
+    'C1': 'bg-blue-100 text-blue-800',
+    'C2': 'bg-purple-100 text-purple-800'
+  };
+  return colors[level] || 'bg-gray-100 text-gray-800';
+};
+
 const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   isOpen,
   onClose,
@@ -41,7 +52,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   const [finalCEFRReason, setFinalCEFRReason] = useState('');
   const [calculatedCEFR, setCalculatedCEFR] = useState<string>('');
 
-  // Calculate average CEFR whenever response reviews change, or use session level as fallback
   useEffect(() => {
     const reviewedLevels = Object.values(responseReviews)
       .map(r => r.cefr_level)
@@ -53,12 +63,10 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       const calculatedLevel = numberToCefr(average);
       setCalculatedCEFR(calculatedLevel);
       
-      // Set final level to calculated if not manually set
       if (!finalCEFRLevel) {
         setFinalCEFRLevel(calculatedLevel);
       }
     } else if (assessmentDetails?.session?.overall_cefr_level && !finalCEFRLevel) {
-      // If no individual responses reviewed, use session-level CEFR as default
       setFinalCEFRLevel(assessmentDetails.session.overall_cefr_level);
     }
   }, [responseReviews, finalCEFRLevel, assessmentDetails]);
@@ -77,7 +85,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     try {
       setIsSubmitting(true);
 
-      // Update individual responses with assessor reviews
       const responseUpdatePromises = Object.entries(responseReviews).map(([responseId, review]) => {
         const updateData: any = {};
         
@@ -86,7 +93,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         }
         
         if (review.notes) {
-          // Store assessor notes in detailed_feedback
           updateData.detailed_feedback = {
             ...(assessmentDetails.responses.find((r: any) => r.id === responseId)?.detailed_feedback || {}),
             assessor_notes: review.notes
@@ -106,10 +112,8 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         await Promise.all(responseUpdatePromises);
       }
 
-      // Check if final level was overridden
       const isOverridden = finalCEFRLevel !== calculatedCEFR;
 
-      // Insert assessor review (TESTING MODE - allows unauthenticated submission)
       const reviewData: any = {
         session_id: assessmentDetails.session.id,
         review_status: reviewStatus,
@@ -123,7 +127,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         }
       };
 
-      // Add assessor_id only if user is authenticated
       if (user?.id) {
         reviewData.assessor_id = user.id;
       }
@@ -132,16 +135,12 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         .from('assessor_reviews')
         .insert(reviewData);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Update session status and final CEFR level
-      console.log('🔄 Updating session status to:', reviewStatus);
       const { error: updateError } = await supabase
         .from('assessment_sessions')
         .update({
-          status: reviewStatus as 'approved' | 'rejected' | 'under_review', // Cast to valid status
+          status: reviewStatus as 'approved' | 'rejected' | 'under_review',
           reviewed_at: new Date().toISOString(),
           overall_cefr_level: finalCEFRLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
         })
@@ -153,18 +152,11 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         throw updateError;
       }
 
-      console.log('✅ Session status updated successfully');
       toast.success(`Review submitted successfully - Final Level: ${finalCEFRLevel}`);
       
-      // Close modal first
       onClose();
+      setTimeout(() => { onReviewSubmitted(); }, 500);
       
-      // Wait a moment before triggering refresh to ensure DB updates complete
-      setTimeout(() => {
-        onReviewSubmitted();
-      }, 500);
-      
-      // Reset form
       setAssessorFeedback('');
       setRecommendation('');
       setReviewStatus('approved');
@@ -194,32 +186,35 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   };
 
-  const getCEFRColor = (level: string) => {
-    const colors = {
-      'A1': 'bg-red-100 text-red-800',
-      'A2': 'bg-orange-100 text-orange-800',
-      'B1': 'bg-yellow-100 text-yellow-800',
-      'B2': 'bg-green-100 text-green-800',
-      'C1': 'bg-blue-100 text-blue-800',
-      'C2': 'bg-purple-100 text-purple-800'
-    };
-    return colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  /** Extract per-response scoring data from detailed_feedback / mistakes_analysis */
+  const getResponseScoringData = (response: any) => {
+    const feedback = response.detailed_feedback || {};
+    const analysis = response.mistakes_analysis || {};
+    
+    // Grammar data from API
+    const grammarApi = analysis.grammarApiAnalysis || feedback.grammarApiAnalysis;
+    const grammarCefr = grammarApi?.apiUsed ? grammarApi.cefr : null;
+    const grammarScores = grammarApi?.apiUsed ? grammarApi.scores : null;
+    
+    // Fluency data from API
+    const fluencyApi = analysis.fluencyApiAnalysis || feedback.fluencyApiAnalysis;
+    const fluencyCefr = fluencyApi?.apiUsed ? fluencyApi.cefr : null;
+    const fluencySpm = fluencyApi?.apiUsed ? fluencyApi.spm : null;
+    const fluencySyllables = fluencyApi?.apiUsed ? fluencyApi.syllables : null;
+    
+    // Vocabulary data
+    const vocabCefr = analysis.cefrVocabularyLevel || feedback.cefrVocabularyLevel || null;
+    
+    return { grammarCefr, grammarScores, fluencyCefr, fluencySpm, fluencySyllables, vocabCefr };
   };
 
-  if (!assessmentDetails) {
-    return null;
-  }
+  if (!assessmentDetails) return null;
 
   const { session, responses } = assessmentDetails;
-  
   const reviewedCount = Object.keys(responseReviews).length;
   const totalResponses = responses?.length || 0;
   const isOverridden = finalCEFRLevel && finalCEFRLevel !== calculatedCEFR;
@@ -244,19 +239,19 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">Name</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {session.profiles?.full_name || session.student_info?.name || 'Anonymous User'}
                   </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Email</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {session.profiles?.email || session.student_info?.email || 'N/A'}
                   </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Test Date</Label>
-                  <p className="text-sm text-gray-600">{formatDate(session.created_at)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(session.created_at)}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Session Type</Label>
@@ -266,62 +261,65 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
             </CardContent>
           </Card>
 
-          {/* Current Scores */}
+          {/* Current Scores - Only 3 criteria with CEFR */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Star className="h-5 w-5" />
-                Current Scores
+                Assessment Scores
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label className="text-sm font-medium">Overall Score</Label>
-                  <p className="text-lg font-semibold text-blue-600">
-                    {Math.round(session.overall_score || 0)}/100
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">CEFR Level</Label>
-                  <Badge className={getCEFRColor(session.overall_cefr_level)}>
-                    {session.overall_cefr_level || 'N/A'}
-                  </Badge>
+                  <Label className="text-sm font-medium">Overall CEFR Level</Label>
+                  <div className="mt-1">
+                    <Badge className={`text-lg px-3 py-1 ${getCEFRColor(session.overall_cefr_level || '')}`}>
+                      {session.overall_cefr_level || 'N/A'}
+                    </Badge>
+                  </div>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Responses</Label>
-                  <p className="text-sm text-gray-600">{responses.length} recorded</p>
+                  <p className="text-sm text-muted-foreground">{responses.length} recorded</p>
                 </div>
-                {session.fluency_score && (
-                  <div>
-                    <Label className="text-sm font-medium">Fluency</Label>
-                    <p className="text-sm font-semibold">{Math.round(session.fluency_score)}/100</p>
-                  </div>
-                )}
-                {session.grammar_score && (
-                  <div>
-                    <Label className="text-sm font-medium">Grammar</Label>
-                    <p className="text-sm font-semibold">{Math.round(session.grammar_score)}/100</p>
-                  </div>
-                )}
-                {session.pronunciation_score && (
-                  <div>
-                    <Label className="text-sm font-medium">Pronunciation</Label>
-                    <p className="text-sm font-semibold">{Math.round(session.pronunciation_score)}/100</p>
-                  </div>
-                )}
-                {session.vocabulary_score && (
-                  <div>
-                    <Label className="text-sm font-medium">Vocabulary</Label>
-                    <p className="text-sm font-semibold">{Math.round(session.vocabulary_score)}/100</p>
-                  </div>
-                )}
-                {session.coherence_score && (
-                  <div>
-                    <Label className="text-sm font-medium">Coherence</Label>
-                    <p className="text-sm font-semibold">{Math.round(session.coherence_score)}/100</p>
-                  </div>
-                )}
+              </div>
+
+              {/* Show only Grammar, Fluency, Vocabulary as CEFR levels from session metadata */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <Languages className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <p className="text-xs text-muted-foreground mb-1">Grammar</p>
+                  {session.overall_cefr_level ? (
+                    <Badge className={getCEFRColor(session.overall_cefr_level)}>
+                      {session.overall_cefr_level}
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">N/A</span>
+                  )}
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <Mic className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <p className="text-xs text-muted-foreground mb-1">Fluency</p>
+                  {session.overall_cefr_level ? (
+                    <Badge className={getCEFRColor(session.overall_cefr_level)}>
+                      {session.overall_cefr_level}
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">N/A</span>
+                  )}
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <BookOpen className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <p className="text-xs text-muted-foreground mb-1">Vocabulary</p>
+                  {session.overall_cefr_level ? (
+                    <Badge className={getCEFRColor(session.overall_cefr_level)}>
+                      {session.overall_cefr_level}
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">N/A</span>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -344,112 +342,128 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 <div className="text-center py-8 space-y-4">
                   <AlertCircle className="h-12 w-12 text-amber-500 mx-auto" />
                   <div>
-                    <p className="font-medium text-gray-900">Loading Audio Responses...</p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="font-medium">Loading Audio Responses...</p>
+                    <p className="text-sm text-muted-foreground mt-1">
                       Checking for audio recordings in storage...
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {responses.map((response, index) => (
-                  <div key={response.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold">Response {index + 1}</span>
-                      <div className="flex items-center gap-2">
-                        {responseReviews[response.id]?.cefr_level && (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        )}
-                        {response.reconstructed && (
-                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                            Audio Only
-                          </Badge>
-                        )}
-                        {response.cefr_level && (
-                          <Badge variant="outline" className="text-xs">
-                            Original: {response.cefr_level}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Audio Player */}
-                    {response.audio_url && (
-                      <div className="bg-slate-50 rounded-lg p-3 space-y-2">
-                        <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
-                          <AudioLines className="h-4 w-4" />
-                          <span>Audio Recording</span>
-                          {response.audio_duration && (
-                            <span className="text-slate-500">({Math.round(response.audio_duration)}s)</span>
+                  {responses.map((response, index) => {
+                    const scoring = getResponseScoringData(response);
+                    return (
+                    <div key={response.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">Response {index + 1}</span>
+                        <div className="flex items-center gap-2">
+                          {responseReviews[response.id]?.cefr_level && (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          )}
+                          {response.cefr_level && (
+                            <Badge variant="outline" className="text-xs">
+                              Original: {response.cefr_level}
+                            </Badge>
                           )}
                         </div>
-                        <audio 
-                          controls 
-                          className="w-full h-10"
-                          preload="metadata"
-                        >
-                          <source src={response.audio_url} type="audio/webm" />
-                          <source src={response.audio_url} type="audio/mp3" />
-                          <source src={response.audio_url} type="audio/wav" />
-                          Your browser does not support the audio element.
-                        </audio>
-                      </div>
-                    )}
-                    
-                    {response.transcript && (
-                      <div className="bg-gray-50 rounded p-3">
-                        <p className="text-xs font-medium text-gray-600 mb-1">Transcript:</p>
-                        <p className="text-sm text-gray-800">{response.transcript}</p>
-                      </div>
-                    )}
-
-                    {response.reconstructed && !response.transcript && (
-                      <div className="bg-amber-50 rounded p-3 border border-amber-200">
-                        <p className="text-xs font-medium text-amber-700">
-                          ℹ️ No transcript available - This response was reconstructed from audio storage
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-                      <div>
-                        <Label htmlFor={`cefr-${response.id}`} className="text-xs mb-1">
-                          Assessor CEFR Level
-                        </Label>
-                        <Select 
-                          value={responseReviews[response.id]?.cefr_level || ''}
-                          onValueChange={(value) => handleResponseReviewChange(response.id, 'cefr_level', value)}
-                        >
-                          <SelectTrigger id={`cefr-${response.id}`} className="h-9">
-                            <SelectValue placeholder="Select level" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="A1">A1</SelectItem>
-                            <SelectItem value="A2">A2</SelectItem>
-                            <SelectItem value="B1">B1</SelectItem>
-                            <SelectItem value="B2">B2</SelectItem>
-                            <SelectItem value="C1">C1</SelectItem>
-                            <SelectItem value="C2">C2</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
                       
-                      <div className="col-span-2">
-                        <Label htmlFor={`notes-${response.id}`} className="text-xs mb-1">
-                          Assessor Notes
-                        </Label>
-                        <Textarea
-                          id={`notes-${response.id}`}
-                          placeholder="Add your notes for this response..."
-                          value={responseReviews[response.id]?.notes || ''}
-                          onChange={(e) => handleResponseReviewChange(response.id, 'notes', e.target.value)}
-                          rows={2}
-                          className="text-sm"
-                        />
+                      {/* Audio Player */}
+                      {response.audio_url && (
+                        <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                            <AudioLines className="h-4 w-4" />
+                            <span>Audio Recording</span>
+                            {response.audio_duration && (
+                              <span>({Math.round(response.audio_duration)}s)</span>
+                            )}
+                          </div>
+                          <audio controls className="w-full h-10" preload="metadata">
+                            <source src={response.audio_url} type="audio/webm" />
+                            <source src={response.audio_url} type="audio/mp3" />
+                            Your browser does not support the audio element.
+                          </audio>
+                        </div>
+                      )}
+                      
+                      {response.transcript && (
+                        <div className="bg-muted/50 rounded p-3">
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Transcript:</p>
+                          <p className="text-sm">{response.transcript}</p>
+                        </div>
+                      )}
+
+                      {/* Per-response scoring: Grammar, Fluency, Vocabulary CEFR only */}
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t">
+                        <div className="text-center p-2 rounded bg-muted/30">
+                          <p className="text-xs text-muted-foreground">Grammar</p>
+                          {scoring.grammarCefr ? (
+                            <Badge className={`text-xs mt-1 ${getCEFRColor(scoring.grammarCefr)}`}>{scoring.grammarCefr}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">N/A</span>
+                          )}
+                        </div>
+                        <div className="text-center p-2 rounded bg-muted/30">
+                          <p className="text-xs text-muted-foreground">Fluency</p>
+                          {scoring.fluencyCefr ? (
+                            <Badge className={`text-xs mt-1 ${getCEFRColor(scoring.fluencyCefr)}`}>{scoring.fluencyCefr}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">N/A</span>
+                          )}
+                          {scoring.fluencySpm && (
+                            <p className="text-xs text-muted-foreground mt-1">{scoring.fluencySpm} SPM</p>
+                          )}
+                        </div>
+                        <div className="text-center p-2 rounded bg-muted/30">
+                          <p className="text-xs text-muted-foreground">Vocabulary</p>
+                          {scoring.vocabCefr ? (
+                            <Badge className={`text-xs mt-1 ${getCEFRColor(scoring.vocabCefr)}`}>{scoring.vocabCefr}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">N/A</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                        <div>
+                          <Label htmlFor={`cefr-${response.id}`} className="text-xs mb-1">
+                            Assessor CEFR Level
+                          </Label>
+                          <Select 
+                            value={responseReviews[response.id]?.cefr_level || ''}
+                            onValueChange={(value) => handleResponseReviewChange(response.id, 'cefr_level', value)}
+                          >
+                            <SelectTrigger id={`cefr-${response.id}`} className="h-9">
+                              <SelectValue placeholder="Select level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="A1">A1</SelectItem>
+                              <SelectItem value="A2">A2</SelectItem>
+                              <SelectItem value="B1">B1</SelectItem>
+                              <SelectItem value="B2">B2</SelectItem>
+                              <SelectItem value="C1">C1</SelectItem>
+                              <SelectItem value="C2">C2</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="col-span-1">
+                          <Label htmlFor={`notes-${response.id}`} className="text-xs mb-1">
+                            Assessor Notes
+                          </Label>
+                          <Textarea
+                            id={`notes-${response.id}`}
+                            placeholder="Add your notes..."
+                            value={responseReviews[response.id]?.notes || ''}
+                            onChange={(e) => handleResponseReviewChange(response.id, 'notes', e.target.value)}
+                            rows={2}
+                            className="text-sm"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -472,7 +486,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Progress Info */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 {reviewedCount === totalResponses ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -486,7 +499,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 </span>
               </div>
 
-              {/* Calculated CEFR or Session CEFR */}
               {(calculatedCEFR || session.overall_cefr_level) && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -509,10 +521,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                     <Label htmlFor="final-cefr" className="text-sm font-medium">
                       Final CEFR Level *
                     </Label>
-                    <Select 
-                      value={finalCEFRLevel}
-                      onValueChange={setFinalCEFRLevel}
-                    >
+                    <Select value={finalCEFRLevel} onValueChange={setFinalCEFRLevel}>
                       <SelectTrigger id="final-cefr" className="mt-1">
                         <SelectValue placeholder="Confirm or override level" />
                       </SelectTrigger>
@@ -529,7 +538,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 </div>
               )}
 
-              {/* Override Reasoning */}
               {isOverridden && (
                 <div>
                   <Label htmlFor="override-reason" className="text-sm font-medium">
@@ -562,13 +570,10 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Review Status */}
               <div>
                 <Label htmlFor="review-status">Review Status</Label>
                 <Select value={reviewStatus} onValueChange={(value: any) => setReviewStatus(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="approved">Approved</SelectItem>
                     <SelectItem value="needs_revision">Needs Revision</SelectItem>
@@ -577,7 +582,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 </Select>
               </div>
 
-              {/* Assessor Feedback */}
               <div>
                 <Label htmlFor="assessor-feedback">Assessor Feedback *</Label>
                 <Textarea
@@ -589,7 +593,6 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 />
               </div>
 
-              {/* Recommendation */}
               <div>
                 <Label htmlFor="recommendation">Recommendations</Label>
                 <Textarea

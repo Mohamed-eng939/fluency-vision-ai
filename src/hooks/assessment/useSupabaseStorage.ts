@@ -37,18 +37,31 @@ export const useSupabaseStorage = () => {
           audioUrl,
           audioDuration: result.duration,
           scores: {
-            overall: result.metrics.overall || result.totalScore,
-            fluency: result.metrics.fluency,
-            pronunciation: result.metrics.pronunciation,
-            grammar: result.metrics.grammar,
-            vocabulary: result.metrics.vocabulary,
-            coherence: result.metrics.coherence,
+            overall: result.totalScore,
+            fluency: 0,
+            pronunciation: 0,
+            grammar: 0,
+            vocabulary: 0,
+            coherence: 0,
             cefrLevel: result.cefrLevel
           },
-          detailedFeedback: result.feedback,
-          mistakesAnalysis: result.audioAnalysis,
+          detailedFeedback: {
+            ...result.feedback,
+            grammarApiAnalysis: result.audioAnalysis?.grammarApiAnalysis,
+            fluencyApiAnalysis: result.audioAnalysis?.fluencyApiAnalysis,
+            cefrVocabularyLevel: result.audioAnalysis?.cefrVocabularyLevel,
+            vocabularyDistribution: result.audioAnalysis?.vocabularyDistribution,
+            vocabularyJustification: result.audioAnalysis?.vocabularyJustification,
+          },
+          mistakesAnalysis: {
+            grammarApiAnalysis: result.audioAnalysis?.grammarApiAnalysis,
+            fluencyApiAnalysis: result.audioAnalysis?.fluencyApiAnalysis,
+            cefrVocabularyLevel: result.audioAnalysis?.cefrVocabularyLevel,
+            vocabularyDistribution: result.audioAnalysis?.vocabularyDistribution,
+          },
           isFinal: false
         })
+
       });
 
       const data = await response.json();
