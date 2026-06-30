@@ -88,7 +88,7 @@ serve(async (req) => {
                 <p>Dear ${recipient.name || 'User'},</p>
                 <p>${notificationData.message}</p>
                 <br>
-                <p>Best regards,<br>LinguaSpeak AI Team</p>
+                <p>Best regards,<br>The Assessment Team</p>
               `
             )
             emailSent = emailResult.success
@@ -155,7 +155,7 @@ serve(async (req) => {
                   <p>Dear ${recipient.name || 'User'},</p>
                   <p>${message}</p>
                   <br>
-                  <p>Best regards,<br>LinguaSpeak AI Team</p>
+                  <p>Best regards,<br>The Assessment Team</p>
                 `
               )
               emailSent = emailResult.success
@@ -225,7 +225,7 @@ serve(async (req) => {
         if (session.user_id && session.profiles?.email) {
           await sendEmail(
             session.profiles.email,
-            'Assessment Completed - LinguaSpeak AI',
+            'Assessment Completed',
             `
               <h1>Assessment Completed!</h1>
               <p>Dear ${session.profiles.name || session.student_name || 'User'},</p>
@@ -237,7 +237,7 @@ serve(async (req) => {
               </div>
               <p>You can view your detailed results and feedback in your dashboard.</p>
               <br>
-              <p>Best regards,<br>LinguaSpeak AI Team</p>
+              <p>Best regards,<br>The Assessment Team</p>
             `
           )
         }
@@ -285,7 +285,7 @@ serve(async (req) => {
 
             await sendEmail(
               user.email,
-              'Assessment Access Expiring Soon - LinguaSpeak AI',
+              'Assessment Access Expiring Soon',
               `
                 <h1>Access Expiring Soon</h1>
                 <p>Dear ${user.name || 'User'},</p>
@@ -296,7 +296,7 @@ serve(async (req) => {
                 </div>
                 <p>Please contact your administrator to renew your access.</p>
                 <br>
-                <p>Best regards,<br>LinguaSpeak AI Team</p>
+                <p>Best regards,<br>The Assessment Team</p>
               `
             )
             notifiedUsers.push(user.id)
