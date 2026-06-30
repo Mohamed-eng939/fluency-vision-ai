@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/auth/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { BrandingProvider } from "./contexts/branding/BrandingContext";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
@@ -54,7 +55,9 @@ const App: React.FC = () => (
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
-          <AppContent />
+          <BrandingProvider>
+            <AppContent />
+          </BrandingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
