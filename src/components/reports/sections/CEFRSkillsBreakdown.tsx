@@ -29,16 +29,10 @@ const CEFRSkillsBreakdown: React.FC<CEFRSkillsBreakdownProps> = ({
   const skillsToShow = [
     { key: 'grammar', label: 'Grammar' },
     { key: 'fluency', label: 'Fluency' },
-    { key: 'vocabulary', label: 'Vocabulary' },
-    { key: 'pronunciation', label: 'Pronunciation' },
-    { key: 'prosody', label: 'Prosody' },
-    { key: 'coherence', label: 'Coherence' }
+    { key: 'vocabulary', label: 'Vocabulary' }
   ];
 
-  // Add optional skills if they exist
-  if (skillScores.syntax !== undefined) {
-    skillsToShow.push({ key: 'syntax', label: 'Syntax' });
-  }
+  // Add optional skills if they exist (never add removed criteria: pronunciation, prosody, coherence, syntax)
   if (skillScores.listening !== undefined) {
     skillsToShow.push({ key: 'listening', label: 'Listening' });
   }

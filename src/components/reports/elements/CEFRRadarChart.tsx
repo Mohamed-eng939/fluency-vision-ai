@@ -15,7 +15,7 @@ const CEFRRadarChart: React.FC<CEFRRadarChartProps> = ({
   title = "CEFR Skills Profile",
   size = 'medium'
 }) => {
-  // Prepare data for radar chart
+  // Only the three engine-backed criteria are shown (per scope rules).
   const radarData = [
     {
       skill: 'Grammar',
@@ -31,32 +31,8 @@ const CEFRRadarChart: React.FC<CEFRRadarChartProps> = ({
       skill: 'Vocabulary',
       level: cefrToNumber(cefrLevels.vocabulary as any),
       fullMark: 6
-    },
-    {
-      skill: 'Pronunciation',
-      level: cefrToNumber(cefrLevels.pronunciation as any),
-      fullMark: 6
-    },
-    {
-      skill: 'Prosody',
-      level: cefrToNumber(cefrLevels.prosody as any),
-      fullMark: 6
-    },
-    {
-      skill: 'Coherence',
-      level: cefrToNumber(cefrLevels.coherence as any),
-      fullMark: 6
     }
   ];
-
-  // Add optional skills if they exist
-  if (cefrLevels.syntax) {
-    radarData.push({
-      skill: 'Syntax',
-      level: cefrToNumber(cefrLevels.syntax as any),
-      fullMark: 6
-    });
-  }
 
   const heightMap = {
     small: 200,
