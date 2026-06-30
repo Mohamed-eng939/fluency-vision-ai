@@ -10,15 +10,6 @@ import { toast } from 'sonner';
 
 const AssessorPanel: React.FC = () => {
   const { user, signOut } = useAuth();
-  
-  // TEMPORARY: Mock user for testing
-  const mockUser = {
-    full_name: 'Test Assessor',
-    email: 'test.assessor@example.com',
-    role: 'assessor'
-  };
-  
-  const displayUser = user || mockUser;
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAssessments, setPendingAssessments] = useState<PendingAssessment[]>([]);
   const [isAssigning, setIsAssigning] = useState<string | null>(null);
@@ -116,7 +107,7 @@ const AssessorPanel: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-assessment-blue">Assessor Dashboard</h1>
           <p className="text-muted-foreground mt-1">
-            Welcome, {displayUser?.full_name || displayUser?.email || 'Test Assessor'} (TEST MODE)
+            Welcome, {user?.full_name || user?.email || 'Assessor'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -124,7 +115,7 @@ const AssessorPanel: React.FC = () => {
             Home
           </Button>
           <Button variant="outline" onClick={() => signOut()}>
-            Sign Out (Test Mode)
+            Sign Out
           </Button>
         </div>
       </div>
