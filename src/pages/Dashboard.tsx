@@ -167,7 +167,7 @@ const Dashboard: React.FC = () => {
         <div className="container mx-auto py-4 px-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-assessment-blue">LinguaSpeak Analytics</h1>
+              <h1 className="text-3xl font-bold text-assessment-blue">Assessment Analytics</h1>
               <p className="text-gray-600 mt-1">Comprehensive assessment insights and performance metrics</p>
             </div>
             <div className="flex items-center gap-3">

@@ -15,12 +15,12 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({ title }) => {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-assessment-blue">{title}</h1>
-          <p className="text-sm text-gray-600">LinguaSpeak AI Assessment</p>
+          <p className="text-sm text-gray-600">English Placement Assessment</p>
         </div>
       </div>
       <div className="text-right">
         <p className="text-sm font-medium">Generated: {new Date().toLocaleDateString()}</p>
-        <p className="text-xs text-gray-600">©2025 LinguaSpeak AI</p>
+        <p className="text-xs text-gray-600">©{new Date().getFullYear()}</p>
       </div>
     </div>
   );

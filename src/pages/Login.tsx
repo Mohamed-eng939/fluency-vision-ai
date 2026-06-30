@@ -27,7 +27,7 @@ const Login: React.FC = () => {
       <div className="mx-auto max-w-md w-full">
         <Card className="border shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-assessment-blue">LinguaSpeak</CardTitle>
+            <CardTitle className="text-2xl font-bold text-assessment-blue">English Placement</CardTitle>
             <CardDescription>
               Sign in to your account or create a new one
             </CardDescription>
@@ -47,7 +47,7 @@ const Login: React.FC = () => {
             </Tabs>
           </CardContent>
           <CardFooter className="text-center text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} LinguaSpeak. All rights reserved.
+            &copy; {new Date().getFullYear()} All rights reserved.
           </CardFooter>
         </Card>
       </div>
