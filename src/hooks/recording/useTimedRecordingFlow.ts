@@ -18,8 +18,8 @@ export const useTimedRecordingFlow = (
   const [readingTimeLeft, setReadingTimeLeft] = useState(READING_PHASE_SECONDS);
   const [recordingTimeLeft, setRecordingTimeLeft] = useState(RECORDING_PHASE_SECONDS);
   const hasSubmittedRef = useRef(false);
-  const readingTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const readingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recordingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const callbacks: RecordingFlowCallbacks = {
     onRecordingComplete,
