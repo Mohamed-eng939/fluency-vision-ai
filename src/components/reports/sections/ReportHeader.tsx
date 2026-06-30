@@ -1,21 +1,25 @@
 
 import React from 'react';
-import logoPath from '@/assets/logo.png'; // Replace with actual logo path
+import { useBrandingContext } from '@/contexts/branding/BrandingContext';
 
 interface ReportHeaderProps {
   title: string;
 }
 
 const ReportHeader: React.FC<ReportHeaderProps> = ({ title }) => {
+  const brand = useBrandingContext();
   return (
     <div className="flex justify-between items-center border-b border-gray-300 pb-4 mb-6 print:pb-2">
       <div className="flex items-center">
-        <div className="w-12 h-12 mr-4 bg-assessment-teal rounded-full flex items-center justify-center text-white font-bold text-2xl">
-          L
+        <div
+          className="w-12 h-12 mr-4 rounded-full flex items-center justify-center text-white font-bold text-lg"
+          style={{ backgroundColor: 'var(--brand-primary, #1a56db)' }}
+        >
+          {brand.initials}
         </div>
         <div>
           <h1 className="text-2xl font-bold text-assessment-blue">{title}</h1>
-          <p className="text-sm text-gray-600">English Placement Assessment</p>
+          <p className="text-sm text-gray-600">{brand.displayName}</p>
         </div>
       </div>
       <div className="text-right">
