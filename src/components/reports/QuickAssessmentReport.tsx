@@ -28,14 +28,10 @@ const QuickAssessmentReport: React.FC<QuickAssessmentReportProps> = ({
 }) => {
   const { cefrLevel, metrics, totalScore, feedback } = result;
   
-  // Extract justifications for each skill
   const justifications = {
     fluency: feedback?.fluency || 'No feedback available',
     grammar: feedback?.grammar || 'No feedback available',
-    vocabulary: feedback?.vocabulary || 'No feedback available',
-    pronunciation: feedback?.pronunciation || 'No feedback available',
-    coherence: feedback?.coherence || 'No feedback available',
-    syntax: feedback?.syntax || 'No feedback available'
+    vocabulary: feedback?.vocabulary || 'No feedback available'
   };
 
   return (
