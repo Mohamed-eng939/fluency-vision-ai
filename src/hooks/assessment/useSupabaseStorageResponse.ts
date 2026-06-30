@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { ensureAuthSession } from '@/services/sessionService';
 import { SpeakingPrompt, AssessmentResult } from '@/types/assessment';
 
 /**
@@ -23,10 +24,10 @@ export const useSupabaseStorageResponse = () => {
     setIsStoring(true);
     
     try {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      
+      const { session, error: authError } = await ensureAuthSession();
+
       if (authError || !session?.user) {
-        console.log('⚠️ [SupabaseStorage] No auth, using direct DB insert');
+        console.log('⚠️ [SupabaseStorage] Anonymous sign-in failed, using direct DB insert');
         return await storeResponseDirectly(sessionId, prompt, result, promptOrder, transcript, audioUrl);
       }
 
