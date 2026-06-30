@@ -1,8 +1,7 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef } from 'react';
 import { AssessmentResult, AudioAnalysisResult, FullAssessment } from '@/types/assessment';
 import QuickAssessmentReport from './QuickAssessmentReport';
 import FullAssessmentReport from './FullAssessmentReport';
-import EnhancedPronunciationAnalysis from './EnhancedPronunciationAnalysis';
 import ReportDownloadButton from './ReportDownloadButton';
 import { usePdfGeneration } from '@/hooks/reports/usePdfGeneration';
 
@@ -14,14 +13,6 @@ interface ReportGeneratorProps {
   learnerName?: string;
   sessionId?: string;
   promptHistory?: { prompt: any; result?: AssessmentResult }[];
-}
-
-interface TimestampError {
-  start: number;
-  end: number;
-  type: 'phoneme' | 'pause' | 'disfluency';
-  message: string;
-  phoneme?: string;
 }
 
 const ReportGenerator: React.FC<ReportGeneratorProps> = ({
@@ -44,48 +35,12 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
     promptHistory: promptHistory || []
   });
 
-  // Convert pronunciation data to waveform errors
-  const waveformErrors = useMemo(() => {
-    const errors: TimestampError[] = [];
-    
-    if (result.audioAnalysis?.pronunciationDetails?.problematic_phonemes) {
-      result.audioAnalysis.pronunciationDetails.problematic_phonemes.forEach(phoneme => {
-        if (phoneme.start !== undefined && phoneme.end !== undefined) {
-          errors.push({
-            start: phoneme.start,
-            end: phoneme.end,
-            type: 'phoneme' as const,
-            message: `Pronunciation issue with /${phoneme.phone}/ sound`,
-            phoneme: phoneme.phone
-          });
-        }
-      });
-    }
-
-    return errors;
-  }, [result.audioAnalysis]);
-
-  const pronunciationData = useMemo(() => {
-    const details = result.audioAnalysis?.pronunciationDetails;
-    if (!details) return null;
-
-    return {
-      wordAccuracy: details.word_accuracy || 0,
-      phonemeAccuracy: details.phoneme_accuracy || 0,
-      speechRate: details.speech_rate || 0,
-      targetSpeechRate: details.cefr_level ? `${details.cefr_level} level` : 'B1 level',
-      overallScore: details.pronunciation_score || 0,
-      cefrLevel: details.cefr_level || 'B1'
-    };
-  }, [result.audioAnalysis]);
-
   const handleDownload = () => {
-    handleDownloadReport(reportRef, waveformErrors);
+    handleDownloadReport(reportRef);
   };
 
   return (
     <div className="space-y-4">
-      {/* Header with download button and admin controls */}
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-assessment-blue">
@@ -95,7 +50,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             Comprehensive analysis for {learnerName}
           </p>
         </div>
-        
+
         <div className="flex gap-3">
           <ReportDownloadButton
             onDownload={handleDownload}
@@ -104,7 +59,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
           />
         </div>
       </div>
-      
+
       <div ref={reportRef} className="bg-white p-6 rounded-lg shadow-md">
         {isFullAssessment ? (
           <FullAssessmentReport
@@ -122,16 +77,6 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             learnerName={learnerName}
             sessionId={sessionId}
             dateOfTest={dateOfTest}
-          />
-        )}
-
-        {/* Enhanced Pronunciation Analysis Section for PDF */}
-        {pronunciationData && (
-          <EnhancedPronunciationAnalysis
-            pronunciationData={pronunciationData}
-            audioUrl={result.audioUrl}
-            waveformErrors={waveformErrors}
-            duration={result.duration || 10}
           />
         )}
       </div>
