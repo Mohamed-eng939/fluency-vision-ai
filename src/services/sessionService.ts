@@ -302,7 +302,7 @@ export const sessionService = {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/session/${sessionId}`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,
@@ -339,7 +339,7 @@ export const sessionService = {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/session/${sessionId}`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,

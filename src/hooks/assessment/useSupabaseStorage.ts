@@ -22,7 +22,7 @@ export const useSupabaseStorage = () => {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/save-response`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/save-response`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,
@@ -93,7 +93,7 @@ export const useSupabaseStorage = () => {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/finalize-session`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/finalize-session`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,
