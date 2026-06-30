@@ -1,36 +1,15 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { getFullAssessmentTests } from '@/utils/assessmentUtils';
 import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
 import AssessmentFlow from '@/components/assessment/AssessmentFlow';
-import { AssessmentStorageDemo } from '@/components/assessment/AssessmentStorageDemo';
-import { TestDatabaseIntegration } from '@/components/assessment/TestDatabaseIntegration';
-import { useSearchParams } from 'react-router-dom';
 
 const AssessmentPage: React.FC = () => {
-  // Get the enhanced full assessment tests
   const fullAssessmentTests = getFullAssessmentTests();
-  const [searchParams] = useSearchParams();
-  
-  // Track if we should show the full assessment
   const [showFullAssessment, setShowFullAssessment] = useState(false);
   const [showFullAssessmentIntro, setShowFullAssessmentIntro] = useState(false);
-  
-  // Check URL parameters for login/signup
-  useEffect(() => {
-    const login = searchParams.get('login');
-    const signup = searchParams.get('signup');
-    
-    if (login === 'true') {
-      console.log('Login requested via URL');
-    }
-    
-    if (signup === 'true') {
-      console.log('Signup requested via URL');
-    }
-  }, [searchParams]);
-  
+
   const handleStartFullAssessment = () => {
     setShowFullAssessment(true);
     setShowFullAssessmentIntro(false);
@@ -51,8 +30,8 @@ const AssessmentPage: React.FC = () => {
 
   if (showFullAssessment) {
     return (
-      <FullAssessment 
-        assessment={fullAssessmentTests[0]} 
+      <FullAssessment
+        assessment={fullAssessmentTests[0]}
         onComplete={handleFullAssessmentComplete}
         onExit={handleFullAssessmentExit}
       />
@@ -61,8 +40,8 @@ const AssessmentPage: React.FC = () => {
 
   if (showFullAssessmentIntro) {
     return (
-      <FullAssessmentIntro 
-        assessment={fullAssessmentTests[0]} 
+      <FullAssessmentIntro
+        assessment={fullAssessmentTests[0]}
         onStartAssessment={handleStartFullAssessment}
         onClose={handleFullAssessmentExit}
       />
@@ -72,17 +51,12 @@ const AssessmentPage: React.FC = () => {
   return (
     <div className="container mx-auto py-6 px-4 sm:px-6 lg:max-w-5xl">
       <h1 className="text-3xl font-bold text-assessment-blue mb-6">
-        LinguaSpeak AI Assessment
+        English Placement Assessment
       </h1>
-      
-      <AssessmentFlow 
+
+      <AssessmentFlow
         onTakeFullAssessment={handleShowFullAssessmentIntro}
       />
-      
-      <div className="mt-8 space-y-8">
-        <TestDatabaseIntegration />
-        <AssessmentStorageDemo />
-      </div>
     </div>
   );
 };
