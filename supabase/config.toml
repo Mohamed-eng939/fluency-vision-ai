@@ -13,4 +13,40 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.get-session-audio-files]
-verify_jwt = false
+# DRAFT: was false. No call site for this function found anywhere in
+# fluency-vision-ai or mfa_backend, so flipping to true should be safe —
+# confirm nothing external depends on calling it without a JWT before
+# deploying this change.
+verify_jwt = true
+
+[functions.session-manager]
+# DRAFT: not previously set (defaulted to false live). No call site found
+# anywhere in fluency-vision-ai or mfa_backend.
+verify_jwt = true
+
+[functions.response-handler]
+# DRAFT: not previously set (defaulted to false live). No call site found
+# anywhere in fluency-vision-ai or mfa_backend.
+verify_jwt = true
+
+[functions.file-manager]
+# DRAFT: not previously set (defaulted to false live). No call site found
+# anywhere in fluency-vision-ai or mfa_backend.
+verify_jwt = true
+
+# NOT changed here — needs a product decision first, see chat summary:
+#
+# audio-processor: currently false. src/services/audioService.ts calls it
+# unconditionally, with no auth-state check, and this is the function that
+# handles audio uploads for the anonymous/guest test-taking flow. Flipping
+# this to true as the runbook suggests would block anonymous users from
+# submitting audio at all (a 401 before the function even runs), breaking
+# the no-signup placement-test path. Needs a decision on whether/how to
+# keep that path working (e.g. validate something other than a Supabase
+# JWT inside the function) before this can be changed.
+#
+# profile-manager: currently false. profiles RLS already restricts all
+# policies to the {authenticated} role (no anonymous branch), so this is
+# likely safe to flip, but no explicit auth-gate was found in
+# src/services/profileService.ts itself to confirm it's never reached
+# anonymously — confirm before flipping.
