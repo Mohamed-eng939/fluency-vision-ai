@@ -1,11 +1,9 @@
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { AssessmentResult, AudioAnalysisResult, FullAssessment } from '@/types/assessment';
 import QuickAssessmentReport from './QuickAssessmentReport';
 import FullAssessmentReport from './FullAssessmentReport';
 import EnhancedPronunciationAnalysis from './EnhancedPronunciationAnalysis';
 import ReportDownloadButton from './ReportDownloadButton';
-import ScoreOverride from '../assessment/ScoreOverride';
-import { useAuth } from '@/contexts/auth';
 import { usePdfGeneration } from '@/hooks/reports/usePdfGeneration';
 
 interface ReportGeneratorProps {
@@ -35,13 +33,8 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   sessionId = `S-${Date.now().toString(36)}`,
   promptHistory = []
 }) => {
-  const { user } = useAuth();
-  const [currentResult, setCurrentResult] = useState(result);
   const reportRef = useRef<HTMLDivElement>(null);
   const dateOfTest = new Date().toLocaleDateString();
-
-  // Check if user has admin/assessor permissions
-  const canOverrideScores = user?.role === 'admin' || user?.role === 'assessor';
 
   const { isGeneratingPDF, handleDownloadReport } = usePdfGeneration({
     learnerName,
@@ -55,8 +48,8 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   const waveformErrors = useMemo(() => {
     const errors: TimestampError[] = [];
     
-    if (currentResult.audioAnalysis?.pronunciationDetails?.problematic_phonemes) {
-      currentResult.audioAnalysis.pronunciationDetails.problematic_phonemes.forEach(phoneme => {
+    if (result.audioAnalysis?.pronunciationDetails?.problematic_phonemes) {
+      result.audioAnalysis.pronunciationDetails.problematic_phonemes.forEach(phoneme => {
         if (phoneme.start !== undefined && phoneme.end !== undefined) {
           errors.push({
             start: phoneme.start,
@@ -70,10 +63,10 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
     }
 
     return errors;
-  }, [currentResult.audioAnalysis]);
+  }, [result.audioAnalysis]);
 
   const pronunciationData = useMemo(() => {
-    const details = currentResult.audioAnalysis?.pronunciationDetails;
+    const details = result.audioAnalysis?.pronunciationDetails;
     if (!details) return null;
 
     return {
@@ -84,12 +77,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
       overallScore: details.pronunciation_score || 0,
       cefrLevel: details.cefr_level || 'B1'
     };
-  }, [currentResult.audioAnalysis]);
-
-  // Handle score override completion
-  const handleScoreOverrideComplete = (updatedResult: AssessmentResult) => {
-    setCurrentResult(updatedResult);
-  };
+  }, [result.audioAnalysis]);
 
   const handleDownload = () => {
     handleDownloadReport(reportRef, waveformErrors);
@@ -109,13 +97,6 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         </div>
         
         <div className="flex gap-3">
-          {canOverrideScores && sessionId && (
-            <ScoreOverride 
-              result={currentResult}
-              sessionId={sessionId}
-              onOverrideComplete={handleScoreOverrideComplete}
-            />
-          )}
           <ReportDownloadButton
             onDownload={handleDownload}
             isGenerating={isGeneratingPDF}
@@ -126,8 +107,8 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
       
       <div ref={reportRef} className="bg-white p-6 rounded-lg shadow-md">
         {isFullAssessment ? (
-          <FullAssessmentReport 
-            result={currentResult}
+          <FullAssessmentReport
+            result={result}
             fullAssessmentData={fullAssessmentData}
             learnerName={learnerName}
             sessionId={sessionId}
@@ -135,8 +116,8 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             audioAnalysis={audioAnalysis}
           />
         ) : (
-          <QuickAssessmentReport 
-            result={currentResult}
+          <QuickAssessmentReport
+            result={result}
             audioAnalysis={audioAnalysis}
             learnerName={learnerName}
             sessionId={sessionId}
@@ -148,9 +129,9 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         {pronunciationData && (
           <EnhancedPronunciationAnalysis
             pronunciationData={pronunciationData}
-            audioUrl={currentResult.audioUrl}
+            audioUrl={result.audioUrl}
             waveformErrors={waveformErrors}
-            duration={currentResult.duration || 10}
+            duration={result.duration || 10}
           />
         )}
       </div>
