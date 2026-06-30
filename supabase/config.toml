@@ -3,8 +3,9 @@ project_id = "rrslhxigqtfllunmowcy"
 [functions.assessment-manager]
 verify_jwt = true
 
-[functions.prompt-manager] 
-verify_jwt = false
+[functions.prompt-manager]
+# No call sites in frontend (prompts load from hardcoded data/speaking/promptData.ts).
+verify_jwt = true
 
 [functions.assessor-manager]
 verify_jwt = true
@@ -53,10 +54,39 @@ verify_jwt = true
 # audio upload exactly as originally feared.
 verify_jwt = true
 
-# NOT changed here — needs further confirmation, see chat summary:
-#
-# profile-manager: currently false. profiles RLS already restricts all
-# policies to the {authenticated} role (no anonymous branch), so this is
-# likely safe to flip, but no explicit auth-gate was found in
-# src/services/profileService.ts itself to confirm it's never reached
-# anonymously — confirm before flipping.
+[functions.profile-manager]
+# Called via supabase.functions.invoke() from profileService.ts only from
+# authenticated UI flows (profile screens). JWT is always attached.
+verify_jwt = true
+
+[functions.grammar-proxy]
+# Called from grammarApiService.ts after ensureAuthSession() establishes
+# an anonymous or real JWT in the assessment flow.
+verify_jwt = true
+
+[functions.fluency-proxy]
+# Called from fluencyApiService.ts — same auth context as grammar-proxy.
+verify_jwt = true
+
+[functions.personalized-feedback]
+# Called from feedbackGeneration.ts (assessment storage hooks), after
+# session initialization which always calls ensureAuthSession().
+verify_jwt = true
+
+[functions.notification-manager]
+# No frontend call sites and no cross-function invocations found.
+verify_jwt = true
+
+[functions.report-generator]
+# No call sites found anywhere in frontend or other functions.
+verify_jwt = true
+
+[functions.analytics-generator]
+# No call sites found anywhere in frontend or other functions.
+verify_jwt = true
+
+# assessor_manager (underscore) — unauthenticated duplicate of assessor-manager (hyphen).
+# Must be DELETED from Supabase dashboard (Settings → Functions) and removed from this
+# repo before deploying. See security runbook §1c. Requires developer sign-off.
+# No frontend call sites point at the underscore version (all call sites use
+# 'assessor-manager' with a hyphen).
