@@ -1,0 +1,14 @@
+# Netlify deploy configuration for the Vite + React front-end.
+# Connect this repo in Netlify and these settings are picked up automatically.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback: the app uses BrowserRouter, so every client-side route
+# (/assessment, /admin/*, /assessor/*, /reports/:id, ...) must serve index.html
+# instead of 404ing on refresh or direct navigation.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

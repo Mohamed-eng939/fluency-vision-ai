@@ -96,15 +96,11 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
     );
   }
 
-  // Convert AssessmentMetrics to Record<string, number>
+  // Only the three engine-backed criteria are shown to learners (per scope rules).
   const skillScores: Record<string, number> = {
     grammar: result.metrics.grammar,
     fluency: result.metrics.fluency,
-    vocabulary: result.metrics.vocabulary,
-    pronunciation: result.metrics.pronunciation,
-    prosody: result.metrics.prosody,
-    coherence: result.metrics.coherence,
-    syntax: result.metrics.syntax
+    vocabulary: result.metrics.vocabulary
   };
 
   return (

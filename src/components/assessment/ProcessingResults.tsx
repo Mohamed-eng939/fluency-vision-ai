@@ -19,7 +19,7 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
   
   const processingSteps = [
     { icon: Mic, label: "Analyzing audio quality and speech metrics", step: 1 },
-    { icon: FileText, label: "Processing transcripts and pronunciation", step: 2 },
+    { icon: FileText, label: "Processing transcripts and speech patterns", step: 2 },
     { icon: Brain, label: "Evaluating fluency, grammar, and vocabulary", step: 3 },
     { icon: BarChart, label: "Generating comprehensive CEFR assessment", step: 4 }
   ];

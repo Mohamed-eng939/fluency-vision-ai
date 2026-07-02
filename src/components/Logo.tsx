@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Mic } from 'lucide-react';
+import { useBrandingContext } from '@/contexts/branding/BrandingContext';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -8,6 +9,7 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ size = 'md', variant = 'full' }) => {
+  const brand = useBrandingContext();
   const sizeClasses = {
     sm: 'h-6',
     md: 'h-8',
@@ -72,12 +74,12 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', variant = 'full' }) => {
       
       {variant === 'full' && (
         <div className="flex flex-col">
-          <div className={size === 'sm' ? 'text-lg' : size === 'md' ? 'text-xl' : 'text-2xl'}>
-            <span className="font-bold text-assessment-blue">Lingua</span>
-            <span className="font-bold text-assessment-blue">Speak</span>
-            <span className="ml-1 bg-assessment-highlight text-assessment-blue px-1 rounded text-sm align-top font-bold">AI</span>
+          <div className={`font-bold text-assessment-blue ${size === 'sm' ? 'text-lg' : size === 'md' ? 'text-xl' : 'text-2xl'}`}>
+            {brand.displayName}
           </div>
-          <div className="text-xs text-gray-600 -mt-1">Assessment Platform</div>
+          {brand.tagline && (
+            <div className="text-xs text-gray-600 -mt-1">{brand.tagline}</div>
+          )}
         </div>
       )}
     </div>

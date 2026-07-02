@@ -19,6 +19,25 @@ export interface SessionResponse {
 /**
  * Session Service - Handle all session-related operations via Assessment Manager Edge Function
  */
+// Ensure the browser has a real auth identity (signing in anonymously if needed)
+// before touching session data, so RLS policies scoped by user_id = auth.uid()
+// cover guest test-takers too instead of relying on a shared NULL user_id.
+export async function ensureAuthSession() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (session?.user) {
+    return { session, error: null as any };
+  }
+
+  console.log('🔑 [sessionService] No auth session, signing in anonymously');
+  const { data, error: anonError } = await supabase.auth.signInAnonymously();
+  if (anonError) {
+    console.error('❌ [sessionService] Anonymous sign-in failed:', anonError);
+    return { session: null, error: anonError };
+  }
+
+  return { session: data.session, error: null as any };
+}
+
 // Helper function to finalize anonymous session
 async function finalizeAnonymousSession(sessionData: SessionData): Promise<SessionResponse> {
   console.log('🔄 [sessionService] Finalizing anonymous session directly in DB');
@@ -126,18 +145,19 @@ export const sessionService = {
     console.log('🚀 [sessionService] Starting session initialization with email:', withEmail);
     
     try {
-      // Check authentication first
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      console.log('🔐 [sessionService] Auth session:', { 
-        hasSession: !!session, 
+      // Check authentication first, signing in anonymously if needed so guest
+      // test-takers get a real auth.uid() and are covered by standard RLS.
+      const { session, error: authError } = await ensureAuthSession();
+      console.log('🔐 [sessionService] Auth session:', {
+        hasSession: !!session,
         hasUser: !!session?.user,
         userId: session?.user?.id,
-        authError: authError?.message 
+        authError: authError?.message
       });
-      
+
       if (authError || !session?.user) {
-        console.log('⚠️ [sessionService] No authenticated user, creating anonymous session');
-        // For anonymous users, create session without auth
+        console.log('⚠️ [sessionService] Anonymous sign-in failed, creating anonymous session');
+        // Last-resort fallback only — anonymous sign-in itself failed
         return await createAnonymousSession(withEmail);
       }
 
@@ -187,10 +207,10 @@ export const sessionService = {
     console.log('💾 [sessionService] Student info:', sessionData.studentInfo);
     
     try {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      
+      const { session, error: authError } = await ensureAuthSession();
+
       if (authError || !session?.user) {
-        console.log('⚠️ [sessionService] No authenticated user, finalizing as anonymous session');
+        console.log('⚠️ [sessionService] Anonymous sign-in failed, finalizing as anonymous session');
         return await finalizeAnonymousSession(sessionData);
       }
 
@@ -282,7 +302,7 @@ export const sessionService = {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/session/${sessionId}`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,
@@ -319,7 +339,7 @@ export const sessionService = {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`https://rrslhxigqtfllunmowcy.supabase.co/functions/v1/assessment-manager/session/${sessionId}`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,

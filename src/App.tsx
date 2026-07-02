@@ -6,14 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/auth/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { BrandingProvider } from "./contexts/branding/BrandingContext";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import ReportPage from "./pages/ReportPage";
 import AssessmentResults from "./pages/AssessmentResults";
-
-// Import Dashboard pages
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
@@ -26,13 +26,20 @@ const AppContent: React.FC = () => {
       <Toaster />
       <Sonner />
       <Routes>
-        {/* All routes are now public - no restrictions during testing */}
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin/*" element={<AdminPanel />} />
-        <Route path="/assessor/*" element={<AssessorPanel />} />
+        <Route path="/admin/*" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminPanel />
+          </ProtectedRoute>
+        } />
+        <Route path="/assessor/*" element={
+          <ProtectedRoute allowedRoles={['assessor', 'admin']}>
+            <AssessorPanel />
+          </ProtectedRoute>
+        } />
         <Route path="/reports/:reportId" element={<ReportPage />} />
         <Route path="/results" element={<AssessmentResults />} />
         
@@ -48,7 +55,9 @@ const App: React.FC = () => (
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
-          <AppContent />
+          <BrandingProvider>
+            <AppContent />
+          </BrandingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

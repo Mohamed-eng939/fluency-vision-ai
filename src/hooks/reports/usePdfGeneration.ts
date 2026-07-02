@@ -1,7 +1,6 @@
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { generateReportPdf } from '@/utils/reports/pdfGenerator';
-import { generateWaveformImage } from '@/utils/reports/imageCapture';
 import { useToast } from '@/hooks/use-toast';
 
 interface UsePdfGenerationProps {
@@ -23,20 +22,13 @@ export const usePdfGeneration = ({
   const { toast } = useToast();
 
   const handleDownloadReport = async (
-    reportRef: React.RefObject<HTMLDivElement>,
-    waveformErrors: any[]
+    reportRef: React.RefObject<HTMLDivElement>
   ) => {
     if (!reportRef.current) return;
     
     setIsGeneratingPDF(true);
-    
-    try {
-      // Generate waveform image
-      const waveformImage = generateWaveformImage(
-        waveformErrors,
-        10 // default duration
-      );
 
+    try {
       const reportType = isFullAssessment ? 'full' : 'quick';
       
       // Add all prompt history content to the report before PDF generation
@@ -80,28 +72,11 @@ export const usePdfGeneration = ({
         reportContent.appendChild(historySection);
       }
 
-      // Add placeholders for images in the report before generating PDF
-      const pronunciationSection = reportRef.current.querySelector('.pronunciation-analysis-section');
-      if (pronunciationSection && !pronunciationSection.querySelector('.waveform-placeholder')) {
-        const waveformDiv = document.createElement('div');
-        waveformDiv.className = 'waveform-placeholder mb-4';
-        waveformDiv.innerHTML = '<div class="w-full h-30 bg-gray-100 rounded flex items-center justify-center">Waveform visualization</div>';
-        
-        const radarDiv = document.createElement('div');
-        radarDiv.className = 'radar-chart-placeholder';
-        radarDiv.innerHTML = '<div class="w-full h-64 bg-gray-100 rounded flex items-center justify-center">Pronunciation radar chart</div>';
-        
-        pronunciationSection.appendChild(waveformDiv);
-        pronunciationSection.appendChild(radarDiv);
-      }
-
       await generateReportPdf(reportRef.current, {
         fileName: `${reportType}-assessment-report-${sessionId}.pdf`,
         learnerName,
         sessionId,
-        dateOfTest,
-        waveformImage,
-        radarChartImage: ''
+        dateOfTest
       });
       
       // Clean up added content

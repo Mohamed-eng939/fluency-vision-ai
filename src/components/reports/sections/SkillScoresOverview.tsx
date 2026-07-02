@@ -11,9 +11,6 @@ interface SkillScoresOverviewProps {
     fluency: string;
     grammar: string;
     vocabulary: string;
-    pronunciation: string;
-    coherence: string;
-    syntax: string;
     [key: string]: string;
   };
   title?: string;
@@ -24,6 +21,7 @@ const SkillScoresOverview: React.FC<SkillScoresOverviewProps> = ({
   justifications,
   title = 'Skill Scores'
 }) => {
+  // Only the three engine-backed criteria are shown to learners (per scope rules).
   const skills = [
     {
       name: 'Fluency',
@@ -42,24 +40,6 @@ const SkillScoresOverview: React.FC<SkillScoresOverviewProps> = ({
       score: metrics.vocabulary * 10,
       cefrLevel: mapScoreToCEFR(metrics.vocabulary * 10),
       justification: justifications.vocabulary
-    },
-    {
-      name: 'Pronunciation',
-      score: metrics.pronunciation * 10,
-      cefrLevel: mapScoreToCEFR(metrics.pronunciation * 10),
-      justification: justifications.pronunciation
-    },
-    {
-      name: 'Coherence',
-      score: metrics.coherence * 10,
-      cefrLevel: mapScoreToCEFR(metrics.coherence * 10),
-      justification: justifications.coherence
-    },
-    {
-      name: 'Syntax',
-      score: metrics.syntax * 10,
-      cefrLevel: mapScoreToCEFR(metrics.syntax * 10),
-      justification: justifications.syntax
     }
   ];
 

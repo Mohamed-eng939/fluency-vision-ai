@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/auth';
 import { useNavigate } from 'react-router-dom';
+import { useBrandingContext } from '@/contexts/branding/BrandingContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { User, LogOut, Settings, Shield } from 'lucide-react';
 const Header: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const brand = useBrandingContext();
 
   const handleLogout = async () => {
     await signOut();
@@ -29,7 +31,7 @@ const Header: React.FC = () => {
       <div className="assessment-container">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl sm:text-3xl font-bold">
-            FluencyVision AI
+            {brand.displayName}
           </h1>
           <div className="flex items-center gap-4">
             <div className="text-sm sm:text-base hidden sm:block">

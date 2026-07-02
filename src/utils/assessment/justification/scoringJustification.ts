@@ -3,14 +3,13 @@
  * Functions for building justification text for grammar and syntax scoring
  */
 import { CEFRFeatureLevel } from '../rubrics/cefrTypes';
+import { detectGrammaticalFeatures } from '../grammar/grammarFeatureDetection';
+import { detectSyntacticFeatures } from '../syntax/syntaxFeatureDetection';
 
 /**
  * Build justification for grammar scoring
  */
 export const buildGrammarJustification = (transcript: string, score: number, level: CEFRFeatureLevel): string => {
-  // Import needed functions to detect grammatical features
-  const { detectGrammaticalFeatures } = require('../grammar/grammarFeatureDetection');
-  
   // Extract the features we observed
   const features = detectGrammaticalFeatures(transcript);
   
@@ -55,9 +54,6 @@ ${errorComment}`;
  * Build justification for syntax scoring
  */
 export const buildSyntaxJustification = (transcript: string, score: number, level: CEFRFeatureLevel): string => {
-  // Import needed functions to detect syntactic features
-  const { detectSyntacticFeatures } = require('../syntax/syntaxFeatureDetection');
-  
   // Extract the features we observed
   const features = detectSyntacticFeatures(transcript);
   

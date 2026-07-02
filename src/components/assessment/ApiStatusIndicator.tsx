@@ -10,7 +10,7 @@ const ApiStatusIndicator: React.FC<ApiStatusIndicatorProps> = ({ isApiAvailable 
   
   return (
     <div className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-md inline-block mb-3">
-      Enhanced pronunciation scoring active
+      Advanced speech analysis active
     </div>
   );
 };

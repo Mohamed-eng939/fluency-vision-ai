@@ -32,7 +32,7 @@ const Index = () => {
               Discover Your True Language Level
             </h2>
             <p className="text-gray-700 mb-4">
-              LinguaSpeak AI uses advanced speech recognition and natural language processing 
+              This assessment uses advanced speech recognition and natural language processing
               to accurately assess your language proficiency according to the CEFR framework.
             </p>
             <ul className="mb-8 space-y-2">
@@ -65,7 +65,7 @@ const Index = () => {
             <div className="bg-white rounded-lg h-full flex items-center justify-center overflow-hidden">
               <img 
                 src="/lovable-uploads/e6d117b5-e769-46fe-a446-8e52cac843d6.png" 
-                alt="Professional using LinguaSpeak AI language assessment"
+                alt="Professional taking a language assessment"
                 className="w-full h-auto rounded-lg object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>

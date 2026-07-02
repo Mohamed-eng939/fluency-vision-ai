@@ -37,7 +37,7 @@ export const ConsentSection: React.FC<ConsentSectionProps> = ({ form }) => {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>
-                  I agree to have my audio responses used anonymously to improve the LinguaSpeak AI system.
+                  I agree to have my audio responses used anonymously to improve this assessment system.
                   <span className="text-red-500 ml-1">*</span>
                 </FormLabel>
               </div>

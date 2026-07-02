@@ -152,6 +152,51 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         throw updateError;
       }
 
+      // Write training_data — one row per response, capturing the human-vs-system
+      // CEFR comparison that is the core training signal for the ML flywheel.
+      // Failures are logged but never abort the review itself.
+      const trainingInserts = assessmentDetails.responses
+        .filter((r: any) => r.transcript || r.user_response)
+        .map((r: any) => {
+          const rReview = responseReviews[r.id];
+          const humanCefr = rReview?.cefr_level || finalCEFRLevel;
+          const systemCefr = r.cefr_level;
+          return {
+            response_id: r.id,
+            transcript: r.transcript || null,
+            user_response: r.user_response || r.transcript || null,
+            prompt_text: r.prompt_identifier || null,
+            assessor_feedback: [
+              assessorFeedback || null,
+              rReview?.notes ? `Response note: ${rReview.notes}` : null
+            ].filter(Boolean).join('\n') || null,
+            organization_id: (assessmentDetails.session as any).organization_id || null,
+            quality_rating: humanCefr ? cefrToNumber(humanCefr as CEFRLevel) : null,
+            scores: {
+              system_cefr: systemCefr || null,
+              human_cefr: humanCefr || null,
+              is_overridden: !!rReview?.cefr_level && rReview.cefr_level !== systemCefr,
+              session_is_overridden: isOverridden,
+              final_session_cefr: finalCEFRLevel,
+              calculated_session_cefr: calculatedCEFR,
+              audio_url: r.audio_url || null,
+              overall_score: r.overall_score || null,
+              grammar_score: r.grammar_score || null,
+              fluency_score: r.fluency_score || null,
+              vocabulary_score: r.vocabulary_score || null
+            }
+          };
+        });
+
+      if (trainingInserts.length > 0) {
+        const { error: trainingError } = await supabase
+          .from('training_data')
+          .insert(trainingInserts);
+        if (trainingError) {
+          console.error('⚠️ [training_data] Failed to write training signal:', trainingError);
+        }
+      }
+
       toast.success(`Review submitted successfully - Final Level: ${finalCEFRLevel}`);
       
       onClose();

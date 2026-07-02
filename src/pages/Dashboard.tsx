@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
+import { useBrandingContext } from '@/contexts/branding/BrandingContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -36,6 +37,7 @@ const cefrColors = {
 const Dashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const brand = useBrandingContext();
   
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -167,7 +169,7 @@ const Dashboard: React.FC = () => {
         <div className="container mx-auto py-4 px-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-assessment-blue">LinguaSpeak Analytics</h1>
+              <h1 className="text-3xl font-bold text-assessment-blue">{brand.displayName} Analytics</h1>
               <p className="text-gray-600 mt-1">Comprehensive assessment insights and performance metrics</p>
             </div>
             <div className="flex items-center gap-3">

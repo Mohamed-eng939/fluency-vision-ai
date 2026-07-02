@@ -6,10 +6,12 @@ import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/contexts/auth';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useBrandingContext } from '@/contexts/branding/BrandingContext';
 
 const Login: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const brand = useBrandingContext();
   
   // Redirect if already logged in
   if (user) {
@@ -27,7 +29,7 @@ const Login: React.FC = () => {
       <div className="mx-auto max-w-md w-full">
         <Card className="border shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-assessment-blue">LinguaSpeak</CardTitle>
+            <CardTitle className="text-2xl font-bold text-assessment-blue">{brand.displayName}</CardTitle>
             <CardDescription>
               Sign in to your account or create a new one
             </CardDescription>
@@ -47,7 +49,7 @@ const Login: React.FC = () => {
             </Tabs>
           </CardContent>
           <CardFooter className="text-center text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} LinguaSpeak. All rights reserved.
+            &copy; {new Date().getFullYear()} {brand.displayName}. All rights reserved.
           </CardFooter>
         </Card>
       </div>

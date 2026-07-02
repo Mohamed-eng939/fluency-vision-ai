@@ -3,8 +3,9 @@ project_id = "rrslhxigqtfllunmowcy"
 [functions.assessment-manager]
 verify_jwt = true
 
-[functions.prompt-manager] 
-verify_jwt = false
+[functions.prompt-manager]
+# No call sites in frontend (prompts load from hardcoded data/speaking/promptData.ts).
+verify_jwt = true
 
 [functions.assessor-manager]
 verify_jwt = true
@@ -13,4 +14,79 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.get-session-audio-files]
-verify_jwt = false
+# DRAFT: was false. No call site for this function found anywhere in
+# fluency-vision-ai or mfa_backend, so flipping to true should be safe —
+# confirm nothing external depends on calling it without a JWT before
+# deploying this change.
+verify_jwt = true
+
+[functions.session-manager]
+# DRAFT: not previously set (defaulted to false live). No call site found
+# anywhere in fluency-vision-ai or mfa_backend.
+verify_jwt = true
+
+[functions.response-handler]
+# DRAFT: not previously set (defaulted to false live). No call site found
+# anywhere in fluency-vision-ai or mfa_backend.
+verify_jwt = true
+
+[functions.file-manager]
+# DRAFT: not previously set (defaulted to false live). No call site found
+# anywhere in fluency-vision-ai or mfa_backend.
+verify_jwt = true
+
+[functions.audio-processor]
+# DRAFT: was false. Previously left OUT of the safe-to-flip set because
+# src/services/audioService.ts calls this function unconditionally with no
+# auth-state check, and it's the function that handles audio uploads for
+# the anonymous/guest test-taking flow — flipping to true would have 401'd
+# every guest upload before the function even ran.
+#
+# Superseded by 20260627000001_guest_auth_hardening.sql: guests now get a
+# real Supabase anonymous sign-in (auth.signInAnonymously()) via
+# ensureAuthSession() in sessionService.ts, called from initializeSession()
+# before a session/assessmentId exists at all. supabase.functions.invoke()
+# auto-attaches that session's access_token, so audioService.ts needs no
+# changes — it already sends a real (anonymous) JWT once that migration's
+# app-side code is live. Apply this flip ONLY together with, and after,
+# that migration — flipping it first (anonymous sign-ins not yet enabled,
+# or the old code without ensureAuthSession deployed) would break guest
+# audio upload exactly as originally feared.
+verify_jwt = true
+
+[functions.profile-manager]
+# Called via supabase.functions.invoke() from profileService.ts only from
+# authenticated UI flows (profile screens). JWT is always attached.
+verify_jwt = true
+
+[functions.grammar-proxy]
+# Called from grammarApiService.ts after ensureAuthSession() establishes
+# an anonymous or real JWT in the assessment flow.
+verify_jwt = true
+
+[functions.fluency-proxy]
+# Called from fluencyApiService.ts — same auth context as grammar-proxy.
+verify_jwt = true
+
+[functions.personalized-feedback]
+# Called from feedbackGeneration.ts (assessment storage hooks), after
+# session initialization which always calls ensureAuthSession().
+verify_jwt = true
+
+[functions.notification-manager]
+# No frontend call sites and no cross-function invocations found.
+verify_jwt = true
+
+[functions.report-generator]
+# No call sites found anywhere in frontend or other functions.
+verify_jwt = true
+
+[functions.analytics-generator]
+# No call sites found anywhere in frontend or other functions.
+verify_jwt = true
+
+# assessor_manager (underscore) — unauthenticated duplicate of assessor-manager (hyphen).
+# Must be DELETED from Supabase dashboard (Settings → Functions) and removed from this
+# repo before deploying. See security runbook §1c. Requires developer sign-off.
+# No frontend call sites point at the underscore version (all call sites use
+# 'assessor-manager' with a hyphen).
