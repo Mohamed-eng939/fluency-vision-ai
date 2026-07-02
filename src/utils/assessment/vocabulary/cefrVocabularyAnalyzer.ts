@@ -5,6 +5,30 @@
  */
 
 import { cefrVocabulary, stopWords } from './cefrVocabularyData';
+import { lemmatize } from './lemmatizer';
+
+/**
+ * Pre-built word → CEFR level lookup.
+ *
+ * The source list has ~4,400 words that appear at more than one level. A word's
+ * CEFR level is the *earliest* level at which it is introduced, so we assign the
+ * LOWEST level (A1 beats A2 beats B1 …). Building the map from highest level to
+ * lowest and overwriting means the lowest level written wins. This replaces the
+ * previous "check C2 first" logic, which over-credited every shared word.
+ */
+const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
+
+const wordLevelMap: Map<string, string> = (() => {
+  const map = new Map<string, string>();
+  // Write from C2 down to A1 so the lowest level ends up as the final value.
+  for (let i = LEVEL_ORDER.length - 1; i >= 0; i--) {
+    const level = LEVEL_ORDER[i];
+    for (const word of cefrVocabulary[level] ?? []) {
+      map.set(word.toLowerCase(), level);
+    }
+  }
+  return map;
+})();
 
 /**
  * Interface for vocabulary analysis result - NO numeric scores
@@ -36,19 +60,25 @@ const tokenizeText = (text: string): string[] => {
 };
 
 /**
- * Get the CEFR level for a given word
- * STRICT MODE: Returns null if word not found in CEFR list
+ * Get the CEFR level for a given word.
+ * STRICT MODE: returns null if the word is not in the CEFR list.
+ *
+ * Tries the surface form first, then its lemma (so "developed" → "develop",
+ * "cities" → "city", "studies" → "study" are recognised instead of counted as
+ * unknown). O(1) map lookup rather than scanning six arrays per word.
  */
 const getWordCefrLevel = (word: string): string | null => {
   const normalizedWord = word.toLowerCase();
-  
-  if (cefrVocabulary.C2?.some(w => w.toLowerCase() === normalizedWord)) return 'C2';
-  if (cefrVocabulary.C1?.some(w => w.toLowerCase() === normalizedWord)) return 'C1';
-  if (cefrVocabulary.B2?.some(w => w.toLowerCase() === normalizedWord)) return 'B2';
-  if (cefrVocabulary.B1?.some(w => w.toLowerCase() === normalizedWord)) return 'B1';
-  if (cefrVocabulary.A2?.some(w => w.toLowerCase() === normalizedWord)) return 'A2';
-  if (cefrVocabulary.A1?.some(w => w.toLowerCase() === normalizedWord)) return 'A1';
-  
+
+  const direct = wordLevelMap.get(normalizedWord);
+  if (direct) return direct;
+
+  const lemma = lemmatize(normalizedWord);
+  if (lemma !== normalizedWord) {
+    const viaLemma = wordLevelMap.get(lemma);
+    if (viaLemma) return viaLemma;
+  }
+
   return null;
 };
 

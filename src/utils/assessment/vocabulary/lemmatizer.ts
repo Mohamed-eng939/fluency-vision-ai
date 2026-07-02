@@ -121,6 +121,11 @@ export const lemmatize = (word: string): string => {
     return word.slice(0, -3);
   }
   
+  // -ied past tense of a -y verb (e.g., studied -> study, tried -> try)
+  if (word.endsWith('ied') && word.length > 4) {
+    return word.slice(0, -3) + 'y';
+  }
+
   if (word.endsWith('ed') && word.length > 4) {
     // Double consonant + ed (e.g., stopped -> stop)
     if (/[aeiou][^aeiou]{2}ed$/.test(word)) {
@@ -129,7 +134,7 @@ export const lemmatize = (word: string): string => {
     // Regular -ed form
     return word.slice(0, -2);
   }
-  
+
   // No changes needed
   return word;
 };

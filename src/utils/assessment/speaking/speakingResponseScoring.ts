@@ -163,22 +163,34 @@ const scoreWithRubric = async (
     for (const criterion of enhancedRubric.criteria) {
       // Calculate a score based on audio metrics and transcript analysis
       const cefrResult = await calculateCriterionScore(
-        criterion, 
-        enhancedMetrics, 
+        criterion,
+        enhancedMetrics,
         transcript || '',
         question.text // Pass the question text as prompt reference
       );
-      
+
+      // HONEST SCORING: if the engine couldn't measure this criterion (API
+      // failure, or a non-engine-backed criterion like pronunciation), skip it
+      // rather than fabricating a mid-level default. Only real measurements
+      // contribute to the score.
+      if (!cefrResult) continue;
+
       // Convert CEFR to numeric score for compatibility
       detailedScores[criterion] = cefrToScore(cefrResult);
-      
+
       // Generate feedback for this criterion
       feedback[criterion] = getCriterionFeedback(criterion, detailedScores[criterion], level as any);
     }
   }
-  
+
+  // If nothing could be measured, fail honestly instead of returning a score
+  // built from fabricated defaults.
+  if (Object.keys(detailedScores).length === 0) {
+    throw new Error('Insufficient data for reliable scoring. The scoring engines could not evaluate this response.');
+  }
+
   // Calculate overall score
-  const overallScore = Object.values(detailedScores).reduce((sum, score) => sum + score, 0) / 
+  const overallScore = Object.values(detailedScores).reduce((sum, score) => sum + score, 0) /
                         Object.values(detailedScores).length;
   
   // Convert to 0-100 scale
@@ -208,24 +220,27 @@ const basicScoring = async (
   detailedScores: Record<string, number>,
   feedback: Record<string, string>
 }> => {
-  // Get CEFR levels from APIs
+  // Get CEFR levels from the three engine-backed criteria only.
   const fluencyCefr = transcript ? await calculateCriterionScore('Fluency', enhancedMetrics, transcript) : null;
   const grammarCefr = transcript ? await calculateCriterionScore('Grammar', enhancedMetrics, transcript) : null;
   const vocabularyCefr = transcript ? await calculateCriterionScore('Vocabulary', enhancedMetrics, transcript) : null;
 
-  const metrics: Record<string, number> = {
-    fluency: cefrToScore(fluencyCefr),
-    pronunciation: 7.0, // Default - no pronunciation API in simplified flow
-    prosody: basicMetrics.prosody ?? 7.0,
-    vocabulary: cefrToScore(vocabularyCefr),
-    grammar: cefrToScore(grammarCefr),
-    syntax: 7.0, // Default - not scored by API
-    coherence: 7.0 // Default - not scored by API
-  };
-  
-  const totalScore = Object.values(metrics).reduce((sum, score) => sum + score, 0) / 
+  // HONEST SCORING: build metrics ONLY from criteria the engines could actually
+  // measure. The removed criteria (pronunciation/prosody/syntax/coherence) are
+  // not engine-backed and must not be fabricated with a default (previously 7.0),
+  // which silently dragged every result toward the middle.
+  const metrics: Record<string, number> = {};
+  if (fluencyCefr) metrics.fluency = cefrToScore(fluencyCefr);
+  if (grammarCefr) metrics.grammar = cefrToScore(grammarCefr);
+  if (vocabularyCefr) metrics.vocabulary = cefrToScore(vocabularyCefr);
+
+  if (Object.keys(metrics).length === 0) {
+    throw new Error('Insufficient data for reliable scoring. The scoring engines could not evaluate this response.');
+  }
+
+  const totalScore = Object.values(metrics).reduce((sum, score) => sum + score, 0) /
                      Object.keys(metrics).length * 10;
-                     
+
   const cefrLevel = determineCEFRLevel(totalScore);
   
   return {
