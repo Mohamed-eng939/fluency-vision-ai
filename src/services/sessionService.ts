@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_PROJECT_URL } from '@/integrations/supabase/client';
 import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
 
 export interface SessionData {
@@ -302,7 +302,7 @@ export const sessionService = {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
+      const response = await fetch(`${SUPABASE_PROJECT_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,
@@ -339,7 +339,7 @@ export const sessionService = {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
+      const response = await fetch(`${SUPABASE_PROJECT_URL}/functions/v1/assessment-manager/session/${sessionId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.data.session.access_token}`,
