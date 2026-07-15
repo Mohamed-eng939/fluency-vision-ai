@@ -123,6 +123,19 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
             </div>
           )}
           
+          {/* Provisional-result notice: shown when the engines couldn't score
+              part of the response, so the level isn't presented as final. */}
+          {result.fallbackInfo?.scoringUnavailable && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <h3 className="text-amber-800 font-semibold mb-1">Provisional result — pending review</h3>
+              <p className="text-amber-700 text-sm">
+                Part of your response couldn't be scored automatically, so this level is
+                provisional. A human assessor will review your recording and confirm your
+                final level.
+              </p>
+            </div>
+          )}
+
           {/* Enhanced CEFR Skills Breakdown */}
           {(result as any)?.cefrLevels && (
             <div className="mb-6">

@@ -48,6 +48,8 @@ export interface FallbackInfo {
   prosodyFallbackReason?: string;
   coherenceFallback?: boolean;
   coherenceFallbackReason?: string;
+  /** Set when one or more engines couldn't score a response — flag for human review. */
+  scoringUnavailable?: boolean;
 }
 
 export interface AssessmentResult {

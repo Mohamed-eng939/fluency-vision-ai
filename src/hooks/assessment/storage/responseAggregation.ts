@@ -332,10 +332,17 @@ export const calculateAggregatedResult = async (
     audioAnalysis: aggregatedAudioAnalysis,
     transcript: results.map(r => r.transcript).filter(Boolean).join(' '),
     duration: results.reduce((sum, r) => sum + (r.duration || 0), 0),
-    // Include fallback information for transparency
-    fallbackInfo: Object.keys(fallbackFlags).some(key => fallbackFlags[key as keyof typeof fallbackFlags]) 
-      ? fallbackFlags 
-      : undefined,
+    // Include fallback information for transparency. Also surface when any
+    // response couldn't be scored by the engines, so the result is flagged for
+    // human review rather than shown as a confident number.
+    fallbackInfo: (() => {
+      const anyUnreliable = results.some(
+        (r: any) => r?.isReliable === false || r?.fallbackInfo?.scoringUnavailable
+      );
+      const merged: any = { ...fallbackFlags };
+      if (anyUnreliable) merged.scoringUnavailable = true;
+      return Object.keys(merged).some((k) => merged[k]) ? merged : undefined;
+    })(),
     // Include vocabulary aggregation data
     vocabularyAggregation
   };
