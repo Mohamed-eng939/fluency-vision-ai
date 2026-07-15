@@ -18,7 +18,19 @@ const FallbackWarning: React.FC<FallbackWarningProps> = ({ fallbackInfo }) => {
     <Alert className="border-amber-200 bg-amber-50 text-amber-800 mb-6">
       <AlertTriangle className="h-4 w-4" />
       <AlertDescription>
-        <span className="font-medium">Assessment Note:</span> Some scoring modules used fallback logic due to audio or data quality issues. Scores may be less precise than usual.
+        {fallbackInfo.scoringUnavailable ? (
+          <>
+            <span className="font-medium">Provisional result:</span> part of this response
+            couldn't be scored automatically, so this level is provisional and pending
+            human review.
+          </>
+        ) : (
+          <>
+            <span className="font-medium">Assessment Note:</span> Some scoring modules used
+            fallback logic due to audio or data quality issues. Scores may be less precise
+            than usual.
+          </>
+        )}
       </AlertDescription>
     </Alert>
   );
