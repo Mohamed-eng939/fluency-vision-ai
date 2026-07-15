@@ -36,13 +36,15 @@ export const useSupabaseStorage = () => {
           transcript,
           audioUrl,
           audioDuration: result.duration,
+          // Persist the REAL per-criterion scores so the assessor / accessed
+          // report matches what the learner saw. Previously these were hardcoded
+          // to 0, which is why grammar/fluency/vocabulary showed 0 (or N/A) on
+          // review and poisoned the training data. null = genuinely unmeasured.
           scores: {
-            overall: result.totalScore,
-            fluency: 0,
-            pronunciation: 0,
-            grammar: 0,
-            vocabulary: 0,
-            coherence: 0,
+            overall: result.totalScore ?? null,
+            fluency: result.metrics?.fluency ?? null,
+            grammar: result.metrics?.grammar ?? null,
+            vocabulary: result.metrics?.vocabulary ?? null,
             cefrLevel: result.cefrLevel
           },
           detailedFeedback: {

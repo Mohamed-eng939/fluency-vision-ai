@@ -9,6 +9,13 @@ import { estimateSyllableCount, calculateFluencyScoreFromSyllables } from '@/uti
 import { generateUniqueId } from '@/utils/assessmentUtils';
 import { cefrSampleBank } from '@/data/assessment/cefrSampleBank';
 import { calculateGrammarCriterion, calculateFluencyCriterion, calculateVocabularyCriterion } from './criterion';
+import { cefrToNumber, numberToCefr } from '@/utils/scoring/cefrUtils';
+
+/** Map a CEFR band to a 0-10 metric value (matches the criterion score scale). */
+const cefrToTenScale = (cefr: string): number => {
+  const map: Record<string, number> = { A1: 2, A2: 4, B1: 5, B2: 7, C1: 8.5, C2: 10 };
+  return map[cefr.replace('+', '')] ?? 5;
+};
 
 /**
  * Build enhanced audio analysis by calling Grammar, Fluency, and Vocabulary APIs
@@ -149,7 +156,42 @@ export const processRecordingForAssessment = async (
         
         // Store enhanced analysis with API results
         result.audioAnalysis = enhancedAudioAnalysis;
-        
+
+        // HONEST SCORING: derive the overall result from the REAL per-criterion
+        // CEFR levels the grammar/fluency/vocabulary engines produced (stored on
+        // the enhanced analysis) — not from the random base metrics and not from
+        // the prompt's own level. Only criteria that were actually measured
+        // contribute; if none were, flag the result for review instead of
+        // fabricating a plausible-looking middle level.
+        const ea: any = enhancedAudioAnalysis;
+        const measured: Array<{ key: 'grammar' | 'fluency' | 'vocabulary'; cefr: string }> = [];
+        if (ea.grammarApiAnalysis?.apiUsed && ea.grammarApiAnalysis.cefr) {
+          measured.push({ key: 'grammar', cefr: ea.grammarApiAnalysis.cefr });
+        }
+        if (ea.fluencyApiAnalysis?.apiUsed && ea.fluencyApiAnalysis.cefr) {
+          measured.push({ key: 'fluency', cefr: ea.fluencyApiAnalysis.cefr });
+        }
+        if (ea.cefrVocabularyLevel) {
+          measured.push({ key: 'vocabulary', cefr: ea.cefrVocabularyLevel });
+        }
+
+        if (measured.length > 0) {
+          result.metrics = result.metrics || ({} as any);
+          for (const m of measured) {
+            (result.metrics as any)[m.key] = cefrToTenScale(m.cefr);
+          }
+          const avgRank = measured.reduce((s, m) => s + cefrToNumber(m.cefr as any), 0) / measured.length;
+          result.cefrLevel = numberToCefr(avgRank);
+          result.totalScore = Math.round(
+            (measured.reduce((s, m) => s + cefrToTenScale(m.cefr), 0) / measured.length) * 10
+          );
+          (result as any).isReliable = true;
+        } else {
+          // Nothing measurable — don't invent a score from random metrics/prompt.
+          (result as any).isReliable = false;
+          (result as any).fallbackInfo = { ...(result.fallbackInfo || {}), scoringUnavailable: true };
+        }
+
         // Calculate and add syllable data if not already present
         if (!result.metrics || result.metrics.fluency === undefined) {
           // If we don't have metrics at all, create basic ones
@@ -192,13 +234,10 @@ export const processRecordingForAssessment = async (
       result.dateOfTest = new Date().toLocaleDateString();
       result.assessmentType = 'quick';
       
-      // Add CEFR level from prompt if available
-      if (selectedPrompt?.cefrLevel) {
-        // Adjust scoring based on the CEFR level of the prompt
-        // This ensures the scoring is appropriate for the expected level
-        result.cefrLevel = selectedPrompt.cefrLevel as any;
-      }
-      
+      // NOTE: the overall CEFR is now derived from the learner's measured
+      // grammar/fluency/vocabulary above — NOT overwritten with the prompt's own
+      // level, which previously made every answer report the question's level.
+
       return result;
     }
   } catch (error) {

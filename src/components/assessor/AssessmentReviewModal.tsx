@@ -47,7 +47,13 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   const [reviewStatus, setReviewStatus] = useState<'approved' | 'rejected' | 'needs_revision'>('approved');
   const [assessorFeedback, setAssessorFeedback] = useState('');
   const [recommendation, setRecommendation] = useState('');
-  const [responseReviews, setResponseReviews] = useState<Record<string, { cefr_level: string; notes: string }>>({});
+  const [responseReviews, setResponseReviews] = useState<Record<string, {
+    cefr_level: string;
+    notes: string;
+    grammar_cefr: string;
+    fluency_cefr: string;
+    vocabulary_cefr: string;
+  }>>({});
   const [finalCEFRLevel, setFinalCEFRLevel] = useState<string>('');
   const [finalCEFRReason, setFinalCEFRReason] = useState('');
   const [calculatedCEFR, setCalculatedCEFR] = useState<string>('');
@@ -91,14 +97,19 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         if (review.cefr_level) {
           updateData.cefr_level = review.cefr_level;
         }
-        
-        if (review.notes) {
-          updateData.detailed_feedback = {
-            ...(assessmentDetails.responses.find((r: any) => r.id === responseId)?.detailed_feedback || {}),
-            assessor_notes: review.notes
-          };
+
+        // Persist the assessor's per-criterion CEFR grades + notes into the
+        // response's detailed_feedback — these are the human labels per criterion.
+        const existingFeedback = assessmentDetails.responses.find((r: any) => r.id === responseId)?.detailed_feedback || {};
+        const assessorGrades: any = {};
+        if (review.grammar_cefr) assessorGrades.assessor_grammar_cefr = review.grammar_cefr;
+        if (review.fluency_cefr) assessorGrades.assessor_fluency_cefr = review.fluency_cefr;
+        if (review.vocabulary_cefr) assessorGrades.assessor_vocabulary_cefr = review.vocabulary_cefr;
+        if (review.notes) assessorGrades.assessor_notes = review.notes;
+        if (Object.keys(assessorGrades).length > 0) {
+          updateData.detailed_feedback = { ...existingFeedback, ...assessorGrades };
         }
-        
+
         if (Object.keys(updateData).length > 0) {
           return supabase
             .from('assessment_responses')
@@ -161,6 +172,12 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           const rReview = responseReviews[r.id];
           const humanCefr = rReview?.cefr_level || finalCEFRLevel;
           const systemCefr = r.cefr_level;
+          // Per-criterion system values + the assessor's per-criterion grades
+          // (falling back to the system value when the assessor left it as-is).
+          const sysScoring = getResponseScoringData(r);
+          const humanGrammar = rReview?.grammar_cefr || sysScoring.grammarCefr || null;
+          const humanFluency = rReview?.fluency_cefr || sysScoring.fluencyCefr || null;
+          const humanVocab = rReview?.vocabulary_cefr || sysScoring.vocabCefr || null;
           return {
             response_id: r.id,
             transcript: r.transcript || null,
@@ -175,6 +192,12 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
             scores: {
               system_cefr: systemCefr || null,
               human_cefr: humanCefr || null,
+              system_grammar_cefr: sysScoring.grammarCefr || null,
+              system_fluency_cefr: sysScoring.fluencyCefr || null,
+              system_vocabulary_cefr: sysScoring.vocabCefr || null,
+              human_grammar_cefr: humanGrammar,
+              human_fluency_cefr: humanFluency,
+              human_vocabulary_cefr: humanVocab,
               is_overridden: !!rReview?.cefr_level && rReview.cefr_level !== systemCefr,
               session_is_overridden: isOverridden,
               final_session_cefr: finalCEFRLevel,
@@ -218,13 +241,20 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     }
   };
 
-  const handleResponseReviewChange = (responseId: string, field: 'cefr_level' | 'notes', value: string) => {
+  const handleResponseReviewChange = (
+    responseId: string,
+    field: 'cefr_level' | 'notes' | 'grammar_cefr' | 'fluency_cefr' | 'vocabulary_cefr',
+    value: string
+  ) => {
     setResponseReviews(prev => ({
       ...prev,
       [responseId]: {
-        ...prev[responseId],
-        cefr_level: field === 'cefr_level' ? value : (prev[responseId]?.cefr_level || ''),
-        notes: field === 'notes' ? value : (prev[responseId]?.notes || '')
+        cefr_level: prev[responseId]?.cefr_level || '',
+        notes: prev[responseId]?.notes || '',
+        grammar_cefr: prev[responseId]?.grammar_cefr || '',
+        fluency_cefr: prev[responseId]?.fluency_cefr || '',
+        vocabulary_cefr: prev[responseId]?.vocabulary_cefr || '',
+        [field]: value,
       }
     }));
   };
@@ -438,35 +468,39 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                         </div>
                       )}
 
-                      {/* Per-response scoring: Grammar, Fluency, Vocabulary CEFR only */}
+                      {/* Per-response scoring: the assessor grades Grammar,
+                          Fluency, and Vocabulary as CEFR. Each dropdown is
+                          pre-filled with the system's value (shown as "System: X")
+                          and is editable A1–C1. */}
                       <div className="grid grid-cols-3 gap-2 pt-2 border-t">
-                        <div className="text-center p-2 rounded bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Grammar</p>
-                          {scoring.grammarCefr ? (
-                            <Badge className={`text-xs mt-1 ${getCEFRColor(scoring.grammarCefr)}`}>{scoring.grammarCefr}</Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">N/A</span>
-                          )}
-                        </div>
-                        <div className="text-center p-2 rounded bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Fluency</p>
-                          {scoring.fluencyCefr ? (
-                            <Badge className={`text-xs mt-1 ${getCEFRColor(scoring.fluencyCefr)}`}>{scoring.fluencyCefr}</Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">N/A</span>
-                          )}
-                          {scoring.fluencySpm && (
-                            <p className="text-xs text-muted-foreground mt-1">{scoring.fluencySpm} SPM</p>
-                          )}
-                        </div>
-                        <div className="text-center p-2 rounded bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Vocabulary</p>
-                          {scoring.vocabCefr ? (
-                            <Badge className={`text-xs mt-1 ${getCEFRColor(scoring.vocabCefr)}`}>{scoring.vocabCefr}</Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">N/A</span>
-                          )}
-                        </div>
+                        {([
+                          { key: 'grammar_cefr' as const, label: 'Grammar', sys: scoring.grammarCefr },
+                          { key: 'fluency_cefr' as const, label: 'Fluency', sys: scoring.fluencyCefr },
+                          { key: 'vocabulary_cefr' as const, label: 'Vocabulary', sys: scoring.vocabCefr },
+                        ]).map(({ key, label, sys }) => (
+                          <div key={key} className="p-2 rounded bg-muted/30">
+                            <p className="text-xs text-muted-foreground text-center mb-1">{label}</p>
+                            <Select
+                              value={responseReviews[response.id]?.[key] || (sys ?? '')}
+                              onValueChange={(value) => handleResponseReviewChange(response.id, key, value)}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue placeholder="Level" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="A1">A1</SelectItem>
+                                <SelectItem value="A2">A2</SelectItem>
+                                <SelectItem value="B1">B1</SelectItem>
+                                <SelectItem value="B2">B2</SelectItem>
+                                <SelectItem value="C1">C1</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <p className="text-[10px] text-muted-foreground text-center mt-1">
+                              System: {sys || '—'}
+                              {key === 'fluency_cefr' && scoring.fluencySpm ? ` · ${scoring.fluencySpm} SPM` : ''}
+                            </p>
+                          </div>
+                        ))}
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 pt-2 border-t">
