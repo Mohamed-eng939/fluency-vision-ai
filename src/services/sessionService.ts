@@ -63,7 +63,7 @@ async function finalizeAnonymousSession(sessionData: SessionData): Promise<Sessi
         user_id: null, // Always null for anonymous sessions
         session_type: 'full_assessment',
         status: 'completed',
-        overall_score: sessionData.finalResult?.metrics?.overall || 0,
+        overall_score: sessionData.finalResult?.metrics?.overall ?? sessionData.finalResult?.totalScore ?? 0,
         fluency_score: sessionData.finalResult?.metrics?.fluency || 0,
         pronunciation_score: sessionData.finalResult?.metrics?.pronunciation || 0,
         grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
@@ -230,7 +230,7 @@ export const sessionService = {
         .from('assessment_sessions')
         .update({
           status: 'completed',
-          overall_score: sessionData.finalResult?.metrics?.overall || 0,
+          overall_score: sessionData.finalResult?.metrics?.overall ?? sessionData.finalResult?.totalScore ?? 0,
           fluency_score: sessionData.finalResult?.metrics?.fluency || 0,
           pronunciation_score: sessionData.finalResult?.metrics?.pronunciation || 0,
           grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
@@ -255,7 +255,7 @@ export const sessionService = {
             user_id: session.user.id,
             session_type: 'full_assessment',
             status: 'completed',
-            overall_score: sessionData.finalResult?.metrics?.overall || 0,
+            overall_score: sessionData.finalResult?.metrics?.overall ?? sessionData.finalResult?.totalScore ?? 0,
             fluency_score: sessionData.finalResult?.metrics?.fluency || 0,
             pronunciation_score: sessionData.finalResult?.metrics?.pronunciation || 0,
             grammar_score: sessionData.finalResult?.metrics?.grammar || 0,
