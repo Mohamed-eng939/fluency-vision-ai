@@ -283,6 +283,139 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
 
+      case 'list-users': {
+        if (method !== 'GET' && method !== 'POST') {
+          return new Response(JSON.stringify({ error: 'Method not allowed for this action' }), {
+            status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        if (profile.role !== 'admin') {
+          return new Response(JSON.stringify({ error: 'Admin role required' }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        )
+        let profQuery = adminClient
+          .from('profiles')
+          .select('id, role, is_active, created_at, organization_id')
+        // Org-admins only see their own tenant's users; global admins (no org) see all.
+        if (profile.organization_id) {
+          profQuery = profQuery.eq('organization_id', profile.organization_id)
+        }
+        const { data: profiles, error: listErr } = await profQuery
+        if (listErr) {
+          return new Response(JSON.stringify({ error: listErr.message }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        // Merge in emails from auth (requires service role; degrades gracefully).
+        let emailById = new Map<string, string | undefined>()
+        try {
+          const { data: authData } = await adminClient.auth.admin.listUsers()
+          emailById = new Map((authData?.users ?? []).map((u: any) => [u.id, u.email]))
+        } catch (_) { /* no service role — emails omitted */ }
+        const usersOut = (profiles ?? []).map((p: any) => ({ ...p, email: emailById.get(p.id) ?? null }))
+        return new Response(JSON.stringify({ users: usersOut }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      case 'set-role': {
+        if (method !== 'POST') {
+          return new Response(JSON.stringify({ error: 'Method not allowed for this action' }), {
+            status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        if (profile.role !== 'admin') {
+          return new Response(JSON.stringify({ error: 'Admin role required' }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const { user_id, role } = await req.json()
+        const allowedRoles = ['learner', 'assessor', 'admin']
+        if (!user_id || !allowedRoles.includes(role)) {
+          return new Response(JSON.stringify({ error: 'Valid user_id and role (learner|assessor|admin) required' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        // Guard against self-lockout: an admin can't change their own role.
+        if (user_id === user.id) {
+          return new Response(JSON.stringify({ error: 'You cannot change your own role' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        )
+        // If this admin belongs to an org, only allow managing users in that org.
+        if (profile.organization_id) {
+          const { data: target } = await adminClient
+            .from('profiles').select('organization_id').eq('id', user_id).single()
+          if (target && target.organization_id !== profile.organization_id) {
+            return new Response(JSON.stringify({ error: 'User is not in your organization' }), {
+              status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+        }
+        const { error: roleErr } = await adminClient
+          .from('profiles')
+          .update({ role, updated_at: new Date().toISOString() })
+          .eq('id', user_id)
+        if (roleErr) {
+          return new Response(JSON.stringify({ error: roleErr.message }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        return new Response(JSON.stringify({ message: 'Role updated', user_id, role }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      case 'invite-user': {
+        if (method !== 'POST') {
+          return new Response(JSON.stringify({ error: 'Method not allowed for this action' }), {
+            status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        if (profile.role !== 'admin') {
+          return new Response(JSON.stringify({ error: 'Admin role required' }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const { email, role } = await req.json()
+        const allowedRoles = ['learner', 'assessor', 'admin']
+        if (!email || !allowedRoles.includes(role)) {
+          return new Response(JSON.stringify({ error: 'Valid email and role required' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        )
+        // Sends an invite email; requires SMTP to be configured in Supabase Auth.
+        const { data: invited, error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(email)
+        if (inviteErr) {
+          return new Response(JSON.stringify({ error: `Invite failed: ${inviteErr.message}. Check that email sending is configured in Supabase Auth.` }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        // The signup trigger creates the profile as 'learner'; set the intended role.
+        if (invited?.user?.id) {
+          await adminClient
+            .from('profiles')
+            .update({ role, organization_id: profile.organization_id ?? null, updated_at: new Date().toISOString() })
+            .eq('id', invited.user.id)
+        }
+        return new Response(JSON.stringify({ message: 'Invitation sent', email, role }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
       default:
         return new Response(JSON.stringify({ error: 'Invalid action' }), {
           status: 400,

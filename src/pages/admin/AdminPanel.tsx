@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Users, ClipboardList } from 'lucide-react';
 import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
+import UserManagement from '@/components/admin/UserManagement';
 
 const AdminPanel: React.FC = () => {
   const { user, signOut } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+  const [userMgmtOpen, setUserMgmtOpen] = useState(false);
   
   React.useEffect(() => {
     // Simulate loading data
@@ -60,7 +62,7 @@ const AdminPanel: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm mb-4">Manage user accounts, roles, and permissions</p>
-                  <Button className="w-full">Manage Users</Button>
+                  <Button className="w-full" onClick={() => setUserMgmtOpen(true)}>Manage Users</Button>
                 </CardContent>
               </Card>
               
@@ -121,6 +123,12 @@ const AdminPanel: React.FC = () => {
           </TabsContent>
         </Tabs>
       )}
+
+      <UserManagement
+        open={userMgmtOpen}
+        onOpenChange={setUserMgmtOpen}
+        currentUserId={user?.id}
+      />
     </div>
   );
 };
