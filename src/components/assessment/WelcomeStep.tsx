@@ -1,14 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import MicCheck from './MicCheck';
 
 interface WelcomeStepProps {
   onStart: () => void;
 }
 
 const WelcomeStep: React.FC<WelcomeStepProps> = ({ onStart }) => {
+  const [micReady, setMicReady] = useState(false);
+
   return (
     <Card className="max-w-lg mx-auto">
       <CardHeader className="text-center">
@@ -48,10 +51,21 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onStart }) => {
           </div>
         </div>
         
-        <div className="pt-4">
-          <Button className="w-full" onClick={onStart}>
+        <div className="pt-2 space-y-3">
+          <MicCheck onReady={() => setMicReady(true)} />
+
+          <Button className="w-full" onClick={onStart} disabled={!micReady}>
             Start Test <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
+          {!micReady && (
+            <button
+              type="button"
+              onClick={onStart}
+              className="w-full text-xs text-muted-foreground underline underline-offset-2 hover:text-gray-700 focus-visible:outline-2 focus-visible:outline-assessment-blue"
+            >
+              Skip the mic check and start anyway
+            </button>
+          )}
         </div>
       </CardContent>
       

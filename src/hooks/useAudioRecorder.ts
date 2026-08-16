@@ -17,7 +17,8 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioAnalysis, setAudioAnalysis] = useState<AudioAnalysisResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -39,7 +40,8 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         }
       });
       streamRef.current = stream;
-      
+      setMediaStream(stream); // expose for the live waveform visualizer
+
       // Monitor microphone track state
       const firstTrack = stream.getAudioTracks()[0];
       if (firstTrack) {
@@ -115,7 +117,8 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
-        
+        setMediaStream(null); // waveform visualizer detaches
+
         // Clean up VAD
         if (vadRef.current) {
           vadRef.current.stop();
@@ -205,6 +208,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
     audioBlob,
     audioAnalysis,
     isProcessing,
+    mediaStream,
     startRecording,
     stopRecording,
     resetRecording,
