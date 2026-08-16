@@ -10,6 +10,7 @@ import { generateUniqueId } from '@/utils/assessmentUtils';
 import { cefrSampleBank } from '@/data/assessment/cefrSampleBank';
 import { calculateGrammarCriterion, calculateFluencyCriterion, calculateVocabularyCriterion } from './criterion';
 import { cefrToNumber, numberToCefr } from '@/utils/scoring/cefrUtils';
+import { transcribeWithWhisper } from '@/utils/whisperTranscription';
 
 /** Map a CEFR band to a 0-10 metric value (matches the criterion score scale). */
 const cefrToTenScale = (cefr: string): number => {
@@ -66,6 +67,17 @@ export const processRecordingForAssessment = async (
   } | null
 ): Promise<AssessmentResult> => {
   try {
+    // Prefer an accurate Whisper (large-v3) transcript over the browser's live
+    // speech recognition, which is error-prone. Falls back to the passed-in
+    // transcript if Whisper is unavailable or still cold-starting, so scoring
+    // never blocks on transcription.
+    if (audioBlob && audioBlob.size > 0) {
+      const whisperTranscript = await transcribeWithWhisper(audioBlob);
+      if (whisperTranscript) {
+        transcript = whisperTranscript;
+      }
+    }
+
     // Use enhanced scoring if we have a prompt with assessment question data
     if (selectedPrompt && selectedPrompt.questionData) {
       const questionData = selectedPrompt.questionData as AssessmentQuestion;
