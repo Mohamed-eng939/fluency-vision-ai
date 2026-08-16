@@ -4,7 +4,7 @@ import { useRecordingFlow } from '@/hooks/useRecordingFlow';
 import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment'; 
 import RecordingContainer from './RecordingContainer';
 import RecordingControls from './RecordingControls';
-import TranscriptPreview from './TranscriptPreview';
+import AudioWaveform from './AudioWaveform';
 import AudioSubmission from './AudioSubmission';
 import EntryModeToggle from './EntryModeToggle';
 import ManualEntryController from './ManualEntryController';
@@ -32,6 +32,7 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
     recordingTime,
     audioBlob,
     transcript,
+    mediaStream,
     isManualEntryMode,
     isSpeechRecognitionSupported,
     manualTranscript,
@@ -84,7 +85,11 @@ const RecordingFlowController: React.FC<RecordingFlowControllerProps> = ({
             />
           )}
           
-          <TranscriptPreview transcript={transcript} isRecording={isRecording} />
+          {/* Live waveform instead of the (delayed, distracting) transcript.
+              The transcript is still captured in the background for scoring. */}
+          {isRecording && (
+            <AudioWaveform stream={mediaStream} active={isRecording} />
+          )}
           
           {audioBlob && (
             <AudioSubmission
