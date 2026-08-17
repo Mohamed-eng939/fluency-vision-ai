@@ -5,12 +5,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Whisper Large v3 via the Hugging Face Inference API. Both are overridable by
-// env in case HF changes the serverless routing (e.g. the router URL form).
+// Whisper Large v3 via the Hugging Face Inference router (hf-inference provider).
+// We target router.huggingface.co directly rather than the legacy
+// api-inference.huggingface.co, which 308-redirects cross-host and causes fetch
+// to strip the Authorization header. Both are overridable by env.
 const HF_MODEL = Deno.env.get("WHISPER_MODEL") || "openai/whisper-large-v3";
 const HF_ENDPOINT =
   Deno.env.get("WHISPER_ENDPOINT") ||
-  `https://api-inference.huggingface.co/models/${HF_MODEL}`;
+  `https://router.huggingface.co/hf-inference/models/${HF_MODEL}`;
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
