@@ -121,9 +121,9 @@ const ReportPage: React.FC = () => {
             <CardDescription>{error || 'The requested assessment report could not be found.'}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/dashboard')} className="w-full">
+            <Button onClick={() => navigate('/')} className="w-full">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              Back to Home
             </Button>
           </CardContent>
         </Card>

@@ -16,10 +16,10 @@ const Login: React.FC = () => {
   // Redirect if already logged in
   if (user) {
     // Get the redirect path or default based on user role
-    const from = location.state?.from?.pathname || 
-      (user.role === 'admin' ? '/admin' : 
-       user.role === 'assessor' ? '/assessor' : 
-       '/dashboard');
+    const from = location.state?.from?.pathname ||
+      (user.role === 'admin' ? '/admin' :
+       user.role === 'assessor' ? '/assessor' :
+       '/');
     
     return <Navigate to={from} replace />;
   }

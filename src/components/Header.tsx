@@ -89,14 +89,14 @@ const Header: React.FC = () => {
                     </DropdownMenuItem>
                   )}
                   
-                  <DropdownMenuItem 
-                    onClick={() => navigate('/dashboard')}
+                  <DropdownMenuItem
+                    onClick={() => navigate('/')}
                     className="cursor-pointer"
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Dashboard
+                    Home
                   </DropdownMenuItem>
-                  
+
                   <DropdownMenuSeparator />
                   
                   <DropdownMenuItem 

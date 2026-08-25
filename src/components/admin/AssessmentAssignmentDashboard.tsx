@@ -19,7 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, UserCheck, Clock, FileText, UserPlus } from 'lucide-react';
+import { Loader2, UserCheck, Clock, FileText, UserPlus, Eye, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -48,6 +49,7 @@ interface Assessor {
 }
 
 const AssessmentAssignmentDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [assessors, setAssessors] = useState<Assessor[]>([]);
   const [selectedAssessments, setSelectedAssessments] = useState<Set<string>>(new Set());
@@ -105,7 +107,7 @@ const AssessmentAssignmentDashboard: React.FC = () => {
               email
             )
           `)
-          .in('status', ['completed', 'under_review'])
+          .in('status', ['completed', 'under_review', 'approved', 'rejected'])
           .order('created_at', { ascending: false });
 
         if (assessmentError) {
@@ -221,6 +223,10 @@ const AssessmentAssignmentDashboard: React.FC = () => {
         return <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" />Pending</Badge>;
       case 'under_review':
         return <Badge variant="outline" className="gap-1"><UserCheck className="h-3 w-3" />Under Review</Badge>;
+      case 'approved':
+        return <Badge className="gap-1 bg-green-100 text-green-800 hover:bg-green-100"><CheckCircle2 className="h-3 w-3" />Reviewed</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive" className="gap-1">Rejected</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -234,6 +240,7 @@ const AssessmentAssignmentDashboard: React.FC = () => {
 
   const unassignedCount = assessments.filter(a => a.status === 'completed').length;
   const underReviewCount = assessments.filter(a => a.status === 'under_review').length;
+  const reviewedCount = assessments.filter(a => a.status === 'approved' || a.status === 'rejected').length;
 
   if (isLoading) {
     return (
@@ -258,7 +265,7 @@ const AssessmentAssignmentDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -288,6 +295,17 @@ const AssessmentAssignmentDashboard: React.FC = () => {
               <div>
                 <p className="text-sm font-medium">Under Review</p>
                 <p className="text-2xl font-bold text-primary">{underReviewCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium">Reviewed</p>
+                <p className="text-2xl font-bold text-green-600">{reviewedCount}</p>
               </div>
             </div>
           </CardContent>
@@ -328,6 +346,7 @@ const AssessmentAssignmentDashboard: React.FC = () => {
                   <TableHead>Status</TableHead>
                   <TableHead>Assigned To</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead className="text-right">View</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -378,6 +397,17 @@ const AssessmentAssignmentDashboard: React.FC = () => {
                         <span className="text-sm text-muted-foreground">
                           {new Date(assessment.created_at).toLocaleDateString()}
                         </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => navigate(`/reports/${assessment.id}`)}
+                          aria-label="View report"
+                          title="View report"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
