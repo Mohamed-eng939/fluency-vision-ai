@@ -44,7 +44,7 @@ const AdminPanel: React.FC = () => {
   const loadStats = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-manager/admin-stats', { body: {} });
+      const { data, error } = await supabase.functions.invoke('admin-stats', { body: {} });
       if (error) throw error;
       setStats(data?.stats ?? null);
     } catch (e: any) {
