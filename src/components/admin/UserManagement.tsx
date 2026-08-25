@@ -110,7 +110,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
     }
     setDeletingId(userId);
     try {
-      const { error } = await supabase.functions.invoke('admin-manager/delete-user', {
+      const { error } = await supabase.functions.invoke('admin-delete-user', {
         body: { user_id: userId },
       });
       if (error) throw error;
