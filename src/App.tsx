@@ -14,7 +14,6 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import ReportPage from "./pages/ReportPage";
 import AssessmentResults from "./pages/AssessmentResults";
-import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
 
@@ -29,7 +28,6 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/assessment" element={<Assessment />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin/*" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminPanel />

@@ -84,10 +84,10 @@ const LoginForm: React.FC = () => {
           } else if (profile?.role === 'assessor') {
             navigate('/assessor');
           } else {
-            navigate('/dashboard');
+            navigate('/');
           }
         } else {
-          navigate('/dashboard');
+          navigate('/');
         }
       }
     } catch (error) {

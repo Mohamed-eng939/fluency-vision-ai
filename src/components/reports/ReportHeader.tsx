@@ -17,13 +17,13 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({ reportType, onDownloadPDF }
       <div className="container mx-auto py-4 px-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/dashboard')}
+            <Button
+              variant="outline"
+              onClick={() => navigate(-1)}
               className="print:hidden"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              Back
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-assessment-blue">
