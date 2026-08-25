@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { StudentInfo } from '@/hooks/assessment';
+import { useAuth } from '@/contexts/auth';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginModalProps {
   open: boolean;
@@ -19,6 +22,8 @@ const LoginModal: React.FC<LoginModalProps> = ({
   onOpenChange,
   onLoginSuccess
 }) => {
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,39 +34,67 @@ const LoginModal: React.FC<LoginModalProps> = ({
     setError(null); // Clear error when user types
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      // Retrieve users from localStorage
-      const users = JSON.parse(localStorage.getItem('lingua_auth_users') || '[]');
-      
-      // Find user by username/email and password
-      const user = users.find((u: any) => 
-        (u.username === credentials.username || u.email === credentials.username) && 
-        u.password === credentials.password
-      );
-      
-      if (user) {
-        // Login successful
-        setTimeout(() => {
-          setIsLoading(false);
-          onLoginSuccess(user);
-          onOpenChange(false); // Close modal
-        }, 500); // Small delay to show loading state
-      } else {
-        // Login failed
-        setTimeout(() => {
-          setIsLoading(false);
+      // Resolve a username to its email (real auth is by email).
+      let loginEmail = credentials.username.trim();
+      if (!loginEmail.includes('@')) {
+        const { data: profile, error: lookupError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', loginEmail)
+          .single();
+        if (lookupError || !profile?.email) {
           setError('Invalid username or password');
-        }, 500);
+          setIsLoading(false);
+          return;
+        }
+        loginEmail = profile.email;
+      }
+
+      // Real Supabase authentication.
+      const { error: signInError } = await signIn(loginEmail, credentials.password);
+      if (signInError) {
+        setError(signInError.message || 'Invalid email or password');
+        setIsLoading(false);
+        return;
+      }
+
+      // Route by role: testers/admins go to their panels; learners continue.
+      const { data: { user } } = await supabase.auth.getUser();
+      let role: string | undefined;
+      let fullName: string | undefined;
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, full_name')
+          .eq('id', user.id)
+          .single();
+        role = profile?.role;
+        fullName = profile?.full_name ?? undefined;
+      }
+
+      setIsLoading(false);
+      onOpenChange(false);
+
+      if (role === 'admin') {
+        navigate('/admin');
+      } else if (role === 'assessor') {
+        navigate('/assessor');
+      } else {
+        onLoginSuccess({
+          name: fullName || user?.email || 'Learner',
+          email: user?.email || loginEmail,
+        } as StudentInfo);
       }
     } catch (err) {
       console.error('Error during login:', err);
       setIsLoading(false);
-      setError('An error occurred during login');
+      setError('An error occurred during login. Please try again.');
     }
   };
 
