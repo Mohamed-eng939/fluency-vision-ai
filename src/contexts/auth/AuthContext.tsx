@@ -1,5 +1,5 @@
 
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  // Remembers the last role we actually resolved from the profile, per user id,
+  // so a token refresh doesn't transiently downgrade an assessor/admin.
+  const knownRoleRef = useRef<{ id: string; role: UserRole } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -26,13 +29,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // IMPORTANT: Never block auth state on a profile fetch.
-          // If PostgREST/RLS/network stalls here, the app would keep `user=null` forever.
+          // On a fresh sign-in, gate route decisions with `loading` so
+          // ProtectedRoute waits for the real role from the profile instead of
+          // acting on the provisional default (which would bounce an assessor to
+          // /dashboard for the duration of the fetch).
+          if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+            setLoading(true);
+          }
+          // Keep any previously-resolved role for this same user so a token
+          // refresh doesn't transiently downgrade an assessor/admin to 'learner'.
+          const knownRole: UserRole =
+            knownRoleRef.current && knownRoleRef.current.id === session.user.id
+              ? knownRoleRef.current.role
+              : 'learner';
           const basicUser: UserProfile = {
             id: session.user.id,
             full_name: session.user.user_metadata?.name || '',
             email: session.user.email || '',
-            role: 'learner',
+            role: knownRole,
             phone: '',
             country_of_citizenship: '',
             country_of_residence: '',
@@ -75,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               date_of_birth: profile?.date_of_birth || null,
             };
             setUser(mergedUser);
+            knownRoleRef.current = { id: mergedUser.id, role: mergedUser.role };
           } catch (error) {
             console.error('⚠️ Profile fetch failed (continuing with basic user):', error);
           } finally {
@@ -82,8 +97,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else {
           setUser(null);
+          knownRoleRef.current = null;
         }
-        
+
         setLoading(false);
       }
     );

@@ -116,8 +116,9 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
       return;
     }
     
-    if (user && !studentInfo && currentStep === 'entry') {
-      // Only auto-populate if we're on the entry step and haven't manually submitted student info
+    if (user && user.role === 'learner' && !studentInfo && currentStep === 'entry') {
+      // Only auto-populate for learners on the entry step (never auto-enroll an
+      // assessor/admin into a test they only opened the landing page for).
       const defaultInfo = {
         name: user.full_name || 'Anonymous User',
         email: user.email || '',
