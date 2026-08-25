@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/auth';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +11,7 @@ import UserManagement from '@/components/admin/UserManagement';
 
 const AdminPanel: React.FC = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [userMgmtOpen, setUserMgmtOpen] = useState(false);
   
@@ -30,8 +32,8 @@ const AdminPanel: React.FC = () => {
           <p className="text-muted-foreground">Welcome, {user?.full_name || 'Admin'}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => window.location.href = '/'}>Home</Button>
-          <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>Dashboard</Button>
+          <Button variant="outline" onClick={() => navigate('/dashboard')}>Analytics</Button>
+          <Button variant="outline" onClick={() => navigate('/assessor')}>Assessor Panel</Button>
           {user && <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>}
         </div>
       </div>
