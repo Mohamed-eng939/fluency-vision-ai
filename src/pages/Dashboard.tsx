@@ -174,6 +174,12 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-500">Welcome, {user?.full_name || 'Admin'}</span>
+              {user?.role === 'admin' && (
+                <Button variant="outline" onClick={() => navigate('/admin')}>Admin Panel</Button>
+              )}
+              {(user?.role === 'admin' || user?.role === 'assessor') && (
+                <Button variant="outline" onClick={() => navigate('/assessor')}>Assessor Panel</Button>
+              )}
               <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>
             </div>
           </div>

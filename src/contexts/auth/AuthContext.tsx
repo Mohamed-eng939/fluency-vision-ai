@@ -29,19 +29,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // On a fresh sign-in, gate route decisions with `loading` so
-          // ProtectedRoute waits for the real role from the profile instead of
-          // acting on the provisional default (which would bounce an assessor to
-          // /dashboard for the duration of the fetch).
-          if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+          const alreadyResolved = knownRoleRef.current?.id === session.user.id;
+          // Gate route decisions with `loading` only on the FIRST resolution for
+          // this user, so ProtectedRoute waits for the real role instead of acting
+          // on the provisional default. On later events (token refresh, tab-focus
+          // re-emit of SIGNED_IN) we already know the role, so we neither flash
+          // loading nor risk a bounce to /dashboard.
+          if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && !alreadyResolved) {
             setLoading(true);
           }
-          // Keep any previously-resolved role for this same user so a token
-          // refresh doesn't transiently downgrade an assessor/admin to 'learner'.
-          const knownRole: UserRole =
-            knownRoleRef.current && knownRoleRef.current.id === session.user.id
-              ? knownRoleRef.current.role
-              : 'learner';
+          // Preserve the previously-resolved role so a refresh never transiently
+          // downgrades an assessor/admin to 'learner'.
+          const knownRole: UserRole = alreadyResolved
+            ? knownRoleRef.current!.role
+            : 'learner';
           const basicUser: UserProfile = {
             id: session.user.id,
             full_name: session.user.user_metadata?.name || '',
