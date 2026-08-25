@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Pause, CheckCircle, Clock, Mic, Send } from 'lucide-react';
 import { SpeakingPrompt, AudioAnalysisResult } from '@/types/assessment';
 import { useTimedRecordingFlow } from '@/hooks/recording/useTimedRecordingFlow';
+import AudioWaveform from './AudioWaveform';
 
 interface TimedRecordingStepProps {
   prompt: SpeakingPrompt;
@@ -30,7 +31,7 @@ const TimedRecordingStep: React.FC<TimedRecordingStepProps> = ({
     readingTimeLeft,
     recordingTimeLeft,
     isRecording,
-    transcript,
+    mediaStream,
     isProcessing: flowProcessing,
     handleEarlySubmit,
     resetForNextQuestion,
@@ -125,15 +126,9 @@ const TimedRecordingStep: React.FC<TimedRecordingStepProps> = ({
               />
             </div>
 
-            {/* Transcript preview */}
-            {transcript && (
-              <div className="text-left p-3 bg-muted/50 rounded-lg max-h-24 overflow-y-auto">
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-medium">Transcript: </span>
-                  {transcript}
-                </p>
-              </div>
-            )}
+            {/* Live waveform — the test-taker sees their voice level, not a
+                distracting live transcript (which is captured for scoring). */}
+            <AudioWaveform stream={mediaStream} active={isRecording} />
 
             {/* Early submit button */}
             <Button

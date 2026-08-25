@@ -9,8 +9,8 @@ import { estimateSyllableCount, calculateFluencyScoreFromSyllables } from '@/uti
 import { generateUniqueId } from '@/utils/assessmentUtils';
 import { cefrSampleBank } from '@/data/assessment/cefrSampleBank';
 import { calculateGrammarCriterion, calculateFluencyCriterion, calculateVocabularyCriterion } from './criterion';
-import { cefrToNumber, numberToCefr } from '@/utils/scoring/cefrUtils';
 import { transcribeWithWhisper } from '@/utils/whisperTranscription';
+import { capFluencyToContent, overallCefrFromCriteria } from '@/utils/scoring/aggregateCefr';
 
 /** Map a CEFR band to a 0-10 metric value (matches the criterion score scale). */
 const cefrToTenScale = (cefr: string): number => {
@@ -176,27 +176,27 @@ export const processRecordingForAssessment = async (
         // contribute; if none were, flag the result for review instead of
         // fabricating a plausible-looking middle level.
         const ea: any = enhancedAudioAnalysis;
+        const gCefr: string | null = ea.grammarApiAnalysis?.apiUsed ? ea.grammarApiAnalysis.cefr : null;
+        const fCefrRaw: string | null = ea.fluencyApiAnalysis?.apiUsed ? ea.fluencyApiAnalysis.cefr : null;
+        const vCefr: string | null = ea.cefrVocabularyLevel || null;
+        // Fluency is a speech-rate proxy — cap it so it can't exceed the
+        // demonstrated content (grammar/vocabulary) by more than one band.
+        const fCefr = capFluencyToContent(fCefrRaw, gCefr, vCefr);
+
         const measured: Array<{ key: 'grammar' | 'fluency' | 'vocabulary'; cefr: string }> = [];
-        if (ea.grammarApiAnalysis?.apiUsed && ea.grammarApiAnalysis.cefr) {
-          measured.push({ key: 'grammar', cefr: ea.grammarApiAnalysis.cefr });
-        }
-        if (ea.fluencyApiAnalysis?.apiUsed && ea.fluencyApiAnalysis.cefr) {
-          measured.push({ key: 'fluency', cefr: ea.fluencyApiAnalysis.cefr });
-        }
-        if (ea.cefrVocabularyLevel) {
-          measured.push({ key: 'vocabulary', cefr: ea.cefrVocabularyLevel });
-        }
+        if (gCefr) measured.push({ key: 'grammar', cefr: gCefr });
+        if (fCefr) measured.push({ key: 'fluency', cefr: fCefr });
+        if (vCefr) measured.push({ key: 'vocabulary', cefr: vCefr });
 
         if (measured.length > 0) {
           result.metrics = result.metrics || ({} as any);
           for (const m of measured) {
             (result.metrics as any)[m.key] = cefrToTenScale(m.cefr);
           }
-          const avgRank = measured.reduce((s, m) => s + cefrToNumber(m.cefr as any), 0) / measured.length;
-          result.cefrLevel = numberToCefr(avgRank);
-          result.totalScore = Math.round(
-            (measured.reduce((s, m) => s + cefrToTenScale(m.cefr), 0) / measured.length) * 10
-          );
+          // Overall = MEDIAN of the criteria (robust to a single inflated one).
+          const overall = overallCefrFromCriteria(measured.map((m) => m.cefr)) || vCefr || 'A1';
+          result.cefrLevel = overall as any;
+          result.totalScore = Math.round(cefrToTenScale(overall) * 10);
           (result as any).isReliable = true;
         } else {
           // Nothing measurable — don't invent a score from random metrics/prompt.
