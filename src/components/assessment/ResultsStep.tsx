@@ -157,15 +157,6 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
             onTakeFullAssessment={() => {}}
           />
         </CardContent>
-        
-        <CardFooter className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-          <Button variant="outline" onClick={onReset}>
-            Take Another Assessment
-          </Button>
-          <Button onClick={onTakeFullAssessment}>
-            Take Full Assessment
-          </Button>
-        </CardFooter>
       </Card>
       
       {showRawScoring && promptHistory.length > 0 && (

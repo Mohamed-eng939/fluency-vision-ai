@@ -1,19 +1,17 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BookOpen, 
-  Languages, 
-  Award, 
-  AlertCircle, 
-  CheckCircle2,
-  FileText,
+import {
+  BookOpen,
+  Languages,
+  Award,
+  AlertCircle,
   XCircle,
   Mic
 } from 'lucide-react';
 import { AssessmentResult } from '@/types/assessment';
+import { capFluencyToContent, overallCefrFromCriteria } from '@/utils/scoring/aggregateCefr';
 
 interface SimplifiedAssessmentResultsProps {
   result: AssessmentResult;
@@ -25,8 +23,6 @@ interface SimplifiedAssessmentResultsProps {
 const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = ({
   result,
   isProcessing,
-  onReset,
-  onTakeFullAssessment
 }) => {
   // Extract Grammar API data - NO fallbacks
   const grammarAnalysis = result.audioAnalysis?.grammarApiAnalysis;
@@ -34,7 +30,6 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
   const grammarCefr = grammarApiUsed ? grammarAnalysis.cefr : null;
   const grammarScores = grammarApiUsed ? grammarAnalysis.scores : null;
   const grammarErrorCount = grammarApiUsed ? grammarAnalysis.errors : 0;
-  const grammarComments = grammarApiUsed ? (grammarAnalysis.comments ?? []) : [];
   const grammarErrorMessage = !grammarApiUsed ? (grammarAnalysis as any)?.error : null;
 
   // Extract Fluency API data - NO fallbacks
@@ -48,30 +43,28 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
   // Extract Vocabulary data - CEFR mapping only, NO numeric scores
   const vocabularyCefr = result.audioAnalysis?.cefrVocabularyLevel ?? 'A1';
   const vocabularyDistribution = result.audioAnalysis?.vocabularyDistribution ?? {};
-  const vocabularyJustification = result.audioAnalysis?.vocabularyJustification ?? '';
   const lexicalDiversity = result.audioAnalysis?.lexicalDiversity ?? 0;
   const recognizedWordCount = result.audioAnalysis?.recognizedWordCount ?? 0;
   const unrecognizedWordCount = result.audioAnalysis?.unrecognizedWordCount ?? 0;
   const totalWordCount = result.audioAnalysis?.totalWordCount ?? 0;
 
-  // Calculate Overall CEFR from Grammar, Fluency, and Vocabulary
-  const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-  
-  const availableCefrLevels: string[] = [];
-  if (grammarApiUsed && grammarCefr) availableCefrLevels.push(grammarCefr);
-  if (fluencyApiUsed && fluencyCefr) availableCefrLevels.push(fluencyCefr);
-  availableCefrLevels.push(vocabularyCefr);
+  // Fluency here is a speech-rate proxy; cap it so it can't exceed the
+  // demonstrated content (grammar / vocabulary) by more than one band — a fast
+  // talker of clearly low-level English should not read as C2 fluency.
+  const displayFluencyCefr = capFluencyToContent(
+    fluencyApiUsed ? fluencyCefr : null,
+    grammarApiUsed ? grammarCefr : null,
+    vocabularyCefr,
+  );
 
-  let overallCefr: string;
-  if (availableCefrLevels.length > 0) {
-    const totalIndex = availableCefrLevels.reduce((sum, level) => {
-      return sum + cefrLevels.indexOf(level);
-    }, 0);
-    const averageIndex = Math.round(totalIndex / availableCefrLevels.length);
-    overallCefr = cefrLevels[averageIndex] || vocabularyCefr;
-  } else {
-    overallCefr = vocabularyCefr;
-  }
+  // Overall = MEDIAN of the available criteria (robust to a single inflated one),
+  // not a mean that an outlier drags up.
+  const overallCefr =
+    overallCefrFromCriteria([
+      grammarApiUsed ? grammarCefr : null,
+      displayFluencyCefr,
+      vocabularyCefr,
+    ]) || vocabularyCefr;
 
   // Get CEFR color
   const getCefrColor = (level: string | null) => {
@@ -211,19 +204,6 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                     </div>
                   </div>
 
-                  {/* Comments from API */}
-                  {grammarComments.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium">Feedback</h4>
-                      <div className="space-y-2">
-                        {grammarComments.map((comment, idx) => (
-                          <div key={idx} className="bg-muted/50 p-3 rounded-lg text-sm">
-                            {comment}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </>
               ) : (
                 /* Grammar API not available - show message */
@@ -248,22 +228,22 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                   <Mic className="h-5 w-5 text-primary" />
                   Fluency Analysis
                 </span>
-                {fluencyApiUsed && fluencyCefr && (
-                  <Badge className={`${getCefrColor(fluencyCefr)} text-white`}>
-                    {fluencyCefr}
+                {fluencyApiUsed && displayFluencyCefr && (
+                  <Badge className={`${getCefrColor(displayFluencyCefr)} text-white`}>
+                    {displayFluencyCefr}
                   </Badge>
                 )}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Powered by Fluency Service API
+                Speech-rate estimate
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {fluencyApiUsed && fluencyCefr ? (
+              {fluencyApiUsed && displayFluencyCefr ? (
                 <div className="space-y-6">
                   <div className="text-center py-4">
-                    <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${getCefrColor(fluencyCefr)} text-white mb-4`}>
-                      <span className="text-3xl font-bold">{fluencyCefr}</span>
+                    <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${getCefrColor(displayFluencyCefr)} text-white mb-4`}>
+                      <span className="text-3xl font-bold">{displayFluencyCefr}</span>
                     </div>
                     <p className="text-lg font-medium">Fluency Level</p>
                   </div>
@@ -363,15 +343,6 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
                 </div>
               )}
 
-              {/* Justification */}
-              {vocabularyJustification && (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium mb-2">Analysis Details</h4>
-                  <div className="text-sm whitespace-pre-line text-muted-foreground">
-                    {vocabularyJustification}
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -386,50 +357,18 @@ const SimplifiedAssessmentResults: React.FC<SimplifiedAssessmentResultsProps> = 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {grammarComments.length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
-                  <p className="text-lg font-medium">Great job!</p>
-                  <p className="text-muted-foreground">No specific improvement suggestions.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {grammarComments.map((comment, idx) => (
-                    <div key={idx} className="border rounded-lg p-4">
-                      <p className="text-sm">{comment}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-primary/60 mx-auto mb-4" />
+                <p className="text-lg font-medium">Awaiting assessor review</p>
+                <p className="text-muted-foreground mt-1">
+                  A qualified assessor will review your response and add their feedback here.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Transcript */}
-      {result.transcript && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Your Response
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm bg-muted/50 p-4 rounded-lg">{result.transcript}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4 pt-4">
-        <Button onClick={onReset} variant="outline">
-          Take Another Assessment
-        </Button>
-        <Button onClick={onTakeFullAssessment} className="bg-primary hover:bg-primary/90">
-          Take Full Assessment
-        </Button>
-      </div>
     </div>
   );
 };
