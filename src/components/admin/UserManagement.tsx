@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, UserPlus, RefreshCw } from 'lucide-react';
+import { Loader2, UserPlus, RefreshCw, Trash2 } from 'lucide-react';
 
 interface ManagedUser {
   id: string;
@@ -46,6 +46,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<string>('assessor');
   const [inviting, setInviting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -103,12 +104,31 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
     }
   };
 
+  const deleteUser = async (userId: string, email: string | null) => {
+    if (!window.confirm(`Delete ${email || 'this user'}? This permanently removes their account. Their assessment data is kept but anonymised.`)) {
+      return;
+    }
+    setDeletingId(userId);
+    try {
+      const { error } = await supabase.functions.invoke('admin-manager/delete-user', {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      toast.success('User deleted');
+      setUsers((u) => u.filter((x) => x.id !== userId));
+    } catch (e: any) {
+      toast.error(`Delete failed: ${e.message ?? e}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>User Management</DialogTitle>
-          <DialogDescription>Create assessors and change user roles.</DialogDescription>
+          <DialogDescription>Invite users, change roles (learner / assessor / admin), and remove accounts.</DialogDescription>
         </DialogHeader>
 
         {/* Invite a new user */}
@@ -167,6 +187,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
                   <TableHead>Email</TableHead>
                   <TableHead>Current</TableHead>
                   <TableHead>Change role</TableHead>
+                  <TableHead className="text-right">Delete</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -196,6 +217,22 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
                             ))}
                           </SelectContent>
                         </Select>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {u.id === currentUserId ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => deleteUser(u.id, u.email)}
+                          disabled={deletingId === u.id}
+                          aria-label="Delete user"
+                        >
+                          {deletingId === u.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </Button>
                       )}
                     </TableCell>
                   </TableRow>

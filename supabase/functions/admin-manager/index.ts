@@ -416,6 +416,97 @@ serve(async (req) => {
         })
       }
 
+      case 'admin-stats': {
+        if (method !== 'GET' && method !== 'POST') {
+          return new Response(JSON.stringify({ error: 'Method not allowed for this action' }), {
+            status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        if (profile.role !== 'admin') {
+          return new Response(JSON.stringify({ error: 'Admin role required' }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        )
+        const { data: sessions } = await adminClient
+          .from('assessment_sessions')
+          .select('status, overall_score, overall_cefr_level, created_at')
+        const { count: totalUsers } = await adminClient
+          .from('profiles').select('*', { count: 'exact', head: true })
+        const { count: assessors } = await adminClient
+          .from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'assessor')
+        const { count: reviews } = await adminClient
+          .from('assessor_reviews').select('*', { count: 'exact', head: true })
+
+        const all = sessions ?? []
+        const total = all.length
+        const completed = all.filter((s: any) => s.status === 'completed').length
+        const scored = all.filter((s: any) => typeof s.overall_score === 'number' && s.overall_score > 0)
+        const avg = scored.length ? scored.reduce((a: number, s: any) => a + s.overall_score, 0) / scored.length : 0
+        const today = new Date().toISOString().slice(0, 10)
+        const activeToday = all.filter((s: any) => (s.created_at || '').slice(0, 10) === today).length
+        const cefr: Record<string, number> = {}
+        for (const s of all) {
+          if (s.overall_cefr_level) cefr[s.overall_cefr_level] = (cefr[s.overall_cefr_level] || 0) + 1
+        }
+        return new Response(JSON.stringify({
+          stats: {
+            total_sessions: total,
+            completed_sessions: completed,
+            completion_rate: total ? Math.round((completed / total) * 100) : 0,
+            average_score: Math.round(avg * 100) / 100,
+            total_users: totalUsers || 0,
+            assessors: assessors || 0,
+            reviews: reviews || 0,
+            active_today: activeToday,
+            cefr_distribution: cefr,
+          }
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      case 'delete-user': {
+        if (method !== 'POST') {
+          return new Response(JSON.stringify({ error: 'Method not allowed for this action' }), {
+            status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        if (profile.role !== 'admin') {
+          return new Response(JSON.stringify({ error: 'Admin role required' }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const { user_id } = await req.json()
+        if (!user_id) {
+          return new Response(JSON.stringify({ error: 'user_id required' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        if (user_id === user.id) {
+          return new Response(JSON.stringify({ error: 'You cannot delete your own account' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        )
+        // Detach their assessment data (keep it, anonymized) so FKs don't block deletion.
+        await adminClient.from('assessment_sessions').update({ user_id: null }).eq('user_id', user_id)
+        await adminClient.from('profiles').delete().eq('id', user_id)
+        const { error: delErr } = await adminClient.auth.admin.deleteUser(user_id)
+        if (delErr) {
+          return new Response(JSON.stringify({ error: `Delete failed: ${delErr.message}` }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        return new Response(JSON.stringify({ message: 'User deleted', user_id }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
       default:
         return new Response(JSON.stringify({ error: 'Invalid action' }), {
           status: 400,
