@@ -1,38 +1,36 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, Languages, Mic, BookOpen, Award } from 'lucide-react';
-import { generateReportPdf } from '@/utils/reports/pdfGenerator';
+import { ArrowLeft, Loader2, Award, MessageSquare } from 'lucide-react';
+import { downloadReportPdf } from '@/utils/reports/reportPdf';
 import { useToast } from '@/hooks/use-toast';
+import { useBrandingContext } from '@/contexts/branding/BrandingContext';
 import { supabase } from '@/integrations/supabase/client';
 import ReportHeader from '@/components/reports/ReportHeader';
 import ReportFooter from '@/components/reports/ReportFooter';
 
 const getCEFRColor = (level: string) => {
   const colors: Record<string, string> = {
-    'A1': 'bg-orange-500',
-    'A2': 'bg-amber-500',
-    'B1': 'bg-teal-500',
-    'B2': 'bg-emerald-500',
-    'C1': 'bg-blue-600',
-    'C2': 'bg-purple-500'
+    'A1': 'bg-orange-500', 'A2': 'bg-amber-500', 'B1': 'bg-teal-500',
+    'B2': 'bg-emerald-500', 'C1': 'bg-blue-600', 'C2': 'bg-purple-500',
   };
   return colors[level] || 'bg-muted';
 };
 
 const getCEFRBadgeColor = (level: string) => {
   const colors: Record<string, string> = {
-    'A1': 'bg-orange-100 text-orange-800',
-    'A2': 'bg-amber-100 text-amber-800',
-    'B1': 'bg-teal-100 text-teal-800',
-    'B2': 'bg-emerald-100 text-emerald-800',
-    'C1': 'bg-blue-100 text-blue-800',
-    'C2': 'bg-purple-100 text-purple-800'
+    'A1': 'bg-orange-100 text-orange-800', 'A2': 'bg-amber-100 text-amber-800',
+    'B1': 'bg-teal-100 text-teal-800', 'B2': 'bg-emerald-100 text-emerald-800',
+    'C1': 'bg-blue-100 text-blue-800', 'C2': 'bg-purple-100 text-purple-800',
   };
   return colors[level] || 'bg-gray-100 text-gray-800';
 };
+
+const shortRef = (id: string) => (id || '').replace(/-/g, '').slice(0, 8).toUpperCase();
+
+interface Criteria { grammar: string | null; fluency: string | null; vocabulary: string | null; }
 
 interface ReportData {
   id: string;
@@ -40,14 +38,17 @@ interface ReportData {
   email: string;
   date: string;
   cefr: string;
-  responses: any[];
+  reviewStatus: string | null;
+  feedback: string | null;
+  recommendation: string | null;
+  criteria: Criteria | null;
 }
 
 const ReportPage: React.FC = () => {
   const { reportId } = useParams<{ reportId: string }>();
   const navigate = useNavigate();
-  const reportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const brand = useBrandingContext();
   const [report, setReport] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,15 +60,10 @@ const ReportPage: React.FC = () => {
         setIsLoading(false);
         return;
       }
-
       try {
         const { data: session, error: sessionError } = await supabase
           .from('assessment_sessions')
-          .select(`
-            *,
-            profiles:user_id (full_name, email),
-            assessment_responses (*)
-          `)
+          .select(`*, profiles:user_id (full_name, email)`)
           .eq('id', reportId)
           .single();
 
@@ -77,18 +73,37 @@ const ReportPage: React.FC = () => {
           return;
         }
 
+        // Latest assessor review for this session (RLS: admin all, assessor own,
+        // learner own via policy). Holds the human feedback + final grades.
+        const { data: reviews } = await supabase
+          .from('assessor_reviews')
+          .select('review_status, assessor_feedback, recommendation, override_scores, created_at')
+          .eq('session_id', reportId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        const review = (reviews && reviews[0]) || null;
+        const os = (review?.override_scores as any) || {};
+
         const profiles = session.profiles as { full_name?: string; email?: string } | null;
         const studentInfo = session.student_info as { name?: string; email?: string } | null;
+
+        const criteria: Criteria | null =
+          os.grammar_cefr || os.fluency_cefr || os.vocabulary_cefr
+            ? { grammar: os.grammar_cefr ?? null, fluency: os.fluency_cefr ?? null, vocabulary: os.vocabulary_cefr ?? null }
+            : null;
 
         setReport({
           id: session.id,
           name: profiles?.full_name || studentInfo?.name || 'Anonymous User',
           email: profiles?.email || studentInfo?.email || 'N/A',
           date: new Date(session.created_at).toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric'
+            year: 'numeric', month: 'long', day: 'numeric',
           }),
-          cefr: session.overall_cefr_level || 'N/A',
-          responses: (session.assessment_responses as any[]) || [],
+          cefr: session.overall_cefr_level || os.final_cefr_level || 'N/A',
+          reviewStatus: review?.review_status ?? null,
+          feedback: review?.assessor_feedback ?? null,
+          recommendation: review?.recommendation ?? null,
+          criteria,
         });
       } catch (err) {
         console.error('Error fetching report:', err);
@@ -97,7 +112,6 @@ const ReportPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-
     fetchReport();
   }, [reportId]);
 
@@ -131,49 +145,37 @@ const ReportPage: React.FC = () => {
     );
   }
 
-  const handleDownloadPDF = async () => {
-    if (!reportRef.current) return;
+  const reference = shortRef(report.id);
+
+  const handleDownloadPDF = () => {
     try {
-      await generateReportPdf(reportRef.current, {
-        fileName: `assessment-report-${report.id}-${report.name.replace(/\s+/g, '-')}.pdf`,
-        learnerName: report.name,
-        sessionId: report.id,
-        dateOfTest: report.date,
-      });
-      toast({ title: 'Report Downloaded', description: 'Assessment report has been downloaded successfully.' });
+      downloadReportPdf(
+        {
+          name: report.name,
+          email: report.email,
+          date: report.date,
+          reference,
+          cefr: report.cefr,
+          reviewStatus: report.reviewStatus,
+          feedback: report.feedback,
+          recommendation: report.recommendation,
+          criteria: report.criteria,
+          brandName: brand.displayName,
+        },
+        `assessment-report-${reference}.pdf`,
+      );
+      toast({ title: 'Report Downloaded', description: 'Assessment report saved as PDF.' });
     } catch (err) {
       console.error('Error generating PDF:', err);
       toast({ title: 'Download Failed', description: 'There was a problem generating the PDF.', variant: 'destructive' });
     }
   };
 
-  /** Extract per-response scoring from stored JSON fields */
-  const getResponseScoringData = (response: any) => {
-    const feedback = response.detailed_feedback || {};
-    const analysis = response.mistakes_analysis || {};
-    
-    const grammarApi = analysis.grammarApiAnalysis || feedback.grammarApiAnalysis;
-    const grammarCefr = grammarApi?.apiUsed ? grammarApi.cefr : null;
-    const grammarScores = grammarApi?.apiUsed ? grammarApi.scores : null;
-    
-    const fluencyApi = analysis.fluencyApiAnalysis || feedback.fluencyApiAnalysis;
-    const fluencyCefr = fluencyApi?.apiUsed ? fluencyApi.cefr : null;
-    const fluencySpm = fluencyApi?.apiUsed ? fluencyApi.spm : null;
-    const fluencySyllables = fluencyApi?.apiUsed ? fluencyApi.syllables : null;
-    
-    const vocabCefr = analysis.cefrVocabularyLevel || feedback.cefrVocabularyLevel || null;
-    
-    return { grammarCefr, grammarScores, fluencyCefr, fluencySpm, fluencySyllables, vocabCefr };
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <ReportHeader 
-        reportType="Assessment Report"
-        onDownloadPDF={handleDownloadPDF}
-      />
+      <ReportHeader reportType="Assessment Report" onDownloadPDF={handleDownloadPDF} />
 
-      <div ref={reportRef} className="container mx-auto py-8 px-6 max-w-4xl">
+      <div className="container mx-auto py-8 px-6 max-w-4xl">
         {/* Candidate Info */}
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -191,8 +193,8 @@ const ReportPage: React.FC = () => {
                 <p className="font-medium">{report.date}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Session ID</p>
-                <p className="font-medium text-xs">{report.id}</p>
+                <p className="text-xs text-muted-foreground">Reference</p>
+                <p className="font-medium font-mono">{reference}</p>
               </div>
             </div>
           </CardContent>
@@ -214,88 +216,59 @@ const ReportPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Per-Response Breakdown */}
+        {/* Skill breakdown (only when the assessor graded per-criterion) */}
+        {report.criteria && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Skill Breakdown</CardTitle>
+              <CardDescription>Assessor's CEFR grade per criterion</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                {([['Grammar', report.criteria.grammar], ['Fluency', report.criteria.fluency], ['Vocabulary', report.criteria.vocabulary]] as const).map(([label, val]) => (
+                  <div key={label} className="text-center p-3 rounded-lg bg-muted/30">
+                    <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                    {val ? <Badge className={getCEFRBadgeColor(val)}>{val}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Assessor Feedback (replaces the old response-by-response section) */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Response-by-Response Analysis</CardTitle>
-            <CardDescription>Detailed scoring from each assessment response</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" /> Assessor Feedback
+            </CardTitle>
+            <CardDescription>Comments and recommendation from the human reviewer</CardDescription>
           </CardHeader>
-          <CardContent>
-            {report.responses.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No responses recorded</p>
+          <CardContent className="space-y-4">
+            {report.reviewStatus && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Review status</p>
+                <Badge variant="outline" className="capitalize">{report.reviewStatus.replace(/_/g, ' ')}</Badge>
+              </div>
+            )}
+            {report.feedback ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Feedback</p>
+                <p className="text-sm whitespace-pre-wrap">{report.feedback}</p>
+              </div>
             ) : (
-              <div className="space-y-4">
-                {report.responses
-                  .sort((a: any, b: any) => a.prompt_order - b.prompt_order)
-                  .map((response: any, index: number) => {
-                    const scoring = getResponseScoringData(response);
-                    return (
-                      <div key={response.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="font-medium">Response {index + 1}</span>
-                          {response.cefr_level && (
-                            <Badge className={getCEFRBadgeColor(response.cefr_level)}>
-                              {response.cefr_level}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {response.transcript && (
-                          <div className="bg-muted/50 p-3 rounded-lg mb-3">
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Transcript</p>
-                            <p className="text-sm">{response.transcript}</p>
-                          </div>
-                        )}
-
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="text-center p-3 rounded-lg bg-muted/30">
-                            <Languages className="h-4 w-4 mx-auto mb-1 text-primary" />
-                            <p className="text-xs text-muted-foreground">Grammar</p>
-                            {scoring.grammarCefr ? (
-                              <Badge className={`mt-1 ${getCEFRBadgeColor(scoring.grammarCefr)}`}>
-                                {scoring.grammarCefr}
-                              </Badge>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">N/A</span>
-                            )}
-                          </div>
-                          <div className="text-center p-3 rounded-lg bg-muted/30">
-                            <Mic className="h-4 w-4 mx-auto mb-1 text-primary" />
-                            <p className="text-xs text-muted-foreground">Fluency</p>
-                            {scoring.fluencyCefr ? (
-                              <>
-                                <Badge className={`mt-1 ${getCEFRBadgeColor(scoring.fluencyCefr)}`}>
-                                  {scoring.fluencyCefr}
-                                </Badge>
-                                {scoring.fluencySpm && (
-                                  <p className="text-xs text-muted-foreground mt-1">{scoring.fluencySpm} SPM</p>
-                                )}
-                              </>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">N/A</span>
-                            )}
-                          </div>
-                          <div className="text-center p-3 rounded-lg bg-muted/30">
-                            <BookOpen className="h-4 w-4 mx-auto mb-1 text-primary" />
-                            <p className="text-xs text-muted-foreground">Vocabulary</p>
-                            {scoring.vocabCefr ? (
-                              <Badge className={`mt-1 ${getCEFRBadgeColor(scoring.vocabCefr)}`}>
-                                {scoring.vocabCefr}
-                              </Badge>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">N/A</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+              <p className="text-muted-foreground text-center py-4">Awaiting assessor review.</p>
+            )}
+            {report.recommendation && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
+                <p className="text-sm whitespace-pre-wrap">{report.recommendation}</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <ReportFooter reportId={report.id} />
+        <ReportFooter reportId={reference} />
       </div>
     </div>
   );
