@@ -12,12 +12,12 @@ const Index = () => {
           <Logo size="lg" variant="full" />
         </div>
         <div className="flex gap-2">
-          <Link to="/assessment?login=true">
+          <Link to="/login">
             <Button variant="outline" className="flex items-center gap-1">
               <LogIn className="h-4 w-4" /> Log In
             </Button>
           </Link>
-          <Link to="/assessment?signup=true">
+          <Link to="/login?tab=register">
             <Button variant="outline" className="flex items-center gap-1">
               <UserPlus className="h-4 w-4" /> Sign Up
             </Button>
