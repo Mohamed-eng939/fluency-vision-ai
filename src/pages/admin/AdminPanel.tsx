@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download, KeyRound } from 'lucide-react';
+import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download, KeyRound, Building2 } from 'lucide-react';
 import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
 import UserManagement from '@/components/admin/UserManagement';
 import PromptManagement from '@/components/admin/PromptManagement';
 import TrainingDataViewer from '@/components/admin/TrainingDataViewer';
 import ApiKeyManagement from '@/components/admin/ApiKeyManagement';
+import OrganizationManagement from '@/components/admin/OrganizationManagement';
 import { toCsv, downloadCsv } from '@/utils/admin/exportCsv';
 
 interface AdminStats {
@@ -121,9 +122,12 @@ const AdminPanel: React.FC = () => {
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" /> Overview
+          </TabsTrigger>
+          <TabsTrigger value="organizations" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" /> Organizations
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <UserCog className="h-4 w-4" /> Users
@@ -197,6 +201,11 @@ const AdminPanel: React.FC = () => {
               )}
             </>
           )}
+        </TabsContent>
+
+        {/* Organizations (white-label tenants) */}
+        <TabsContent value="organizations" className="mt-6">
+          <OrganizationManagement />
         </TabsContent>
 
         {/* User Management */}
