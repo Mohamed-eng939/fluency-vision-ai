@@ -49,10 +49,12 @@ serve(async (req) => {
     const action = body.action;
 
     if (action === "list") {
-      const { data, error } = await admin
+      let query = admin
         .from("api_keys")
-        .select("id, key_name, key_prefix, is_active, created_at, last_used_at, expires_at, usage_count")
+        .select("id, key_name, key_prefix, is_active, created_at, last_used_at, expires_at, usage_count, organization_id")
         .order("created_at", { ascending: false });
+      if (body.organization_id) query = query.eq("organization_id", body.organization_id);
+      const { data, error } = await query;
       if (error) return json({ error: error.message }, 500);
       return json({ keys: data ?? [] });
     }
@@ -61,16 +63,20 @@ serve(async (req) => {
       const name = String(body.name ?? "").trim();
       if (!name) return json({ error: "A key name is required" }, 400);
 
-      // Ensure a default organization exists (api_keys.organization_id is NOT NULL).
+      // Use the given organization, else fall back to a shared default org.
       let org: { id: string } | null = null;
-      const { data: existingOrg } = await admin.from("organizations").select("id").limit(1).maybeSingle();
-      if (existingOrg) {
-        org = existingOrg;
+      if (body.organization_id) {
+        org = { id: body.organization_id };
       } else {
-        const { data: newOrg, error: orgErr } = await admin
-          .from("organizations").insert({ name: "Default Organization" }).select("id").single();
-        if (orgErr) return json({ error: `Could not create default org: ${orgErr.message}` }, 500);
-        org = newOrg;
+        const { data: existingOrg } = await admin.from("organizations").select("id").limit(1).maybeSingle();
+        if (existingOrg) {
+          org = existingOrg;
+        } else {
+          const { data: newOrg, error: orgErr } = await admin
+            .from("organizations").insert({ name: "Default Organization" }).select("id").single();
+          if (orgErr) return json({ error: `Could not create default org: ${orgErr.message}` }, 500);
+          org = newOrg;
+        }
       }
 
       const secret = genKey();

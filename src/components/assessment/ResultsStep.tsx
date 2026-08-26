@@ -1,11 +1,9 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
-import AssessmentResults from './AssessmentResults';
+import { CheckCircle2 } from 'lucide-react';
+import { AssessmentResult } from '@/types/assessment';
 import ProcessingResults from './ProcessingResults';
-import CEFRSkillsBreakdown from '@/components/reports/sections/CEFRSkillsBreakdown';
 import { useSessionManagement } from '@/hooks/assessment/useSessionManagement';
 
 interface ResultsStepProps {
@@ -19,49 +17,39 @@ interface ResultsStepProps {
   onTakeFullAssessment: () => void;
 }
 
+/**
+ * Post-test screen for the student. The learner NO LONGER sees an immediate
+ * score — the result is reviewed by a human assessor first and emailed to the
+ * student. We show a thank-you + "within 24 hours" note here. The result is
+ * still saved in the background (storeAssessmentData). Admin/testing builds can
+ * still inspect the raw scoring via `showRawScoring`.
+ */
 const ResultsStep: React.FC<ResultsStepProps> = ({
   result,
-  detailedFeedback,
   promptHistory = [],
   showRawScoring,
   isProcessing,
   processingProgress = { current: 0, total: 0 },
   onReset,
-  onTakeFullAssessment
 }) => {
   const { storeAssessmentData } = useSessionManagement();
-  const [storageError, setStorageError] = React.useState<string | null>(null);
   const [storageAttempted, setStorageAttempted] = React.useState<string | null>(null);
-  
-  console.log("ResultsStep rendering with result:", result, "isProcessing:", isProcessing);
-  
-  // Fallback storage: if we have a result but no evidence of storage, try to store it ONCE
+
+  // Fallback storage: if we have a result but no evidence of storage, try once.
   useEffect(() => {
     if (result && !isProcessing && result.sessionId && storageAttempted !== result.sessionId) {
-      console.log("🔍 ResultsStep: Attempting to store assessment data for session:", result.sessionId);
-      
-      setStorageAttempted(result.sessionId); // Prevent multiple attempts for same session
-      
+      setStorageAttempted(result.sessionId);
       const studentInfo = {
         name: result.learnerName || 'Anonymous User',
         sessionId: result.sessionId,
-        email: '', // Will be filled by the session management
+        email: '',
       };
-      
-      console.log("💾 ResultsStep: Attempting fallback storage of assessment data");
-      storeAssessmentData(studentInfo, promptHistory, result)
-        .then((response) => {
-          console.log("✅ ResultsStep: Fallback storage successful", response);
-          setStorageError(null);
-        })
-        .catch((error) => {
-          console.log("❌ ResultsStep: Fallback storage failed:", error);
-          setStorageError(error?.message || error?.toString() || "Failed to save assessment data");
-        });
+      storeAssessmentData(studentInfo, promptHistory, result).catch((error) => {
+        console.log('❌ ResultsStep: Fallback storage failed:', error);
+      });
     }
   }, [result, isProcessing, promptHistory, storeAssessmentData, storageAttempted]);
-  
-  // Show processing state if still processing
+
   if (isProcessing) {
     return (
       <ProcessingResults
@@ -71,103 +59,37 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
       />
     );
   }
-  
-  if (!result) {
-    return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Card>
-          <CardHeader className="text-center">
-            <h2 className="text-2xl font-bold text-assessment-blue">Assessment Complete</h2>
-            <p className="text-gray-600">Processing your results...</p>
-          </CardHeader>
-          
-          <CardContent className="text-center py-8">
-            <div className="animate-spin h-8 w-8 border-b-2 border-assessment-blue mx-auto mb-4"></div>
-            <p>Generating your assessment report...</p>
-          </CardContent>
-          
-          <CardFooter className="flex justify-center">
-            <Button variant="outline" onClick={onReset}>
-              Start New Assessment
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
-  // Only the three engine-backed criteria are shown to learners (per scope rules).
-  const skillScores: Record<string, number> = {
-    grammar: result.metrics.grammar,
-    fluency: result.metrics.fluency,
-    vocabulary: result.metrics.vocabulary
-  };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <Card>
-        <CardHeader className="text-center">
-          <h2 className="text-2xl font-bold text-assessment-blue">Assessment Results</h2>
-          <p className="text-gray-600">Your English speaking proficiency level</p>
+        <CardHeader className="text-center pt-10">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-assessment-teal/10">
+            <CheckCircle2 className="h-9 w-9 text-assessment-teal" />
+          </div>
+          <h2 className="text-2xl font-bold text-assessment-blue">Thank you!</h2>
         </CardHeader>
-        
-        <CardContent>
-          {/* Storage Error Display */}
-          {storageError && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <h3 className="text-red-800 font-semibold mb-2">Data Storage Error</h3>
-              <p className="text-red-700 text-sm">{storageError}</p>
-              <p className="text-red-600 text-xs mt-2">
-                Your assessment results are displayed but may not be saved to the database.
-              </p>
-            </div>
-          )}
-          
-          {/* Provisional-result notice: shown when the engines couldn't score
-              part of the response, so the level isn't presented as final. */}
-          {result.fallbackInfo?.scoringUnavailable && (
-            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <h3 className="text-amber-800 font-semibold mb-1">Provisional result — pending review</h3>
-              <p className="text-amber-700 text-sm">
-                Part of your response couldn't be scored automatically, so this level is
-                provisional. A human assessor will review your recording and confirm your
-                final level.
-              </p>
-            </div>
-          )}
 
-          {/* Enhanced CEFR Skills Breakdown */}
-          {(result as any)?.cefrLevels && (
-            <div className="mb-6">
-              <CEFRSkillsBreakdown
-                skillScores={skillScores}
-                cefrLevels={(result as any).cefrLevels}
-                overallCEFR={(result as any).overallCEFR}
-                showRadarChart={true}
-              />
-            </div>
-          )}
-          
-          <AssessmentResults
-            result={result}
-            isProcessing={false}
-            detailedFeedback={detailedFeedback}
-            promptHistory={promptHistory}
-            onReset={() => {}}
-            onTakeFullAssessment={() => {}}
-          />
+        <CardContent className="text-center pb-6 space-y-3">
+          <p className="text-gray-700">Your assessment has been submitted successfully.</p>
+          <p className="text-gray-600">
+            Our team will review your responses and share your results with you{' '}
+            <span className="font-semibold">within 24 hours</span>.
+          </p>
         </CardContent>
+
+        <CardFooter className="flex justify-center pb-10">
+          <Button variant="outline" onClick={onReset}>Done</Button>
+        </CardFooter>
       </Card>
-      
+
+      {/* Admin/testing only: raw per-prompt scoring (never shown to students). */}
       {showRawScoring && promptHistory.length > 0 && (
         <Card className="mt-8">
           <CardHeader>
             <h3 className="text-lg font-semibold">Admin View: Raw Scoring Data</h3>
-            <p className="text-xs text-muted-foreground">
-              Detailed scoring information for each prompt response
-            </p>
+            <p className="text-xs text-muted-foreground">Detailed scoring information for each prompt response</p>
           </CardHeader>
-          
           <CardContent className="space-y-6">
             {promptHistory.map((item, index) => (
               <div key={index} className="p-4 border rounded-md">
@@ -184,7 +106,6 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
                     </div>
                   )}
                 </div>
-                
                 {item.result?.audioAnalysis && (
                   <div className="mt-3 border-t pt-3">
                     <p className="text-xs font-medium mb-1">Audio Analysis</p>
@@ -194,7 +115,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
                         totalWords: item.result.audioAnalysis.totalWords,
                         speakingDuration: item.result.audioAnalysis.speakingDuration,
                         pauseRatio: item.result.audioAnalysis.pauseRatio,
-                        fluencyScore: item.result.audioAnalysis.fluencyScore
+                        fluencyScore: item.result.audioAnalysis.fluencyScore,
                       }, null, 2)}
                     </pre>
                   </div>
