@@ -7,21 +7,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download } from 'lucide-react';
+import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download, KeyRound } from 'lucide-react';
 import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
 import UserManagement from '@/components/admin/UserManagement';
 import PromptManagement from '@/components/admin/PromptManagement';
 import TrainingDataViewer from '@/components/admin/TrainingDataViewer';
+import ApiKeyManagement from '@/components/admin/ApiKeyManagement';
 import { toCsv, downloadCsv } from '@/utils/admin/exportCsv';
 
 interface AdminStats {
   total_sessions: number;
-  completed_sessions: number;
-  completion_rate: number;
-  average_score: number;
+  in_progress: number;
+  awaiting_review: number;
+  under_review: number;
+  reviewed: number;
   total_users: number;
+  learners: number;
   assessors: number;
   reviews: number;
+  active_prompts: number;
   active_today: number;
   cefr_distribution: Record<string, number>;
 }
@@ -93,13 +97,13 @@ const AdminPanel: React.FC = () => {
   const metrics = stats
     ? [
         { label: 'Total Assessments', value: stats.total_sessions },
-        { label: 'Completed', value: stats.completed_sessions },
-        { label: 'Completion Rate', value: `${stats.completion_rate}%` },
-        { label: 'Active Today', value: stats.active_today },
-        { label: 'Total Users', value: stats.total_users },
+        { label: 'In Progress', value: stats.in_progress },
+        { label: 'Awaiting Review', value: stats.awaiting_review },
+        { label: 'Under Review', value: stats.under_review },
+        { label: 'Reviewed', value: stats.reviewed },
+        { label: 'Learners', value: stats.learners },
         { label: 'Assessors', value: stats.assessors },
-        { label: 'Reviews Done', value: stats.reviews },
-        { label: 'Avg Score', value: stats.average_score },
+        { label: 'Active Today', value: stats.active_today },
       ]
     : [];
 
@@ -117,7 +121,7 @@ const AdminPanel: React.FC = () => {
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" /> Overview
           </TabsTrigger>
@@ -132,6 +136,9 @@ const AdminPanel: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="training" className="flex items-center gap-2">
             <Database className="h-4 w-4" /> Training Data
+          </TabsTrigger>
+          <TabsTrigger value="apikeys" className="flex items-center gap-2">
+            <KeyRound className="h-4 w-4" /> API Keys
           </TabsTrigger>
         </TabsList>
 
@@ -222,6 +229,11 @@ const AdminPanel: React.FC = () => {
         {/* Training Data */}
         <TabsContent value="training" className="mt-6">
           <TrainingDataViewer />
+        </TabsContent>
+
+        {/* API Keys */}
+        <TabsContent value="apikeys" className="mt-6">
+          <ApiKeyManagement />
         </TabsContent>
       </Tabs>
 

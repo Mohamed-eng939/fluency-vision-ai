@@ -14,6 +14,8 @@ const json = (body: unknown, status = 200) =>
 
 // Admin-only live metrics for the /admin dashboard. Verifies the caller is an
 // admin via their JWT, then reads aggregate data with the service role.
+// Reports only real, count-based metrics + CEFR distribution — no derived
+// "average score" percentage (that number is not a meaningful placement metric).
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -33,33 +35,39 @@ serve(async (req) => {
     );
     const { data: sessions } = await admin
       .from("assessment_sessions")
-      .select("status, overall_score, overall_cefr_level, created_at");
+      .select("status, overall_cefr_level, created_at");
     const { count: totalUsers } = await admin.from("profiles").select("*", { count: "exact", head: true });
     const { count: assessors } = await admin
       .from("profiles").select("*", { count: "exact", head: true }).eq("role", "assessor");
+    const { count: learners } = await admin
+      .from("profiles").select("*", { count: "exact", head: true }).eq("role", "learner");
     const { count: reviews } = await admin.from("assessor_reviews").select("*", { count: "exact", head: true });
+    const { count: activePrompts } = await admin
+      .from("prompts").select("*", { count: "exact", head: true }).eq("is_active", true);
 
     const all = sessions ?? [];
-    const total = all.length;
-    const completed = all.filter((s: any) => s.status === "completed").length;
-    const scored = all.filter((s: any) => typeof s.overall_score === "number" && s.overall_score > 0);
-    const avg = scored.length ? scored.reduce((a: number, s: any) => a + s.overall_score, 0) / scored.length : 0;
+    const byStatus = (s: string) => all.filter((r: any) => r.status === s).length;
+    const reviewed = all.filter((r: any) => r.status === "approved" || r.status === "rejected").length;
     const today = new Date().toISOString().slice(0, 10);
-    const activeToday = all.filter((s: any) => (s.created_at || "").slice(0, 10) === today).length;
+    const activeToday = all.filter((r: any) => (r.created_at || "").slice(0, 10) === today).length;
     const cefr: Record<string, number> = {};
     for (const s of all) {
-      if (s.overall_cefr_level) cefr[s.overall_cefr_level] = (cefr[s.overall_cefr_level] || 0) + 1;
+      const lvl = (s as any).overall_cefr_level;
+      if (lvl) cefr[lvl] = (cefr[lvl] || 0) + 1;
     }
 
     return json({
       stats: {
-        total_sessions: total,
-        completed_sessions: completed,
-        completion_rate: total ? Math.round((completed / total) * 100) : 0,
-        average_score: Math.round(avg * 100) / 100,
+        total_sessions: all.length,
+        in_progress: byStatus("in_progress"),
+        awaiting_review: byStatus("completed"),
+        under_review: byStatus("under_review"),
+        reviewed,
         total_users: totalUsers || 0,
+        learners: learners || 0,
         assessors: assessors || 0,
         reviews: reviews || 0,
+        active_prompts: activePrompts || 0,
         active_today: activeToday,
         cefr_distribution: cefr,
       },
