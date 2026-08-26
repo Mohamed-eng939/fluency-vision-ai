@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, ClipboardList, RefreshCw, UserCog } from 'lucide-react';
+import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download } from 'lucide-react';
 import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
 import UserManagement from '@/components/admin/UserManagement';
+import PromptManagement from '@/components/admin/PromptManagement';
+import TrainingDataViewer from '@/components/admin/TrainingDataViewer';
+import { toCsv, downloadCsv } from '@/utils/admin/exportCsv';
 
 interface AdminStats {
   total_sessions: number;
@@ -58,6 +61,35 @@ const AdminPanel: React.FC = () => {
     loadStats();
   }, [loadStats]);
 
+  const [exporting, setExporting] = useState(false);
+  const exportSessions = async () => {
+    setExporting(true);
+    try {
+      const { data, error } = await supabase
+        .from('assessment_sessions')
+        .select('id, status, session_type, overall_score, overall_cefr_level, created_at, student_info, profiles:user_id(full_name, email)')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      const flat = (data ?? []).map((s: any) => ({
+        id: s.id,
+        name: s.profiles?.full_name || s.student_info?.name || 'Anonymous',
+        email: s.profiles?.email || s.student_info?.email || '',
+        type: s.session_type,
+        status: s.status,
+        cefr: s.overall_cefr_level || '',
+        score: s.overall_score ?? '',
+        date: s.created_at,
+      }));
+      if (!flat.length) { toast.error('No sessions to export'); return; }
+      downloadCsv(`assessments-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(flat));
+      toast.success(`Exported ${flat.length} assessments`);
+    } catch (e: any) {
+      toast.error(`Export failed: ${e.message ?? e}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const metrics = stats
     ? [
         { label: 'Total Assessments', value: stats.total_sessions },
@@ -85,15 +117,21 @@ const AdminPanel: React.FC = () => {
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" /> Overview
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
-            <UserCog className="h-4 w-4" /> User Management
+            <UserCog className="h-4 w-4" /> Users
           </TabsTrigger>
           <TabsTrigger value="assignments" className="flex items-center gap-2">
-            <Users className="h-4 w-4" /> Assessment Assignments
+            <Users className="h-4 w-4" /> Assignments
+          </TabsTrigger>
+          <TabsTrigger value="prompts" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" /> Prompts
+          </TabsTrigger>
+          <TabsTrigger value="training" className="flex items-center gap-2">
+            <Database className="h-4 w-4" /> Training Data
           </TabsTrigger>
         </TabsList>
 
@@ -101,9 +139,15 @@ const AdminPanel: React.FC = () => {
         <TabsContent value="dashboard" className="mt-6 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Live metrics</h2>
-            <Button variant="ghost" size="sm" onClick={loadStats} disabled={loading} aria-label="Refresh">
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={exportSessions} disabled={exporting}>
+                {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                Export data (CSV)
+              </Button>
+              <Button variant="ghost" size="sm" onClick={loadStats} disabled={loading} aria-label="Refresh">
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
 
           {loading ? (
@@ -168,6 +212,16 @@ const AdminPanel: React.FC = () => {
         {/* Assessment Assignments */}
         <TabsContent value="assignments" className="mt-6">
           <AssessmentAssignmentDashboard />
+        </TabsContent>
+
+        {/* Assessment Prompts */}
+        <TabsContent value="prompts" className="mt-6">
+          <PromptManagement />
+        </TabsContent>
+
+        {/* Training Data */}
+        <TabsContent value="training" className="mt-6">
+          <TrainingDataViewer />
         </TabsContent>
       </Tabs>
 
