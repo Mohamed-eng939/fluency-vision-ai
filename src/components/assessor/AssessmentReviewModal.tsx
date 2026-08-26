@@ -57,6 +57,22 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   const [finalCEFRLevel, setFinalCEFRLevel] = useState<string>('');
   const [finalCEFRReason, setFinalCEFRReason] = useState('');
   const [calculatedCEFR, setCalculatedCEFR] = useState<string>('');
+  // Assessor's top-level grades for the three criteria (editable).
+  const [criteria, setCriteria] = useState<{ grammar: string; fluency: string; vocabulary: string }>({
+    grammar: '', fluency: '', vocabulary: '',
+  });
+
+  // Seed the criteria dropdowns from the session's level when a test opens.
+  useEffect(() => {
+    const lvl = assessmentDetails?.session?.overall_cefr_level;
+    if (lvl) {
+      setCriteria((c) => ({
+        grammar: c.grammar || lvl,
+        fluency: c.fluency || lvl,
+        vocabulary: c.vocabulary || lvl,
+      }));
+    }
+  }, [assessmentDetails]);
 
   useEffect(() => {
     const reviewedLevels = Object.values(responseReviews)
@@ -134,7 +150,10 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           final_cefr_level: finalCEFRLevel,
           calculated_average: calculatedCEFR,
           is_overridden: isOverridden,
-          override_reason: isOverridden ? finalCEFRReason : null
+          override_reason: isOverridden ? finalCEFRReason : null,
+          grammar_cefr: criteria.grammar || null,
+          fluency_cefr: criteria.fluency || null,
+          vocabulary_cefr: criteria.vocabulary || null
         }
       };
 
@@ -232,6 +251,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       setFinalCEFRLevel('');
       setFinalCEFRReason('');
       setCalculatedCEFR('');
+      setCriteria({ grammar: '', fluency: '', vocabulary: '' });
 
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -348,11 +368,13 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <Label className="text-sm font-medium">Overall CEFR Level</Label>
-                  <div className="mt-1">
-                    <Badge className={`text-lg px-3 py-1 ${getCEFRColor(session.overall_cefr_level || '')}`}>
-                      {session.overall_cefr_level || 'N/A'}
-                    </Badge>
-                  </div>
+                  <Select value={finalCEFRLevel} onValueChange={setFinalCEFRLevel}>
+                    <SelectTrigger className="mt-1 h-9 w-32"><SelectValue placeholder="Level" /></SelectTrigger>
+                    <SelectContent>
+                      {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] text-muted-foreground mt-1">System: {session.overall_cefr_level || '—'}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Responses</Label>
@@ -360,41 +382,24 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 </div>
               </div>
 
-              {/* Show only Grammar, Fluency, Vocabulary as CEFR levels from session metadata */}
+              {/* Assessor grades the three criteria — editable, A1–C2 */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                <div className="text-center p-3 rounded-lg bg-muted/50">
-                  <Languages className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-xs text-muted-foreground mb-1">Grammar</p>
-                  {session.overall_cefr_level ? (
-                    <Badge className={getCEFRColor(session.overall_cefr_level)}>
-                      {session.overall_cefr_level}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">N/A</span>
-                  )}
-                </div>
-                <div className="text-center p-3 rounded-lg bg-muted/50">
-                  <Mic className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-xs text-muted-foreground mb-1">Fluency</p>
-                  {session.overall_cefr_level ? (
-                    <Badge className={getCEFRColor(session.overall_cefr_level)}>
-                      {session.overall_cefr_level}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">N/A</span>
-                  )}
-                </div>
-                <div className="text-center p-3 rounded-lg bg-muted/50">
-                  <BookOpen className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-xs text-muted-foreground mb-1">Vocabulary</p>
-                  {session.overall_cefr_level ? (
-                    <Badge className={getCEFRColor(session.overall_cefr_level)}>
-                      {session.overall_cefr_level}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">N/A</span>
-                  )}
-                </div>
+                {([
+                  { key: 'grammar' as const, label: 'Grammar', Icon: Languages },
+                  { key: 'fluency' as const, label: 'Fluency', Icon: Mic },
+                  { key: 'vocabulary' as const, label: 'Vocabulary', Icon: BookOpen },
+                ]).map(({ key, label, Icon }) => (
+                  <div key={key} className="text-center p-3 rounded-lg bg-muted/50">
+                    <Icon className="h-5 w-5 mx-auto mb-1 text-primary" />
+                    <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                    <Select value={criteria[key]} onValueChange={(v) => setCriteria((c) => ({ ...c, [key]: v }))}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Level" /></SelectTrigger>
+                      <SelectContent>
+                        {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

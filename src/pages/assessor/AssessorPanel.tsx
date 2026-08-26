@@ -6,12 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Clock, User, Globe, Languages } from 'lucide-react';
 import { assessorService, type PendingAssessment } from '@/services/assessorService';
 import AssessmentReviewModal from '@/components/assessor/AssessmentReviewModal';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const AssessorPanel: React.FC = () => {
   const { user, signOut } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAssessments, setPendingAssessments] = useState<PendingAssessment[]>([]);
+  const [reviewedAssessments, setReviewedAssessments] = useState<PendingAssessment[]>([]);
   const [isAssigning, setIsAssigning] = useState<string | null>(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedAssessmentDetails, setSelectedAssessmentDetails] = useState<any>(null);
@@ -36,8 +38,26 @@ const AssessorPanel: React.FC = () => {
     }
   };
 
+  const fetchReviewed = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('assessment_sessions')
+        .select('id, user_id, session_type, status, overall_score, overall_cefr_level, created_at, reviewed_at, student_info, profiles:user_id(full_name, email, first_language, country_of_residence)')
+        .eq('assigned_assessor', user.id)
+        .in('status', ['approved', 'rejected'])
+        .order('reviewed_at', { ascending: false });
+      if (error) throw error;
+      setReviewedAssessments((data as any) || []);
+    } catch (e) {
+      console.error('Error fetching reviewed assessments:', e);
+    }
+  };
+
   useEffect(() => {
     fetchPendingAssessments();
+    fetchReviewed();
   }, []);
 
   const handleAssignAssessment = async (sessionId: string) => {
@@ -74,7 +94,8 @@ const AssessorPanel: React.FC = () => {
   };
 
   const handleReviewSubmitted = () => {
-    fetchPendingAssessments(); // Refresh the list
+    fetchPendingAssessments(); // Refresh the lists
+    fetchReviewed();
     setReviewModalOpen(false);
     setSelectedAssessmentDetails(null);
   };
@@ -100,7 +121,12 @@ const AssessorPanel: React.FC = () => {
     };
     return colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
-  
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const completedToday = reviewedAssessments.filter(
+    (a: any) => (a.reviewed_at || '').slice(0, 10) === todayStr
+  ).length;
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
@@ -135,21 +161,21 @@ const AssessorPanel: React.FC = () => {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Completed Today</CardTitle>
+            <CardTitle className="text-lg">Reviewed</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">0</div>
-            <p className="text-sm text-muted-foreground">Reviews completed today</p>
+            <div className="text-2xl font-bold text-green-600">{reviewedAssessments.length}</div>
+            <p className="text-sm text-muted-foreground">Assessments you've reviewed</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Average Score</CardTitle>
+            <CardTitle className="text-lg">Completed Today</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">--</div>
-            <p className="text-sm text-muted-foreground">Average assessment score</p>
+            <div className="text-2xl font-bold text-blue-600">{completedToday}</div>
+            <p className="text-sm text-muted-foreground">Reviews completed today</p>
           </CardContent>
         </Card>
       </div>
@@ -247,6 +273,58 @@ const AssessorPanel: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Reviewed Assessments */}
+      {reviewedAssessments.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle>Reviewed Assessments</CardTitle>
+              <Badge variant="outline">{reviewedAssessments.length}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {reviewedAssessments.map((assessment) => (
+                <Card key={assessment.id} className="border-l-4 border-l-green-500">
+                  <CardContent className="pt-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <User className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">
+                            {assessment.profiles?.full_name || assessment.student_info?.name || 'Anonymous User'}
+                          </span>
+                          <Badge variant="secondary" className="text-xs">{assessment.session_type}</Badge>
+                          <Badge className={assessment.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            {assessment.status === 'approved' ? 'Approved' : 'Rejected'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{formatDate(assessment.created_at)}</span>
+                          </div>
+                          {assessment.overall_cefr_level && (
+                            <Badge className={getCEFRColor(assessment.overall_cefr_level)}>
+                              {assessment.overall_cefr_level}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button size="sm" variant="outline" onClick={() => handleViewDetails(assessment.id)}>
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Assessment Review Modal */}
       <AssessmentReviewModal
