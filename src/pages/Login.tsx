@@ -5,12 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/contexts/auth';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useBrandingContext } from '@/contexts/branding/BrandingContext';
 
 const Login: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
   const brand = useBrandingContext();
   
   // Redirect if already logged in
@@ -35,7 +37,7 @@ const Login: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs defaultValue={initialTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
