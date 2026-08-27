@@ -132,6 +132,33 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     }
   }, [user, sessionId, handleStudentInfoSubmit, currentStep, studentInfo]);
 
+  // Partner-handoff candidate: arrived via /t/:token — prefill from the invite
+  // and start the assessment directly (no sign-up / options screen).
+  useEffect(() => {
+    if (moduleHasInitialized || moduleInitializing) return;
+    if (studentInfo || currentStep !== 'entry') return;
+    let raw: string | null = null;
+    try { raw = sessionStorage.getItem('invite_candidate'); } catch { /* ignore */ }
+    if (!raw) return;
+    try {
+      const c = JSON.parse(raw);
+      moduleInitializing = true;
+      isFromProfileForm.current = true;
+      handleStudentInfoSubmit({
+        name: c.name || 'Candidate',
+        email: c.email || '',
+        sessionId: sessionId || `session-${Date.now()}`,
+        countryCode: '',
+        phoneNumber: '',
+      });
+      setShowAssessmentOptions(false);
+      initializeAssessment(false).finally(() => {
+        moduleInitializing = false;
+        moduleHasInitialized = true;
+      });
+    } catch { /* ignore */ }
+  }, [currentStep, studentInfo, sessionId, handleStudentInfoSubmit, initializeAssessment]);
+
   const handleSelectQuickAssessment = () => {
     setShowAssessmentOptions(false);
   };

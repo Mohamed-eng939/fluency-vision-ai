@@ -5,6 +5,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { AssessmentResult } from '@/types/assessment';
 import ProcessingResults from './ProcessingResults';
 import { useSessionManagement } from '@/hooks/assessment/useSessionManagement';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ResultsStepProps {
   result: AssessmentResult | null;
@@ -49,6 +50,24 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
       });
     }
   }, [result, isProcessing, promptHistory, storeAssessmentData, storageAttempted]);
+
+  // Partner handoff: if this session came from a /t/:token invite, link the
+  // finished session back to it so the partner can retrieve the result.
+  useEffect(() => {
+    if (!result?.sessionId || isProcessing) return;
+    let token: string | null = null;
+    try { token = sessionStorage.getItem('invite_token'); } catch { return; }
+    if (!token) return;
+    supabase.functions
+      .invoke('assessment-invite', { body: { action: 'link', token, session_id: result.sessionId } })
+      .finally(() => {
+        try {
+          sessionStorage.removeItem('invite_token');
+          sessionStorage.removeItem('invite_brand');
+          sessionStorage.removeItem('invite_candidate');
+        } catch { /* ignore */ }
+      });
+  }, [result?.sessionId, isProcessing]);
 
   if (isProcessing) {
     return (

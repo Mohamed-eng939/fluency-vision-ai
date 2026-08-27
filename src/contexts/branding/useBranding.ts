@@ -24,6 +24,17 @@ export function useBranding() {
     let cancelled = false;
     const hostname = window.location.hostname;
 
+    // Partner-handoff override: a candidate arriving via /t/:token has the
+    // tenant's brand stashed in sessionStorage — use it for the whole session.
+    try {
+      const stashed = sessionStorage.getItem('invite_brand');
+      if (stashed) {
+        setBrand(parseBrand(JSON.parse(stashed)));
+        setIsLoading(false);
+        return;
+      }
+    } catch { /* ignore */ }
+
     supabase
       .from('organizations')
       .select('name, branding, domain')

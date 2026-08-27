@@ -16,6 +16,7 @@ import ReportPage from "./pages/ReportPage";
 import AssessmentResults from "./pages/AssessmentResults";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
+import InviteEntry from "./pages/InviteEntry";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/assessment" element={<Assessment />} />
+        <Route path="/t/:token" element={<InviteEntry />} />
         <Route path="/admin/*" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminPanel />
