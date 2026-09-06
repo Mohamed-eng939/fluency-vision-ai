@@ -26,22 +26,37 @@ serve(async (req) => {
     );
     const { data: { user } } = await userClient.auth.getUser();
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const { data: profile } = await userClient.from("profiles").select("role").eq("id", user.id).single();
+    const { data: profile } = await userClient.from("profiles").select("role, organization_id").eq("id", user.id).single();
     if (profile?.role !== "admin") return json({ error: "Admin role required" }, 403);
+    // Org-admins (a profile carrying an organization_id) see ONLY their org's
+    // numbers; platform admins (organization_id NULL) see everything.
+    const orgId: string | null = (profile as any)?.organization_id ?? null;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     );
-    const { data: sessions } = await admin
-      .from("assessment_sessions")
-      .select("status, overall_cefr_level, created_at");
-    const { count: totalUsers } = await admin.from("profiles").select("*", { count: "exact", head: true });
-    const { count: assessors } = await admin
-      .from("profiles").select("*", { count: "exact", head: true }).eq("role", "assessor");
-    const { count: learners } = await admin
-      .from("profiles").select("*", { count: "exact", head: true }).eq("role", "learner");
-    const { count: reviews } = await admin.from("assessor_reviews").select("*", { count: "exact", head: true });
+    let sessionsQ = admin.from("assessment_sessions").select("status, overall_cefr_level, created_at");
+    if (orgId) sessionsQ = sessionsQ.eq("organization_id", orgId);
+    const { data: sessions } = await sessionsQ;
+
+    let usersQ = admin.from("profiles").select("*", { count: "exact", head: true });
+    if (orgId) usersQ = usersQ.eq("organization_id", orgId);
+    const { count: totalUsers } = await usersQ;
+
+    let assessorsQ = admin.from("profiles").select("*", { count: "exact", head: true }).eq("role", "assessor");
+    if (orgId) assessorsQ = assessorsQ.eq("organization_id", orgId);
+    const { count: assessors } = await assessorsQ;
+
+    let learnersQ = admin.from("profiles").select("*", { count: "exact", head: true }).eq("role", "learner");
+    if (orgId) learnersQ = learnersQ.eq("organization_id", orgId);
+    const { count: learners } = await learnersQ;
+
+    let reviewsQ = admin.from("assessor_reviews").select("*", { count: "exact", head: true });
+    if (orgId) reviewsQ = reviewsQ.eq("organization_id", orgId);
+    const { count: reviews } = await reviewsQ;
+
+    // Active prompts are the shared question bank (global) — same count for everyone.
     const { count: activePrompts } = await admin
       .from("prompts").select("*", { count: "exact", head: true }).eq("is_active", true);
 

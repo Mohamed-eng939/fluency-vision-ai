@@ -211,7 +211,7 @@ if (res.status === "completed") {
 - **Quota:** each created link counts against your plan's assessment quota. `402` when exceeded.
 - **Branding:** your logo/name/colors are configured once by our team; every link is skinned to you.
 - **Privacy:** the candidate's audio + transcript stay on our platform; you receive the CEFR result and feedback.
-- **Roadmap:** result **webhooks** (push instead of poll), per-partner **custom domains**, and **per-tenant admin isolation** (a company admin scoped to only their own organization — see §9).
+- **Roadmap:** result **webhooks** (push instead of poll) and per-partner **custom domains**.
 
 ---
 
@@ -236,14 +236,15 @@ why results are asynchronous and how access is scoped.
   Enforced at the database by row-level security on `assigned_assessor`.
 - Their review is what flips your poll result from `in_review` to `completed`.
 
-### Admin (operator)
-- Runs the console where your key was minted: manages **organizations** (branding,
-  domain, subscription/quota), **users**, and **API keys**.
-- **Adds users** (including assessors) and **assigns assessments to assessors**.
-- **Scope today:** the admin is a **platform operator** with visibility across every
-  organization on the instance — appropriate for the platform owner running the SaaS.
-  Per-tenant admin isolation (a company admin who sees *only* their own organization) is
-  on the roadmap.
+### Admin (two tiers)
+- **Platform admin** (the SaaS operator): manages **all** organizations — branding,
+  domain, subscription/quota, users, and **API keys** (the console where your key was minted).
+- **Organization admin** (your company's own admin): scoped to **only their own
+  organization** — sees only their org's assessments, users, and results; **adds users**
+  into their org; and **assigns assessments to their org's assessors**. They cannot see
+  any other tenant's data, nor the cross-tenant console.
+- Enforced by database row-level security keyed on `organization_id` (a platform admin
+  has none and sees everything; an org admin is bound to theirs).
 
 > Scoping is enforced by Postgres **row-level security**, not just the UI: assessors are
 > restricted to their assigned / same-organization rows, and every partner API call is
@@ -264,7 +265,8 @@ The full partner loop is verified end-to-end against the live backend:
 | Poll state machine | ✅ `issued → opened → in_review → completed` |
 | Result payload | ✅ returns overall CEFR + the three criteria + assessor feedback & recommendation |
 | Assessor scoping | ✅ an assessor sees only assessments assigned to them; others are excluded |
-| Admin scope | ✅ the platform admin has full cross-organization visibility |
+| Platform-admin scope | ✅ the platform admin has full cross-organization visibility |
+| Org-admin isolation | ✅ an organization admin sees only their own org's data/users/assessments; other tenants are fully excluded |
 
 *Last verified: 2026-09-06 — data-level integration test against the live project.*
 
