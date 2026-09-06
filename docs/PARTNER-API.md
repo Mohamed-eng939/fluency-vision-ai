@@ -211,6 +211,63 @@ if (res.status === "completed") {
 - **Quota:** each created link counts against your plan's assessment quota. `402` when exceeded.
 - **Branding:** your logo/name/colors are configured once by our team; every link is skinned to you.
 - **Privacy:** the candidate's audio + transcript stay on our platform; you receive the CEFR result and feedback.
-- **Roadmap:** result **webhooks** (push instead of poll) and per-partner **custom domains**.
+- **Roadmap:** result **webhooks** (push instead of poll), per-partner **custom domains**, and **per-tenant admin isolation** (a company admin scoped to only their own organization — see §9).
+
+---
+
+## 9. Roles & access on the platform
+
+Behind your two API calls, three roles operate the assessment. Knowing them explains
+why results are asynchronous and how access is scoped.
+
+### Candidate (your end-user)
+- Reaches the test **only** through the one-time branded link you mint (`/t/<token>`).
+- No login and no platform account — the token *is* their access, and it carries **your**
+  branding plus the details you passed at `create` (so they never re-register).
+- On finish they see a **thank-you screen** ("results within 24 hours") — never a raw
+  score. The result is released only after human review, and only back to **you** via the
+  API (and/or emailed to the candidate, if that option is enabled).
+
+### Assessor (human reviewer)
+- Reviews the candidate's recording and sets / overrides the CEFR result — the three
+  engine-backed criteria (**Grammar, Fluency, Vocabulary**) plus the overall level.
+- **Scope:** an assessor sees **only the assessments assigned to them** (and their own
+  organization's) — never another assessor's queue, and never another tenant's data.
+  Enforced at the database by row-level security on `assigned_assessor`.
+- Their review is what flips your poll result from `in_review` to `completed`.
+
+### Admin (operator)
+- Runs the console where your key was minted: manages **organizations** (branding,
+  domain, subscription/quota), **users**, and **API keys**.
+- **Adds users** (including assessors) and **assigns assessments to assessors**.
+- **Scope today:** the admin is a **platform operator** with visibility across every
+  organization on the instance — appropriate for the platform owner running the SaaS.
+  Per-tenant admin isolation (a company admin who sees *only* their own organization) is
+  on the roadmap.
+
+> Scoping is enforced by Postgres **row-level security**, not just the UI: assessors are
+> restricted to their assigned / same-organization rows, and every partner API call is
+> restricted by its API key to that key's **own organization's** invites and results.
+
+---
+
+## 10. Test coverage & verification
+
+The full partner loop is verified end-to-end against the live backend:
+
+| Step | Verified |
+|---|---|
+| API-key auth → organization | ✅ a valid key resolves to its org; an unknown / revoked key is rejected (401) |
+| Quota metering | ✅ each created link increments the org's `assessments_used` and the key's usage count |
+| Branded link resolve | ✅ token resolves to tenant branding + candidate; status advances `issued → opened` |
+| Session handoff | ✅ the finished session links back to the invite and is tagged to the tenant |
+| Poll state machine | ✅ `issued → opened → in_review → completed` |
+| Result payload | ✅ returns overall CEFR + the three criteria + assessor feedback & recommendation |
+| Assessor scoping | ✅ an assessor sees only assessments assigned to them; others are excluded |
+| Admin scope | ✅ the platform admin has full cross-organization visibility |
+
+*Last verified: 2026-09-06 — data-level integration test against the live project.*
+
+---
 
 *Questions? Contact your integration manager.*
