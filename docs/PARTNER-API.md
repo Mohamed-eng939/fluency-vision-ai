@@ -252,7 +252,33 @@ why results are asynchronous and how access is scoped.
 
 ---
 
-## 10. Test coverage & verification
+## 10. Team access — signing in
+
+Assessors and admins use the same web app as candidates; sign-in routes each person to
+their own workspace automatically, by role.
+
+| Path | Who | What they get |
+|---|---|---|
+| `/login` | everyone | Email + password sign-in (and registration). |
+| `/assessor` | Assessor, Admin | Review queue — the assessments assigned to them; open one to score and release it. |
+| `/admin` | Admin | Console — dashboard, users, assignments, prompts, API keys (plus Organizations for platform admins). |
+
+- **Sign in** at `/login`. You're routed automatically — admins → `/admin`, assessors →
+  `/assessor`, candidates → home. An admin can jump to the review view via the
+  **Assessor Panel** button in the console.
+- **Getting a role.** New accounts start as **learner**. An admin promotes someone to
+  **assessor** or **admin** in **Admin → Users → Manage Users** (change role, or invite
+  by email).
+- **Organization admin.** A platform admin onboards a company in the **Organizations**
+  console, then assigns that company's admin to it; the org-admin then adds their own
+  assessors and users — all scoped to their organization.
+- **Guardrails.** `/admin` requires an admin and `/assessor` requires an assessor (or
+  admin); signed-out visitors are sent to `/login`, and anyone without the role is
+  returned to their own home.
+
+---
+
+## 11. Test coverage & verification
 
 The full partner loop is verified end-to-end against the live backend:
 
