@@ -8,6 +8,9 @@ export interface UserProfile {
   full_name?: string | null; // Changed from 'name' to match DB column
   email?: string | null;
   role: UserRole;
+  // organization_id null => platform (super) admin who manages all tenants;
+  // a value => this user belongs to a single tenant (org-scoped).
+  organization_id?: string | null;
   phone?: string | null;
   country_of_citizenship?: string | null; // Changed from 'country' to match DB column
   country_of_residence?: string | null;

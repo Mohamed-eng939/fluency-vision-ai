@@ -38,8 +38,11 @@ serve(async (req) => {
     );
     const { data: { user } } = await userClient.auth.getUser();
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const { data: profile } = await userClient.from("profiles").select("role").eq("id", user.id).single();
+    const { data: profile } = await userClient.from("profiles").select("role, organization_id").eq("id", user.id).single();
     if (profile?.role !== "admin") return json({ error: "Admin role required" }, 403);
+    // Org-admins (a profile with an organization_id) are confined to their own
+    // org's keys; platform admins (organization_id NULL) may target any org.
+    const callerOrg: string | null = (profile as any)?.organization_id ?? null;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -53,7 +56,8 @@ serve(async (req) => {
         .from("api_keys")
         .select("id, key_name, key_prefix, is_active, created_at, last_used_at, expires_at, usage_count, organization_id")
         .order("created_at", { ascending: false });
-      if (body.organization_id) query = query.eq("organization_id", body.organization_id);
+      const listOrg = callerOrg ?? body.organization_id;
+      if (listOrg) query = query.eq("organization_id", listOrg);
       const { data, error } = await query;
       if (error) return json({ error: error.message }, 500);
       return json({ keys: data ?? [] });
@@ -63,9 +67,12 @@ serve(async (req) => {
       const name = String(body.name ?? "").trim();
       if (!name) return json({ error: "A key name is required" }, 400);
 
-      // Use the given organization, else fall back to a shared default org.
+      // Org-admins always mint keys for their own org; platform admins may target
+      // a given org, else fall back to a shared default org.
       let org: { id: string } | null = null;
-      if (body.organization_id) {
+      if (callerOrg) {
+        org = { id: callerOrg };
+      } else if (body.organization_id) {
         org = { id: body.organization_id };
       } else {
         const { data: existingOrg } = await admin.from("organizations").select("id").limit(1).maybeSingle();
@@ -102,6 +109,13 @@ serve(async (req) => {
     if (action === "revoke") {
       const id = body.id;
       if (!id) return json({ error: "id required" }, 400);
+      // Org-admins can only revoke keys belonging to their own org.
+      if (callerOrg) {
+        const { data: target } = await admin.from("api_keys").select("organization_id").eq("id", id).single();
+        if (!target || target.organization_id !== callerOrg) {
+          return json({ error: "Key is not in your organization" }, 403);
+        }
+      }
       const { error } = await admin.from("api_keys").update({ is_active: false }).eq("id", id);
       if (error) return json({ error: error.message }, 500);
       return json({ ok: true });

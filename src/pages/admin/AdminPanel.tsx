@@ -45,6 +45,10 @@ const cefrColor = (level: string) => {
 const AdminPanel: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  // Platform (super) admins have no organization_id and manage all tenants; an
+  // org admin (organization_id set) is scoped to their own org and must not see
+  // the cross-tenant Organizations console.
+  const isPlatformAdmin = !user?.organization_id;
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [userMgmtOpen, setUserMgmtOpen] = useState(false);
@@ -122,13 +126,15 @@ const AdminPanel: React.FC = () => {
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto">
+        <TabsList className={`grid w-full grid-cols-2 sm:grid-cols-4 ${isPlatformAdmin ? 'lg:grid-cols-7' : 'lg:grid-cols-6'} h-auto`}>
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" /> Overview
           </TabsTrigger>
-          <TabsTrigger value="organizations" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" /> Organizations
-          </TabsTrigger>
+          {isPlatformAdmin && (
+            <TabsTrigger value="organizations" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" /> Organizations
+            </TabsTrigger>
+          )}
           <TabsTrigger value="users" className="flex items-center gap-2">
             <UserCog className="h-4 w-4" /> Users
           </TabsTrigger>
@@ -203,10 +209,12 @@ const AdminPanel: React.FC = () => {
           )}
         </TabsContent>
 
-        {/* Organizations (white-label tenants) */}
-        <TabsContent value="organizations" className="mt-6">
-          <OrganizationManagement />
-        </TabsContent>
+        {/* Organizations (white-label tenants) — platform admins only */}
+        {isPlatformAdmin && (
+          <TabsContent value="organizations" className="mt-6">
+            <OrganizationManagement />
+          </TabsContent>
+        )}
 
         {/* User Management */}
         <TabsContent value="users" className="mt-6">

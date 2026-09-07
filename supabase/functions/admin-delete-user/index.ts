@@ -26,8 +26,9 @@ serve(async (req) => {
     );
     const { data: { user } } = await userClient.auth.getUser();
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const { data: profile } = await userClient.from("profiles").select("role").eq("id", user.id).single();
+    const { data: profile } = await userClient.from("profiles").select("role, organization_id").eq("id", user.id).single();
     if (profile?.role !== "admin") return json({ error: "Admin role required" }, 403);
+    const callerOrg: string | null = (profile as any)?.organization_id ?? null;
 
     const { user_id } = await req.json();
     if (!user_id) return json({ error: "user_id required" }, 400);
@@ -37,6 +38,14 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     );
+    // Org-admins can only delete users inside their own organization; platform
+    // admins (organization_id NULL) can delete anyone.
+    if (callerOrg) {
+      const { data: target } = await admin.from("profiles").select("organization_id").eq("id", user_id).single();
+      if (!target || target.organization_id !== callerOrg) {
+        return json({ error: "User is not in your organization" }, 403);
+      }
+    }
     await admin.from("assessment_sessions").update({ user_id: null }).eq("user_id", user_id);
     await admin.from("profiles").delete().eq("id", user_id);
     const { error: delErr } = await admin.auth.admin.deleteUser(user_id);
