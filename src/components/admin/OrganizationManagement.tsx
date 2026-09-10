@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeEdge } from '@/utils/edge/invokeEdge';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -105,9 +106,7 @@ const OrganizationManagement: React.FC = () => {
   const loadKeys = useCallback(async (orgId: string) => {
     setKeysLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-api-keys', {
-        body: { action: 'list', organization_id: orgId },
-      });
+      const { data, error } = await invokeEdge('admin-api-keys', { action: 'list', organization_id: orgId });
       if (error) throw error;
       setKeys(data?.keys ?? []);
     } catch (e: any) {
@@ -198,9 +197,7 @@ const OrganizationManagement: React.FC = () => {
     if (!newKeyName.trim()) { toast.error('Enter a key name'); return; }
     setCreatingKey(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-api-keys', {
-        body: { action: 'create', name: newKeyName.trim(), organization_id: draft.id },
-      });
+      const { data, error } = await invokeEdge('admin-api-keys', { action: 'create', name: newKeyName.trim(), organization_id: draft.id });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setSecret(data.secret);
@@ -216,7 +213,7 @@ const OrganizationManagement: React.FC = () => {
   const revokeKey = async (id: string) => {
     if (!window.confirm('Revoke this key? Integrations using it will stop working.')) return;
     try {
-      const { error } = await supabase.functions.invoke('admin-api-keys', { body: { action: 'revoke', id } });
+      const { error } = await invokeEdge('admin-api-keys', { action: 'revoke', id });
       if (error) throw error;
       setKeys((k) => k.map((x) => (x.id === id ? { ...x, is_active: false } : x)));
       toast.success('Key revoked');

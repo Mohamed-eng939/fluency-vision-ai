@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeEdge } from '@/utils/edge/invokeEdge';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-manager/list-users', { body: {} });
+      const { data, error } = await invokeEdge('admin-manager/list-users', {});
       if (error) throw error;
       setUsers(data?.users ?? []);
     } catch (e: any) {
@@ -70,9 +70,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
     const previous = users;
     setUsers((u) => u.map((x) => (x.id === userId ? { ...x, role } : x)));
     try {
-      const { error } = await supabase.functions.invoke('admin-manager/set-role', {
-        body: { user_id: userId, role },
-      });
+      const { error } = await invokeEdge('admin-manager/set-role', { user_id: userId, role });
       if (error) throw error;
       toast.success(`Role updated to ${role}`);
     } catch (e: any) {
@@ -90,9 +88,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
     }
     setInviting(true);
     try {
-      const { error } = await supabase.functions.invoke('admin-manager/invite-user', {
-        body: { email: inviteEmail.trim(), role: inviteRole },
-      });
+      const { error } = await invokeEdge('admin-manager/invite-user', { email: inviteEmail.trim(), role: inviteRole });
       if (error) throw error;
       toast.success(`Invitation sent to ${inviteEmail} as ${inviteRole}`);
       setInviteEmail('');
@@ -110,9 +106,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ open, onOpenChange, cur
     }
     setDeletingId(userId);
     try {
-      const { error } = await supabase.functions.invoke('admin-delete-user', {
-        body: { user_id: userId },
-      });
+      const { error } = await invokeEdge('admin-delete-user', { user_id: userId });
       if (error) throw error;
       toast.success('User deleted');
       setUsers((u) => u.filter((x) => x.id !== userId));

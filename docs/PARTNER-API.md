@@ -37,27 +37,59 @@ You do **not** build any assessment UI. Integration is two API calls.
 
 ---
 
-## 2. Credentials
+## 2. Credentials — the two keys
 
-You receive two things from us:
-
-| Value | What it is | Secret? |
-|---|---|---|
-| **API key** (`lsk_live_…`) | Authenticates *your organization*. Generated in our admin console, scoped to you, revocable. | **Yes** — keep it server-side only. |
-| **Public project key** | Identifies our platform gateway. Safe to expose. | No |
+Our API runs on Supabase Edge Functions, so every request passes **two checkpoints**, and
+each needs its own key. This is the part people find confusing, so here's exactly what
+each one is and why both are required.
 
 **Base URL:** `https://rrslhxigqtfllunmowcy.supabase.co/functions/v1`
 
-Every request sends:
+| Header | What it is | Identifies | Secret? |
+|---|---|---|---|
+| `apikey` | Our Supabase **project (anon) key** — the platform gateway token. | the **project** | **No** — public by design |
+| `x-api-key` | **Your** organization key (`lsk_live_…`), minted in our console. | **your organization** | **Yes** — backend only |
+
+### `apikey` — the front door (public)
+
+Every Supabase project sits behind an API gateway. To even *reach* a function at the base
+URL above, the request must carry the project's public **anon key** in the `apikey`
+header — otherwise the gateway rejects it (`401` / "No API key found") *before our code
+runs*.
+
+- It identifies the **project**, is the **same for every caller**, and is **public by
+  design** — it's already embedded in our web app's frontend, so it is not a secret.
+- On its own it grants **no data access**: the database is protected by row-level
+  security, and our partner endpoint additionally requires *your* secret key. Think of it
+  as the building's lobby key — it gets you through the front door; it opens no room.
+- **Value (public — safe to embed):**
+
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyc2xoeGlncXRmbGx1bm1vd2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NTI0NDUsImV4cCI6MjA2NjUyODQ0NX0.k3wjgHGU3d_k0vzSMP2jeKaXMs85zrhu_vb4Ym2Sq9c
+```
+
+### `x-api-key` — who you are (secret)
+
+Past the gateway, our `assessment-links` function reads **your** key from `x-api-key`,
+hashes it, and looks it up to identify **which organization** is calling, enforce your
+plan/quota, and meter usage. This is your real credential — keep it **server-side only**;
+we can revoke or rotate it. Think of it as your keycard — it opens only *your*
+organization's data.
+
+### Putting it together
+
+Send both, each in its own header:
 
 ```
 Content-Type: application/json
-apikey: <PUBLIC_PROJECT_KEY>     # platform gateway key (public)
-x-api-key: <YOUR_API_KEY>        # your secret org key
+apikey: <PUBLIC_PROJECT_KEY>     # the project anon key above (public)
+x-api-key: <YOUR_API_KEY>        # your secret lsk_live_… key
 ```
 
-> Call the API only from your **backend**. Never expose your `x-api-key` in a browser
-> or mobile app.
+> **Keep the two separate.** Your secret goes in `x-api-key` (or, if you prefer,
+> `Authorization: Bearer <your lsk_live_… key>`). Do **not** put the public `apikey` value
+> in the `Authorization` header — our function would misread it as your org key. Never
+> ship your `x-api-key` in a browser or mobile app; call from your backend only.
 
 ---
 
@@ -252,7 +284,33 @@ why results are asynchronous and how access is scoped.
 
 ---
 
-## 10. Test coverage & verification
+## 10. Team access — signing in
+
+Assessors and admins use the same web app as candidates; sign-in routes each person to
+their own workspace automatically, by role.
+
+| Path | Who | What they get |
+|---|---|---|
+| `/login` | everyone | Email + password sign-in (and registration). |
+| `/assessor` | Assessor, Admin | Review queue — the assessments assigned to them; open one to score and release it. |
+| `/admin` | Admin | Console — dashboard, users, assignments, prompts, API keys (plus Organizations for platform admins). |
+
+- **Sign in** at `/login`. You're routed automatically — admins → `/admin`, assessors →
+  `/assessor`, candidates → home. An admin can jump to the review view via the
+  **Assessor Panel** button in the console.
+- **Getting a role.** New accounts start as **learner**. An admin promotes someone to
+  **assessor** or **admin** in **Admin → Users → Manage Users** (change role, or invite
+  by email).
+- **Organization admin.** A platform admin onboards a company in the **Organizations**
+  console, then assigns that company's admin to it; the org-admin then adds their own
+  assessors and users — all scoped to their organization.
+- **Guardrails.** `/admin` requires an admin and `/assessor` requires an assessor (or
+  admin); signed-out visitors are sent to `/login`, and anyone without the role is
+  returned to their own home.
+
+---
+
+## 11. Test coverage & verification
 
 The full partner loop is verified end-to-end against the live backend:
 
