@@ -15,6 +15,7 @@ import TrainingDataViewer from '@/components/admin/TrainingDataViewer';
 import ApiKeyManagement from '@/components/admin/ApiKeyManagement';
 import OrganizationManagement from '@/components/admin/OrganizationManagement';
 import { toCsv, downloadCsv } from '@/utils/admin/exportCsv';
+import { invokeEdge } from '@/utils/edge/invokeEdge';
 
 interface AdminStats {
   total_sessions: number;
@@ -56,7 +57,7 @@ const AdminPanel: React.FC = () => {
   const loadStats = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-stats', { body: {} });
+      const { data, error } = await invokeEdge('admin-stats', {});
       if (error) throw error;
       setStats(data?.stats ?? null);
     } catch (e: any) {

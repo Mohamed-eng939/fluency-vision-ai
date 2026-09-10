@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeEdge } from '@/utils/edge/invokeEdge';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +37,7 @@ const ApiKeyManagement: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-api-keys', { body: { action: 'list' } });
+      const { data, error } = await invokeEdge('admin-api-keys', { action: 'list' });
       if (error) throw error;
       setKeys(data?.keys ?? []);
     } catch (e: any) {
@@ -53,9 +53,7 @@ const ApiKeyManagement: React.FC = () => {
     if (!newName.trim()) { toast.error('Enter a name for the key'); return; }
     setCreating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-api-keys', {
-        body: { action: 'create', name: newName.trim() },
-      });
+      const { data, error } = await invokeEdge('admin-api-keys', { action: 'create', name: newName.trim() });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setSecret(data.secret);
@@ -73,7 +71,7 @@ const ApiKeyManagement: React.FC = () => {
     if (!window.confirm(`Revoke "${k.key_name}"? Any integration using it will stop working.`)) return;
     setRevokingId(k.id);
     try {
-      const { error } = await supabase.functions.invoke('admin-api-keys', { body: { action: 'revoke', id: k.id } });
+      const { error } = await invokeEdge('admin-api-keys', { action: 'revoke', id: k.id });
       if (error) throw error;
       setKeys((list) => list.map((x) => (x.id === k.id ? { ...x, is_active: false } : x)));
       toast.success('Key revoked');
