@@ -9,11 +9,13 @@ import ResultsStep from './ResultsStep';
 import AssessmentOptions from './AssessmentOptions';
 import { StudentInfo } from '@/hooks/assessment';
 import { SpeakingPrompt, AssessmentResult, AudioAnalysisResult } from '@/types/assessment';
+import type { Track } from '@/data/assessment/tracks';
 
 interface AssessmentStepRendererProps {
   currentStep: AssessmentStep;
   showAssessmentOptions: boolean;
   studentInfo: StudentInfo | null;
+  track?: Track;
   currentPrompt: SpeakingPrompt | null;
   currentPromptIndex: number;
   totalPrompts: number;
@@ -45,6 +47,7 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
   currentStep,
   showAssessmentOptions,
   studentInfo,
+  track,
   currentPrompt,
   currentPromptIndex,
   totalPrompts,
@@ -121,12 +124,13 @@ const AssessmentStepRenderer: React.FC<AssessmentStepRendererProps> = ({
     
     case AssessmentStep.RESULTS:
       return (
-        <ResultsStep 
+        <ResultsStep
           result={finalResult}
           detailedFeedback={detailedFeedback}
           promptHistory={promptHistory}
           showRawScoring={showRawScoring && showAdminControls}
           isProcessing={isProcessing}
+          track={track}
           onReset={() => {
             resetAssessment();
           }}

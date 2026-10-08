@@ -1,31 +1,42 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { SpeakingPrompt, CEFRLevel } from '@/types/assessment';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { SpeakingPrompt } from '@/types/assessment';
 import { mockPrompts } from '@/utils/speaking/promptUtils';
 import { fetchPromptsFromSupabase } from '@/services/promptService';
+import { kidsPrompts } from '@/data/speaking/kidsPrompts';
+import { teensPrompts } from '@/data/speaking/teensPrompts';
+import type { Track } from '@/data/assessment/tracks';
 
-export const usePromptManagement = (maxPrompts: number = 38) => {
-  const [loadedPrompts, setLoadedPrompts] = useState<SpeakingPrompt[]>([]);
+export const usePromptManagement = (maxPrompts: number = 38, track: Track = 'adults') => {
+  // Adults prompts come from Supabase (with a local fallback). Kids & Teens
+  // question banks are authored locally in src/data/speaking.
+  const [loadedAdultPrompts, setLoadedAdultPrompts] = useState<SpeakingPrompt[]>([]);
   const fetchedRef = useRef(false);
 
-  // Fetch prompts from Supabase once; fall back to local data if unavailable.
   useEffect(() => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
     fetchPromptsFromSupabase().then(prompts => {
       const speaking = prompts.filter(p => !p.isReadAloud);
       const readAloud = prompts.filter(p => p.isReadAloud);
-      setLoadedPrompts([...speaking, ...readAloud]);
+      setLoadedAdultPrompts([...speaking, ...readAloud]);
     });
   }, []);
 
-  const sortedPrompts = loadedPrompts.length > 0
-    ? loadedPrompts
+  const adultPrompts = loadedAdultPrompts.length > 0
+    ? loadedAdultPrompts
     : (() => {
         const speaking = mockPrompts.filter(p => !p.isReadAloud);
         const readAloud = mockPrompts.filter(p => p.isReadAloud);
         return [...speaking, ...readAloud];
       })();
+
+  // Resolve the question bank for a given age-based track.
+  const getPromptsForTrack = useCallback((t: Track): SpeakingPrompt[] => {
+    if (t === 'kids') return kidsPrompts;
+    if (t === 'teens') return teensPrompts;
+    return adultPrompts;
+  }, [adultPrompts]);
 
   // Prompt queue and history
   const [promptQueue, setPromptQueue] = useState<SpeakingPrompt[]>([]);
@@ -35,14 +46,16 @@ export const usePromptManagement = (maxPrompts: number = 38) => {
   }[]>([]);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
 
-  // Initialize prompts queue — speaking prompts first, then read-aloud
-  const initializePromptQueue = () => {
-    const totalPrompts = sortedPrompts.length;
-    setPromptQueue(sortedPrompts.slice(0, totalPrompts));
+  // Initialize the prompt queue for the active track. The track is passed in
+  // explicitly by the flow (chosen from the student's age) so the right test
+  // loads without depending on React state having flushed yet.
+  const initializePromptQueue = (queueTrack: Track = track) => {
+    const set = getPromptsForTrack(queueTrack);
+    setPromptQueue([...set]);
     setPromptHistory([]);
     setCurrentPromptIndex(0);
   };
-  
+
   // Add to history
   const addToHistory = (prompt: SpeakingPrompt, result: any) => {
     const updatedHistory = [
@@ -52,7 +65,7 @@ export const usePromptManagement = (maxPrompts: number = 38) => {
     setPromptHistory(updatedHistory);
     return updatedHistory;
   };
-  
+
   // Move to next prompt
   const moveToNextPrompt = () => {
     const nextIndex = currentPromptIndex + 1;
@@ -62,10 +75,10 @@ export const usePromptManagement = (maxPrompts: number = 38) => {
     }
     return null;
   };
-  
+
   // Get current prompt
   const currentPrompt = promptQueue[currentPromptIndex] || null;
-  
+
   return {
     promptQueue,
     promptHistory,

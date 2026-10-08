@@ -26,7 +26,9 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     setCurrentStep: state.setCurrentStep,
     handleReset: state.handleReset,
     resetSession: state.resetSession,
-    setPromptHistory: state.setPromptHistory
+    setPromptHistory: state.setPromptHistory,
+    track: state.track,
+    setTrack: state.setTrack
   });
 
   // Get assessment flow handlers
@@ -60,6 +62,9 @@ export const useAssessmentFlow = (config: Partial<AssessmentFlowConfig> = {}) =>
     studentInfo: state.studentInfo,
     emailResults: state.emailResults,
     sessionId: state.sessionId,
+    track: state.track,
+    setTrack: state.setTrack,
+    initializePromptQueue: state.initializePromptQueue,
     promptQueue: state.promptQueue,
     promptHistory: state.promptHistory,
     currentPromptIndex: state.currentPromptIndex,

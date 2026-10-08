@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cefrToNumber, numberToCefr, type CEFRLevel } from '@/utils/scoring/cefrUtils';
 import { useAuth } from '@/contexts/auth';
+import { trackLabel, type Track } from '@/data/assessment/tracks';
 
 interface AssessmentDetails {
   session: any;
@@ -314,6 +315,12 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
   const totalResponses = responses?.length || 0;
   const isOverridden = finalCEFRLevel && finalCEFRLevel !== calculatedCEFR;
 
+  // Age-based placement info carried on the session's student_info.
+  const studentInfo = session.student_info || {};
+  const studentTrack = studentInfo.track as Track | undefined;
+  const suggestedTrack = studentInfo.suggestedTrack as Track | undefined;
+  const placementNote = studentInfo.placementNote as string | undefined;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -352,9 +359,44 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                   <Label className="text-sm font-medium">Session Type</Label>
                   <Badge variant="outline">{session.session_type}</Badge>
                 </div>
+                {studentTrack && (
+                  <div>
+                    <Label className="text-sm font-medium">Test Track</Label>
+                    <div>
+                      <Badge className="bg-assessment-blue/10 text-assessment-blue border-transparent">
+                        {trackLabel(studentTrack)}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+                {typeof studentInfo.age === 'number' && (
+                  <div>
+                    <Label className="text-sm font-medium">Age</Label>
+                    <p className="text-sm text-muted-foreground">{studentInfo.age}</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
+
+          {/* Age-track placement suggestion (e.g. a teen who scored above A2).
+              The human assessor decides — the system never moves a student. */}
+          {suggestedTrack && (
+            <Card className="border-amber-300 bg-amber-50/50">
+              <CardContent className="py-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                <div className="text-sm">
+                  <p className="font-semibold text-amber-800">
+                    Possible track change — consider {trackLabel(suggestedTrack)}
+                  </p>
+                  <p className="text-amber-700">
+                    {placementNote ||
+                      `This student scored above the ${trackLabel(studentTrack!)} test ceiling. Consider placing them in the ${trackLabel(suggestedTrack)} track.`}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Current Scores - Only 3 criteria with CEFR */}
           <Card>

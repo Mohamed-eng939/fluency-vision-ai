@@ -10,8 +10,14 @@ import { useSessionManagement } from './useSessionManagement';
 import { useResponseStorage } from './useResponseStorage';
 import { useAssessmentControl } from './useAssessmentControl';
 import { AssessmentFlowConfig } from './types/assessmentTypes';
+import { useState } from 'react';
+import type { Track } from '@/data/assessment/tracks';
 
 export const useAssessmentFlowState = (config: Partial<AssessmentFlowConfig> = {}) => {
+  // Age-based test track (kids / teens / adults), chosen from the student's age
+  // at the age gate. Defaults to adults until an age is entered.
+  const [track, setTrack] = useState<Track>('adults');
+
   // Student information state
   const { studentInfo, handleStudentInfoSubmit } = useStudentInfo();
   
@@ -35,7 +41,7 @@ export const useAssessmentFlowState = (config: Partial<AssessmentFlowConfig> = {
     addToHistory,
     moveToNextPrompt,
     setPromptHistory
-  } = usePromptManagement(config.promptsCount || 23);
+  } = usePromptManagement(config.promptsCount || 38, track);
   
   // Assessment scoring
   const { 
@@ -93,6 +99,10 @@ export const useAssessmentFlowState = (config: Partial<AssessmentFlowConfig> = {
   });
 
   return {
+    // Age-based track state
+    track,
+    setTrack,
+
     // Student and session state
     studentInfo,
     handleStudentInfoSubmit,

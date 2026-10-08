@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { sessionService } from '@/services/sessionService';
 import { useSupabaseStorage } from './useSupabaseStorage';
+import { suggestedTrackForResult, trackLabel, TRACKS, type Track } from '@/data/assessment/tracks';
 
 export const useSessionManagement = () => {
   // Track assessment session
@@ -45,7 +46,27 @@ export const useSessionManagement = () => {
   const storeAssessmentData = async (studentInfo: any, promptHistory: any[], finalResult: any) => {
     // Use the sessionId from studentInfo if our sessionId is empty or invalid
     const effectiveSessionId = sessionId || studentInfo?.sessionId || crypto.randomUUID();
-    
+
+    // Record the age-based track with the result, and — if the student scored
+    // above their track's ceiling (e.g. a teen above A2) — flag the track a
+    // human assessor should consider moving them to. The system never moves a
+    // student automatically; this is only a suggestion surfaced for review.
+    const track: Track | undefined = studentInfo?.track;
+    const cefr: string | undefined = finalResult?.cefrLevel;
+    let enrichedStudentInfo = studentInfo;
+    if (track) {
+      const suggested = suggestedTrackForResult(track, cefr);
+      enrichedStudentInfo = {
+        ...studentInfo,
+        track,
+        suggestedTrack: suggested ?? undefined,
+        placementNote: suggested
+          ? `Scored ${cefr} on the ${trackLabel(track)} test, above its ${TRACKS[track].ceilingCefr} ceiling. A human assessor should consider placing this student in the ${trackLabel(suggested)} track.`
+          : undefined,
+      };
+    }
+
+
     console.log('💾 [useSessionManagement] Storing assessment data', {
       sessionId,
       effectiveSessionId,
@@ -64,7 +85,7 @@ export const useSessionManagement = () => {
     // Store via Edge Function
     const response = await sessionService.storeAssessmentData({
       sessionId: effectiveSessionId,
-      studentInfo,
+      studentInfo: enrichedStudentInfo,
       promptHistory,
       finalResult,
       emailResults
@@ -78,7 +99,7 @@ export const useSessionManagement = () => {
       success = await storeFinalAssessment(
         effectiveSessionId,
         finalResult,
-        studentInfo,
+        enrichedStudentInfo,
         promptHistory
       );
     }
@@ -92,11 +113,12 @@ export const useSessionManagement = () => {
     // Return exportable data for UI usage
     return {
       sessionId: effectiveSessionId,
-      studentInfo,
+      studentInfo: enrichedStudentInfo,
       promptHistory,
       finalResult,
       date: new Date().toISOString(),
       testType: 'quick',
+      track: track ?? null,
       stored: success
     };
   };

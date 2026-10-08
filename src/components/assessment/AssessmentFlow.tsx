@@ -7,13 +7,20 @@ import AuthButtons from './auth/AuthButtons';
 import LoginModal from './auth/LoginModal';
 import SignUpSheet from './auth/SignUpSheet';
 import AssessmentStepRenderer from './AssessmentStepRenderer';
+import AgeGateStep from './AgeGateStep';
 import { useAuth } from '@/contexts/auth';
+import { trackForAge, type Track } from '@/data/assessment/tracks';
 
 // Module-level flags to persist across re-renders caused by auth state changes
 let moduleInitializing = false;
 let moduleHasInitialized = false;
 let modulePendingStudentInfo: StudentInfo | null = null;
 let moduleShowAssessmentOptions = true;
+// The age gate runs once per test; persist its outcome across auth-driven
+// re-mounts just like the flags above so the student isn't re-asked.
+let moduleAgeCaptured = false;
+let moduleTrack: Track = 'adults';
+let moduleAge: number | null = null;
 
 interface AssessmentFlowProps {
   onTakeFullAssessment: () => void;
@@ -31,6 +38,12 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     moduleShowAssessmentOptions = showAssessmentOptions;
   }, [showAssessmentOptions]);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
+
+  // Age gate: the student types their age, which picks their test track.
+  const [ageCaptured, setAgeCaptured] = useState(moduleAgeCaptured);
+  useEffect(() => {
+    moduleAgeCaptured = ageCaptured;
+  }, [ageCaptured]);
   
   // Debug mode via URL param
   const showDebug = searchParams.get('debug') === 'true';
@@ -45,6 +58,9 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     studentInfo,
     emailResults,
     sessionId,
+    track,
+    setTrack,
+    initializePromptQueue,
     currentPrompt,
     currentPromptIndex,
     finalResult,
@@ -87,7 +103,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
       setShowSignUpDialog(false);
       setShowAssessmentOptions(false);
       
-      initializeAssessment(pendingInfo.emailResults || false).finally(() => {
+      initializeAssessment(pendingInfo.emailResults || false, moduleTrack).finally(() => {
         moduleInitializing = false;
         moduleHasInitialized = true;
         console.log("✅ Pending initialization complete");
@@ -152,12 +168,36 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         phoneNumber: '',
       });
       setShowAssessmentOptions(false);
-      initializeAssessment(false).finally(() => {
+      initializeAssessment(false, moduleTrack).finally(() => {
         moduleInitializing = false;
         moduleHasInitialized = true;
       });
     } catch { /* ignore */ }
   }, [currentStep, studentInfo, sessionId, handleStudentInfoSubmit, initializeAssessment]);
+
+  // After an auth-driven re-mount, restore the track chosen at the age gate.
+  useEffect(() => {
+    if (moduleAgeCaptured && moduleTrack !== track) {
+      setTrack(moduleTrack);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Student submitted their age → pick the track, load that test, remember it.
+  const handleAgeSubmit = useCallback((age: number) => {
+    const chosen = trackForAge(age);
+    moduleAge = age;
+    moduleTrack = chosen;
+    moduleAgeCaptured = true;
+    setTrack(chosen);
+    // (Re)build the prompt queue for the chosen track so the correct test
+    // loads, even if an earlier entry path already built a default queue.
+    initializePromptQueue(chosen);
+    // Persist age + track alongside the student's info (merged, so a later
+    // profile submission keeps these fields).
+    handleStudentInfoSubmit({ age, track: chosen } as StudentInfo);
+    setAgeCaptured(true);
+  }, [setTrack, initializePromptQueue, handleStudentInfoSubmit]);
 
   const handleSelectQuickAssessment = () => {
     setShowAssessmentOptions(false);
@@ -194,7 +234,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     
     // Initialize assessment to move to welcome step
     console.log("🚀 Starting assessment initialization...");
-    initializeAssessment(info.emailResults || false).then(() => {
+    initializeAssessment(info.emailResults || false, moduleTrack).then(() => {
       console.log("✅ Assessment initialization complete");
       moduleInitializing = false;
       moduleHasInitialized = true;
@@ -226,9 +266,14 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     moduleHasInitialized = false;
     modulePendingStudentInfo = null;
     moduleShowAssessmentOptions = true;
+    moduleAgeCaptured = false;
+    moduleTrack = 'adults';
+    moduleAge = null;
     isFromProfileForm.current = false;
-    
+
     resetAssessment();
+    setTrack('adults');
+    setAgeCaptured(false);
     setShowAssessmentOptions(true);
   };
 
@@ -260,11 +305,15 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         />
       )}
 
-      {/* Main Assessment Content */}
+      {/* Age gate → then the main assessment content */}
+      {(!showAssessmentOptions && !ageCaptured) ? (
+        <AgeGateStep onSubmit={handleAgeSubmit} />
+      ) : (
       <AssessmentStepRenderer
         currentStep={currentStep}
         showAssessmentOptions={showAssessmentOptions}
         studentInfo={studentInfo}
+        track={track}
         currentPrompt={currentPrompt}
         currentPromptIndex={currentPromptIndex}
         totalPrompts={totalPrompts}
@@ -279,7 +328,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         sessionId={sessionId}
         processBatchAndFinish={processBatchAndFinish}
         onSelectQuickAssessment={handleSelectQuickAssessment}
-        initializeAssessment={initializeAssessment}
+        initializeAssessment={(withEmail: boolean) => initializeAssessment(withEmail, moduleTrack)}
         onStudentInfoSubmit={handleStudentInfoSubmit}
         startAssessment={startAssessment}
         handleResponseComplete={handleResponseComplete}
@@ -289,7 +338,8 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         toggleAdminReviewMode={toggleAdminReviewMode}
         onTakeFullAssessment={onTakeFullAssessment}
       />
-      
+      )}
+
       {/* Admin Controls */}
       {showAdminControls && (
         <AdminControls 

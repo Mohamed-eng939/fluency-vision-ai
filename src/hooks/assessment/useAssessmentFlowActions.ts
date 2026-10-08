@@ -1,9 +1,10 @@
 
 import { AssessmentStep } from './types/assessmentTypes';
+import type { Track } from '@/data/assessment/tracks';
 
 interface AssessmentFlowActionsProps {
   initializeSession: (withEmail: boolean) => Promise<string>;
-  initializePromptQueue: () => void;
+  initializePromptQueue: (track?: Track) => void;
   resetScoring: () => void;
   resetStoredResponses: () => void;
   promptQueue: any[];
@@ -12,6 +13,8 @@ interface AssessmentFlowActionsProps {
   handleReset: () => void;
   resetSession: () => void;
   setPromptHistory: (history: any[]) => void;
+  track: Track;
+  setTrack: (track: Track) => void;
 }
 
 export const useAssessmentFlowActions = ({
@@ -24,26 +27,32 @@ export const useAssessmentFlowActions = ({
   setCurrentStep,
   handleReset,
   resetSession,
-  setPromptHistory
+  setPromptHistory,
+  track,
+  setTrack
 }: AssessmentFlowActionsProps) => {
-  
+
   // Initialize the assessment
-  const initializeAssessmentFlow = async (withEmail: boolean = false) => {
-    console.log("🚀 INIT: Starting assessment initialization with email:", withEmail);
-    
+  const initializeAssessmentFlow = async (withEmail: boolean = false, trackArg?: Track) => {
+    const effectiveTrack = trackArg ?? track;
+    console.log("🚀 INIT: Starting assessment initialization with email:", withEmail, "track:", effectiveTrack);
+
+    // Keep the track state in sync with the track we're actually loading.
+    setTrack(effectiveTrack);
+
     // CRITICAL: Set step to WELCOME FIRST, synchronously, before any async operations
     // This ensures the step changes even if auth triggers re-renders
     console.log("🎯 INIT: setCurrentStep(WELCOME) - SYNCHRONOUS");
     setCurrentStep(AssessmentStep.WELCOME);
-    
+
     // Now do async operations - they won't affect the step
     try {
       const sessionId = await initializeSession(withEmail);
       console.log("✅ INIT: Session initialized with ID:", sessionId);
-      
-      initializePromptQueue();
+
+      initializePromptQueue(effectiveTrack);
       console.log("✅ INIT: Prompt queue initialized");
-      
+
       resetScoring();
       resetStoredResponses();
       console.log("✅ INIT: All initializations complete");

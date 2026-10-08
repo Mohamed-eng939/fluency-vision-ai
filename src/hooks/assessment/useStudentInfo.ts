@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Track } from '@/types/assessment';
 
 export interface StudentInfo {
   name: string;
@@ -25,21 +26,37 @@ export interface StudentInfo {
   pronunciationPreference?: "british" | "american" | "neutral";
   promoCode?: string;
   dataConsent?: boolean;
+  // Age-based placement (captured at the age gate before the test starts).
+  age?: number;
+  track?: Track;
+  // Set at finalisation when a student scores above their track's ceiling
+  // (e.g. a teen scoring above A2): the track a human assessor should consider.
+  suggestedTrack?: Track;
+  placementNote?: string;
 }
 
 export const useStudentInfo = () => {
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
 
   const handleStudentInfoSubmit = useCallback((info: StudentInfo) => {
-    // Generate username if not provided
-    if (!info.username && info.name && (info.phone || info.phoneNumber)) {
-      const firstName = info.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
-      const phone = info.phone || info.phoneNumber || '';
-      const lastFourDigits = phone.slice(-4).replace(/[^0-9]/g, '');
-      info.username = `${firstName}${lastFourDigits}`;
-    }
+    // Merge with any previously captured info so fields set earlier (e.g. the
+    // age/track chosen at the age gate, before the profile form) are preserved
+    // when a later step submits a fresh StudentInfo object.
+    setStudentInfo((prev) => {
+      const merged: StudentInfo = { ...(prev || {}), ...info };
 
-    setStudentInfo(info);
+      // Generate username if not provided
+      if (!merged.username && merged.name && (merged.phone || merged.phoneNumber)) {
+        const firstName = merged.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+        const phone = merged.phone || merged.phoneNumber || '';
+        const lastFourDigits = phone.slice(-4).replace(/[^0-9]/g, '');
+        merged.username = `${firstName}${lastFourDigits}`;
+      }
+
+      // Mutate the caller's object too so the returned value reflects the merge.
+      Object.assign(info, merged);
+      return merged;
+    });
     
     // Only update profile if user is authenticated
     const updateProfileIfAuthenticated = async () => {
