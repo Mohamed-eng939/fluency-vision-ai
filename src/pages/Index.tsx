@@ -62,11 +62,11 @@ const Index = () => {
             </div>
           </div>
           <div className="rounded-lg bg-gradient-to-br from-assessment-blue to-assessment-teal p-1 shadow-lg">
-            <div className="bg-white rounded-lg h-full flex items-center justify-center overflow-hidden">
-              <img 
-                src="/lovable-uploads/e6d117b5-e769-46fe-a446-8e52cac843d6.png" 
-                alt="Professional taking a language assessment"
-                className="w-full h-auto rounded-lg object-cover hover:scale-105 transition-transform duration-300"
+            <div className="bg-white rounded-lg h-full min-h-[280px] flex items-center justify-center overflow-hidden p-10">
+              <img
+                src="/upedia-logo-full.png"
+                alt="Upedia"
+                className="w-2/3 max-w-xs h-auto object-contain"
               />
             </div>
           </div>
