@@ -6,6 +6,7 @@ import { AssessmentResult } from '@/types/assessment';
 import ProcessingResults from './ProcessingResults';
 import { useSessionManagement } from '@/hooks/assessment/useSessionManagement';
 import { supabase } from '@/integrations/supabase/client';
+import { trackLabel, type Track } from '@/data/assessment/tracks';
 
 interface ResultsStepProps {
   result: AssessmentResult | null;
@@ -14,6 +15,7 @@ interface ResultsStepProps {
   showRawScoring: boolean;
   isProcessing: boolean;
   processingProgress?: { current: number; total: number };
+  track?: Track;
   onReset: () => void;
   onTakeFullAssessment: () => void;
 }
@@ -31,6 +33,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
   showRawScoring,
   isProcessing,
   processingProgress = { current: 0, total: 0 },
+  track,
   onReset,
 }) => {
   const { storeAssessmentData } = useSessionManagement();
@@ -44,6 +47,7 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
         name: result.learnerName || 'Anonymous User',
         sessionId: result.sessionId,
         email: '',
+        ...(track ? { track } : {}),
       };
       storeAssessmentData(studentInfo, promptHistory, result).catch((error) => {
         console.log('❌ ResultsStep: Fallback storage failed:', error);
@@ -91,6 +95,11 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
 
         <CardContent className="text-center pb-6 space-y-3">
           <p className="text-gray-700">Your assessment has been submitted successfully.</p>
+          {track && (
+            <p className="text-sm text-muted-foreground">
+              You completed the <span className="font-semibold">{trackLabel(track)}</span> English placement test.
+            </p>
+          )}
           <p className="text-gray-600">
             Our team will review your responses and share your results with you{' '}
             <span className="font-semibold">within 24 hours</span>.
