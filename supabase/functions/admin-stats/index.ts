@@ -19,12 +19,17 @@ const json = (body: unknown, status = 200) =>
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const jwt = authHeader.replace("Bearer ", "");
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: req.headers.get("Authorization")! } } },
+      { global: { headers: { Authorization: authHeader } } },
     );
-    const { data: { user } } = await userClient.auth.getUser();
+    // Validate the caller by passing the JWT explicitly. getUser() with no
+    // argument does NOT read the global Authorization header server-side, so it
+    // always returned null here -> a spurious 401 on every admin call.
+    const { data: { user } } = await userClient.auth.getUser(jwt);
     if (!user) return json({ error: "Unauthorized" }, 401);
     const { data: profile } = await userClient.from("profiles").select("role, organization_id").eq("id", user.id).single();
     if (profile?.role !== "admin") return json({ error: "Admin role required" }, 403);
