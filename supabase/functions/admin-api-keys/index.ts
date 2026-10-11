@@ -31,12 +31,16 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
   try {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const jwt = authHeader.replace("Bearer ", "");
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: req.headers.get("Authorization")! } } },
+      { global: { headers: { Authorization: authHeader } } },
     );
-    const { data: { user } } = await userClient.auth.getUser();
+    // Validate the caller by passing the JWT explicitly (getUser() with no
+    // argument ignores the global Authorization header server-side).
+    const { data: { user } } = await userClient.auth.getUser(jwt);
     if (!user) return json({ error: "Unauthorized" }, 401);
     const { data: profile } = await userClient.from("profiles").select("role, organization_id").eq("id", user.id).single();
     if (profile?.role !== "admin") return json({ error: "Admin role required" }, 403);
