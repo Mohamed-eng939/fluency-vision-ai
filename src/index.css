@@ -121,3 +121,20 @@
 .cefr-b2 { @apply bg-green-500; }
 .cefr-c1 { @apply bg-blue-500; }
 .cefr-c2 { @apply bg-purple-500; }
+
+/* Print: when a performance report is on the page, "Download / Print" renders
+   only the report (everything else is hidden). Used by the student result view
+   and the sales-agent report view. The .report-print-root wrapper is placed at
+   the document flow top so the printout starts cleanly. */
+@media print {
+  body * { visibility: hidden; }
+  .performance-report, .performance-report * { visibility: visible; }
+  .performance-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+  }
+  .no-print { display: none !important; }
+}

@@ -1,6 +1,10 @@
 
-// User role types
-export type UserRole = 'admin' | 'assessor' | 'learner';
+// User role types. These map to the DB `user_role` enum. Student-facing labels
+// (Global Admin / Tester / Student / Sales Agent) are presentation only — the
+// stored role names stay stable so existing RLS and logic keep working:
+//   admin = Global Admin (owner; organization_id NULL) · assessor = Tester
+//   learner = Student · agent = Sales Agent
+export type UserRole = 'admin' | 'assessor' | 'learner' | 'agent';
 
 // User profile types
 export interface UserProfile {

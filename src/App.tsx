@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import ReportPage from "./pages/ReportPage";
 import AssessmentResults from "./pages/AssessmentResults";
+import MyResults from "./pages/MyResults";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
 import InviteEntry from "./pages/InviteEntry";
@@ -42,6 +43,11 @@ const AppContent: React.FC = () => {
         } />
         <Route path="/reports/:reportId" element={<ReportPage />} />
         <Route path="/results" element={<AssessmentResults />} />
+        <Route path="/my-results" element={
+          <ProtectedRoute allowedRoles={['learner', 'admin', 'assessor', 'agent']}>
+            <MyResults />
+          </ProtectedRoute>
+        } />
         
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />

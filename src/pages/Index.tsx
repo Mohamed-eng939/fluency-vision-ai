@@ -2,9 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/Logo';
-import { UserPlus, LogIn } from 'lucide-react';
+import { UserPlus, LogIn, FileText, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/contexts/auth';
 
 const Index = () => {
+  const { user } = useAuth();
+  const dashboardPath =
+    user?.role === 'admin' ? '/admin' : user?.role === 'assessor' ? '/assessor' : null;
   return (
     <div className="container mx-auto py-12 px-4">
       <header className="flex justify-between items-center mb-16">
@@ -12,16 +16,35 @@ const Index = () => {
           <Logo size="lg" variant="full" />
         </div>
         <div className="flex gap-2">
-          <Link to="/login">
-            <Button variant="outline" className="flex items-center gap-1">
-              <LogIn className="h-4 w-4" /> Log In
-            </Button>
-          </Link>
-          <Link to="/login?tab=register">
-            <Button variant="outline" className="flex items-center gap-1">
-              <UserPlus className="h-4 w-4" /> Sign Up
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              {dashboardPath && (
+                <Link to={dashboardPath}>
+                  <Button variant="outline" className="flex items-center gap-1">
+                    <LayoutDashboard className="h-4 w-4" /> Dashboard
+                  </Button>
+                </Link>
+              )}
+              <Link to="/my-results">
+                <Button variant="outline" className="flex items-center gap-1">
+                  <FileText className="h-4 w-4" /> My Results
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="outline" className="flex items-center gap-1">
+                  <LogIn className="h-4 w-4" /> Log In
+                </Button>
+              </Link>
+              <Link to="/login?tab=register">
+                <Button variant="outline" className="flex items-center gap-1">
+                  <UserPlus className="h-4 w-4" /> Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
