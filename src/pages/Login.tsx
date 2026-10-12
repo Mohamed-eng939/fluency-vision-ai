@@ -25,7 +25,7 @@ const Login: React.FC = () => {
   // show who they are, with a clear way to continue or sign out and switch.
   if (user) {
     const dashboard =
-      user.role === 'admin' ? '/admin' : user.role === 'assessor' ? '/assessor' : '/';
+      user.role === 'admin' ? '/admin' : user.role === 'assessor' ? '/assessor' : user.role === 'agent' ? '/agent' : '/my-results';
     const from = location.state?.from?.pathname || dashboard;
     const handleSwitchAccount = async () => {
       setSigningOut(true);

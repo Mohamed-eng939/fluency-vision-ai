@@ -83,8 +83,10 @@ const LoginForm: React.FC = () => {
             navigate('/admin');
           } else if (profile?.role === 'assessor') {
             navigate('/assessor');
+          } else if (profile?.role === 'agent') {
+            navigate('/agent');
           } else {
-            navigate('/');
+            navigate('/my-results');
           }
         } else {
           navigate('/');

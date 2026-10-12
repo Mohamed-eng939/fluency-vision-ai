@@ -17,7 +17,10 @@ import AssessmentResults from "./pages/AssessmentResults";
 import MyResults from "./pages/MyResults";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
+import AgentPanel from "./pages/agent/AgentPanel";
 import InviteEntry from "./pages/InviteEntry";
+import LeadStart from "./pages/LeadStart";
+import LeadClaimOnAuth from "./components/LeadClaimOnAuth";
 
 const queryClient = new QueryClient();
 
@@ -26,11 +29,13 @@ const AppContent: React.FC = () => {
     <>
       <Toaster />
       <Sonner />
+      <LeadClaimOnAuth />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/t/:token" element={<InviteEntry />} />
+        <Route path="/start/:token" element={<LeadStart />} />
         <Route path="/admin/*" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminPanel />
@@ -39,6 +44,11 @@ const AppContent: React.FC = () => {
         <Route path="/assessor/*" element={
           <ProtectedRoute allowedRoles={['assessor', 'admin']}>
             <AssessorPanel />
+          </ProtectedRoute>
+        } />
+        <Route path="/agent/*" element={
+          <ProtectedRoute allowedRoles={['agent', 'admin']}>
+            <AgentPanel />
           </ProtectedRoute>
         } />
         <Route path="/reports/:reportId" element={<ReportPage />} />
