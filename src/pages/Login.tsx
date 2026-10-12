@@ -8,6 +8,7 @@ import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/contexts/auth';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useBrandingContext } from '@/contexts/branding/BrandingContext';
+import { roleLabel } from '@/data/roles';
 
 const Login: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -24,7 +25,7 @@ const Login: React.FC = () => {
   // show who they are, with a clear way to continue or sign out and switch.
   if (user) {
     const dashboard =
-      user.role === 'admin' ? '/admin' : user.role === 'assessor' ? '/assessor' : '/';
+      user.role === 'admin' ? '/admin' : user.role === 'assessor' ? '/assessor' : user.role === 'agent' ? '/agent' : '/my-results';
     const from = location.state?.from?.pathname || dashboard;
     const handleSwitchAccount = async () => {
       setSigningOut(true);
@@ -46,7 +47,7 @@ const Login: React.FC = () => {
             <CardContent className="space-y-4 text-center">
               <p className="text-sm text-muted-foreground">
                 Signed in as <span className="font-medium text-foreground">{user.email}</span>
-                {user.role ? <> — role: <span className="capitalize">{user.role}</span></> : null}
+                {user.role ? <> — role: <span>{roleLabel(user.role)}</span></> : null}
               </p>
               <div className="flex flex-col gap-2">
                 <Button onClick={() => navigate(from, { replace: true })}>

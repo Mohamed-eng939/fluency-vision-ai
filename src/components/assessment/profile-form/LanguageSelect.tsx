@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from './types';
+import { useLanguage } from '@/contexts/language/LanguageContext';
 
 interface LanguageSelectProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -26,17 +27,18 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
   form,
   languages
 }) => {
+  const { t } = useLanguage();
   return (
     <FormField
       control={form.control}
       name="firstLanguage"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>First Language <span className="text-red-500">*</span></FormLabel>
+          <FormLabel>{t('First Language', 'اللغة الأم')} <span className="text-red-500">*</span></FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select language" />
+                <SelectValue placeholder={t('Select language', 'اختر اللغة')} />
               </SelectTrigger>
             </FormControl>
             <SelectContent className="max-h-[200px]">

@@ -4,10 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, Clock, FileText, AudioLines, ChevronDown, ChevronUp, User, BookOpen, AlertCircle, TrendingUp, Languages, Mic } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, FileText, AudioLines, ChevronDown, ChevronUp, User, BookOpen, AlertCircle, TrendingUp, Languages, Mic, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
+import PerformanceReport from '@/components/reports/PerformanceReport';
+import type { PerformanceReportPayload } from '@/data/report';
 
 const getCEFRColor = (level: string) => {
   const colors: Record<string, string> = {
@@ -183,6 +185,22 @@ const AssessmentResults: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Performance report (once the tester has reviewed). This is the
+            student's copy of the Upedia report — printable / saveable as PDF. */}
+        {isReviewed && review?.report && (
+          <Card className="mb-6">
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
+              <CardTitle>Your Performance Report</CardTitle>
+              <Button variant="outline" size="sm" className="no-print" onClick={() => window.print()}>
+                <Download className="h-4 w-4 mr-2" /> Download
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <PerformanceReport report={review.report as PerformanceReportPayload} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Overall CEFR - Only 3 criteria */}
         <Card className="mb-6">

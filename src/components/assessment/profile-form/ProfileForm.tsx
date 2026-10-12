@@ -13,6 +13,7 @@ import { countries, languages, cefrLevels, testReasons } from './constants';
 import { StudentInfo } from '@/hooks/assessment';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/language/LanguageContext';
 
 interface ProfileFormProps {
   onSubmit: (data: StudentInfo) => void;
@@ -21,6 +22,7 @@ interface ProfileFormProps {
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const { toast } = useToast();
+  const { t, dir } = useLanguage();
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -333,9 +335,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   };
 
   const getButtonText = () => {
-    if (loading) return 'Saving...';
-    if (errorMsg) return `Error: ${errorMsg}`;
-    return 'Create Profile & Start Assessment';
+    if (loading) return t('Saving…', 'جارٍ الحفظ…');
+    if (errorMsg) return `${t('Error', 'خطأ')}: ${errorMsg}`;
+    return t('Create Profile & Start Assessment', 'أنشئ الملف وابدأ التقييم');
   };
 
   const getButtonStyle = () => {
@@ -345,7 +347,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8" dir={dir}>
         <PersonalInfoSection form={form} countries={countries} languages={languages} />
         <AccountSection form={form} />
         <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />

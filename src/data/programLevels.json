@@ -1,0 +1,2088 @@
+[
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "1",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand simple conversations about everyday topics. When someone describes a person or their characteristics slowly and clearly, you can understand them too.",
+   "reading": "You can understand short, simple texts with familiar words. Sometimes, you might need to guess a few words to understand the meaning of the passage. Longer sentences or new words can be a bit tricky, but you're getting better at reading!",
+   "speaking": "You can introduce yourself and others. You’re comfortable with greetings, short phrases, and simple descriptions of daily routines. You need to focus more on exploring different topics and practice speaking more.",
+   "vocabulary": "You know a small collection of common words for everyday situations. This includes numbers up to 100, greetings, basic personal information, common objects, and some verbs and adjectives. Learning new words, especially if they’re not familiar, can be a bit challenging."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "In this level, you’ll learn how to talk about yourself and everyday situations. The topics we’ll cover include:",
+   "Meeting new people",
+   "Family & Friends",
+   "Free time Activities",
+   "Happy days",
+   "Home and furniture",
+   "How I Feel Today",
+   "Food & Drinks"
+  ],
+  "order_index": 0
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "2",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand videos and conversations about things you know, like family, weather, or what you do each day. You can answer questions and follow simple instructions too! We'll keep practicing so you understand even more.",
+   "reading": "You have good basic vocabulary. You can even guess new words by looking at pictures and listening to what comes before and after. Long sentences with many parts might be tricky sometimes, but that's okay! We'll practice understanding them together.",
+   "speaking": "You can describe things in English, like your family, home, and daily routine! You can use short sentences to tell people a little about these things. Talking about the past and future can be tricky yet, but we'll learn those steps together.",
+   "vocabulary": "You're good at using everyday vocabulary. You can understand and speak using these words, but new subjects might be a little tricky yet.  For now, the focus is on vocabulary of things around you and related to topics you are familiar with."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "This level focuses on helping you talk comfortably about everyday life and activities. We’ll cover topics like:",
+   "Daily routine",
+   "Likes and dislikes",
+   "Weather & seasons",
+   "Clothes",
+   "Shopping",
+   "Places I go",
+   "Appearances"
+  ],
+  "order_index": 1
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "3",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand videos and conversations about things you are familiar with like everyday topics. You can answer questions and follow simple instructions too! We'll keep practicing so you understand even more.",
+   "reading": "You have good basic vocabulary. You can even guess new words by looking at pictures and listening to what comes before and after. Long sentences with many parts might be tricky sometimes, but that's okay! We'll practice understanding them together.",
+   "speaking": "You can describe things in English, like your family, home, and daily routine! You can use short sentences to tell people a little about these things. You have covered most of the topics for this band.",
+   "vocabulary": "You're good at using everyday vocabulary. You can understand and speak using these words, but unfamiliar topics might be a little tricky yet.  For now, the focus is on vocabulary of things around you and related to topics you are familiar with."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "In this level, you’ll learn how to talk about different life experiences and situations using the correct grammar. The topics include:",
+   "A journey in the kitchen",
+   "Health & Illness",
+   "Present simple Vs P.c",
+   "City vs. Countryside",
+   "Personalities",
+   "Entertainment",
+   "Education & Dream Job"
+  ],
+  "order_index": 2
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "4",
+  "cefr_band": "A1+",
+  "skills": {
+   "listening": "You can follow basic conversations about familiar topics like greetings, introductions, daily routines, shopping, and making plans. You can identify the main points and important details in short listening passages.",
+   "reading": "You can read and understand short texts about everyday topics. When you come across new words, you can often guess their meaning from the context.",
+   "speaking": "You can participate in basic conversations about familiar topics like greetings, daily routines, hobbies, family, and work, but you still need to work on your fluency and accuracy.",
+   "vocabulary": "You're building on your existing vocabulary by expanding the range of high-frequency words used in everyday situations. This includes words related to topics you are familiar with and words you use on a daily basis."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "This level focuses on helping you describe places, and moments from your life using the right vocabulary and grammar. The topics include:",
+   "Helping people",
+   "Sports and Fitness",
+   "Arts",
+   "Planning a trip",
+   "Digital Detox",
+   "Work- Life- Balance",
+   "Bad Days"
+  ],
+  "order_index": 3
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "5",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can understand phrases and the highest frequency vocabulary related to areas of most immediate personal relevance (e.g., very basic personal and family information, shopping, local area, employment). You can catch the main point in short, clear, simple messages and announcements.",
+   "reading": "You are able to read very short, simple texts. You can find specific, predictable information in simple everyday material such as advertisements, prospectuses, menus, and timetables, and you can understand short simple personal letters.",
+   "speaking": "You can communicate in simple and routine tasks requiring a simple and direct exchange of information on familiar topics and activities. You can handle very short social exchanges, even though you can't usually understand enough to keep the conversation going yourself.",
+   "vocabulary": "You have a strong foundation in basic vocabulary related to different topics like those related to jobs, common questions, daily activities, and possessive forms."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "In this level, you’ll learn how to talk about everyday habits and behaviors, both the good and the bad! The topics include:",
+   "Take Care Of Your Health  /",
+   "Doctor's appointment /",
+   "The Right Person /",
+   "Past simple to talk about past experiences /",
+   "We're hiring  /",
+   "Past Simple Vs Past continuous /",
+   "Your Role model"
+  ],
+  "order_index": 4
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "6",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You understand common phrases related to topics you are already familiar with. You can grasp the main point in short, clear, and simple messages and announcements.",
+   "reading": "You can read very short, simple texts and find specific, predictable information in everyday materials like ads, menus, timetables, and simple personal letters.",
+   "speaking": "You can handle simple, routine tasks that involve a direct exchange of information on familiar topics.You can engage in conversations about yourself and your routine. While you can engage in short social exchanges, it’s still challenging to keep the conversation going by yourself.",
+   "vocabulary": "You have a good grasp of basic vocabulary and are ready to expand your knowledge to include more descriptive and everyday terms, especially those related to jobs, common questions, and daily activities."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "In this level, you’ll practice talking about important life topics and improve how you express yourself clearly and confidently. The topics include:",
+   "Childhood memories /",
+   "Gadgets and appliances /",
+   "Celebrations & Holidays /",
+   "Directions and places  /",
+   "Your best friend /",
+   "Facial Expressions"
+  ],
+  "order_index": 5
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "7",
+  "cefr_band": "A2+",
+  "skills": {
+   "listening": "You can understand everyday conversations at work, school, or with friends. This includes simple questions, instructions, and short talks about familiar topics. You can also understand simple stories with simple structure.",
+   "reading": "You can easily read texts that interest you, like those about hobbies or sports. You’re also able to comprehend simple stories with simple events. We need to learn about more structures.",
+   "speaking": "You can talk about everyday topics, whether it is in the past or the present. You’re able to express your likes, dislikes, and opinions in simple sentences. However, you still need to work on using more complex structures and explore more topics.",
+   "vocabulary": "You have a solid understanding of everyday vocabulary. You have a solid understanding of basic word formation and some past time expressions. You’ll learn about vocabulary about the topics covered in this level."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "This level focuses on helping you talk about everyday life, special occasions, and how we connect with others. The topics include:",
+   "Favorite Tv Program  /",
+   "Describing Movies and Tv Shows /",
+   "Social Life  /",
+   "Bad & Good Manners  /",
+   "Challenges  /",
+   "Talking about habits and discussing pros and cons /"
+  ],
+  "order_index": 6
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "8",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You can follow the main points of many radio or TV programs on current affairs or topics of personal or professional interest when the delivery is relatively slow and clear.",
+   "reading": "You are able to read texts that consist mainly of high-frequency everyday or job-related language. You can understand the description of events, feelings, and wishes in personal letters and other straightforward texts.",
+   "speaking": "You can understand and be understood in most travel situations, like asking for directions or ordering food. You can also talk about your experiences, goals, and what you think about things, even if you need to keep it simple sometimes.",
+   "vocabulary": "You have a good grasp of everyday vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to work, household activities, shopping, and many more."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "This level focuses on helping you talk about daily life, work, emotions, and social occasions while practicing key grammar points and presentation skills. The topics include:",
+   "Daily Routine and Leisure Time /",
+   "Special Occasions and Celebrations /",
+   "Talking about Work and Job Responsibilities /",
+   "Presentation Skills & Grammar Practice /",
+   "Household Chores and Responsibilities /",
+   "Feelings and Emotions /",
+   "Shopping and Consumer Habits"
+  ],
+  "order_index": 7
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "9",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You can grasp the main ideas of clear speech on a wider range of familiar topics encountered in work, school, leisure, and current events. You can follow the general flow of conversations and instructions even if delivered at a faster pace or with some unfamiliar vocabulary. You need to work on understanding conversations with multiple speakers and identifying specific details.",
+   "reading": "You can understand texts with a relatively high level of detail on familiar everyday or even job-related topics. This includes news articles, social media posts, product descriptions, and short stories. We need to get used to reading different structures like passive sentences.",
+   "speaking": "You can express yourself with greater fluency and confidence on familiar topics. Your speech still has some hesitations, but the overall flow is good. You need to practice talking about hypothetical situations, as well as using the passive.",
+   "vocabulary": "You can actively use a wider range of descriptive vocabulary to talk about people, places, and activities. This includes synonyms, antonyms, adjectives, and adverbs."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "This level helps you express your ideas about life, relationships, and everyday situations confidently. The topics include:",
+   "Talking about education /",
+   "Discussing money and finances /",
+   "Talking about marriage and divorce /",
+   "Presentation practice & grammar improvement /",
+   "Talking about problems and giving advice /",
+   "Describing personality /",
+   "Talking about cars, roads, and getting around"
+  ],
+  "order_index": 8
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "10",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You can grasp the gist and key details of conversations and lectures on a wide range of topics, even with some unfamiliar vocabulary. You can get the main idea of some unfamiliar topics. You need to focus on listening to longer recordings and conversations with different accents.",
+   "reading": "You can understand the main points and some supporting details in factual and literary texts, even those with a more complex structure. You need to develop the ability to follow the development of arguments in a variety of texts.",
+   "speaking": "You can have smooth conversations with fewer hesitations. You can express yourself clearly and confidently on a wider range of familiar topics. You need to get out of your comfort zone by discussing more topics.",
+   "vocabulary": "You have got a great handle on everyday English words! We need to move to exploring more thematic vocabulary about different topics to help with our fluency."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "This level will help you talk confidently about life, work, and the world around you. The topics include:",
+   "Movies and cinema /",
+   "Traveling and exploring new places /",
+   "Health and how to stay well /",
+   "Presentation practice and grammar focus /",
+   "Mass media and how we get information /",
+   "Careers and work life /",
+   "Charity and helping others"
+  ],
+  "order_index": 9
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "11",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can grasp the main ideas of conversations and lectures on familiar topics, even when delivered at a fast pace, or when the speaker has a slight accent. You can understand the overall message, even if the speaker implies things rather than saying them directly.",
+   "reading": "You can handle complex texts on unfamiliar topics, understanding the main ideas even if some details are unclear. You are able to read short stories as well as some simple novels.",
+   "speaking": "You can engage in conversations that go beyond familiar topics. Even though you can link your ideas, we still need to work on providing smoother transitions while speaking. Working on transitions will allow you to tell better stories and present better arguments.",
+   "vocabulary": "You have a solid foundation of everyday vocabulary and are prepared to enhance your language skills by learning more specific and varied like using vocabulary related to careers,"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "In this level, you’ll practice speaking about life experiences, feelings, and modern challenges while improving your grammar and presentation skills. The topics include:",
+   "Talking about pet peeves /",
+   "Life stages: childhood, adulthood, and everything in between /",
+   "Relationships and connections /",
+   "Presenting ideas clearly & grammar practice /",
+   "Talking about technology /",
+   "Personal development and self-growth /",
+   "Discussing fears and phobias"
+  ],
+  "order_index": 10
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "12",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can catch the main points in conversations and lectures on familiar topics, even if they're delivered quickly or with a slight accent. You’re able to grasp the overall message, even when the speaker hints at things instead of stating them outright.",
+   "reading": "You can manage complex texts on unfamiliar topics, understanding the main ideas even if some details remain unclear. You're also able to read short stories and some simpler novels with ease.",
+   "speaking": "You can participate in conversations that extend beyond familiar subjects. While you’re good at connecting your ideas, we need to work on making your transitions smoother. Improving these transitions will help you tell stories more effectively and present your arguments more clearly.",
+   "vocabulary": "You have a solid understanding of a wide range of vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to houses and work."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "In this level, you’ll learn how to express your ideas about real-world issues and improve your communication and presentation skills. The topics include:",
+   "Talking about crimes and safety /",
+   "Gender roles and equality in society /",
+   "Environmental problems and solutions /",
+   "Presentation practice and grammar focus /",
+   "Business and work-related topics /",
+   "Poverty and financial challenges /",
+   "Social issues around the world"
+  ],
+  "order_index": 11
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "13",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can confidently catch the main ideas in fast-paced conversations and lectures on familiar topics, even with slight accents, and understand implied meanings, though subtle details may occasionally slip through.",
+   "reading": "You handle complex texts on unfamiliar topics, grasping the main points even if some specifics are unclear, and enjoy reading short stories and graded novels with ease.",
+   "speaking": "You engage in discussions beyond everyday topics, linking ideas effectively, but could improve transitions to make your storytelling and arguments smoother and more compelling.",
+   "vocabulary": "You command a broad vocabulary and are ready to learn specialized terms related to addiction and violence."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "This level focuses on helping you express your ideas about complex topics and current issues while sharpening your grammar and presentation skills. The topics include:",
+   "Imagining utopias and dystopias /",
+   "Talking about addiction and its effects /",
+   "Discussing violence in the world /",
+   "Presentation practice & grammar focus /",
+   "Talking about war, peace, and conflict /",
+   "Superstitions from different cultures /",
+   "Conspiracy theories and how people think"
+  ],
+  "order_index": 12
+ },
+ {
+  "program": "Conversation",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "14",
+  "cefr_band": "C1",
+  "skills": {
+   "listening": "You can confidently follow the main ideas in fast-paced conversations, lectures, and discussions on familiar and some unfamiliar topics, including implied meanings, though occasional subtle details may be missed.",
+   "reading": "You can handle complex texts, including articles and narratives on a range of topics, understanding both the main ideas and most supporting details, even when some specific vocabulary is new.",
+   "speaking": "You engage in extended discussions, presenting clear, detailed ideas and linking points effectively. With slight improvement in transitions and structure, your storytelling and arguments can become even more compelling.",
+   "vocabulary": "You have a broad and flexible vocabulary and are ready to expand it further with specialized terms related to topics like cultural identity, globalization, moral dilemmas and freedom of speech."
+  },
+  "items_label": "Scope of Topics",
+  "items": [
+   "In this level, you’ll practice expressing your ideas on some fascinating and serious topics while improving your grammar and presentation skills. The topics include:",
+   "Imagining utopias and dystopias /",
+   "Talking about addiction and its effects /",
+   "Discussing violence in today’s world /",
+   "Giving presentations and practicing grammar /",
+   "Talking about war, peace, and conflict /",
+   "Exploring superstitions and cultural beliefs /",
+   "Discussing conspiracy theories and how people think"
+  ],
+  "order_index": 13
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "1A",
+  "cefr_band": "A2+",
+  "skills": {
+   "listening": "You can understand the main points of clear standard speech on familiar subjects in work, school, and leisure activities, especially when the delivery is relatively slow and clear.",
+   "reading": "You are able to read texts that consist mainly of high-frequency everyday or job-related language. You can understand the description of events, feelings, and wishes in personal letters and other straightforward texts.",
+   "speaking": "You can understand and be understood in most travel situations, like asking for directions or ordering food. You can produce short, clear messages about things you know well.",
+   "vocabulary": "You have a good grasp of everyday vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to household activities, shopping, and many more.",
+   "grammar": "You understand and can use the basic and some intermediate grammatical structures. We will work on perfecting the basic structures (present simple, present continuous, past simple and past continuous) and differentiating between them."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Differentiating between the present simple and present continuous.",
+   "Differentiating between the past simple and past continuous.",
+   "Learning how to describe people’s appearance and personalities.",
+   "Using time sequencers and linking words."
+  ],
+  "order_index": 10
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "2A",
+  "cefr_band": "A2+",
+  "skills": {
+   "listening": "You can follow the main points of many radio or TV programs on current affairs or topics of personal or professional interest when the delivery is relatively slow and clear.",
+   "reading": "You are able to read texts that consist mainly of high-frequency everyday or job-related language. You can understand the description of events, feelings, and wishes in personal letters and other straightforward texts.",
+   "speaking": "You can understand and be understood in most travel situations, like asking for directions or ordering food. You can also talk about your experiences, goals, and what you think about things, even if you need to keep it simple sometimes. /",
+   "vocabulary": "You have a good grasp of everyday vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to household activities, shopping, and many more.",
+   "grammar": "You understand and can use the basic and some intermediate grammatical structures. We will work on improving your use of future tenses and relative clauses."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using \"going to\" and the present continuous for future plans.",
+   "Understanding and using relative pronouns (who, which, that).",
+   "Expanding vocabulary related to housework and household chores (do the dishes - make the bed).",
+   "Understanding and using shopping-related terms (fitting room - try on - discount)",
+   "Using present perfect (I have done my homework)",
+   "Differentiating between the present perfect and past simple."
+  ],
+  "order_index": 11
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "3A",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You are good at grasping the important parts of conversations in English and  can follow along well when conversations and instructions are clear and easy to understand.",
+   "reading": "You can understand articles, work documents, or social media posts about things you come across often. This includes things people write about what happened to them, how they're feeling, or what they want, as long as the writing is clear and straightforward.",
+   "speaking": "You can talk about things you know well, like your hobbies or a recent movie you saw. You can also tell people about things that happened to you, your dreams for the future, and why you like or dislike something. Even though your explanations might be short sometimes, you can still give reasons for your opinions and plans.",
+   "vocabulary": "You've got a strong grasp of everyday English words! Now it's time to level up your speaking and writing by learning more colorful ways to describe people, places, and the things you do by using different adjectives and adverbs. This will help you paint a clearer picture with your words and make your conversations more interesting.",
+   "grammar": "You have a good understanding of basic and some intermediate grammatical structures and can use them effectively. We will focus on improving your use of future tenses, comparative and superlative adjectives."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Forming and using comparatives and superlatives accurately.",
+   "Using \"will/won't\" for future predictions, decisions and other uses.",
+   "Opposite verbs (remember - forget)",
+   "Verbs + back (go back - call back)"
+  ],
+  "order_index": 12
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "4A",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You are good at grasping the important parts of conversations in English, especially when people are talking about everyday things you're familiar with at work, school, or with friends.",
+   "reading": "You can understand written material about things you often see or hear. This includes articles, work documents, and social media posts. You can understand what people write about their experiences, feelings, or desires, as long as it's written clearly and simply.",
+   "speaking": "You can discuss topics you're familiar with, such as your hobbies or a recent film. You can also share personal experiences, your aspirations for the future, and your preferences. While your explanations may be brief, you can provide reasons for your opinions and plans.",
+   "vocabulary": "You've mastered common English words! To improve your communication skills, we will learn more descriptive words, use different adjectives and adverbs to describe people, places, and actions. This will help you express yourself more vividly and make your conversations more engaging.",
+   "grammar": "You have a good understanding of basic and some intermediate grammatical structures and can use them effectively. We will focus on improving your use of infinitives, gerunds, adverbs and possessive pronouns."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Understanding and using gerunds (going - playing - eating) and infinitives (to go - to play - to eat).",
+   "Using possessive pronouns and adjectives correctly (mine - yours).",
+   "Forming and using the first conditional (If I have time, I’ll meet you).",
+   "Using adverbs of manners (angrily - slowly).",
+   "Learning verbs that come with gerunds in various contexts.",
+   "Differentiating between confusing verbs (meet or know?)."
+  ],
+  "order_index": 13
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "5A",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You can grasp the main ideas of clear speech on a wider range of familiar topics encountered in work, school, leisure, and current events. You can follow the general flow of conversations and instructions even if delivered at a faster pace or with some unfamiliar vocabulary. You need to work on understanding conversations with multiple speakers and identifying specific details.",
+   "reading": "You can understand texts with a relatively high level of detail on familiar everyday or even job-related topics. This includes news articles, social media posts, product descriptions, and short stories. We need to get used to reading different structures like passive sentences. /",
+   "speaking": "You can express yourself with greater fluency and confidence on familiar topics. Your speech still has some hesitations, but the overall flow is good. You need to practice talking about hypothetical situations, as well as using the passive.",
+   "vocabulary": "You can actively use a wider range of descriptive vocabulary to talk about people, places, and activities. This includes synonyms, antonyms, adjectives, and adverbs.",
+   "grammar": "You can use a wide range of grammatical structures with accepted accuracy. This includes past tenses, present perfect, future tenses, and the first conditional. You still need to use more conditionals, other than the first conditional and master the passive voice."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Forming and using second conditionals (If I had time, I’d meet you).",
+   "Understanding and using the passive voice (My phone was stolen).",
+   "Using modal verbs to express possibility and probability (might, may, could).",
+   "Forming and using relative clauses.",
+   "Expanding vocabulary related to animals and their habitats.",
+   "Learning and using terms related to phobias and fears."
+  ],
+  "order_index": 14
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "6A",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You can grasp the gist and key details of conversations and lectures on a wide range of topics, even with some unfamiliar vocabulary. You can get the main idea of some unfamiliar topics. You need to focus on listening to longer recordings and conversations with different accents.",
+   "reading": "You can understand the main points and some supporting details in factual and literary texts, even those with a more complex structure. You need to develop the ability to follow the development of arguments in a variety of texts.",
+   "speaking": "You can have smooth conversations with fewer hesitations. You can express yourself clearly and confidently on a wider range of familiar topics. You need to get out of your comfort zone by discussing more topics.  /",
+   "vocabulary": "You have got a great handle on everyday English words! We need to improve our vocabulary by learning more ways to describe food (think \"delicious\" instead of just \"good\"), people's personalities (like \"outgoing\" or \"shy\"), and how you get around with transportation.",
+   "grammar": "You're skilled at using various grammatical structures accurately. We will focus on improving your use of the present perfect, present perfect continuous, and other structures to enhance your fluency and accuracy."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Distinguishing between action (play) and non-action verbs (need).",
+   "Expanding vocabulary related to food, cooking, money and transportation.",
+   "Learning and using personality adjectives.",
+   "Understanding and using transportation-related vocabulary.",
+   "Increasing descriptive vocabulary for discussing various topics and scenarios.",
+   "Differentiate between present perfect and present perfect continuous."
+  ],
+  "order_index": 15
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "7A",
+  "cefr_band": "B1+",
+  "skills": {
+   "listening": "You’re confident in understanding the gist and details of the topics you are familiar with. You can also get the main idea of unfamiliar topics. To push yourself further, focus on listening to longer recordings and conversations, especially those with varied accents.",
+   "reading": "You can understand the main points and some supporting details in both factual and literary texts, even when they have a more complex structure. With your continued practice, you’re starting to better follow the development of arguments in various texts.",
+   "speaking": "You express yourself clearly and confidently on a wider range of familiar topics. After another month of practice, it’s time to step out of your comfort zone by discussing more unfamiliar and challenging topics.",
+   "vocabulary": "You are able to use different vocabulary to talk about various topics. Our next step is to branch out and talk about topics out of our comfort zone, like raising children, and first impressions.",
+   "grammar": "You're skilled at using various grammatical structures accurately. You have most of the tenses secured, and you are able to use them accurately. We will focus on improving your use of articles, modals of obligations, superlative adjectives and comparative adjectives."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Understanding and using transportation-related vocabulary.",
+   "Mastering using comparative and superlative adjectives.",
+   "Using articles (a, an, the, -)",
+   "Increasing descriptive vocabulary for discussing various topics and scenarios.",
+   "Using can, could, be able to",
+   "Mastering modals of obligations (must - have to - should)"
+  ],
+  "order_index": 16
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "8A",
+  "cefr_band": "B1+",
+  "skills": {
+   "listening": "You can grasp the main ideas of conversations and lectures on familiar topics, even when delivered at a fast pace, or when the speaker has a slight accent. You can understand the overall message, even if the speaker implies things rather than saying them directly.",
+   "reading": "You can handle complex texts on unfamiliar topics, understanding the main ideas even if some details are unclear. You are able to read short stories as well as some simple novels.",
+   "speaking": "You can engage in conversations that go beyond familiar topics. Even though you can link your ideas, we still need to work on providing smoother transitions while speaking. Working on transitions will allow you to tell better stories and present better arguments.",
+   "vocabulary": "You have a solid foundation of everyday vocabulary and are prepared to enhance your language skills by learning more specific and varied terms related to sports, relationships, and movies.",
+   "grammar": "You have the ability to  use intermediate grammatical structures and form sentences using various tenses. You will work on refining your use of narrative tenses, and  passive constructions to improve your fluency and accuracy."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Mastering the narrative tenses: past simple, past continuous, past perfect.",
+   "Understanding and using sports and exercise-related vocabulary.",
+   "Increasing your vocabulary for various everyday contexts.",
+   "Expanding vocabulary related to adjectives for describing people and situations.",
+   "Talking about past and present habits.",
+   "Forming and using the passive voice in different tenses (The food was stolen)."
+  ],
+  "order_index": 17
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "9A",
+  "cefr_band": "B1+",
+  "skills": {
+   "listening": "You can catch the main points in conversations and lectures on familiar topics, even if they're delivered quickly or with a slight accent. You’re able to grasp the overall message, even when the speaker hints at things instead of stating them outright.",
+   "reading": "You can manage complex texts on unfamiliar topics, understanding the main ideas even if some details remain unclear. You're also able to read short stories and some simpler novels with ease.",
+   "speaking": "You can participate in conversations that extend beyond familiar subjects. While you’re good at connecting your ideas, we need to work on making your transitions smoother. Improving these transitions will help you tell stories more effectively and present your arguments more clearly.",
+   "vocabulary": "You have a solid understanding of a wide range of vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to houses and work.",
+   "grammar": "You've got a solid foundation, and now we'll be refining your use of reported speech, gerunds, and infinitives to express yourself more precisely. We'll also dive into advanced grammar concepts like the first and the second conditional of if, gerunds, infinitives and reported speech."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the first conditional with when and until, etc.",
+   "Using the second conditional of if.",
+   "Describing houses using different phrases and adjectives.",
+   "Using reported speech accurately.",
+   "Forming and using gerunds and infinitives.",
+   "Mastering work related vocabulary."
+  ],
+  "order_index": 18
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Advanced",
+  "level_code": "10A",
+  "cefr_band": "B1+",
+  "skills": {
+   "listening": "You can easily pick up the main ideas in conversations and lectures on familiar topics, even if they're delivered at a fast pace or with a slight accent. You can grasp the overall meaning, even when the speaker implies things rather than saying them directly.",
+   "reading": "You're capable of handling complex texts on unfamiliar subjects, understanding the main ideas even if some details aren't completely clear. You can also comfortably read short stories as well as graded novels.",
+   "speaking": "You can engage in discussions that go beyond your usual topics. While you're good at linking your thoughts, there's still room to work on making your transitions smoother. This will enhance your storytelling and improve how you present your arguments. /",
+   "vocabulary": "You have a strong grasp of a wide range of vocabulary and are ready to broaden your knowledge to include more specialized and varied terms, especially those related to those related to compound nouns, crimes, and technology.",
+   "grammar": "You have a solid grasp of intermediate grammar structures and can form sentences using a variety of tenses. Now, you'll be focusing on refining your use of reflexive pronouns, modals, and passive voice to boost both fluency and accuracy. We'll work on mastering the third conditional as well."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Understanding and using third conditionals.",
+   "Using quantifiers accurately.",
+   "Expanding vocabulary related to compound nouns.",
+   "Learning and using vocabulary associated with crimes and legal matters.",
+   "Understanding and using terms related to electronic devices and technology.",
+   "Increasing your vocabulary for discussing various complex topics and abstract concepts."
+  ],
+  "order_index": 19
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "1",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand some English words you hear, like \"hello\" or \"water.\" But listening to all of English can be difficult.",
+   "reading": "You might see some English words you already know, but reading in English is not easy. We will practice reading together so you understand more!",
+   "speaking": "You can try to say some short words in English, like \"hi\" or \"yes.\"  Your English sounds a little like your native language, that's perfectly normal!",
+   "vocabulary": "You know a few English words, maybe from hearing them before.  We need to learn more words together!",
+   "grammar": "English grammar is new to you. That's okay! We will learn things like how to put words together in sentences."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Understanding and using the verb \"to be\" (am, is, are).",
+   "Forming WH and how questions (where are you from).",
+   "Using singular and plural nouns (a door - doors).",
+   "Basic sentence structure (I have a car).",
+   "Numbers (1-100).",
+   "Personal information (name, age, nationality).",
+   "Common colors and adjectives (red - good).",
+   "Basic everyday objects (bag - keys)."
+  ],
+  "order_index": 0
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "2",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand and respond to familiar everyday expressions and very basic phrases. You can understand slow, clear speech if the speaker is willing to help.",
+   "reading": "You might see some English words you already know, but reading in English is not easy. We will practice reading together so you understand more!",
+   "speaking": "You can already greet people, introduce yourself, and ask and answer basic questions about yourself and others. Soon you'll be able to ask \"what\" and \"how\" questions, and learn more about your friends and favorite things! We'll also work on using present continuous and adverbs correctly in our conversation. /",
+   "vocabulary": "You can use everyday vocabulary related to talking about yourself and some everyday activities. You are ready to learn more verbs, adjectives and weather-related words (sunny- cold).",
+   "grammar": "You are familiar with very basic grammar, like using present simple (I go to work), adjectives (good - bad). You still need to focus on making questions and using present continuous (I’m learning English) correctly. We will practice together!"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the simple present tense for routine actions and habits.",
+   "Forming and using WH questions (who, what, where, when, why, how).",
+   "Using the present continuous tense for actions happening now (I’m studying English).",
+   "Understanding and using basic prepositions of time and place (in - at - on).",
+   "Learning more verbs and their uses.",
+   "Learning vocabulary for weather conditions and related expressions (cold - hot).",
+   "Understanding and using common verb phrases (e.g., get up, go out).",
+   "Increasing vocabulary for everyday objects and activities."
+  ],
+  "order_index": 1
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "3",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand videos and conversations about things you know, like family, weather, or what you do each day. You can answer questions and follow simple instructions too! We'll keep practicing so you understand even more.",
+   "reading": "You have good basic vocabulary. You can even guess new words by looking at pictures and listening to what comes before and after. Long sentences with many parts might be tricky sometimes, but that's okay! We'll practice understanding them together.",
+   "speaking": "You can describe things in English, like your family, home, and daily routine! You can use short sentences to tell people a little about these things. Talking about the past and future can be tricky yet, but we'll learn those steps together.",
+   "vocabulary": "You're good at using everyday vocabulary. You can understand and speak using these words, but new subjects might be a little tricky yet.  For now, focus on learning words you can see and touch, like \"chair\" or \"apple,\" before learning more abstract things like \"freedom\" or \"love.\" We'll keep practicing so you understand even more!",
+   "grammar": "You are able to use basic grammar rules very well, including present simple and present continuous. You can also ask basic clear questions in the present. You can understand the difference between present simple and continuous well. You might find it tricky to talk about the past or the future correctly."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using (there is/are) for describing locations.",
+   "Forming and using the past simple tense.",
+   "Understanding and using the future tense (going to).",
+   "Using object pronouns (me - you - him)",
+   "Expanding vocabulary related to prepositions (in - at - on).",
+   "Learning verbs related to daily routines and activities.",
+   "Understanding and using words to express opinions.",
+   "Increasing vocabulary for future expressions (tomorrow - next year)"
+  ],
+  "order_index": 2
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "4",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can understand phrases and the highest frequency vocabulary related to areas of most immediate personal relevance (e.g., very basic personal and family information, shopping, local area, employment). You can catch the main point in short, clear, simple messages and announcements.",
+   "reading": "You are able to read very short, simple texts. You can find specific, predictable information in simple everyday material such as advertisements, prospectuses, menus, and timetables, and you can understand short simple personal letters.",
+   "speaking": "You can communicate in simple and routine tasks requiring a simple and direct exchange of information on familiar topics and activities. You can handle very short social exchanges, even though you can't usually understand enough to keep the conversation going yourself.",
+   "vocabulary": "You have a good grasp of basic vocabulary and are ready to expand your knowledge to include more descriptive and everyday terms, especially those related to jobs, common questions, and daily activities.",
+   "grammar": "You understand the basic use of the simple present tense and can form sentences with proper word order. We will work on strengthening your use of past simple tense and prepositions."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the simple present tense correctly.",
+   "Understanding and applying proper word order in sentences.",
+   "Using prepositions of time and place.",
+   "Forming and using the past simple tense.",
+   "Expanding vocabulary related to jobs and professions.",
+   "Learning and using common question words (who, what, where, when, why, how).",
+   "Understanding and using everyday activity verbs.",
+   "Increasing descriptive vocabulary for common objects and places."
+  ],
+  "order_index": 3
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "5",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can understand phrases and the highest frequency vocabulary related to areas of most immediate personal relevance (e.g., very basic personal and family information, shopping, local area, employment). You can catch the main point in short, clear, simple messages and announcements.",
+   "reading": "You are able to read very short, simple texts. You can find specific, predictable information in simple everyday material such as advertisements, prospectuses, menus, and timetables, and you can understand short simple personal letters.",
+   "speaking": "You can communicate in simple and routine tasks requiring a simple and direct exchange of information on familiar topics and activities. You can handle very short social exchanges, even though you can't usually understand enough to keep the conversation going yourself.",
+   "vocabulary": "You have a good grasp of basic vocabulary and are ready to expand your knowledge to include more descriptive and everyday terms, especially those related to jobs, common questions, and daily activities.",
+   "grammar": "You understand the basic use of the simple present tense and can form sentences with proper word order. We will work on strengthening your use of past simple tense and prepositions."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the simple present tense correctly.",
+   "Understanding and applying proper word order in sentences.",
+   "Using prepositions of time and place.",
+   "Forming and using the past simple tense.",
+   "Expanding vocabulary related to jobs and professions.",
+   "Learning and using common question words (who, what, where, when, why, how).",
+   "Understanding and using everyday activity verbs.",
+   "Increasing descriptive vocabulary for common objects and places."
+  ],
+  "order_index": 4
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "11",
+  "cefr_band": "B1+",
+  "skills": {
+   "listening": "You can grasp the main ideas of conversations and lectures on familiar topics, even when delivered at a fast pace, or when the speaker has a slight accent. You can understand the overall message, even if the speaker implies things rather than saying them directly.",
+   "reading": "You can handle complex texts on unfamiliar topics, understanding the main ideas even if some details are unclear. You are able to read short stories as well as some simple novels.",
+   "speaking": "You can engage in conversations that go beyond familiar topics. You can comfortably discuss more abstract concepts and ideas related to your studies, interests, or current events. Even though you can link your ideas, we still need to work on providing smoother transitions while speaking. Working on transitions will allow you to tell better stories and present better arguments.",
+   "vocabulary": "You have a solid foundation of everyday vocabulary and are prepared to enhance your language skills by learning more specific and varied terms related to technology, sports, and descriptive adjectives.",
+   "grammar": "You have the ability to  use intermediate grammatical structures and form sentences using various tenses. You will work on refining your use of reflexive pronouns, modals, and passive constructions to improve your fluency and accuracy."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using reflexive pronouns correctly (myself - yourself).",
+   "Understanding and using modals of obligation (must, have to, should).",
+   "Forming and using the passive voice in different tenses (The food was stolen).",
+   "Using relative clauses to add detail and information (who - which).",
+   "Expanding vocabulary related to adjectives for describing people and situations.",
+   "Learning and using phone language and expressions.",
+   "Understanding and using sports and exercise-related vocabulary.",
+   "Increasing your vocabulary for various everyday contexts."
+  ],
+  "order_index": 10
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "12",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can follow the flow of the conversation even if the speaker doesn't explicitly signal every connection between ideas. You can grasp the speaker's main points even if they are implied rather than directly stated.",
+   "reading": "You can confidently tackle challenging texts, even on unfamiliar subjects. You might not grasp every single detail, but you can understand the main points and overall message. You can read contemporary fiction comfortably.",
+   "speaking": "You can navigate most conversations that arise while traveling in an area where English is spoken. You're comfortable understanding and responding to questions, requests, and giving directions. You’re able to express your opinions on current issues, given that you’ve been exposed to them in English. You can express your opinions and arguments persuasively.",
+   "vocabulary": "You have a solid understanding of a wide range of vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to compound nouns, crimes, and technology.",
+   "grammar": "You've got a solid foundation, and now we'll be refining your use of reported speech, gerunds, and infinitives to express yourself more precisely. We'll also dive into advanced grammar concepts like third conditionals for hypothetical situations and modals for expressing speculation and possibility."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using reported speech accurately.",
+   "Forming and using gerunds and infinitives.",
+   "Understanding and using third conditionals.",
+   "Mastering the use of modal verbs for deduction and speculation (must have, might have, could have, can't have).",
+   "Expanding vocabulary related to compound nouns.",
+   "Learning and using vocabulary associated with crimes and legal matters.",
+   "Understanding and using terms related to electronic devices and technology.",
+   "Increasing your vocabulary for discussing various complex topics and abstract concepts."
+  ],
+  "order_index": 11
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "13",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can follow the flow of the conversation even if the speaker doesn't explicitly signal every connection between ideas. You can grasp the speaker's main points even if they are implied rather than directly stated.",
+   "reading": "You are not only able to read contemporary fiction comfortably, you are also able to enjoy a broader range of reading materials. You can confidently explore news articles with complex topics, in-depth reviews, and even more complex works of fiction.",
+   "speaking": "You can interact with a degree of fluency and spontaneity that makes regular interaction with native speakers quite possible without strain for either party. You can take an active part in discussions in familiar contexts, accounting for and sustaining your views.",
+   "vocabulary": "You have a solid understanding of a wide range of vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to health, fashion, and travel.",
+   "grammar": "You understand and can use intermediate grammatical structures. We will focus on improving your use of present perfect continuous, narrative tenses, unreal conditionals, and relative clauses to enhance your fluency and accuracy."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using reported speech accurately.",
+   "Forming and using gerunds and infinitives.",
+   "Understanding and using third conditionals.",
+   "Mastering the use of modal verbs for deduction and speculation (must have, might have, could have, can't have).",
+   "Expanding vocabulary related to compound nouns.",
+   "Learning and using vocabulary associated with crimes and legal matters.",
+   "Understanding and using terms related to electronic devices and technology.",
+   "Increasing your vocabulary for discussing various complex topics and abstract concepts."
+  ],
+  "order_index": 12
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "14",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can understand extended speech even when it is not clearly structured and when relationships are only implied and not signaled explicitly. You can follow complex lines of argument.",
+   "reading": "You are able to read with ease virtually all forms of the written language, including abstract, structurally or linguistically complex texts such as manuals, specialized articles, and literary works.",
+   "speaking": "You can express yourself fluently and spontaneously without much obvious searching for expressions. You can use language flexibly and effectively for social, academic, and professional purposes.",
+   "vocabulary": "You have an extensive vocabulary that enables you to discuss a wide range of topics with precision. You are ready to expand your knowledge to include more specialized terms, especially those related to music, health, the human body, and legal matters.",
+   "grammar": "You understand and can use complex grammatical structures. We will focus on mastering the use of gerunds and infinitives, advanced passive forms, complex reporting verbs, and hypothetical structures to further enhance your fluency and accuracy."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Mastering the use of gerunds and infinitives.",
+   "Using a variety of passive forms.",
+   "Understanding and using complex reporting verbs (e.g., suggest, recommend, insist).",
+   "Employing advanced conditionals and hypothetical structures.",
+   "Expanding vocabulary related to music and entertainment.",
+   "Learning and using vocabulary associated with sleep and health.",
+   "Understanding and using terms related to the human body and medical issues.",
+   "Increasing your vocabulary for discussing crime and punishment."
+  ],
+  "order_index": 13
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "6",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can understand simple directions and information given in clear, slow speech. You can follow short conversations on familiar topics.",
+   "reading": "You are able to read and understand short, simple texts on familiar subjects, such as personal letters and basic informational materials.",
+   "speaking": "You can participate in simple, routine conversations on familiar topics. You can describe your experiences and events, briefly giving reasons and explanations for opinions. You can use the past simple well to talk about past life experiences. You still need to master talking in the future.",
+   "vocabulary": "You have a good grasp of basic vocabulary and are ready to learn even more words to describe things in more detail, (like learning more adverbs). You will also get to learn more specific words related to everyday life and activities.",
+   "grammar": "You understand the basic use of the past simple tense and can form sentences using regular verbs. We will work on improving your use of irregular verbs and introducing new grammatical structures like present perfect. You need to improve using (going to) to talk about future plans."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Forming and using superlative adjectives.",
+   "Using the present perfect tense (I have eaten breakfast).",
+   "Understanding and using articles (a, an, the).",
+   "Learning vocabulary related to places and buildings.",
+   "Expanding knowledge on vacation-related terms.",
+   "Understanding and using internet-related vocabulary. (online - social media)",
+   "Learning verbs that take the infinitive (I want to learn English)."
+  ],
+  "order_index": 5
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "7",
+  "cefr_band": "A2+",
+  "skills": {
+   "listening": "You can understand the main points of clear standard speech on familiar subjects in work, school, and leisure activities. You can follow the main points of many radio or TV programs on current affairs or topics of personal or professional interest when the delivery is relatively slow and clear.",
+   "reading": "You are able to read texts that consist mainly of high-frequency everyday or job-related language. You can understand the description of events, feelings, and wishes in personal letters and other straightforward texts.",
+   "speaking": "You can understand and be understood in most travel situations, like asking for directions or ordering food. You can produce short, clear messages about things you know well, like your hobbies or a recent trip. You can also talk about your experiences, goals, and what you think about things, even if you need to keep it simple sometimes.",
+   "vocabulary": "You have a good grasp of everyday vocabulary and are ready to expand your knowledge to include more specialized and varied terms, especially those related to household activities, shopping, and many more.",
+   "grammar": "You understand and can use the basic and some intermediate grammatical structures. We will work on improving your use of future tenses and relative clauses, and ensuring you can use comparatives and superlatives correctly."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using \"going to\" and the present continuous for future plans.",
+   "Understanding and using relative pronouns (who, which, that).",
+   "Forming and using comparatives and superlatives accurately.",
+   "Learning verbs that take prepositions (arrive in).",
+   "Expanding vocabulary related to housework and household chores (do the dishes - make the bed).",
+   "Understanding and using shopping-related terms (fitting room - try on - discount)"
+  ],
+  "order_index": 6
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "8",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You are good at grasping the important parts of conversations in English, especially when people are talking about everyday things you're familiar with at work, school, or with friends. You can follow along well when conversations and instructions are clear and easy to understand.",
+   "reading": "You can understand articles, work documents, or social media posts about things you come across often. This includes things people write about what happened to them, how they're feeling, or what they want, as long as the writing is clear and straightforward.",
+   "speaking": "You can talk about things you know well, like your hobbies or a recent movie you saw. You can also tell people about things that happened to you, your dreams for the future, and why you like or dislike something. Even though your explanations might be short sometimes, you can still give reasons for your opinions and plans.",
+   "vocabulary": "You've got a strong grasp of everyday English words! Now it's time to level up your speaking and writing by learning more colorful ways to describe people, places, and the things you do by using different adjectives and adverbs. This will help you paint a clearer picture with your words and make your conversations more interesting.",
+   "grammar": "You have a good understanding of basic and some intermediate grammatical structures and can use them effectively. We will focus on improving your use of future tenses, gerunds, and possessive forms, and ensuring you can use the past continuous tense correctly."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using \"will/won't\" for future predictions, decisions and other uses.",
+   "Understanding and using gerunds (going - playing - eating) and infinitives (to go - to play - to eat).",
+   "Using possessive pronouns and adjectives correctly (mine - yours).",
+   "Forming and using the first conditional (If I have time, I’ll meet you).",
+   "Learning verbs that come with the word back.",
+   "Using adverbs of manners (angrily - slowly)",
+   "Learning verbs that come with gerunds in various contexts.",
+   "Differentiating between confusing verbs (meet or know?)."
+  ],
+  "order_index": 7
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "9",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You can grasp the main ideas of clear speech on a wider range of familiar topics encountered in work, school, leisure, and current events. You can follow the general flow of conversations and instructions even if delivered at a faster pace or with some unfamiliar vocabulary. You need to work on understanding conversations with multiple speakers and identifying specific details.",
+   "reading": "You can understand texts with a relatively high level of detail on familiar everyday or even job-related topics. This includes news articles, social media posts, product descriptions, and short stories. We need to get used to reading different structures like passive sentences.",
+   "speaking": "You can express yourself with greater fluency and confidence on familiar topics. Your speech still has some hesitations, but the overall flow is good. You need to practice talking about hypothetical situations, as well as using the passive.",
+   "vocabulary": "You can actively use a wider range of descriptive vocabulary to talk about people, places, and activities. This includes synonyms, antonyms, adjectives, and adverbs.",
+   "grammar": "You can use a wide range of grammatical structures with accepted accuracy. This includes past tenses, present perfect, future tenses, and the first conditional. You still need to use more conditionals, other than the first conditional and master the passive voice."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Forming and using second conditionals (If I had time, I’d meet you).",
+   "Understanding and using the passive voice (My phone was stolen).",
+   "Using modal verbs to express possibility and probability (might, may, could).",
+   "Forming and using relative clauses.",
+   "Expanding vocabulary related to animals and their habitats.",
+   "Learning and using terms related to phobias and fears.",
+   "Understanding and using vocabulary associated with sports and physical activities.",
+   "Increasing descriptive vocabulary for discussing various topics."
+  ],
+  "order_index": 8
+ },
+ {
+  "program": "General English",
+  "subtrack": "Group",
+  "stage": null,
+  "level_code": "10",
+  "cefr_band": "B1",
+  "skills": {
+   "listening": "You can grasp the gist and key details of conversations and lectures on a wide range of topics, even with some unfamiliar vocabulary. You can get the main idea of some unfamiliar topics. You need to focus on listening to longer recordings and conversations with different accents.",
+   "reading": "You can understand the main points and some supporting details in factual and literary texts, even those with a more complex structure. You need to develop the ability to follow the development of arguments in a variety of texts.",
+   "speaking": "You can have smooth conversations with fewer hesitations. You can express yourself clearly and confidently on a wider range of familiar topics. You need to get out of your comfort zone by discussing more topics. You are able to express your opinion, but you still need to add more details through providing an explanation or adding examples.",
+   "vocabulary": "You have got a great handle on everyday English words! We need to improve our vocabulary by learning more ways to describe food (think \"delicious\" instead of just \"good\"), people's personalities (like \"outgoing\" or \"shy\"), and how you get around with transportation.",
+   "grammar": "You're skilled at using various grammatical structures accurately. We will focus on improving your use of the past perfect tense, reported speech, and other structures to enhance your fluency and accuracy."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Forming and using the past perfect tense.",
+   "Understanding and using reported speech (she told me I had to leave).",
+   "Distinguishing between action (play) and non-action verbs (need).",
+   "Mastering using comparative and superlative adjectives.",
+   "Expanding vocabulary related to food, cooking, money and transportation.",
+   "Learning and using personality adjectives.",
+   "Understanding and using transportation-related vocabulary.",
+   "Increasing descriptive vocabulary for discussing various topics and scenarios."
+  ],
+  "order_index": 9
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "1P",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand some English words you hear, like \"hello\" or \"water.\" But listening to all of English can be difficult.",
+   "reading": "You might see some English words you already know, but reading in English is not easy. We will practice reading together so you understand more!",
+   "speaking": "You can try to say some short words in English, like \"hi\" or \"yes.\"  Your English sounds a little like your native language, that's perfectly normal!",
+   "vocabulary": "You know a few English words, maybe from hearing them before.  We need to learn more words together!",
+   "grammar": "English grammar is new to you. That's okay! We will learn things like how to put words together in sentences."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the verb \"to be\" (am, is, are) correctly with different subjects.",
+   "Making questions using \"who,\" \"what,\" \"where,\" \"when,\" \"why,\" and \"how.\"",
+   "Singular and plural and using a/an:",
+   "singular and plural nouns correctly (cat - cats).",
+   "Using the demonstrative pronouns \"this,\" \"that,\" \"these,\" and \"those\" correctly.",
+   "Personal information (name, age, nationality)."
+  ],
+  "order_index": 0
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "2P",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand and respond to familiar everyday expressions and very basic phrases. You can understand slow, clear speech if the speaker is willing to help.",
+   "reading": "You might see some English words you already know, but reading in English is not easy. We will practice reading together so you understand more!",
+   "speaking": "You can already greet people, introduce yourself, and ask and answer basic questions about yourself and others. Soon you'll be able to ask \"what\" and \"how\" questions, and learn more about your friends and favorite things!",
+   "vocabulary": "You can use everyday vocabulary related to talking about yourself and some everyday activities. You are ready to learn more verbs, adjectives and vocabulary related to family and food.",
+   "grammar": "You are familiar with very basic grammar, like using present simple with verb to be (I’m from England). You still need to focus on making questions and using present simple with other verbs correctly (I go to work every day). We will practice together!"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Common colors and adjectives (red - good).",
+   "Basic everyday objects (bag - keys).",
+   "Family vocabulary (mother - sister)",
+   "Using the simple present tense for routine actions and habits.",
+   "Food vocabulary (milk - bread)",
+   "Forming and using WH questions (who, what, where, when, why, how)."
+  ],
+  "order_index": 1
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "3P",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand simple conversations about everyday topics. When someone describes a person or their characteristics slowly and clearly, you can understand them too.",
+   "reading": "You can understand short, simple texts with familiar words. Sometimes, you might need to guess a few words to understand the meaning of the passage. Longer sentences or new words can be a bit tricky, but you're getting better at reading!",
+   "speaking": "You can introduce yourself and others. You’re comfortable with greetings, short phrases, and simple descriptions of daily routines, people, and places. You can ask and answer very simple questions about personal details.",
+   "vocabulary": "You know a small collection of common words for everyday situations. This includes numbers up to 100, greetings, basic personal information, common objects, and some verbs and adjectives. Learning new words, especially if they’re not familiar, can be a bit challenging.",
+   "grammar": "You have basic grammar knowledge. You can use the present simple tense with the verb \"to be\" and other verbs. You can show ownership using possessive pronouns and \"'s.\" You might still have some difficulty making questions in the present simple tense."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the present continuous tense for actions happening now (I’m studying English).",
+   "Understanding and using basic prepositions of time and place (in - at - on).",
+   "Learning more verbs and their uses.",
+   "Learning vocabulary for weather conditions and related expressions (cold - hot).",
+   "Understanding and using common verb phrases (e.g., get up, go out)."
+  ],
+  "order_index": 2
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "4P",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "You can understand videos and conversations about things you know, like family, weather, or what you do each day. You can answer questions and follow simple instructions too! We'll keep practicing so you understand even more.",
+   "reading": "You have good basic vocabulary. You can even guess new words by looking at pictures and listening to what comes before and after. Long sentences with many parts might be tricky sometimes, but that's okay! We'll practice understanding them together.",
+   "speaking": "You can describe things in English, like your family, home, and daily routine! You can use short sentences to tell people a little about these things. Talking about the past and future can be tricky yet, but we'll learn those steps together.",
+   "vocabulary": "You're good at using everyday vocabulary. You can understand and speak using these words, but new subjects might be a little tricky yet.  For now, focus on learning words you can see and touch, like \"chair\" or \"apple,\" before learning more abstract things like \"freedom\" or \"love.\" We'll keep practicing so you understand even more!",
+   "grammar": "You are able to use basic grammar rules very well, including present simple and present continuous. You can also ask basic clear questions in the present. You can understand the difference between present simple and continuous well. You might find it tricky to talk about the past or the future correctly."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Forming and using the past simple tense.",
+   "Understanding and using the future tense (going to).",
+   "Using object pronouns (me - you - him)",
+   "Expanding vocabulary related to prepositions (in - at - on).",
+   "Learning verbs related to daily routines and activities.",
+   "Understanding and using words to express opinions.",
+   "Increasing vocabulary for future expressions (tomorrow - next year)."
+  ],
+  "order_index": 3
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "5P",
+  "cefr_band": "A1+",
+  "skills": {
+   "listening": "You can follow basic conversations about familiar topics like greetings, introductions, daily routines, shopping, and making plans. You can identify the main points and important details in short listening passages.",
+   "reading": "You can read and understand short texts about everyday topics. When you come across new words, you can often guess their meaning from the context.",
+   "speaking": "You can participate in basic conversations about familiar topics like greetings, daily routines, hobbies, family, and work, but you still need to work on your fluency and accuracy.",
+   "vocabulary": "You're building on your existing vocabulary by expanding the range of high-frequency words used in everyday situations. This includes words related to hobbies, feelings, shopping, transportation, and describing people and places.",
+   "grammar": "You use some simple structures correctly, but you still systematically make basic mistakes."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Understanding and using the verb \"to be\" (am, is, are).",
+   "Forming WH and how questions (where are you from).",
+   "Using possessive adjectives (his - her -my)",
+   "Using singular and plural nouns (a door - doors).",
+   "Common adjectives (good- expensive)."
+  ],
+  "order_index": 4
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "6P",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can understand phrases and the highest frequency vocabulary related to areas of most immediate personal relevance (e.g., very basic personal and family information, shopping, local area, employment). You can catch the main point in short, clear, simple messages and announcements.",
+   "reading": "You are able to read very short, simple texts. You can find specific, predictable information in simple everyday material such as advertisements, prospectuses, menus, and timetables, and you can understand short simple personal letters.",
+   "speaking": "You can communicate in simple and routine tasks requiring a simple and direct exchange of information on familiar topics and activities. You can handle very short social exchanges, even though you can't usually understand enough to keep the conversation going yourself.",
+   "vocabulary": "You have a strong foundation in basic vocabulary related to different topics like those related to jobs, common questions, daily activities, and possessive forms.",
+   "grammar": "You understand the basic use of the simple present tense and can form sentences with proper word order. We will work on strengthening your use of present simple tense and prepositions."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the simple present tense correctly.",
+   "Understanding and applying proper word order in sentences.",
+   "Using prepositions of time and place.",
+   "Learning and using common question words (who, what, where, when, why, how).",
+   "Using adverbs of frequency (usually - always - never)."
+  ],
+  "order_index": 5
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "7P",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You understand common phrases related to topics you are already familiar with. You can grasp the main point in short, clear, and simple messages and announcements.",
+   "reading": "You can read very short, simple texts and find specific, predictable information in everyday materials like ads, menus, timetables, and simple personal letters.",
+   "speaking": "You can handle simple, routine tasks that involve a direct exchange of information on familiar topics.You can engage in conversations about yourself and your routine. While you can engage in short social exchanges, it’s still challenging to keep the conversation going by yourself.",
+   "vocabulary": "You have a good grasp of basic vocabulary and are ready to expand your knowledge to include more descriptive and everyday terms, especially those related to jobs, common questions, and daily activities.",
+   "grammar": "You understand the basic use of the simple present tense and can form sentences with proper word order. We will work on differentiating between present simple and continuous, and expressing likes and dislikes."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using can and can’t.",
+   "Using present continuous (I’m working now)",
+   "Differentiation between present simple and present continuous.",
+   "Objective pronouns (him - her)",
+   "Expressing likes and dislikes (I love learning English)",
+   "Talking about the weather and seasons",
+   "Using verb phrases (buy a newspaper)"
+  ],
+  "order_index": 6
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "8P",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can understand everyday things you hear at work, school, or with friends. This could be things like simple questions, instructions, or short conversations about familiar topics.",
+   "reading": "You can understand easy-to-read texts about things you like, for example, hobbies or sports. You can also follow messages or emails from friends where they talk about what's happening in their life, how they feel, and what they want.",
+   "speaking": "You can talk with people about everyday topics, like shopping or asking for directions. You can express your likes and dislikes and express your opinion in simple sentences. You need to work more on using the past correctly",
+   "vocabulary": "You have a good understanding of everyday vocabulary. You’re ready now to learn more vocabulary about food, food containers, places, buildings, and vacations.",
+   "grammar": "You’re doing well with understanding sentence structure in English. You’ve got a good handle on the difference between present simple and present continuous, and use the past well. It’s time for us to experiment with more forms like going to, superlative adjectives and comparative adjectives."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using verb to be in the past.",
+   "Using the past simple tense with regular (walk - walked) and irregular verbs (eat - ate).",
+   "Forming the past simple correctly.",
+   "Expressing opinions using short phrases (It’s awful)",
+   "Using there is/ there are/ there was/ there were."
+  ],
+  "order_index": 7
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "9P",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can understand everyday conversations at work, school, or with friends. This includes simple questions, instructions, and short talks about familiar topics. You can also understand simple stories with simple structure.",
+   "reading": "You can easily read texts that interest you, like those about hobbies or sports. You’re also able to comprehend simple stories with simple events. We need to learn about more structures.",
+   "speaking": "You can talk about everyday topics, whether it is in the past or the present. You’re able to express your likes, dislikes, and opinions in simple sentences. However, you still need to work on using more complex structures and gaining confidence with countable and uncountable nouns.",
+   "vocabulary": "You have a solid understanding of everyday vocabulary. You have a solid understanding of basic word formation and some past time expressions. You’ll learn about vocabulary related to food, food containers and vacation.",
+   "grammar": "You're getting good at understanding how sentences are put together in English. You are comfortable using the past and the present. It’s time for us to experiment with more structures like comparing between two or more things."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Understanding and using countable (an apple - apples) and uncountable nouns (flour).",
+   "Forming and using comparative adjectives (Samy is younger than Ali).",
+   "Understanding and using words related to food and meals (chicken - pasta - tomato).",
+   "Forming and using superlative adjectives (Samy is youngest).",
+   "Learning vocabulary related to vacation and places."
+  ],
+  "order_index": 8
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Pioneer",
+  "level_code": "10P",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "You can follow along with everyday conversations you hear at work, school, or with friends. You can understand simple questions, instructions, and short discussions about familiar topics.",
+   "reading": "You’re able to read about different topics that interest you. You can also follow messages or emails from friends where they share what’s going on in their lives, how they’re feeling, and what they need.",
+   "speaking": "You can engage in conversations about yourself using the past and the present. You’re able to also compare between two or more things and find out differences between two or more things. However, you still need to work on using more tenses and structures.",
+   "vocabulary": "You have a strong grasp of everyday vocabulary. You are ready to step up your game by learning common adverbs, verbs that take the infinitive and irregular past participles.",
+   "grammar": "You’re becoming skilled at putting sentences together in English and feel comfortable using both the past and present tenses. Now, it’s time to start exploring the present perfect and differentiate between it and the simple past."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Using the present perfect tense (I have eaten breakfast).",
+   "Expanding knowledge on vacation-related terms.",
+   "Understanding and using internet-related vocabulary. (online - social media)",
+   "Learning verbs that take the infinitive (I want to learn English)."
+  ],
+  "order_index": 9
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Super Learner",
+  "level_code": "SL1",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can confidently catch the main ideas in fast-paced conversations and lectures on familiar topics, even with slight accents, and understand implied meanings, though subtle details may occasionally slip through.",
+   "reading": "You handle complex texts on unfamiliar topics, grasping the main points even if some specifics are unclear, and enjoy reading short stories and graded novels with ease.",
+   "speaking": "You engage in discussions beyond everyday topics, linking ideas effectively, but could improve transitions to make your storytelling and arguments smoother and more compelling.",
+   "vocabulary": "You command a broad vocabulary and are ready to learn specialized terms related to interviews (e.g., \"résumé\"), paranormal phenomena (e.g., \"clairvoyant\"), personality traits (e.g., \"bad-tempered\"), and word-building (e.g., prefixes, suffixes).",
+   "grammar": "You’re proficient with intermediate grammar, using various tenses accurately, and now you’ll refine reflexive pronouns, modals, passive voice, and the third conditional, while mastering advanced structures like question formation, auxiliary verbs, comparatives, and gerunds/infinitives."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Master advanced grammar like question formation, auxiliary verbs, comparatives, and verb patterns.",
+   "Build thematic vocabulary like words for interviews, paranormal topics, personality traits, and word-building.",
+   "Improve pronunciation, intonation, sentence rhythm, vowel/consonant sounds, and word stress.",
+   "Develop comprehension using authentic texts and context-based word learning.",
+   "Encourage natural conversation through questions, role-plays, and responsive phrases.",
+   "Improve comprehension and note-taking with interviews and stories.",
+   "Discuss cultural topics like interviews and paranormal beliefs to develop analytical skills.",
+   "Use skills in real-world tasks like interview prep and creative writing."
+  ],
+  "order_index": 20
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Super Learner",
+  "level_code": "SL2",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You are able to follow conversations and interviews on a wide range of familiar and unfamiliar topics, even when the speech is fast-paced or contains idiomatic expressions. You can identify key details and underlying messages with increasing ease, and you’re showing clear progress in interpreting implied meaning and speaker attitude.",
+   "reading": "You demonstrate confidence when reading authentic texts such as interviews, articles, and narratives—even those with unfamiliar vocabulary or complex ideas. You're developing effective strategies for inferring meaning from context.",
+   "speaking": "You can comfortably participate in discussions, role-plays, and storytelling activities. You express your ideas clearly, ask meaningful questions, and react appropriately during conversations. While your fluency is strong, there's still room to improve the use of transitions and coherence when presenting arguments or narrating experiences, which will strengthen your overall communication. /",
+   "vocabulary": "You have built a wide and flexible vocabulary, including topic-specific terms related to interviews, personality traits, and the paranormal. You’re also becoming more confident with word-building through prefixes, suffixes, and compound adjectives. Moving forward, you’ll continue expanding your range to include more advanced and specialized vocabulary in areas such as business, crime, air travel, and music.",
+   "grammar": "You have a solid understanding of advanced grammatical structures, including question formation, verb patterns, and comparative forms. You’ve also worked effectively with auxiliary verbs for emphasis and agreement. Next, you’ll focus on mastering more complex grammar, such as narrative tenses, adverb placement, past modals, conditionals, and contrast clauses. This will help refine both your fluency and accuracy."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn complex grammar like narrative tenses and past modals conditionals, passive voice, and clauses of contrast/purpose.",
+   "Learn vocabulary for air travel, music, crime, and business.",
+   "Master word-building with prefixes and suffixes.",
+   "Improve pronunciation, focusing on rhythm and word stress.",
+   "Deduce unfamiliar words and evaluate texts critically.",
+   "Enhance speaking through storytelling and debates.",
+   "Use smooth transitions and expressive language.",
+   "Discuss cultural issues like air travel and business ethics.",
+   "Articulate informed opinions critically.",
+   "Apply skills in writing stories and business scenarios."
+  ],
+  "order_index": 21
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Super Learner",
+  "level_code": "SL3",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You are able to follow a variety of spoken texts, including interviews, podcasts, and documentaries, even when the content is complex or includes unfamiliar vocabulary. You’ve shown strong progress in identifying key points and interpreting implied meaning. Your ability to take structured notes during listening tasks is improving steadily, supporting your academic and professional communication.",
+   "reading": "You engage confidently with a range of authentic texts, such as book excerpts, articles, and short stories, across topics like business, survival, and personal experiences. You can effectively infer meaning from context and analyze content critically, identifying the writer’s purpose and underlying themes. You’re now ready to engage with more nuanced materials and deepen your interpretative skills.",
+   "speaking": "You participate in a wide range of speaking tasks—from storytelling and role-plays to debates and group discussions—with confidence and clarity. You are comfortable expressing complex ideas, giving opinions, and responding thoughtfully to others. Your next step will be to further refine your use of natural intonation, pacing, and expression to increase engagement and fluency during spontaneous interactions.",
+   "vocabulary": "You’ve built a solid foundation of thematic vocabulary in areas such as air travel, health, crime, music, and business. You’re also expanding your lexical range through the use of compound adjectives, collocations, and word-building techniques. As you move forward, you’ll continue strengthening your precision and variety in vocabulary, particularly in high-level topics and formal contexts.",
+   "grammar": "You have a strong grasp of advanced grammar structures, including narrative tenses, passive voice, adverb placement, and modals of deduction and regret. You’ve practiced these effectively in both written and spoken contexts. The upcoming focus will be on refining indirect questions, reported speech, advanced conditionals, and expressions like wish + would, with an emphasis on fluency and accuracy in complex sentence construction."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Master advanced structures: indirect questions, auxiliary verbs for emphasis, second/third conditionals, gerunds/infinitives, and past modals.",
+   "Practice narrative tenses, passive voice (all forms), reporting verbs, and expressions like wish + would in context.",
+   "Learn and apply topic-based vocabulary: air travel, health, emotions, music, crime, and business.",
+   "Expand lexical range through prefixes, suffixes, and compound adjectives.",
+   "Refine friendly intonation, sentence rhythm, and stress in multi-syllable adjectives.",
+   "Analyze authentic texts (e.g., survival stories, articles, business cases).",
+   "Infer word meanings and evaluate content critically.",
+   "Understand complex audio (interviews, documentaries, discussions).",
+   "Develop fluency through storytelling, debates, and real-life role-plays."
+  ],
+  "order_index": 22
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Super Learner",
+  "level_code": "SL4",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can understand fast-paced and complex speech on a variety of topics, even when speakers use idiomatic expressions, imply meaning, or speak with an accent. You're able to follow interviews, documentaries, and discussions, and you're developing effective note-taking strategies to support comprehension and retention of key ideas.",
+   "reading": "You can confidently read and analyze authentic, content-rich texts from different genres, including articles, short stories, and opinion pieces. You’re able to infer meaning from context, evaluate the writer’s tone and intention, and engage critically with the material by discussing themes, language use, and structure.",
+   "speaking": "You can participate in extended discussions on both familiar and abstract topics, expressing your thoughts clearly and persuasively. You’re becoming more confident in presenting arguments, debating ideas, and storytelling. There's a continued focus on using cohesive devices and improving fluency through structured, well-linked speech.",
+   "vocabulary": "You have a wide and flexible vocabulary that allows you to discuss a broad range of topics, including emotions, business, media, health, and crime. You're expanding your lexical range by learning collocations, compound adjectives, and topic-specific expressions, and refining word formation skills through the use of prefixes and suffixes.",
+   "grammar": "You demonstrate strong control over advanced grammatical structures such as conditionals, narrative tenses, passive voice, reporting verbs, and modals. You’re now refining your use of complex sentence forms including clauses of contrast and purpose, future perfect and continuous tenses, and various verb patterns. You’re also working on producing grammatically accurate and varied sentences both in speech and writing."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Master advanced grammar (e.g., conditionals, modals, passive voice).",
+   "Expand vocabulary (e.g., travel, environment, business terms).",
+   "Boost speaking/writing fluency via discussions and essays.",
+   "Enhance comprehension of texts and audio (e.g., arguments, news).",
+   "Improve pronunciation (e.g., stress, intonation, /tʃ/, /ɪ/ sounds).",
+   "Foster critical thinking on cultural issues (e.g., media, gender)."
+  ],
+  "order_index": 23
+ },
+ {
+  "program": "General English",
+  "subtrack": "Private",
+  "stage": "Super Learner",
+  "level_code": "SL5",
+  "cefr_band": "B2",
+  "skills": {
+   "listening": "You can follow extended, authentic audio such as interviews, podcasts, and radio programs that feature a variety of accents, topics, and registers. You’re becoming more comfortable identifying the speaker’s tone, intention, and implicit meaning. Note-taking strategies continue to support your comprehension of key ideas and finer details, especially in discussions around survival, business, and ethical dilemmas.",
+   "reading": "You can read and analyze complex, content-rich texts with confidence. You understand figurative language, recognize bias or persuasive techniques, and infer meanings of less common words through context (e.g., trustworthy, fusion, tirade). Your ability to evaluate themes, argument structures, and author intent is developing through exposure to a wide range of real-world texts such as news articles, essays, and cultural pieces.",
+   "speaking": "You communicate effectively and naturally in spontaneous conversations and structured discussions. You’re capable of expressing nuanced opinions, responding to opposing views, and debating abstract topics like risk-taking, ethics, or environmental responsibility. There is increased emphasis on stress, intonation, and rhythm, especially when using emphatic structures, reported speech, or rhetorical questions.",
+   "vocabulary": "Your lexical range is expanding across a wide array of topics, including business, science, health, travel, advertising, survival, and media. You can confidently use topic-specific vocabulary and improve accuracy through the study of commonly confused verbs, collocations, and word formation (e.g., prefixes like over-, multi- and suffixes like -ness, -tion). You’re also becoming more adept at choosing the right word for tone and formality.",
+   "grammar": "You’ve mastered a broad set of advanced grammar points and now use them flexibly and accurately in context. These include indirect and tag questions, auxiliary verbs for emphasis, present perfect simple vs. continuous, narrative tenses, conditionals (zero to unreal), wish structures, gerunds and infinitives, reporting verbs, passive voice, and clauses of contrast and purpose. You’re now refining grammar related to uncountable/plural nouns, quantifiers, articles, and complex comparisons (the more…the better)."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Master advanced grammar: question formation, auxiliary verbs, narrative tenses, clauses, articles, quantifiers, and countability.",
+   "Expand vocabulary on health, air travel, environment, risk-taking, survival, business, cities, science, and advertising.",
+   "Improve listening comprehension with interviews, radio programs, and talks on lotteries, city life, and NASA inventions.",
+   "Boost reading skills with texts on Ponzi schemes, advertising ethics, city development, and protests.",
+   "Develop critical thinking and cultural awareness: analyze scams, gender roles, urban life, and environmental issues."
+  ],
+  "order_index": 24
+ },
+ {
+  "program": "Jolly Phonics",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "1",
+  "cefr_band": "Pre A1",
+  "skills": {},
+  "items_label": "Objectives",
+  "items": [
+   "Student will learn:",
+   "​Letter sounds: your child will participate in activities that reinforce basic letter sounds from Jolly Phonics 1.",
+   "​Blending sounds: They will begin to practice blending these initial sounds to form simple CVC words (consonant-vowel-consonant, e.g., \"cat,\" \"dog\").",
+   "​Segmentation skill: The child learns the segmentation skill, which involves breaking down a word into its individual sounds based on the phonics they have learned. This skill is crucial for developing proper spelling and writing skills.",
+   "Activities",
+   "​Phonic songs and rhymes: Engaging songs and rhymes that reinforce letter sounds and blending.",
+   "​Interactive whiteboard activities: Interactive games and exercises that make learning letters sound fun.",
+   "​Coloring and tracing activities: Coloring pictures of objects that begin with specific sounds, tracing letter shapes.",
+   "​Sing phonic songs and rhymes together: Repetition helps solidify the connection between letters and sounds. /",
+   "النتيجة",
+   "تهانينا! بناءً على نتائج تحديد المستوى في جولي فونيكس، سيبدأ طفلك رحلته مع الصوتيات مع Jolly phonics 1. تركز هذه المجموعة على تقديم أسس أصوات الحروف وأشكال الحروف المقابلة لها.",
+   "الأهداف",
+   "سيتعلم الطالب:",
+   "أصوات الحروف:  سيشارك طفلك في الأنشطة التي تعزز أصوات الحروف الأساسية من Jolly Phonics 1",
+   "مزج الأصوات: سيبدأ في التدرب على مزج هذه الأصوات الأولية لتكوين كلمات CVC بسيطة (حرف ساكن، حرف علة، ساكن، على سبيل المثال، \"قطة\"، \"كلب\").",
+   "مهارة التجزئة: يتعلم الطفل مهارة التجزئة، والتي تتضمن تقسيم الكلمة إلى أصوات فردية بناءً على الصوتيات التي تعلموها. هذه المهارة ضرورية لتطوير مهارات الإملاء والكتابة الصحيحة.",
+   "نماذج للأنشطة المستخدمة",
+   "الأغاني والقوافي الصوتية: أغاني وقوافي جذابة تعزز أصوات الحروف ومزجها.",
+   "أنشطة السبورة التفاعلية: ألعاب وتمارين تفاعلية تجعل تعلم الحروف تبدو ممتعة.",
+   "أنشطة التلوين والتتبع: تلوين صور الأشياء التي تبدأ بأصوات معينة، وتتبع أشكال الحروف.",
+   "غناء الأغاني والقوافي الصوتية معاً: يساعد التكرار على ترسيخ العلاقة بين الحروف والأصوات.",
+   "تذكر: كل طفل يتعلم بالسرعة التي تناسبه. تحلى بالصبر، واحتفل بتقدمهم، والأهم من ذلك، اجعل التعلم ممتعًا!"
+  ],
+  "order_index": 1
+ },
+ {
+  "program": "Jolly Phonics",
+  "subtrack": null,
+  "stage": null,
+  "level_code": "3",
+  "cefr_band": "Pre A1",
+  "skills": {},
+  "items_label": "Objectives",
+  "items": [
+   "Student will learn:",
+   "​Letter sounds: Your child will participate in activities that reinforce letter sounds from Jolly Phonics 3, while revisiting any tricky ones from Jolly Phonics 1.",
+   "Blending: They will continue practicing blending, moving from simple CVC words to words with more phonemes like \"jump\" and \"train.\"",
+   "Segmentation skill: The student will further develop segmentation skills to break down words into individual sounds, supporting spelling and reading fluency.",
+   "Tricky words: They will begin to recognize and read tricky words that don't follow regular phonetic patterns.",
+   "Activities",
+   "Phonic songs and rhymes: Engaging songs that reinforce both basic and more advanced letter sounds.",
+   "Interactive whiteboard activities: Games and blending exercises that support fluency and comprehension.",
+   "Coloring and tracing: Activities that target sound recognition through visuals and handwriting practice.",
+   "Tricky word games: Fun activities to help your child identify and remember non-decodable words.",
+   "Remember: Every student progresses at their own pace. Be patient, celebrate the wins, and most importantly—make learning joyful!",
+   "النتيجة",
+   "تهانينا! بناءً على نتائج تحديد المستوى في جولي فونيكس، سيبدأ طفلك رحلته مع الصوتيات من خلال Jolly Phonics 3، مع مراجعة سريعة لـ Jolly Phonics 1 لترسيخ أصوات الحروف الأساسية. يُظهر طفلك فهمًا جيدًا لأصوات الحروف البسيطة ويمكنه مزج كلمات CVC مثل \"قطة\" و\"كلب\"، ولكنه لا يزال بحاجة إلى دعم في المزج المعقد، ويبدأ في التعرف على الكلمات الصعبة.",
+   "الأهداف",
+   "سيتعلم الطالب:",
+   "سيتعلم الطالب:",
+   "أصوات الحروف: سيشارك طفلك في أنشطة تعزز أصوات الحروف من Jolly Phonics 3، مع مراجعة الأصوات التي كانت صعبة من Jolly Phonics 1.",
+   "مزج الأصوات: سيواصل التدرب على المزج، بدءًا من كلمات CVC البسيطة إلى كلمات تحتوي على أكثر من ثلاثة أصوات مثل \"يقفز\" و\"قطار\".",
+   "مهارة التجزئة: سيطوّر الطالب مهارات التجزئة لتفكيك الكلمات إلى أصوات فردية، مما يدعم مهارات التهجئة والطلاقة في القراءة.",
+   "الكلمات الصعبة: سيتعلم الطفل التعرف على الكلمات الصعبة التي لا تتبع الأنماط الصوتية المنتظمة وقراءتها.",
+   "نماذج للأنشطة المستخدمة",
+   "الأغاني والقوافي الصوتية: أغاني جذابة تعزز الأصوات البسيطة والمعقدة.",
+   "أنشطة السبورة التفاعلية: ألعاب وتمارين تدعم المزج والطلاقة.",
+   "أنشطة التلوين والتتبع: أنشطة تربط بين الأصوات، الصور، وتدريبات الكتابة.",
+   "ألعاب الكلمات الصعبة: أنشطة ممتعة تساعد الطفل على تذكر الكلمات غير القابلة للفك الصوتي.",
+   "تذكر: كل طفل يتعلم بالسرعة التي تناسبه. تحلى بالصبر، واحتفل بتقدمهم، والأهم من ذلك، اجعل التعلم ممتعًا!"
+  ],
+  "order_index": 3
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "10K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner easily follows discussions about personal interests, daily routines, and contexts like airport procedures or family dynamics. They understand detailed questions and dialogues, such as booking a flight or discussing preferences.",
+   "reading": "The learner reads and interprets a variety of texts, including holiday letters, TV guides, and stories. They can extract specific details, identify true or false statements, and recognize the proper use of homophones like \"there,\" \"they're,\" and \"their.\"",
+   "speaking": "The learner confidently engages in extended conversations, discussing family relationships, preferences, and experiences. They describe processes and provide detailed accounts of events using a mix of tenses, such as past continuous and present perfect.",
+   "vocabulary": "The learner confidently uses vocabulary related to diverse topics, including airports (e.g., \"luggage,\" \"passenger\"), illnesses (e.g., \"sore throat,\" \"energy\"), and geographical features (e.g., \"volcano,\" \"rainforest\"). They comfortably discuss hobbies, jobs, and family relationships with precision. /",
+   "grammar": "The learner speaks in complete sentences with minimal errors, confidently using object pronouns (e.g., \"He gave it to me\"), past continuous (e.g., \"I was walking when it started to rain\"), and present perfect (e.g., \"I’ve seen that movie before\"). They begin to contrast tenses like past simple and past continuous to explain actions clearly."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and use indefinite pronouns in sentences to describe objects and situations with “something,” “anything,” and “everywhere.”",
+   "Compose and complete sentences with correct question tags for statements.",
+   "Analyze and convert direct speech into reported speech, using correct time markers and phrases like “told us” and “said.”",
+   "Create descriptive accounts by using advanced vocabulary to make writing more engaging.",
+   "Use first conditional structures to talk about cause-and-effect scenarios.",
+   "Apply modal verbs (may, might, could) to speculate on future actions and possible situations in sentences.",
+   "Explain the purpose and categories of foods within the “Healthy Eating Pyramid,” identifying items like “additives” and “dairy products.”",
+   "Compare antonyms (e.g., “win/lose,” “best/worst”) in the context of sports and use them to describe scenarios in physical activities.",
+   "Draft topic sentences to introduce and structure paragraphs, focusing on clear and focused article writing.",
+   "Discuss the unique features of wildlife parks, using terms like “insect house,” “reptile house,” and “aviary” to describe different animal habitats.",
+   "Develop an understanding of environmental threats facing animals, explaining concepts like “extinct,” “endangered,” and “habitat.”",
+   "Write a newspaper report using proper structure, focusing on using reported speech and descriptive language to inform readers about events or news."
+  ],
+  "order_index": 10
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "11K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner independently understands discussions on various topics, including emergency scenarios, wildlife parks, and archaeological sites. They can follow detailed explanations, such as first aid procedures, or cause-and-effect situations like those using the first conditional.",
+   "reading": "The learner reads complex texts, such as articles on ancient sites or environmental issues, summarizing main ideas and answering comprehension questions. They analyze informational texts, distinguishing true and false details, and recognize the structure of articles and reports.",
+   "speaking": "The learner speaks confidently on a variety of topics, using complex sentences to describe experiences, speculate about possibilities, and explain ideas clearly. They participate in role-plays, such as emergency calls, practicing conversational phrases with fluency and accuracy.",
+   "vocabulary": "The learner confidently uses a wide range of words to describe ideas, opinions, and preferences, incorporating advanced terms like \"additives,\" \"carving,\" and \"aviary.\" They can compare antonyms in context (e.g., \"win/lose\") and use modal verbs like \"might\" and \"could\" to speculate about possibilities. /",
+   "grammar": "The learner forms clear and well-constructed sentences with minor errors, confidently using indefinite pronouns (e.g., \"something,\" \"everywhere\"), question tags (e.g., \"isn't it?\"), and modal verbs. They accurately convert direct speech to reported speech, using phrases like \"She told us\" and \"He said.\""
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Describe different forms of art (e.g., murals, sculptures, landscapes) by identifying elements like foreground, background, and medium.",
+   "Identify and use common prefixes (un-, im-, dis-, in-) to modify adjectives, creating words with opposite meanings.",
+   "Classify various forms of transport (e.g., yacht, helicopter, submarine) and discuss their unique purposes and features.",
+   "Explain the process of invention, describing key steps such as “design,” “experiment,” and “build” while using vocabulary like \"device\" and \"inspiration.\"",
+   "Apply the present perfect with time markers (for, since, just, already) to describe recent experiences or ongoing actions.",
+   "Construct sentences using the first and second conditional forms to talk about hypothetical situations and possible outcomes.",
+   "Analyze a short story extract (e.g., “Island Adventure”) by identifying character actions, setting, and context clues.",
+   "Compose descriptive sentences in the passive voice (present and past simple) to discuss how things are or were made.",
+   "Use the present perfect continuous tense to describe actions that have been ongoing (e.g., “I’ve been studying art history for two years”).",
+   "Interpret and discuss information from a travel article on food festivals, identifying adjectives like “traditional,” “delicious,” and “amazing” to describe experiences.",
+   "Summarize details from a sports profile by answering comprehension questions and discussing sports-related vocabulary.",
+   "Identify the stages in a process diagram and explain how to perform an activity (e.g., “how to ride a bike”) using structured steps."
+  ],
+  "order_index": 11
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "12K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner comfortably follows and contributes to detailed discussions, asking insightful questions about topics such as art forms, extreme sports, and inventions. They can interpret information from travel articles or sports profiles, identifying key details with ease.",
+   "reading": "The learner reads longer, more complex texts, such as short story extracts, travel articles, or sports profiles. They accurately analyze character actions, settings, and context clues while summarizing main ideas and finding detailed information.",
+   "speaking": "The learner speaks fluently about a wide range of topics, including art, travel, and sports, using complex sentences with minimal errors. They confidently engage in spontaneous conversations and express detailed opinions with ease.",
+   "vocabulary": "The learner commands an extensive vocabulary, confidently describing forms of art (e.g., \"murals,\" \"sculptures\"), transport modes (e.g., \"yacht,\" \"submarine\"), and extreme sports (e.g., \"paragliding,\" \"rock climbing\"). They effectively use prefixes (e.g., \"uncomfortable,\" \"impossible\") to modify adjectives and enrich their speech. /",
+   "grammar": "The learner constructs well-structured sentences, confidently using complex grammatical forms like present perfect simple, present perfect continuous, first and second conditionals and passive voice."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and use homonyms in context, distinguishing between words with the same spelling but different meanings (e.g., \"market\" as a noun and verb).",
+   "Construct sentences using the passive voice in future and present perfect forms to describe processes.",
+   "Analyze geographical terms and items used in exploring (e.g., compass, map, binoculars) by describing their purpose and significance in navigation.",
+   "Describe mysterious artifacts and ancient sites using adjectives like \"ancient,\" \"mysterious,\" and \"fascinating\" to create vivid descriptions.",
+   "Apply suffixes (-er, -ist, -able) to root words to expand vocabulary, distinguishing between roles (e.g., explorer, scientist) and describing qualities (e.g., valuable, incredible).",
+   "Use modal verbs (must, should, ought to) to give advice and instructions related to safety and preparation (e.g., “You mustn’t leave the group,” “You ought to bring a compass”).",
+   "Formulate questions using relative pronouns (who, which) to inquire about specific details, such as characteristics of explorers or items.",
+   "Use the third conditional by constructing hypothetical sentences about past events (e.g., “If the ship had arrived sooner, they would have avoided the storm”).",
+   "Use reported speech in various tenses to relay past conversations or plans (e.g., “He said he had explored the ancient ruins”).",
+   "Create a tourist information leaflet by organizing descriptive language and factual details about a site of interest.",
+   "Compose a personalized text or advice piece using reflexive pronouns (myself, yourself, themselves) to provide instructions or tips.",
+   "Design an advertisement text to promote an activity, using persuasive language and specific details to attract interest."
+  ],
+  "order_index": 12
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "5K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner follows short, clear instructions about everyday topics. They can extract specific details from texts and can identify people or actions in descriptions. They are able to sequence events or pictures, such as actions in a story.",
+   "reading": "The learner can read very short sentences and identify words in familiar texts. They are developing comprehension skills through stories and can extract information from texts such as magazine interviews, school articles, or descriptive emails.",
+   "speaking": "The learner can ask and answer questions about more than the very familiar topics. They can talk about weather, and descriptions. They can describe ongoing actions or past events and express feelings, e.g., “Is she sad? No, she isn’t.” They can also give simple rules, like “Don’t open the gate.”",
+   "vocabulary": "The learner confidently uses a basic set of familiar words in conversation. They can talk about a variety of everyday topics and activities, and are becoming more comfortable with descriptions.",
+   "grammar": "The learner begins to form short sentences but may make small mistakes, such as mixing up tenses. They are working on using present continuous and irregular plurals. The learner mostly uses single words or very short phrases and has not yet begun to form complete sentences. /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Explain the four seasons and their associated weather patterns and the typical activities people do in each season in simple terms.",
+   "Ask and answer questions about hobbies, using “Do you like…?” and “Yes, I do/No, I don’t.”",
+   "Describe daily routines using time expressions (e.g., \"I have breakfast at 8:00,\" \"I don’t wake up early\").",
+   "Formulate polite requests and respond appropriately (e.g., “Can you turn off the TV, please?”).",
+   "Describe actions in progress using the present continuous tense (e.g., \"I’m swimming,\" \"They aren’t playing volleyball\").",
+   "Ask and answer questions using the present continuous (e.g., \"Is he swimming?\" \"Yes, he is.\").",
+   "Name and describe zoo animals using adjectives (e.g., “The zebra is beautiful”).",
+   "Express emotions using adjectives (e.g., “I feel scared,” “He is happy”).",
+   "Use time expressions and sequence words (e.g., first, then, finally) to describe a daily routine (e.g., \"First, I get up. Then, I brush my teeth.\").",
+   "Ask and answer questions about daily routines (e.g., \"What time do you get up?\" \"I get up at 7 o’clock.\").",
+   "Use adjectives to describe places (e.g., \"The park is beautiful,\" \"The city is polluted\").",
+   "Compare places based on safety and attractiveness (e.g., \"The beach is safer than the zoo\").",
+   "Write a paragraph introducing yourself, including information about your country, hobbies, and daily routine.",
+   "Identify the main idea and sequence of events in a story (e.g., \"The Lazy Bear\").",
+   "Ask and answer questions about free-time activities using adverbs of frequency (e.g., “Do you always play chess?” “No, I sometimes play it.”)."
+  ],
+  "order_index": 5
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "6K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner understands simple questions about routines, interests, and everyday activities with minimal assistance. They can also identify key details, like age, country, and hobbies, from audio recordings.",
+   "reading": "The learner reads short sentences and simple stories independently, identifying the main idea and sequencing events (e.g., \"The Lazy Bear\"). They can match characters and actions from stories to descriptions.",
+   "speaking": "The learner expresses simple ideas, like describing hobbies, free-time activities, or daily routines, using full sentences. They can ask and answer questions about familiar topics (e.g., \"Do you like painting?\" \"Yes, I do\").",
+   "vocabulary": "The learner is familiar with common words and is beginning to use less common vocabulary, such as emotions and adjectives to describe places or zoo animals. They can talk about topics like hobbies, countries, and seasons with growing confidence. /",
+   "grammar": "The learner uses basic sentence structures with minor errors. They can form affirmative, negative, and interrogative sentences in the present simple and present continuous tenses (e.g., \"He is reading a book\"). They are also learning to use “can” for polite requests and permission."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Use countable and uncountable nouns with \"a/an,\" \"some,\" and \"any\" in context to describe food and everyday objects.",
+   "Form and use comparatives to describe the differences between two things, e.g., \"Russia is bigger than the UK.\"",
+   "Understand and use superlatives to describe the extreme quality of something, e.g., \"The highest mountain in the world is Mount Everest.\"",
+   "Describe geographical features using adjectives such as \"wide,\" \"deep,\" \"high,\" and \"old,\" to talk about places like mountains, rivers, and lakes.",
+   "Ask and answer questions about preferences with \"Would you like...?\" and express likes and dislikes using \"I would like\" and \"I like.\"",
+   "Use the past simple tense to describe and talk about past events.",
+   "Understand and use time words such as \"yesterday,\" \"last week,\" \"tomorrow,\" and \"soon\" to talk about past and future events.",
+   "Use the present continuous tense to describe ongoing actions, e.g., \"I am playing football\" and form negative statements like \"He isn't swimming.\"",
+   "Use prepositions of place and time such as \"in,\" \"on,\" \"at,\" and \"between\" to describe locations and time, e.g., \"My birthday is in May,\" \"The book is on the table.\"",
+   "Describe objects or people with adjectives such as \"heavy,\" \"light,\" \"friendly,\" and \"shy,\" and use them to form sentences."
+  ],
+  "order_index": 6
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "7K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner can follow conversations on familiar topics, like weekend activities or daily routines, with minimal assistance. They are able to listen for specific details in dialogues, stories, and songs, and answer related comprehension questions. They can also follow and give simple directions, such as “Turn left at the traffic light.”",
+   "reading": "The learner reads short texts, such as recipes or simple stories, to identify specific information and gain understanding. They use this skill to discuss topics like favorite meals or geographical features.",
+   "speaking": "The learner engages in conversations, expressing preferences and describing events or people using adjectives. They can talk about personal experiences or ask and answer questions about past and future events with growing fluency.",
+   "vocabulary": "The learner has a strong vocabulary related to daily life, hobbies, family, and geographical features. They confidently use descriptive words like \"wide,\" \"high,\" and \"friendly\" in context. /",
+   "grammar": "The learner forms clear sentences and uses grammatical structures like comparatives, superlatives, and the past simple tense (\"was/were,\" regular, and irregular verbs). They are learning to use \"going to\" for future plans and the present continuous for ongoing actions."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Ask and answer questions about breakfast preferences using the words in context (e.g., beans, toast, noodles).",
+   "Identify and describe dinosaurs and museum-related vocabulary (e.g., skeleton, roar, model).",
+   "Differentiate between present simple and present continuous.",
+   "Use past simple tense to describe past events, including regular and irregular verbs (e.g., The audience clapped, Did they go to a museum?).",
+   "Ask and answer questions about sports activities, including the use of time markers and past simple tense.",
+   "Use possessive pronouns to talk about ownership (e.g., It's mine, It's theirs).",
+   "Form and use comparative and superlative adjectives with regular and irregular forms (e.g., better than, the best).",
+   "Read and understand different types of texts (e.g., magazine articles, poems, fables, and non-fiction texts).",
+   "Write descriptions, instructions, and narratives using proper punctuation, including exclamation marks.",
+   "Recognize and use \"f\" and \"ph\" spellings in words (e.g., flamingo, phone).",
+   "Give clear directions using phrases like \"Go straight on\" and \"Turn right.\"",
+   "Engage in conversations about daily activities, preferences, and past experiences (e.g., musical activities, school trips).",
+   "Listen for specific details in dialogues, songs, and stories to answer comprehension questions."
+  ],
+  "order_index": 7
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "8K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner easily follows conversations and instructions on a variety of familiar topics, like giving directions or discussing daily routines. They can listen for specific details, such as identifying musical instruments in a dialogue or understanding a friend's preferences at a restaurant.",
+   "reading": "The learner reads texts like stories, fables, and magazine articles, identifying key details and understanding main ideas. They can interpret a recipe or instructions for a project like making shadow puppets, demonstrating practical comprehension.",
+   "speaking": "The learner confidently engages in conversations about daily life, personal routines, and preferences. They can describe actions in progress (e.g., \"I am writing an email\") or past events (e.g., \"I watched a movie last night\") and make predictions about the future (e.g., \"It will be sunny tomorrow\").",
+   "vocabulary": "The learner confidently uses a strong vocabulary set, including words related to restaurants, concerts, water sports, and directions. They can also describe personal routines, geographical features, and objects using adjectives like \"expensive,\" \"deep,\" or \"friendly.\". /",
+   "grammar": "The learner effectively forms sentences using the present continuous, past simple (regular and irregular verbs), and future tense with \"will.\" They confidently use grammar structures like comparatives and superlatives (e.g., \"better than,\" \"the most beautiful\") and possessive pronouns (e.g., \"mine,\" \"theirs\")."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and use vocabulary related to airport settings (e.g., money, passenger, luggage).",
+   "Describe a holiday using related vocabulary (e.g., unusual, journey, fireworks).",
+   "Ask and answer questions about quantity using some/any, and how much (e.g., \"How much time have we got?\").",
+   "Identify and use vocabulary related to computers and technology.",
+   "Describe different places and locations, including natural features (e.g., volcano, rainforest, oasis).",
+   "Use geographical vocabulary (e.g., location, height, expedition) to discuss expeditions or geographical experiences.",
+   "Identify and discuss common illnesses and symptoms (e.g., headache, sore throat, cough).",
+   "Ask and answer questions using the present perfect tense (e.g., \"Have you seen my new speakers? Yes, I have.\").",
+   "Discuss and describe the process of making a smoothie (e.g., peel, pour, blend).",
+   "Describe family relationships and discuss family memories (e.g., cute, toddler, relatives).",
+   "Jobs",
+   "Talk about different jobs and how people help others (e.g., \"What does a mechanic do?\").",
+   "Compare and contrast the past simple and past continuous tenses (e.g., \"When I was working, the phone rang.\").",
+   "Read and understand holiday letters, identifying true or false information.",
+   "Write a letter about a holiday, using proper addressing and format.",
+   "Talk about family members and happy memories using appropriate vocabulary."
+  ],
+  "order_index": 8
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "9K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner easily follows discussions about personal interests, daily routines, and contexts like airport procedures or family dynamics. They understand detailed questions and dialogues, such as booking a flight or discussing preferences in audio-visual entertainment.",
+   "reading": "The learner reads and interprets a variety of texts, including holiday letters, TV guides, and stories. They can extract specific details, identify true or false statements, and recognize the proper use of homophones like \"there,\" \"they're,\" and \"their.\"",
+   "speaking": "The learner confidently engages in extended conversations, discussing family relationships, preferences, and experiences. They describe processes (e.g., making smoothies) and provide detailed accounts of events using a mix of tenses, such as past continuous and present perfect.",
+   "vocabulary": "The learner confidently uses vocabulary related to diverse topics, including airports (e.g., \"luggage,\" \"passenger\"), illnesses (e.g., \"sore throat,\" \"energy\"), and geographical features (e.g., \"volcano,\" \"rainforest\"). They comfortably discuss hobbies, jobs, and family relationships with precision. /",
+   "grammar": "The learner speaks in complete sentences with minimal errors, confidently using object pronouns (e.g., \"He gave it to me\"), past continuous (e.g., \"I was walking when it started to rain\"), and present perfect (e.g., \"I’ve seen that movie before\"). They begin to contrast tenses like past simple and past continuous to explain actions clearly."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and describe common household and work tools, such as rope, saw, hammer, and tape measure.",
+   "Recognize and explain the role of different elements in a play, such as the script, stage, lights, and costume.",
+   "Form words using the suffix -ion (e.g., \"celebrate\" to \"celebration\").",
+   "Identify environmental issues such as pollution, litter, and damage to wildlife.",
+   "Define and use compound nouns related to the environment (e.g., wildlife park, rubbish dump).",
+   "Define and identify common recycling materials (e.g., oil, paper, battery) and understand the concept of recycling.",
+   "Form and use the present perfect tense with \"ever\" and \"never\" in sentences, e.g., \"Have you ever cleaned a kitchen?\"",
+   "Compare two things using \"as ... as ...\" and \"not as ... as ...\"",
+   "Use \"too\" and \"enough\" to describe the adequacy of conditions (e.g., \"It's too dark now\").",
+   "Predict and listen for details in plays and stories, ordering events and actions.",
+   "Write a complete play script, paying attention to formatting and dialogue.",
+   "Use the past simple and past continuous tenses to describe interrupted actions.",
+   "Use \"used to\" to talk about past habits or situations.",
+   "Use the present continuous with future meaning to describe planned actions."
+  ],
+  "order_index": 9
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "Pre K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner begins recognizing simple sounds and words, such as \"ball,\" \"cat,\" and \"mommy.\"",
+   "reading": "The learner starts recognizing letters and associating them with sounds (e.g., “A is for Apple”). They might look at pictures in books and identify objects when prompted.",
+   "speaking": "The learner repeats words and short phrases, responding to simple questions with one-word answers, like “Yes” or “No.”",
+   "vocabulary": "The learner identifies and repeats basic, everyday words, but needs work to develop their vocabulary.",
+   "grammar": "The learner mostly uses single words and has not yet begun to form complete sentences. /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and name basic colors (red, green, blue, black, white) and common school items (desk, chair, pencil, crayon, notebook).",
+   "Recognize and name toys (plane, puppet, robot, balloon, teddy) and zoo animals (bird, bear, hippo, crocodile, tiger).",
+   "Name family members (mum, dad, brother, sister, grandpa, grandma) and jobs (pupil, teacher, waiter, vet, builder).",
+   "Recognize and name clothes (jumper, shirt, jacket, hat, belt) and food/drink items (raisins, plums, crisps, cakes, milkshake).",
+   "Count numbers from 1 to 20 and use basic sentence structures like “What’s your name?” and “I’m Rosy.”",
+   "Ask and answer questions about objects and people using “What’s this?” and “What are they?” with yes/no responses (e.g., “Is it a plane?” “Are they teachers?”).",
+   "Use pronouns (he/she) to describe emotions (e.g., “He’s happy,” “She’s cold”) and form plurals with “s.”",
+   "Express possession using “I’ve got” and preferences with “I like/don’t like.”",
+   "Develop reading skills by recognizing words and matching them to pictures, reading simple sentences, and identifying patterns or the odd-one-out.",
+   "Improve writing through word tracing, completing simple sentence patterns, and practicing drawing shapes, curves, loops, and downstrokes."
+  ],
+  "order_index": 0
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "1K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner can follow very simple instructions, such as “sit” or “stand.” The learner understands a few basic words that are familiar and commonly used.",
+   "reading": "The learner recognizes basic letters and a few familiar words, such as “cat” and “dog,” with increasing confidence.",
+   "speaking": "The learner can say a few words or phrases when prompted, such as naming familiar objects or saying “hello” or “goodbye.”",
+   "vocabulary": "The learner recognizes some colors, family members, and common animals but may need extra time to recall specific words.",
+   "grammar": "The learner mostly uses single words or very short phrases and has not yet begun to form complete sentences. /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and name colors and days of the week, using these terms accurately in simple sentences.",
+   "Introduce family members (e.g., mum, dad, cousin) and use possessive ’s’ to show belonging (e.g., “This is Mum’s book”).",
+   "Identify common jobs (e.g., doctor, fireman, teacher).",
+   "Recognize and produce initial sounds for letters (e.g., A to Z), enhancing phonemic awareness and reading readiness.",
+   "Practice asking and answering personal questions (e.g., “What’s your name?”) to develop social skills.",
+   "Improve listening by identifying specific details, like numbers or favorite items, during listening activities.",
+   "Name basic body parts and demonstrate understanding by following instructions (e.g., “Point to your nose”)."
+  ],
+  "order_index": 1
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "2K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner understands simple questions about familiar topics, such as family members and pets. They can respond with basic answers but may need slight repetition.",
+   "reading": "The learner recognizes a few sight words with support and enjoys pointing out and identifying letters. They can identify basic words but need assistance with some unfamiliar ones.",
+   "speaking": "The learner can ask and respond to simple questions about objects, jobs, colors, people, and animals. They can say things like \"What's this? It's a toy\" or \"What color are these trousers?\" but they sometimes need help forming complete sentences.",
+   "vocabulary": "The learner is familiar with everyday words, like the names of toys and foods, though they may occasionally need reminders. They recognize some common items but may need help with less familiar words.",
+   "grammar": "The learner can form short, basic phrases of two to three words, but sentences remain simple. They are working on combining words into simple sentences with more practice.. /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and name foods and drinks, including lunchbox items.",
+   "Practice articles (“a”/“an”) and possession (e.g., “I’ve got…”).",
+   "Express likes and dislikes and discuss preferences (e.g., “I like bananas,” “I don’t like apples”).",
+   "Use vocabulary to describe appearance (hair, height) and ask/answer questions (e.g., “She’s got brown hair.”).",
+   "Name and describe zoo animals, expressing preferences (e.g., “I like tigers.”).",
+   "Discuss and compare sizes using size-related vocabulary (big, small, tall, etc.).",
+   "Practice prepositions by describing where things are (e.g., “The bed is next to the cupboard.”).",
+   "Discuss activities and abilities (e.g., “Can you swim?”).",
+   "Learn and practice action verbs (e.g., run, swim, write) through commands and activities.",
+   "Use modal verbs to discuss abilities (e.g., “He can jump,” “She can’t fly.”).",
+   "Read/listen to descriptive texts and respond to comprehension questions."
+  ],
+  "order_index": 2
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "3K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner can respond to familiar questions like “What’s your name?” and “How old are you?” They can also identify key details about food preferences, animals, and activities, as well as follow simple instructions like identifying items in a list.",
+   "reading": "The learner can read familiar words independently and is starting to sound out new ones. They can also extract specific details from simple descriptions and are practicing sequencing, such as putting pictures in order to match a story.",
+   "speaking": "The learner can ask and respond to questions about familiar topics like lunch boxes, food, and animals. They use adjectives and simple details to describe objects and animals and can make basic proposals, like “Let’s play!”",
+   "vocabulary": "The learner has a growing vocabulary related to family, toys, and favorite activities. They are starting to use adjectives to describe objects and animals, such as “big toy” or “happy dog,” and understand terms related to colors, shapes, and sizes.",
+   "grammar": "The learner can form short sentences but may make small mistakes with word order or structure. They’re becoming more comfortable combining words and using articles like “a” and “an” correctly."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Describe various school objects, including where they are located in the classroom using prepositions of place (e.g., behind, in front of, next to, between).",
+   "Recognize and name different emotions (e.g., happy, sad, scared) and respond to questions about feelings using short answers (e.g., \"Is he sad? No, he isn’t\").",
+   "Practice placing objects in relation to others using prepositions of place and answer questions like \"Where is the skateboard?\" with responses such as \"It’s in front of the table.\"",
+   "Talk about foods and preferences, ask and answer questions about food choices, and identify food items during listening activities (e.g., “Have you got fries?”).",
+   "Identify and discuss after-school activities and express personal routines or preferences (e.g., “I read a book. I don’t ride a bike”).",
+   "Listen for specific details in descriptions to identify people, objects, or feelings and match them to images or items in activities.",
+   "Engage in discussions on respecting differences and show understanding of helping and caring for others."
+  ],
+  "order_index": 3
+ },
+ {
+  "program": "Kids",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "4K",
+  "cefr_band": null,
+  "skills": {
+   "listening": "The learner understands routine questions about daily activities and can identify people, objects, and places from verbal descriptions. They can also number items or pictures in the correct order and identify key details.",
+   "reading": "The learner can read short phrases and simple sentences with minimal support. They are developing skills to understand descriptive texts and match them to pictures or details. They can also follow basic written and extract details from short texts.",
+   "speaking": "The learner engages in very simple conversations about appearance, quantity, feelings, locations, possessions, and activities. They can talk about objects, people, and school-related topics, using simple sentences and phrases to express their thoughts and preferences.",
+   "vocabulary": "The learner recognizes words related to school, family, and common actions and can use them in conversations. They are expanding their vocabulary and using it to talk about a range of topics, including school-related activities, feelings, and preferences.",
+   "grammar": "The learner forms basic sentences but may occasionally mix up word order. They are working on improving sentence structure and using verbs correctly, as well as practicing contractions and punctuation (question marks, full stops, and capital letters). /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Identify and describe the functions of various places in the community, such as a hospital, school, airport, police station, and fire station.",
+   "Describe what people are doing or wearing using present continuous sentences (e.g., “He’s wearing a blue shirt.” or “She’s eating.”).",
+   "Compare animals or objects using comparative adjectives, forming sentences like “This cow is bigger than that cow.”",
+   "Identify different types of weather (sunny, rainy, windy) and suggest appropriate outdoor activities, like “It’s raining; wear your coat.”",
+   "Identify common farm animals (e.g., cow, goat, sheep) and describe them using adjectives like “fast,” “slow,” “loud,” and “quiet.”",
+   "Identify and discuss appropriate clothing for various weather conditions and celebrations (e.g., wear gloves in cold weather, wear a suit for a wedding).",
+   "Explain and follow rules for keeping areas tidy and respecting personal items, highlighting actions like “tidy up,” “don’t leave rubbish,” and “keep things organized.”"
+  ],
+  "order_index": 4
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "10",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "The learner can understand clear English on topics they are familiar with like family, school, routines, animals, online activities, health, and jobs. They follow instructions, identify activities, recognize time phrases, and extract key details from conversations, videos, and audio about weekend plans.",
+   "reading": "The learner reads short texts with familiar vocabulary and can locate details, guess meanings, skim, sequence events, and match problems to solutions. They analyze messages, blogs, and articles about travel, sports, and jobs, identifying main ideas and comparing information.",
+   "speaking": "The learner can speak clearly about themselves, preferences, routines, and habits. They make invitations, express future plans, give advice, and compare jobs or transport modes. They explain sports rules, describe personality traits, and make apologies with reasons. They might still make some slips with structures or the vocabulary. /",
+   "vocabulary": "The learner uses vocabulary about family, food, animals, health, and online activities. They also use words for weekend plans (e.g., cookout), transportation (e.g., ferry), sports (e.g., skateboarding). They are going to expand through learning job titles (e.g., software developer), and personality traits (e.g., cheerful/shy).",
+   "grammar": "The learner uses present simple, past simple, present continuous (including for future), “have to/don’t have to,” “should/shouldn’t,” “there is/are,” comparatives and superlatives well. They are going to broaden their range through learning to use “as…as,” “too/not…enough,” and indefinite pronouns (e.g., someone, anything) correctly in speech and writing."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn and use job-related vocabulary (e.g., architect, chef, dentist, journalist, software developer)",
+   "Understand and apply personality adjectives (e.g., cheerful, helpful, easygoing, confident, hard-working, polite) and their opposites (e.g., lazy, shy, rude).",
+   "Discuss different jobs and describe people’s personalities.",
+   "Make apologies and provide reasons for inability to participate in activities (e.g., “I’m sorry, but I can’t go to your cookout. I have to see my relatives”).",
+   "Use too + adjective and not + adjective + enough to describe excess or insufficiency (e.g., “The car is too small”).",
+   "Learn sports-related vocabulary (e.g., basketball, karate, sailing, skateboarding, soccer) as well as sports verbs (e.g., catch, hit, kick, score, throw, win).",
+   "Use superlative adjectives to describe extremes (e.g., “Basketball is the most popular sport in my school”)."
+  ],
+  "order_index": 10
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "11",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "The learner can understand clear English on topics like family, school, routines, animals, online activities, health, and jobs. They follow instructions, identify activities, recognize time phrases, and extract key details from conversations, videos, and audio about weekend plans, transportation, and professions.",
+   "reading": "The learner reads short texts with familiar vocabulary and can locate details, guess meanings, skim, sequence events, and match problems to solutions. They analyze messages, blogs, and articles about travel, sports, and jobs, identifying main ideas and comparing information.",
+   "speaking": "The learner can speak clearly about themselves, preferences, routines, and habits. They make invitations, express future plans, give advice, and compare jobs or transport modes. They explain sports rules, describe personality traits, and make apologies with reasons. /",
+   "vocabulary": "The learner uses vocabulary about family, food, animals, health, and online activities. They also use words for weekend plans (e.g., cookout), transportation (e.g., ferry), sports (e.g., skateboarding), job titles (e.g., software developer), and personality traits (e.g., cheerful/shy).",
+   "grammar": "The learner uses present simple, past simple, present continuous (including for future), “have to/don’t have to,” “should/shouldn’t,” “there is/are,” comparatives, superlatives, “as…as,” “too/not…enough,” and indefinite pronouns (e.g., someone, anything) correctly in speech and writing."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn and use money-related verbs (e.g., pay, earn, save, spend, borrow, waste, lend, can’t afford) and shopping nouns (e.g., bargain, change, counter, coupon, price, receipt, sale).",
+   "Discuss personal spending habits and financial decisions (e.g., \"Teenagers spend most of their money on ...\").",
+   "Use be going to for affirmative, negative, and question forms to talk about future plans and intentions.",
+   "Use the past progressive tense (affirmative, negative, and questions) to describe ongoing actions and experiences in the past.",
+   "Learn and apply adjectives of feeling with appropriate prepositions (e.g., afraid of, disappointed with, proud of) to express emotions.",
+   "Develop vocabulary related to adventure sports (e.g., bungee jump, caving, scuba diving, skydiving, parkour) and discuss preferences, equipment, and safety.",
+   "Practice functional language for giving news and reacting appropriately with surprise, sympathy, or congratulations.",
+   "Discuss personal experiences (e.g., favorite moments, shopping habits, adventure sports preferences)."
+  ],
+  "order_index": 11
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "12",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "The learner is able to follow spoken English on familiar subjects like daily life, health, online activities, animals, and different jobs. They can follow directions, recognize activities and time markers, and pick out key info from conversations, and audio clips about weekend plans, transport, and work life. They use strategies to predict content and listen for details effectively.",
+   "reading": "The learner understands short written texts using everyday vocabulary. They can scan for details, guess meanings, and follow the order of events. They read messages, blogs, and articles on travel, sports, and careers, and they can identify main ideas and make comparisons between texts.",
+   "speaking": "The learner communicates clearly using full sentences to talk about themselves, their routines, preferences, and opinions. They know how to make and respond to invitations, discuss future plans, give advice, compare things like transport or sports, explain how games are played, describe people’s personalities, and politely decline invitations with reasons. /",
+   "vocabulary": "The learner uses everyday vocabulary confidently, covering topics like family, food, animals, health, and tech. They are expanding their range with new words related to weekend events, transport options, sports, jobs, movement verbs, and personality traits and opposites.",
+   "grammar": "The learner forms accurate sentences using key"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn and use verbs related to crime (e.g., steal, rob, arrest, investigate) and their definitions.",
+   "Understand online safety terms (e.g., click on links, install antivirus software, log out of websites).",
+   "Identify and categorize types of movies and TV shows (e.g., comedy, documentary, soap opera).",
+   "Use vocabulary related to performing arts (e.g., act in plays, direct videos, design costumes).",
+   "Read and analyze texts about crime, such as detective stories (e.g., Detective Gorski’s undercover mission).",
+   "Understand dialogues about online safety (e.g., phishing e-mails) and media (e.g., TV shows, movie theater interactions).",
+   "Practice conversational phrases to explain delays or problems (e.g., \"I was writing you a message when my battery died\").",
+   "Engage in discussions about favorite movies, TV shows, and viewing preferences (e.g., theater vs. home)."
+  ],
+  "order_index": 12
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "5",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "The learner can comprehend slow, clear spoken English in familiar contexts like family, school, or daily routines, and follow simple instructions. They struggle with unfamiliar topics like vacation activities or weather terms (e.g., “surf,” “windy”) and need visual support or repetition. They will expand their listening skills to understand conversations about vacations, clothing, and weather in real-world contexts.",
+   "reading": "The learner can read short, simple texts with familiar vocabulary (e.g., “I am from Spain”) and identify key details using visuals. They struggle with new words (e.g., “excited,” “rainjacket”) and longer sentences. They will enhance their comprehension by engaging with texts about vacations, extreme weather, and clothing descriptions.",
+   "speaking": "The learner uses short, basic sentences to discuss themselves, places, or preferences (e.g., “I like soccer”), though they may hesitate or make errors. They struggle with fluency when using new structures like the present progressive. They will practice describing vacation plans, feelings, and weather, gaining confidence in detailed conversations. /",
+   "vocabulary": "The learner has a limited vocabulary covering everyday topics like family, clothes, and food, but may confuse similar terms (e.g., “bored” vs. “tired”). They will learn new words related to vacation activities, feelings, clothing, and weather (e.g., “hike,” “thirsty,” “snowing”), enabling better discussions.",
+   "grammar": "The learner can use basic grammar like “be,” simple present, and “can” to talk about routines and abilities, with occasional verb form errors. They will master the present progressive (e.g., “I’m watching TV”) and form questions to discuss vacations, weather, and current activities."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn and use vocabulary related to vacation activities, such as \"go to the beach,\" \"visit famous places,\" \"stay in a hotel,\" \"go shopping,\" \"surf,\" and \"hike.\"",
+   "Apply adjectives to describe emotions and physical states, including \"bored,\" \"cold,\" \"excited,\" \"hot,\" \"hungry,\" \"scared,\" \"thirsty,\" and \"tired.\"",
+   "Acquire vocabulary for clothing items, such as \"coat,\" \"gloves,\" \"hat,\" \"hoodie,\" \"rainjacket,\" \"scarf,\" \"shorts,\" \"swimsuit,\" and \"trainers,\" and describe what people are wearing.",
+   "Use the present progressive and adjectives to describe what people are doing and how they feel in various scenarios.",
+   "Differentiate between present simple and present progressive.",
+   "Form and respond to questions, particularly about vacation plans, weather, and what people are doing or wearing, using appropriate verb tenses and vocabulary.",
+   "Ask and answer questions about the weather in different places, comparing usual conditions to current conditions (e.g., \"What’s the weather like in Seoul today?\").",
+   "Describe what people are wearing in different contexts, such as at the pool or in cold weather."
+  ],
+  "order_index": 5
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "6",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "The learner can comprehend slow, clear spoken English in familiar contexts (e.g., family, school, daily routines) and follow simple instructions. However, they struggle with unfamiliar topics like endangered animals and habitats.",
+   "reading": "The learner can read short, simple texts with familiar vocabulary. They struggle with unfamiliar words in reading. They will enhance their comprehension by engaging with texts about food, parties, habitats, and real-life scenarios, learning to extract specific information, recognize abbreviations, and guess the meaning of unknown words from context.",
+   "speaking": "The learner uses short, basic sentences to discuss themselves, places, or preferences (e.g., “I like soccer”), though they may hesitate or make errors. They struggle with fluency when using new structures. They will be talking about food and quantities, making requests (e.g., for food), and discussing habitats and endangered animals. They will also learn to show interest in conversations /",
+   "vocabulary": "The learner has a limited vocabulary covering everyday topics like family, clothes, and food, but may confuse similar terms (e.g., “bored” vs. “tired”). They will acquire new words related to food (e.g., “burger,” “cake,” “egg”), habitats (e.g., “beach,” “desert,” “ocean”), parties (e.g., “birthday,” “present”), and endangered animals (e.g., “tiger,” “panda”), enabling richer discussions.",
+   "grammar": "They can use basic grammar like the present simple and the present continuous. They are going to expand their range and learn how to use “there is/there are” with count nouns and quantifiers (e.g., “There are some bananas”). They will also learn “there was/there were” for past descriptions (e.g., “There were many tigers”)."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Practice forming sentences with \"some,\" \"any,\" and \"a/an\" to describe quantities in contexts like shopping lists (e.g., \"There are some strawberries,\" \"There isn’t any juice\").",
+   "Identify and describe various music genres (e.g., hip-hop, rock, classical, K-pop, reggae) and their cultural associations.",
+   "Use past forms \"there was/there were\" to describe existence in the past, including affirmative, negative, and question forms (e.g., \"There were some tiger sharks\"; \"Was there a great white shark?\").",
+   "Form questions using \"how much/how many\" to inquire about food quantities (e.g., \"How many bananas are there?\").",
+   "Use phrases to express interest and surprise (e.g., \"Really?\", \"No way!\", \"Are you serious?\") in response to statements about animals, games, or family."
+  ],
+  "order_index": 6
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "7",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "The learner can now comprehend slow, clear spoken English in familiar contexts, such as family, school, and daily routines, with ease. They confidently follow simple instructions and have expanded their abilities to understand unfamiliar topics, including endangered animals and habitats. This newfound comprehension allows them to engage with a broader range of spoken content.",
+   "reading": "The learner can read short, simple texts with familiar vocabulary. They struggle with unfamiliar words in reading. They will enhance their comprehension by engaging with texts about food, parties, habitats, and real-life scenarios, learning to extract specific information, recognize abbreviations, and guess the meaning of unknown words from context.",
+   "speaking": "The learner uses short, basic sentences to discuss themselves, places, or preferences (e.g., “I like soccer”), though they may hesitate or make errors. They struggle with fluency when using new structures. They will be talking about food and quantities, making requests (e.g., for food), and discussing habitats and endangered animals. They will also learn to show interest in conversations /",
+   "vocabulary": "The learner has a limited vocabulary covering everyday topics like family, clothes, and food, but may confuse similar terms (e.g., “bored” vs. “tired”). They will acquire new words related to food (e.g., “burger,” “cake,” “egg”), habitats (e.g., “beach,” “desert,” “ocean”), parties (e.g., “birthday,” “present”), and endangered animals (e.g., “tiger,” “panda”), enabling richer discussions.",
+   "grammar": "They can use basic grammar like the present simple and the present continuous. They are going to expand their range and learn how to use “there is/there are” with count nouns and quantifiers (e.g., “There are some bananas”). They will also learn “there was/there were” for past descriptions (e.g., “There were many tigers”)."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Practice forming sentences with \"some,\" \"any,\" and \"a/an\" to describe quantities in contexts like shopping lists (e.g., \"There are some strawberries,\" \"There isn’t any juice\").",
+   "Understand the difference between countable and uncountable nouns using \"how much\" and \"how many\" in questions (e.g., \"How much cheese is there?\").",
+   "Practice conversational phrases for making and responding to suggestions (e.g., \"Why don’t we go shopping?\" \"I’d rather listen to music\").",
+   "Discuss music preferences, favorite bands, and life events using targeted vocabulary and grammar structures.",
+   "Share personal or hypothetical narratives (e.g., describing a person’s life events or a past adventure).",
+   "Learn verbs related to life milestones (e.g., \"be born,\" \"get married,\" \"buy a house,\" \"go to college\") and use them to describe personal or others’ life stories."
+  ],
+  "order_index": 7
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "8",
+  "cefr_band": "A1",
+  "skills": {
+   "listening": "The learner understands slow, clear English about family, school, and routines, follows simple instructions, and grasps new topics like endangered animals and habitats.The learner will listen to talks about online activities (e.g., sharing videos) and health (e.g., headaches), identifying activities, verifying statements, and recognizing time phrases (e.g., “every day”).",
+   "reading": "The learner reads short texts with familiar words, struggling with new vocabulary, and learns to find details and guess meanings in texts about food, parties, and habitats. The learner will read about “school in the cloud” and advice for tiredness or friends, practicing skimming, sequencing, matching problems to solutions, and guessing words.",
+   "speaking": "The learner uses short sentences to discuss themselves, places, or preferences They may hesitate or make errors. The learner will discuss online habits, health issues, and give advice (e.g., “You should rest”), role-playing and talking about food, habitats, and animals. /",
+   "vocabulary": "The learner knows words for family, food, and animals but may confuse terms (e.g., “bored” vs. “tired”), adding words like “burger,” “ocean,” and “panda.”The learner will learn online activity words and health terms for better and broader discussions.",
+   "grammar": "The learner uses present simple, present continuous, “there is/there are” (e.g., “There are bananas”), and “there was/there were” (e.g., “There were tigers”). The learner will use simple past (e.g., “I played,”) and negative (e.g., “I didn’t go,”), plus “should/shouldn’t” (e.g., “You should rest,”) and questions like “What should I do?”"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn and use vocabulary related to online activities, such as \"download music,\" \"chat with friends,\" \"write a blog,\" \"look up information,\" \"read news,\" \"share videos and pictures,\" \"post comments,\" and \"take quizzes.\"",
+   "Practice associating these activities with specific websites or apps and discuss their frequency (e.g., every day, sometimes, never).",
+   "Acquire vocabulary for common health issues, including \"break,\" \"burn,\" \"cut,\" \"feel ill,\" \"have a cold,\" \"have a cough,\" \"have a headache,\" and \"hurt.\"",
+   "Use \"should\" and \"shouldn’t\" to give advice, particularly in health-related contexts (e.g., \"You should go home and rest\" or \"You shouldn’t get the bus\").",
+   "Discuss personal online habits with a partner, using vocabulary from the unit (e.g., \"I watch TV shows and music videos online every day\").",
+   "Practice conversations about health problems, using phrases like \"I burned my hand yesterday\" or \"You should see a doctor.\"",
+   "Talk about fitness, health, healthy and unhealthy habits identifying and reflecting on their habits and classifying them."
+  ],
+  "order_index": 8
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "9",
+  "cefr_band": "A2",
+  "skills": {
+   "listening": "The learner understands clear, standard English on topics like family, school, routines, endangered animals, online activities, and health. They follow simple instructions, identify activities, verify statements, and recognize time phrases in spoken texts. The learner will engage with conversations and videos about weekend activities and transportation.",
+   "reading": "The learner reads short texts with familiar vocabulary, adeptly locating details, guessing new word meanings, skimming, sequencing events, and matching problems to solutions in contexts like food, parties, and habitats. The learner will analyze e-mails, social media posts, and travel blogs about weekend plans and travel experiences.",
+   "speaking": "The learner articulates clear sentences about themselves, places, and preferences, discussing online habits, health, and advice (e.g., “You should rest”) with minimal errors, though occasional hesitation may occur. The learner will converse about weekend plans, transportation, and travel, using structures like “What are you doing this weekend?” to make arrangements, and compare transport modes. /",
+   "vocabulary": "The learner commands a robust vocabulary for family, food, animals, online activities, and health. The learner will acquire vocabulary for weekend activities (e.g., sleepover, cookout), phrasal verbs of movement (e.g., “take off,” “pick up”), transportation (e.g., ferry, subway), and travel adjectives.",
+   "grammar": "The learner proficiently uses present simple, present continuous, “there is/there are,” “there was/there were,” simple past, and “should/shouldn’t” for advice, forming accurate sentences and questions. The learner will master the present progressive for future plans (e.g., “I’m seeing my cousin tonight”), indefinite pronouns (e.g., someone, anywhere) in various sentence types, and comparative adjectives."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Students learn to discuss and describe their weekend activities and plans using appropriate vocabulary and grammar structures.",
+   "Students practice using phrasal verbs related to movement, such as \"take off,\" \"get on,\" \"go away,\" \"get back,\" \"go out,\" and \"pick up\".",
+   "Students develop skills to make plans and arrangements with others, using conversational structures like \"What are you doing this weekend?\" and \"Do you want to hang out?”",
+   "Students learn to use the present progressive tense to talk about future plans (e.g., \"I’m seeing my cousin tonight\") and practice affirmative, negative, and question forms.",
+   "Students master the use of indefinite pronouns (e.g., someone, something, somewhere, anyone, anything, anywhere, no one, nothing, nowhere, everyone, everything, everywhere) in affirmative, negative, and question sentences",
+   "Students practice using comparative adjectives (short, long, and irregular) to compare transportation methods, vehicles, or travel experiences (e.g., \"The bus is easier than the subway\")",
+   "Students describe travel experiences, including trips and vacations. Students use travel-related vocabulary (e.g., crowded, traditional, modern, historic) to describe destinations and experiences."
+  ],
+  "order_index": 9
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "Pre",
+  "cefr_band": "Pre A",
+  "skills": {
+   "listening": "The learner may be able to understand very basic spoken English, such as greetings, or some objects that are around them, but they are unable to comprehend sentences in English and struggle to decode the language.",
+   "reading": "The learner gets confused when they are trying to read and they are unfamiliar with some sounds or clusters which may affect their reading fluency.",
+   "speaking": "The learner can say single words or very short phrases. They hesitate to speak, have a very limited vocabulary, and find pronunciation difficult. Most of the answers in this level are in their mother tongue.",
+   "vocabulary": "The learner might identify some vocabulary related to things around them, but still their vocabulary range is very limited and it affects their understanding of the language.",
+   "grammar": "The learner mostly uses words and not sentences. They might use some phrases but they make mistakes and are inconsistent. They need to learn about the parts of speech and start making sentences. /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn and recognize basic vocabulary for greetings (e.g., \"hello,\" \"goodbye,\" \"hi\"), classroom objects (e.g., \"book,\" \"pen,\" \"desk\"), simple actions (e.g., \"sit,\" \"stand,\" \"listen\") and personal details (e.g., \"name,\" \"age,\" \"country\").",
+   "Practice saying single words or short phrases, such as greetings (\"Hello!\") or responses (\"Yes,\" \"No\").",
+   "Practice short phrases to share personal information (e.g., \"I am 8,\" \"I like to play\").",
+   "Begin to introduce themselves (e.g., \"My name is…\") in guided, teacher-led activities.",
+   "Understand simple spoken instructions (e.g., \"Stand up,\" \"Point to the book\") when supported by gestures or visuals.",
+   "Understand short, simple sentences in familiar contexts when spoken slowly.",
+   "Recognize familiar words in slow, clear speech, such as greetings or object names.",
+   "Recognize and read short phrases (e.g., \"This is a dog,\" \"I like math\") with picture support."
+  ],
+  "order_index": 0
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "1",
+  "cefr_band": "Pre A",
+  "skills": {
+   "listening": "The learner may be able to understand very basic spoken English, such as greetings, classroom instructions, or familiar object names, when paired with gestures or visuals. They struggle to understand speech without visual support or if it’s spoken too quickly.",
+   "reading": "The learner is just starting to recognize individual letters and simple, high-frequency words (e.g., \"cat,\" \"dog\") with picture support. They cannot yet read sentences or texts on their own.",
+   "speaking": "The learner can say single words or very short phrases. They hesitate to speak, have a very small vocabulary, and find pronunciation difficult. Most of the answers in this level are in their mother tongue.",
+   "vocabulary": "The learner might identify some vocabulary related to things around them, but still their vocabulary range is very limited and it affects their understanding of the language.",
+   "grammar": "The learner mostly uses words and not sentences. They might use some phrases but they make mistakes and are inconsistent. /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn and recognize basic vocabulary for greetings (e.g., \"hello,\" \"goodbye,\" \"hi\"), classroom objects (e.g., \"book,\" \"pen,\" \"desk\"), simple actions (e.g., \"sit,\" \"stand,\" \"listen\") and personal details (e.g., \"name,\" \"age,\" \"country\").",
+   "Practice saying single words or short phrases, such as greetings (\"Hello!\") or responses (\"Yes,\" \"No\").",
+   "Practice short phrases to share personal information (e.g., \"I am 8,\" \"I like to play\").",
+   "Begin to introduce themselves (e.g., \"My name is…\") in guided, teacher-led activities.",
+   "Understand simple spoken instructions (e.g., \"Stand up,\" \"Point to the book\") when supported by gestures or visuals.",
+   "Understand short, simple sentences in familiar contexts when spoken slowly.",
+   "Recognize familiar words in slow, clear speech, such as greetings or object names.",
+   "Recognize and read short phrases (e.g., \"This is a dog,\" \"I like math\") with picture support."
+  ],
+  "order_index": 1
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "2",
+  "cefr_band": "Pre A",
+  "skills": {
+   "listening": "The learner is able to understand simple spoken English in familiar contexts, such as classroom instructions (e.g., \"Listen and repeat,\" \"Write your name\"). They can comprehend very short sentences about routine and school related topics.",
+   "reading": "The learner can understand and read short, simple texts with familiar words, especially about personal topics like school or basic information. They also use visuals, titles, or teacher help to make sense of what they’re reading.",
+   "speaking": "The learner uses basic vocabulary to form simple sentences, join guided conversations with practiced phrases, and talk about familiar topics like school or hobbies.",
+   "vocabulary": "The learner understands and uses basic, high-frequency words about school, daily life, and personal info in simple sentences, but may mix up similar words or forget new ones without repetition. Their vocab is limited to familiar contexts.",
+   "grammar": "The learner uses basic grammar to allow them to make very short sentences like with (verb to be) in the present simple. They can complete guided tasks but still make common mistakes with verb forms and word order. /"
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Expand vocabulary to include basic descriptors, bedroom vocabulary, places around the city ability and interest vocabulary.",
+   "Use \"This is…\" and simple present tense (e.g., \"It is…\") through repetition and imitation.",
+   "Share abilities (e.g., \"I can swim\") and asking peers (e.g., \"Can you dance?\").",
+   "Practice short phrases to share abilities (e.g., \"I can swim,\" \"I can jump\").",
+   "Answer simple questions with one-word or yes/no responses (e.g., \"Can you sing? Yes\").",
+   "Describe their bedroom and what it has in short sentences."
+  ],
+  "order_index": 2
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "3",
+  "cefr_band": "Pre A",
+  "skills": {
+   "listening": "The learner understands simple spoken English in familiar settings, like classroom instructions (e.g., \"Listen and repeat\") or short sentences about routines, school, bedrooms, or abilities (e.g., \"I can dance\"). They grasp basic phrases about city places (e.g., \"This is a shop\") with repetition and clear context.",
+   "reading": "The learner reads short, simple texts with familiar words about school, daily life, bedrooms, or city places. They use visuals or teacher help to understand and recognize basic descriptors (e.g., \"big,\" \"small\") and ability words (e.g., \"swim,\" \"jump\") in guided tasks.",
+   "speaking": "The learner forms simple sentences using basic vocabulary to talk about school, hobbies, bedrooms, or abilities. They share abilities, ask peers questions , and give one-word or yes/no answers. They describe their bedroom briefly. /",
+   "vocabulary": "The learner uses high-frequency words for school, daily life, bedrooms, city places, abilities, and descriptors. They may mix up similar words or forget new ones without practice, sticking to familiar contexts.",
+   "grammar": "The learner uses basic grammar, like present simple \"to be\" and \"can\" for abilities. They mimic structures like \"This is…\" in guided tasks but often make mistakes with verb forms or word order when using the language."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Develop skills to understand and provide simple instructions using imperatives.",
+   "Learn phrases and structures to ask for items in a shopping context (e.g., \"Do you have any laptops?\").",
+   "Use the simple present tense to describe daily routines (e.g., \"I get up at 6:45,\" \"She goes to school at 8:00\").",
+   "Learn vocabulary related to daily activities (e.g., \"have breakfast,\" \"do homework,\" \"go to bed\").",
+   "Talk about a favorite day, including activities, times, and locations (e.g., \"On Saturday, I play soccer in the afternoon\").",
+   "Use time phrases (e.g., \"in the morning,\" \"at three o’clock\") to structure descriptions.",
+   "Build vocabulary for daily routines, chores, possessions, and time expressions."
+  ],
+  "order_index": 3
+ },
+ {
+  "program": "Teens",
+  "subtrack": "Private",
+  "stage": null,
+  "level_code": "4",
+  "cefr_band": "Pre A1",
+  "skills": {
+   "listening": "The learner comprehends simple spoken English in familiar contexts like following classroom instructions and understanding short sentences about routines, abilities, city places, imperatives and shopping. They need to improve their listening through expanding the topics they are familiar with like celebrities’ style and videos about markets, engaging with real-world contexts.",
+   "reading": "The learner reads simple texts with familiar vocabulary and is ready to expand their comprehension  through enhancing their understanding of habits (healthy and unhealthy ones), clothes, and personal style.",
+   "speaking": "The learner can use very short sentences to discuss school, hobbies, and abilities and describe routines or a favorite day using time phrases.They may make mistakes or struggle with fluency. They will talk about good and bad habits, food preferences, and people’s appearance and clothing, gaining confidence in detailed descriptions. /",
+   "vocabulary": "They have limited vocabulary and cover things they are familiar with like vocabulary about school, daily life, abilities, and time expressions from, though they may confuse similar terms. They will learn words related to habits, clothes, and style, enabling richer discussions about routines and preferences.",
+   "grammar": "They can use very basic grammar to talk about themselves and things around them. They use the simple present for routines, with occasional errors in verb forms. They will master adverbs of frequency (e.g., \"always,\" \"never\") and form questions with question words to discuss daily life and preferences."
+  },
+  "items_label": "Objectives",
+  "items": [
+   "Learn to identify, describe, and categorize good and bad habits (e.g., being on time vs. forgetting gym clothes).",
+   "Students will engage in quizzes to assess their eating habits and compare answers.",
+   "Focus on daily routines and personal habits, using adverbs of frequency (e.g., always, sometimes, never) to describe how often activities occur.",
+   "Listen to conversations about celebrities (e.g., Selena Gomez) to understand descriptions of style and appearance.",
+   "Form questions using question words (e.g., What, Where, When) and the present simple tense to discuss personal preferences and routines.",
+   "Learn vocabulary related to habits, clothes, and personal style (e.g., boots, cap, dress).",
+   "Describe people’s appearance and clothing using learned vocabulary."
+  ],
+  "order_index": 4
+ }
+]

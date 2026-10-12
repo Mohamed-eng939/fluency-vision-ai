@@ -90,3 +90,24 @@ verify_jwt = true
 # repo before deploying. See security runbook §1c. Requires developer sign-off.
 # No frontend call sites point at the underscore version (all call sites use
 # 'assessor-manager' with a hyphen).
+[functions.lead-link]
+# Public by design: the per-lead `token` is an unguessable bearer capability.
+# "resolve" returns only name/phone for sign-up prefill; "claim" verifies the
+# student's JWT explicitly inside the function before attaching their account.
+verify_jwt = false
+
+[functions.leads-manager]
+# Sales-agent lead import (xlsx parse + bulk insert). Agent/admin only; checks
+# the caller's role inside the function. JWT always attached from the agent UI.
+verify_jwt = true
+
+[functions.report-manager]
+# Student-facing report fetch + email. Authenticated; authorizes the caller
+# (session owner / tester / admin / the lead's agent) inside the function.
+verify_jwt = true
+
+[functions.notify-email]
+# Fan-out from the notifications insert trigger (pg_net). Public so the trigger
+# can call it without a JWT; guarded by an optional NOTIFY_SECRET env (enforced
+# only when set). Inert until RESEND_API_KEY / RESEND_FROM are configured.
+verify_jwt = false

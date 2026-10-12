@@ -8,15 +8,20 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/auth/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { BrandingProvider } from "./contexts/branding/BrandingContext";
+import { LanguageProvider } from "./contexts/language/LanguageContext";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import ReportPage from "./pages/ReportPage";
 import AssessmentResults from "./pages/AssessmentResults";
+import MyResults from "./pages/MyResults";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
+import AgentPanel from "./pages/agent/AgentPanel";
 import InviteEntry from "./pages/InviteEntry";
+import LeadStart from "./pages/LeadStart";
+import LeadClaimOnAuth from "./components/LeadClaimOnAuth";
 
 const queryClient = new QueryClient();
 
@@ -25,11 +30,13 @@ const AppContent: React.FC = () => {
     <>
       <Toaster />
       <Sonner />
+      <LeadClaimOnAuth />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/t/:token" element={<InviteEntry />} />
+        <Route path="/start/:token" element={<LeadStart />} />
         <Route path="/admin/*" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminPanel />
@@ -40,8 +47,18 @@ const AppContent: React.FC = () => {
             <AssessorPanel />
           </ProtectedRoute>
         } />
+        <Route path="/agent/*" element={
+          <ProtectedRoute allowedRoles={['agent', 'admin']}>
+            <AgentPanel />
+          </ProtectedRoute>
+        } />
         <Route path="/reports/:reportId" element={<ReportPage />} />
         <Route path="/results" element={<AssessmentResults />} />
+        <Route path="/my-results" element={
+          <ProtectedRoute allowedRoles={['learner', 'admin', 'assessor', 'agent']}>
+            <MyResults />
+          </ProtectedRoute>
+        } />
         
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
@@ -56,7 +73,9 @@ const App: React.FC = () => (
       <BrowserRouter>
         <AuthProvider>
           <BrandingProvider>
-            <AppContent />
+            <LanguageProvider>
+              <AppContent />
+            </LanguageProvider>
           </BrandingProvider>
         </AuthProvider>
       </BrowserRouter>

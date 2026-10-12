@@ -178,6 +178,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           assigned_assessor: string | null
+          assigned_at: string | null
           coherence_score: number | null
           created_at: string
           fluency_score: number | null
@@ -189,11 +190,14 @@ export type Database = {
           overall_cefr_level: Database["public"]["Enums"]["cefr_level"] | null
           overall_score: number | null
           override_summary: Json | null
+          program: string | null
+          program_subtrack: string | null
           pronunciation_score: number | null
           reviewed_at: string | null
           session_type: string | null
           status: Database["public"]["Enums"]["assessment_status"] | null
           student_info: Json | null
+          upedia_level: string | null
           updated_at: string
           user_id: string
           vocabulary_score: number | null
@@ -201,6 +205,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           assigned_assessor?: string | null
+          assigned_at?: string | null
           coherence_score?: number | null
           created_at?: string
           fluency_score?: number | null
@@ -212,11 +217,14 @@ export type Database = {
           overall_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
           overall_score?: number | null
           override_summary?: Json | null
+          program?: string | null
+          program_subtrack?: string | null
           pronunciation_score?: number | null
           reviewed_at?: string | null
           session_type?: string | null
           status?: Database["public"]["Enums"]["assessment_status"] | null
           student_info?: Json | null
+          upedia_level?: string | null
           updated_at?: string
           user_id: string
           vocabulary_score?: number | null
@@ -224,6 +232,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           assigned_assessor?: string | null
+          assigned_at?: string | null
           coherence_score?: number | null
           created_at?: string
           fluency_score?: number | null
@@ -235,11 +244,14 @@ export type Database = {
           overall_cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
           overall_score?: number | null
           override_summary?: Json | null
+          program?: string | null
+          program_subtrack?: string | null
           pronunciation_score?: number | null
           reviewed_at?: string | null
           session_type?: string | null
           status?: Database["public"]["Enums"]["assessment_status"] | null
           student_info?: Json | null
+          upedia_level?: string | null
           updated_at?: string
           user_id?: string
           vocabulary_score?: number | null
@@ -277,6 +289,7 @@ export type Database = {
           organization_id: string | null
           override_scores: Json | null
           recommendation: string | null
+          report: Json | null
           review_status: string | null
           reviewed_at: string | null
           session_id: string
@@ -290,6 +303,7 @@ export type Database = {
           organization_id?: string | null
           override_scores?: Json | null
           recommendation?: string | null
+          report?: Json | null
           review_status?: string | null
           reviewed_at?: string | null
           session_id: string
@@ -303,6 +317,7 @@ export type Database = {
           organization_id?: string | null
           override_scores?: Json | null
           recommendation?: string | null
+          report?: Json | null
           review_status?: string | null
           reviewed_at?: string | null
           session_id?: string
@@ -595,7 +610,7 @@ export type Database = {
         | "rejected"
       cefr_level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
       prompt_type: "speaking" | "read_aloud" | "conversation"
-      user_role: "admin" | "assessor" | "learner"
+      user_role: "admin" | "assessor" | "learner" | "agent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -732,7 +747,7 @@ export const Constants = {
       ],
       cefr_level: ["A1", "A2", "B1", "B2", "C1", "C2"],
       prompt_type: ["speaking", "read_aloud", "conversation"],
-      user_role: ["admin", "assessor", "learner"],
+      user_role: ["admin", "assessor", "learner", "agent"],
     },
   },
 } as const

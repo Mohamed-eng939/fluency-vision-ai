@@ -10,18 +10,20 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from './types';
+import { useLanguage } from '@/contexts/language/LanguageContext';
 
 interface ConsentSectionProps {
   form: UseFormReturn<ProfileFormValues>;
 }
 
 export const ConsentSection: React.FC<ConsentSectionProps> = ({ form }) => {
+  const { t } = useLanguage();
   const watchEmailResults = form.watch('emailResults');
-  
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
-        <ShieldCheck className="h-5 w-5 text-red-500" /> Consent & Follow-Up
+        <ShieldCheck className="h-5 w-5 text-red-500" /> {t('Consent & Follow-Up', 'الموافقة والمتابعة')}
       </h3>
       <div className="space-y-4">
         <FormField
@@ -37,7 +39,10 @@ export const ConsentSection: React.FC<ConsentSectionProps> = ({ form }) => {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>
-                  I agree to have my audio responses used anonymously to improve this assessment system.
+                  {t(
+                    'I agree to have my audio responses used anonymously to improve this assessment system.',
+                    'أوافق على استخدام إجاباتي الصوتية بشكل مجهول الهوية لتحسين نظام التقييم هذا.',
+                  )}
                   <span className="text-red-500 ml-1">*</span>
                 </FormLabel>
               </div>
@@ -58,7 +63,7 @@ export const ConsentSection: React.FC<ConsentSectionProps> = ({ form }) => {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>
-                  Email me my results when they are ready.
+                  {t('Email me my results when they are ready.', 'أرسل لي نتائجي عبر البريد الإلكتروني عند جاهزيتها.')}
                 </FormLabel>
               </div>
             </FormItem>
@@ -67,7 +72,7 @@ export const ConsentSection: React.FC<ConsentSectionProps> = ({ form }) => {
         
         {watchEmailResults && (
           <div className="bg-green-50 p-3 rounded-md text-green-700 text-sm">
-            Results will be sent to: {form.watch('email')}
+            {t('Results will be sent to:', 'ستُرسل النتائج إلى:')} {form.watch('email')}
           </div>
         )}
       </div>

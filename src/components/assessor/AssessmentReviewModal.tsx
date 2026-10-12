@@ -6,12 +6,29 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle, Languages, Mic, BookOpen } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle, Languages, Mic, BookOpen, GraduationCap, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cefrToNumber, numberToCefr, type CEFRLevel } from '@/utils/scoring/cefrUtils';
 import { useAuth } from '@/contexts/auth';
 import { trackLabel, type Track } from '@/data/assessment/tracks';
+import {
+  PROGRAMS,
+  programConfig,
+  levelsFor,
+  getLevel,
+  type Track as ProgramTrack,
+} from '@/data/programLevels';
+import PerformanceReport from '@/components/reports/PerformanceReport';
+import {
+  assembleReport,
+  headerDefaultsFromSession,
+  studentStatedNeed,
+  formatReportDate,
+  programHasReport,
+  type ReportHeader,
+} from '@/data/report';
 
 interface AssessmentDetails {
   session: any;
@@ -63,6 +80,23 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     grammar: '', fluency: '', vocabulary: '',
   });
 
+  // ── Performance report (Upedia program placement) ──────────────────────────
+  const [program, setProgram] = useState<string>('');
+  const [subtrack, setSubtrack] = useState<ProgramTrack | ''>('');
+  const [levelCode, setLevelCode] = useState<string>('');
+  const [goals, setGoals] = useState('');
+  const [otherPrograms, setOtherPrograms] = useState('');
+  const [recommendTrack, setRecommendTrack] = useState(false);
+  const [header, setHeader] = useState<ReportHeader>({
+    date: formatReportDate(), name: '', age: '', nationality: '', residency: '', occupation: '', track: '',
+  });
+  const [showPreview, setShowPreview] = useState(false);
+
+  const pConfig = program ? programConfig(program) : null;
+  const levelOptions = program ? levelsFor(program, subtrack || null) : [];
+  const selectedLevel = program && levelCode ? getLevel(program, levelCode, subtrack || null) : null;
+  const autoBand = selectedLevel?.cefr_band || '';
+
   // Seed the criteria dropdowns from the session's level when a test opens.
   useEffect(() => {
     const lvl = assessmentDetails?.session?.overall_cefr_level;
@@ -72,6 +106,33 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         fluency: c.fluency || lvl,
         vocabulary: c.vocabulary || lvl,
       }));
+    }
+  }, [assessmentDetails]);
+
+  // Seed the report header + goals from the student's form/account, and suggest
+  // a program from their age-track (tester can change any of it).
+  useEffect(() => {
+    const session = assessmentDetails?.session;
+    if (!session) return;
+    const defs = headerDefaultsFromSession(session);
+    setHeader((prev) => ({
+      date: prev.date || defs.date || formatReportDate(),
+      name: prev.name || defs.name || '',
+      age: prev.age || defs.age || '',
+      nationality: prev.nationality || defs.nationality || '',
+      residency: prev.residency || defs.residency || '',
+      occupation: prev.occupation || defs.occupation || '',
+      track: prev.track || '',
+    }));
+    const need = studentStatedNeed(session);
+    if (need) setGoals((g) => g || need);
+    // Pre-select a program from the age-track (adults→General English).
+    const trk = session.student_info?.track;
+    const guess = trk === 'kids' ? 'Kids' : trk === 'teens' ? 'Teens' : trk === 'adults' ? 'General English' : '';
+    if (guess) {
+      setProgram((p) => p || guess);
+      const cfg = programConfig(guess);
+      if (cfg && cfg.tracks.length === 1) setSubtrack((s) => s || (cfg.tracks[0] as ProgramTrack));
     }
   }, [assessmentDetails]);
 
@@ -102,6 +163,15 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
 
     if (!assessorFeedback.trim()) {
       toast.error('Please provide feedback');
+      return;
+    }
+
+    if (!program) {
+      toast.error('Please choose the Upedia program for this placement');
+      return;
+    }
+    if (pConfig?.hasLevels && !levelCode) {
+      toast.error(`Please choose the ${program} level`);
       return;
     }
 
@@ -142,11 +212,32 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
 
       const isOverridden = finalCEFRLevel !== calculatedCEFR;
 
+      // Assemble the student-facing performance report (snapshotting the level
+      // content). Programs without a ladder (Business / IELTS Prep) still record
+      // the placement; their report is header-only.
+      const recommendNote =
+        recommendTrack && suggestedTrack
+          ? `Recommended track change: this student scored above the ${trackLabel(studentTrack!)} ceiling — consider the ${trackLabel(suggestedTrack)} track.`
+          : null;
+      const reportPayload = assembleReport({
+        program,
+        subtrack: subtrack || null,
+        levelCode,
+        header: { ...header, track: subtrack || header.track || '' },
+        goals,
+        feedback: assessorFeedback,
+        otherPrograms,
+        recommendTrackChange: recommendNote,
+        criteria,
+        overallCefr: finalCEFRLevel,
+      });
+
       const reviewData: any = {
         session_id: assessmentDetails.session.id,
         review_status: reviewStatus,
         assessor_feedback: assessorFeedback,
         recommendation: recommendation,
+        report: reportPayload,
         override_scores: {
           final_cefr_level: finalCEFRLevel,
           calculated_average: calculatedCEFR,
@@ -173,7 +264,10 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
         .update({
           status: reviewStatus as 'approved' | 'rejected' | 'under_review',
           reviewed_at: new Date().toISOString(),
-          overall_cefr_level: finalCEFRLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
+          overall_cefr_level: finalCEFRLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
+          program,
+          program_subtrack: subtrack || null,
+          upedia_level: levelCode || null,
         })
         .eq('id', assessmentDetails.session.id);
 
@@ -253,6 +347,14 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
       setFinalCEFRReason('');
       setCalculatedCEFR('');
       setCriteria({ grammar: '', fluency: '', vocabulary: '' });
+      setProgram('');
+      setSubtrack('');
+      setLevelCode('');
+      setGoals('');
+      setOtherPrograms('');
+      setRecommendTrack(false);
+      setShowPreview(false);
+      setHeader({ date: formatReportDate(), name: '', age: '', nationality: '', residency: '', occupation: '', track: '' });
 
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -260,6 +362,18 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleProgramChange = (p: string) => {
+    setProgram(p);
+    const cfg = programConfig(p);
+    setSubtrack(cfg && cfg.tracks.length === 1 ? (cfg.tracks[0] as ProgramTrack) : '');
+    setLevelCode('');
+  };
+
+  const handleSubtrackChange = (t: ProgramTrack) => {
+    setSubtrack(t);
+    setLevelCode('');
   };
 
   const handleResponseReviewChange = (
@@ -731,6 +845,159 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               </div>
             </CardContent>
           </Card>
+
+          {/* Upedia placement & performance report. The tester confirms the
+              program + level; the report's skills/objectives come from that
+              level, the header from the student's info, and Goals/Feedback/
+              Other Programs from the tester. */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <GraduationCap className="h-5 w-5" />
+                Upedia Placement &amp; Performance Report
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs mb-1">Program *</Label>
+                  <Select value={program} onValueChange={handleProgramChange}>
+                    <SelectTrigger className="h-9"><SelectValue placeholder="Choose program" /></SelectTrigger>
+                    <SelectContent>
+                      {PROGRAMS.map((p) => (
+                        <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {pConfig?.note && <p className="text-[11px] text-muted-foreground mt-1">{pConfig.note}</p>}
+                </div>
+
+                {pConfig && pConfig.tracks.length > 1 && (
+                  <div>
+                    <Label className="text-xs mb-1">Track *</Label>
+                    <Select value={subtrack} onValueChange={(v) => handleSubtrackChange(v as ProgramTrack)}>
+                      <SelectTrigger className="h-9"><SelectValue placeholder="Private / Group" /></SelectTrigger>
+                      <SelectContent>
+                        {pConfig.tracks.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {pConfig?.hasLevels && (
+                  <div>
+                    <Label className="text-xs mb-1">Level *</Label>
+                    <Select value={levelCode} onValueChange={setLevelCode} disabled={!program}>
+                      <SelectTrigger className="h-9"><SelectValue placeholder="Choose level" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {levelOptions.map((l) => (
+                          <SelectItem key={l.level_code} value={l.level_code}>
+                            {l.stage ? `${l.stage} · ` : ''}{l.level_code}{l.cefr_band ? ` (${l.cefr_band})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {autoBand && (
+                      <p className="text-[11px] text-muted-foreground mt-1">Suggested band: <span className="font-medium">{autoBand}</span></p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {pConfig && !pConfig.hasReport && (
+                <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800">
+                  {program} has no performance report — the student is placed by their General (or equivalent) test score. The placement is still recorded.
+                </div>
+              )}
+
+              {/* Teen (or similar) scored above A2 → recommend an adult track. */}
+              {suggestedTrack && (
+                <label className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={recommendTrack}
+                    onChange={(e) => setRecommendTrack(e.target.checked)}
+                  />
+                  <span>Recommend a track change — this student scored above the {trackLabel(studentTrack!)} ceiling; include a note suggesting the {trackLabel(suggestedTrack)} track on the report.</span>
+                </label>
+              )}
+
+              {/* Report header — pre-filled from the student's form/account,
+                  editable by the tester (e.g. occupation isn't collected yet). */}
+              <div>
+                <Label className="text-xs font-medium">Report header</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                  <Input placeholder="Name" value={header.name} onChange={(e) => setHeader((h) => ({ ...h, name: e.target.value }))} />
+                  <Input placeholder="Age" value={header.age} onChange={(e) => setHeader((h) => ({ ...h, age: e.target.value }))} />
+                  <Input placeholder="Nationality" value={header.nationality} onChange={(e) => setHeader((h) => ({ ...h, nationality: e.target.value }))} />
+                  <Input placeholder="Residency" value={header.residency} onChange={(e) => setHeader((h) => ({ ...h, residency: e.target.value }))} />
+                  <Input placeholder="Occupation" value={header.occupation} onChange={(e) => setHeader((h) => ({ ...h, occupation: e.target.value }))} />
+                  <Input placeholder="Date" value={header.date} onChange={(e) => setHeader((h) => ({ ...h, date: e.target.value }))} />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="report-goals" className="text-xs mb-1">Goals</Label>
+                <Textarea
+                  id="report-goals"
+                  placeholder="The student's goals / what they need from the course…"
+                  value={goals}
+                  onChange={(e) => setGoals(e.target.value)}
+                  rows={2}
+                />
+                {studentStatedNeed(session) && (
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Student stated: “{studentStatedNeed(session)}”
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="report-other" className="text-xs mb-1">Other Programs</Label>
+                <Textarea
+                  id="report-other"
+                  placeholder="Eligible programs the student may switch to…"
+                  value={otherPrograms}
+                  onChange={(e) => setOtherPrograms(e.target.value)}
+                  rows={2}
+                />
+              </div>
+
+              <p className="text-[11px] text-muted-foreground">
+                The report's <span className="font-medium">Feedback</span> section uses the Assessor Feedback above.
+              </p>
+
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowPreview((v) => !v)}>
+                <Eye className="h-4 w-4 mr-2" />
+                {showPreview ? 'Hide preview' : 'Preview report'}
+              </Button>
+
+              {showPreview && program && (
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <PerformanceReport
+                    report={assembleReport({
+                      program,
+                      subtrack: subtrack || null,
+                      levelCode,
+                      header: { ...header, track: subtrack || header.track || '' },
+                      goals,
+                      feedback: assessorFeedback,
+                      otherPrograms,
+                      recommendTrackChange:
+                        recommendTrack && suggestedTrack
+                          ? `Recommended track change: this student scored above the ${trackLabel(studentTrack!)} ceiling — consider the ${trackLabel(suggestedTrack)} track.`
+                          : null,
+                      criteria,
+                      overallCefr: finalCEFRLevel,
+                    })}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <DialogFooter>
@@ -740,9 +1007,11 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           <Button 
             onClick={handleSubmitReview} 
             disabled={
-              isSubmitting || 
-              !assessorFeedback.trim() || 
+              isSubmitting ||
+              !assessorFeedback.trim() ||
               !finalCEFRLevel ||
+              !program ||
+              (!!pConfig?.hasLevels && !levelCode) ||
               (isOverridden && !finalCEFRReason.trim())
             }
           >
