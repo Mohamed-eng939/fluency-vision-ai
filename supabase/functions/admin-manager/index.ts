@@ -334,10 +334,10 @@ serve(async (req) => {
             status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
-        const { user_id, role } = await req.json()
-        const allowedRoles = ['learner', 'assessor', 'admin']
+        const { user_id, role, organization_id } = await req.json()
+        const allowedRoles = ['learner', 'assessor', 'admin', 'agent']
         if (!user_id || !allowedRoles.includes(role)) {
-          return new Response(JSON.stringify({ error: 'Valid user_id and role (learner|assessor|admin) required' }), {
+          return new Response(JSON.stringify({ error: 'Valid user_id and role (learner|assessor|admin|agent) required' }), {
             status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
@@ -361,9 +361,18 @@ serve(async (req) => {
             })
           }
         }
+        const roleUpdate: Record<string, unknown> = { role, updated_at: new Date().toISOString() }
+        // Organization assignment. Org-admins always confine the target to their
+        // own org; the global admin (no org) may set it explicitly (the UI sends
+        // the Upedia org id so granted accounts fall under the tenant).
+        if (profile.organization_id) {
+          roleUpdate.organization_id = profile.organization_id
+        } else if (organization_id !== undefined) {
+          roleUpdate.organization_id = organization_id ?? null
+        }
         const { error: roleErr } = await adminClient
           .from('profiles')
-          .update({ role, updated_at: new Date().toISOString() })
+          .update(roleUpdate)
           .eq('id', user_id)
         if (roleErr) {
           return new Response(JSON.stringify({ error: roleErr.message }), {
@@ -386,8 +395,8 @@ serve(async (req) => {
             status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
-        const { email, role } = await req.json()
-        const allowedRoles = ['learner', 'assessor', 'admin']
+        const { email, role, organization_id } = await req.json()
+        const allowedRoles = ['learner', 'assessor', 'admin', 'agent']
         if (!email || !allowedRoles.includes(role)) {
           return new Response(JSON.stringify({ error: 'Valid email and role required' }), {
             status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -397,6 +406,14 @@ serve(async (req) => {
           Deno.env.get('SUPABASE_URL') ?? '',
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
         )
+        // Resolve the tenant the invitee belongs to: an org-admin's own org; the
+        // global admin's explicit choice; else the single default org (Upedia) so
+        // every granted account falls under a tenant rather than being org-less.
+        let targetOrg: string | null = profile.organization_id ?? organization_id ?? null
+        if (!targetOrg) {
+          const { data: firstOrg } = await adminClient.from('organizations').select('id').limit(1).maybeSingle()
+          targetOrg = firstOrg?.id ?? null
+        }
         // Sends an invite email; requires SMTP to be configured in Supabase Auth.
         const { data: invited, error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(email)
         if (inviteErr) {
@@ -404,14 +421,38 @@ serve(async (req) => {
             status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
-        // The signup trigger creates the profile as 'learner'; set the intended role.
+        // The signup trigger creates the profile as 'learner'; set the intended role + org.
         if (invited?.user?.id) {
           await adminClient
             .from('profiles')
-            .update({ role, organization_id: profile.organization_id ?? null, updated_at: new Date().toISOString() })
+            .update({ role, organization_id: targetOrg, updated_at: new Date().toISOString() })
             .eq('id', invited.user.id)
         }
         return new Response(JSON.stringify({ message: 'Invitation sent', email, role }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      case 'list-organizations': {
+        if (profile.role !== 'admin') {
+          return new Response(JSON.stringify({ error: 'Admin role required' }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        const adminClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        )
+        let orgQuery = adminClient.from('organizations').select('id, name').order('name')
+        // Org-admins only ever see (and assign to) their own org.
+        if (profile.organization_id) orgQuery = orgQuery.eq('id', profile.organization_id)
+        const { data: orgs, error: orgErr } = await orgQuery
+        if (orgErr) {
+          return new Response(JSON.stringify({ error: orgErr.message }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        return new Response(JSON.stringify({ organizations: orgs ?? [] }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
