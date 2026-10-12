@@ -34,7 +34,7 @@ serve(async (req) => {
 
     const { data: lead } = await admin
       .from("leads")
-      .select("id, name, phone, status, student_user_id, organization_id")
+      .select("id, name, phone, status, student_user_id, organization_id, agent_id")
       .eq("token", token)
       .maybeSingle();
     if (!lead) return json({ ok: false, error: "This link is not valid." }, 404);
@@ -66,6 +66,18 @@ serve(async (req) => {
         .from("leads")
         .update({ student_user_id: user.id, status: nextStatus, updated_at: new Date().toISOString() })
         .eq("id", lead.id);
+      // Notify the agent that their lead created an account (first claim only).
+      if (nextStatus === "account_created" && lead.agent_id) {
+        try {
+          await admin.from("notifications").insert({
+            user_id: lead.agent_id,
+            type: "lead_account_created",
+            title: "Your lead signed up",
+            body: `${lead.name || "A lead"} created an account and is starting the test.`,
+            data: { lead_id: lead.id },
+          });
+        } catch (_) { /* non-fatal */ }
+      }
       return json({ ok: true });
     }
 

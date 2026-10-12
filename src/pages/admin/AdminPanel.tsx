@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download, KeyRound, Building2 } from 'lucide-react';
 import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
 import UserManagement from '@/components/admin/UserManagement';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import PromptManagement from '@/components/admin/PromptManagement';
 import TrainingDataViewer from '@/components/admin/TrainingDataViewer';
 import ApiKeyManagement from '@/components/admin/ApiKeyManagement';
@@ -120,7 +121,9 @@ const AdminPanel: React.FC = () => {
           <h1 className="text-2xl font-bold text-assessment-blue">Admin Control Panel</h1>
           <p className="text-muted-foreground">Welcome, {user?.full_name || 'Admin'}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <Button variant="outline" onClick={() => navigate('/agent')}>Agent Panel</Button>
           <Button variant="outline" onClick={() => navigate('/assessor')}>Assessor Panel</Button>
           {user && <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>}
         </div>

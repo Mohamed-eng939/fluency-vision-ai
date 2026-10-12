@@ -16,6 +16,7 @@ import { Loader2, Plus, Upload, RefreshCw, MessageCircle, FileText, Download, Ma
 import { toast } from 'sonner';
 import { PROGRAMS } from '@/data/programLevels';
 import PerformanceReport from '@/components/reports/PerformanceReport';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import type { PerformanceReportPayload } from '@/data/report';
 
 interface Lead {
@@ -203,9 +204,12 @@ const AgentPanel: React.FC = () => {
             <h1 className="text-2xl font-bold" style={{ color: brand.colorPrimaryDark }}>Sales Agent</h1>
             <p className="text-sm text-muted-foreground">{brand.displayName} leads &amp; test links</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => signOut()}>
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button variant="outline" size="sm" onClick={() => signOut()}>
+              <LogOut className="mr-2 h-4 w-4" /> Sign out
+            </Button>
+          </div>
         </div>
 
         {/* Status summary */}

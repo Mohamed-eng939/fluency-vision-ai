@@ -105,3 +105,9 @@ verify_jwt = true
 # Student-facing report fetch + email. Authenticated; authorizes the caller
 # (session owner / tester / admin / the lead's agent) inside the function.
 verify_jwt = true
+
+[functions.notify-email]
+# Fan-out from the notifications insert trigger (pg_net). Public so the trigger
+# can call it without a JWT; guarded by an optional NOTIFY_SECRET env (enforced
+# only when set). Inert until RESEND_API_KEY / RESEND_FROM are configured.
+verify_jwt = false
