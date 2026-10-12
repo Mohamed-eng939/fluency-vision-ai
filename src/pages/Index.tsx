@@ -55,8 +55,9 @@ const Index = () => {
               Discover Your True Language Level
             </h2>
             <p className="text-gray-700 mb-4">
-              This assessment uses advanced speech recognition and natural language processing
-              to accurately assess your language proficiency according to the CEFR framework.
+              Record a short speaking test, get scored on grammar, fluency and vocabulary, and
+              have your result reviewed by a specialist and mapped to your CEFR level and Upedia
+              program.
             </p>
             <ul className="mb-8 space-y-2">
               <li className="flex items-center">

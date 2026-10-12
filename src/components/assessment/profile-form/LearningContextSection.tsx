@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from './types';
+import { useLanguage } from '@/contexts/language/LanguageContext';
 
 interface LearningContextSectionProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -30,12 +31,13 @@ export const LearningContextSection: React.FC<LearningContextSectionProps> = ({
   testReasons,
   cefrLevels
 }) => {
+  const { t } = useLanguage();
   const watchTestReason = form.watch('testReason');
-  
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
-        <GraduationCap className="h-5 w-5 text-blue-500" /> Learning Context
+        <GraduationCap className="h-5 w-5 text-blue-500" /> {t('Learning Context', 'سياق التعلّم')}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
@@ -43,11 +45,11 @@ export const LearningContextSection: React.FC<LearningContextSectionProps> = ({
           name="testReason"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Reason for Taking the Test <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>{t('Why are you taking this course?', 'لماذا تلتحق بهذه الدورة؟')} <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select reason" />
+                    <SelectValue placeholder={t('Select reason', 'اختر السبب')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -69,9 +71,9 @@ export const LearningContextSection: React.FC<LearningContextSectionProps> = ({
             name="otherReason"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Please Specify <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>{t('Please Specify', 'يرجى التحديد')} <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Input placeholder="Your reason for taking the test" {...field} />
+                  <Input placeholder={t('What do you need the course to focus on?', 'ما الذي تريد أن تركّز عليه الدورة؟')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -84,11 +86,11 @@ export const LearningContextSection: React.FC<LearningContextSectionProps> = ({
           name="estimatedLevel"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Estimated English Level <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>{t('Estimated English Level', 'المستوى التقديري في الإنجليزية')} <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select level" />
+                    <SelectValue placeholder={t('Select level', 'اختر المستوى')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

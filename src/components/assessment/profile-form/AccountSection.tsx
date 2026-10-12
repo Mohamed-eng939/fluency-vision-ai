@@ -12,16 +12,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from './types';
+import { useLanguage } from '@/contexts/language/LanguageContext';
 
 interface AccountSectionProps {
   form: UseFormReturn<ProfileFormValues>;
 }
 
 export const AccountSection: React.FC<AccountSectionProps> = ({ form }) => {
+  const { t } = useLanguage();
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-assessment-blue border-b pb-2 flex items-center gap-2">
-        <Lock className="h-5 w-5 text-purple-500" /> Account Information
+        <Lock className="h-5 w-5 text-purple-500" /> {t('Account Information', 'معلومات الحساب')}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
@@ -29,19 +31,20 @@ export const AccountSection: React.FC<AccountSectionProps> = ({ form }) => {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>{t('Username', 'اسم المستخدم')} <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="Auto-generated username" 
-                  {...field} 
+                <Input
+                  placeholder={t('Auto-generated username', 'اسم مستخدم يُنشأ تلقائيًا')}
+                  {...field}
                   readOnly
                   className="bg-gray-100 cursor-not-allowed"
                 />
               </FormControl>
               <FormDescription className="text-xs">
-                Automatically generated from your name and phone number.
-                <br/>
-                This will be your unique identifier.
+                {t(
+                  'Automatically generated from your name and phone number. This will be your unique identifier.',
+                  'يُنشأ تلقائيًا من اسمك ورقم هاتفك. وسيكون معرّفك الفريد.',
+                )}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -54,9 +57,9 @@ export const AccountSection: React.FC<AccountSectionProps> = ({ form }) => {
             name="password"
             render={({ field }) => (
               <FormItem className="mb-4">
-                <FormLabel>Password <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>{t('Password', 'كلمة المرور')} <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Create password" {...field} />
+                  <Input type="password" placeholder={t('Create password', 'أنشئ كلمة مرور')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -68,9 +71,9 @@ export const AccountSection: React.FC<AccountSectionProps> = ({ form }) => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm Password <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>{t('Confirm Password', 'تأكيد كلمة المرور')} <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Confirm password" {...field} />
+                  <Input type="password" placeholder={t('Confirm password', 'أكّد كلمة المرور')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -16,30 +16,32 @@ import {
 } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from './types';
+import { useLanguage } from '@/contexts/language/LanguageContext';
 
 interface DateOfBirthFieldProps {
   form: UseFormReturn<ProfileFormValues>;
 }
 
 export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ form }) => {
+  const { t } = useLanguage();
   // Generate years from 1924 to current year
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1923 }, (_, i) => currentYear - i);
-  
+
   // Generate months
   const months = [
-    { value: 0, label: 'January' },
-    { value: 1, label: 'February' },
-    { value: 2, label: 'March' },
-    { value: 3, label: 'April' },
-    { value: 4, label: 'May' },
-    { value: 5, label: 'June' },
-    { value: 6, label: 'July' },
-    { value: 7, label: 'August' },
-    { value: 8, label: 'September' },
-    { value: 9, label: 'October' },
-    { value: 10, label: 'November' },
-    { value: 11, label: 'December' },
+    { value: 0, label: t('January', 'يناير') },
+    { value: 1, label: t('February', 'فبراير') },
+    { value: 2, label: t('March', 'مارس') },
+    { value: 3, label: t('April', 'أبريل') },
+    { value: 4, label: t('May', 'مايو') },
+    { value: 5, label: t('June', 'يونيو') },
+    { value: 6, label: t('July', 'يوليو') },
+    { value: 7, label: t('August', 'أغسطس') },
+    { value: 8, label: t('September', 'سبتمبر') },
+    { value: 9, label: t('October', 'أكتوبر') },
+    { value: 10, label: t('November', 'نوفمبر') },
+    { value: 11, label: t('December', 'ديسمبر') },
   ];
 
   return (
@@ -48,7 +50,7 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ form }) => {
       name="dateOfBirth"
       render={({ field }) => (
         <FormItem className="flex flex-col">
-          <FormLabel>Date of Birth <span className="text-red-500">*</span></FormLabel>
+          <FormLabel>{t('Date of Birth', 'تاريخ الميلاد')} <span className="text-red-500">*</span></FormLabel>
           <div className="flex gap-2">
             <Select
               value={field.value ? field.value.getMonth().toString() : ''}
@@ -59,7 +61,7 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ form }) => {
               }}
             >
               <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Month" />
+                <SelectValue placeholder={t('Month', 'الشهر')} />
               </SelectTrigger>
               <SelectContent>
                 {months.map((month) => (
@@ -79,7 +81,7 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ form }) => {
               }}
             >
               <SelectTrigger className="w-20">
-                <SelectValue placeholder="Day" />
+                <SelectValue placeholder={t('Day', 'اليوم')} />
               </SelectTrigger>
               <SelectContent>
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
@@ -99,7 +101,7 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ form }) => {
               }}
             >
               <SelectTrigger className="w-24">
-                <SelectValue placeholder="Year" />
+                <SelectValue placeholder={t('Year', 'السنة')} />
               </SelectTrigger>
               <SelectContent className="max-h-[200px]">
                 {years.map((year) => (
