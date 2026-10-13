@@ -19,7 +19,19 @@ import OrganizationManagement from '@/components/admin/OrganizationManagement';
 import { toCsv, downloadCsv } from '@/utils/admin/exportCsv';
 import { invokeEdge } from '@/utils/edge/invokeEdge';
 
+interface UsageInfo {
+  db_bytes: number;
+  storage_bytes: number;
+  storage_objects: number;
+  sessions: number;
+  responses_with_audio: number;
+  db_limit_bytes: number;
+  storage_limit_bytes: number;
+  plan: string;
+}
+
 interface AdminStats {
+  usage?: UsageInfo | null;
   total_sessions: number;
   in_progress: number;
   awaiting_review: number;
@@ -211,6 +223,63 @@ const AdminPanel: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {stats.usage && (() => {
+                const u = stats.usage;
+                const MB = 1048576;
+                const mb = (b: number) => Math.round((b / MB) * 10) / 10;
+                const gb = (b: number) => Math.round((b / (MB * 1024)) * 100) / 100;
+                const dbPct = Math.min(100, (u.db_bytes / u.db_limit_bytes) * 100);
+                const stPct = Math.min(100, (u.storage_bytes / u.storage_limit_bytes) * 100);
+                const avgFile = u.storage_objects > 0 ? u.storage_bytes / u.storage_objects : 0.7 * MB;
+                const filesPerTest = u.sessions > 0 && u.responses_with_audio > 0
+                  ? u.responses_with_audio / u.sessions : 6;
+                const perTest = Math.max(2 * MB, avgFile * filesPerTest);
+                const remaining = Math.max(0, Math.floor((u.storage_limit_bytes - u.storage_bytes) / perTest));
+                const orphans = Math.max(0, u.storage_objects - u.responses_with_audio);
+                const barColor = (p: number) => (p >= 85 ? 'bg-red-500' : p >= 65 ? 'bg-amber-500' : 'bg-emerald-500');
+                return (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Database className="h-4 w-4" /> Storage &amp; capacity
+                        <Badge variant="outline" className="ml-1 capitalize">{u.plan} plan</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium">Audio files</span>
+                          <span className="tabular-nums text-muted-foreground">{mb(u.storage_bytes)} MB / {gb(u.storage_limit_bytes)} GB ({Math.round(stPct)}%)</span>
+                        </div>
+                        <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div className={`h-full rounded-full ${barColor(stPct)}`} style={{ width: `${Math.max(2, stPct)}%` }} />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1">Each test stores ~{mb(perTest)} MB of recordings — this is the main limit.</p>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium">Database</span>
+                          <span className="tabular-nums text-muted-foreground">{mb(u.db_bytes)} MB / {mb(u.db_limit_bytes)} MB ({Math.round(dbPct)}%)</span>
+                        </div>
+                        <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div className={`h-full rounded-full ${barColor(dbPct)}`} style={{ width: `${Math.max(2, dbPct)}%` }} />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1">Text, results &amp; reports — grows slowly.</p>
+                      </div>
+                      <div className="rounded-lg bg-assessment-blue/5 p-3 text-sm">
+                        <span className="font-semibold text-assessment-blue">~{remaining.toLocaleString()} more placement tests</span> fit in the remaining audio storage at the current rate.
+                      </div>
+                      {orphans > 20 && (
+                        <p className="text-[11px] text-amber-600">
+                          ~{orphans} old audio files from deleted tests are still using space — clearing them would free capacity.
+                        </p>
+                      )}
+                      <p className="text-[11px] text-muted-foreground">Upgrading to Supabase Pro raises these to 8 GB database / 100 GB files.</p>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
             </>
           )}
         </TabsContent>
