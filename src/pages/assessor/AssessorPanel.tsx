@@ -8,6 +8,7 @@ import { assessorService, type PendingAssessment } from '@/services/assessorServ
 import AssessmentReviewModal from '@/components/assessor/AssessmentReviewModal';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import ChangePassword from '@/components/account/ChangePassword';
+import RoleTour from '@/components/onboarding/RoleTour';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -139,6 +140,7 @@ const AssessorPanel: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <RoleTour role="assessor" />
           <NotificationBell />
           <ChangePassword />
           <Button variant="outline" onClick={() => window.location.href = '/'}>
