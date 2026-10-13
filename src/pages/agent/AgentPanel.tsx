@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { PROGRAMS } from '@/data/programLevels';
 import PerformanceReport from '@/components/reports/PerformanceReport';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import ChangePassword from '@/components/account/ChangePassword';
 import type { PerformanceReportPayload } from '@/data/report';
 
 interface Lead {
@@ -206,6 +207,7 @@ const AgentPanel: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <NotificationBell />
+            <ChangePassword />
             <Button variant="outline" size="sm" onClick={() => signOut()}>
               <LogOut className="mr-2 h-4 w-4" /> Sign out
             </Button>

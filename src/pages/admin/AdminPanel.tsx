@@ -11,6 +11,7 @@ import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Datab
 import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
 import UserManagement from '@/components/admin/UserManagement';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import ChangePassword from '@/components/account/ChangePassword';
 import PromptManagement from '@/components/admin/PromptManagement';
 import TrainingDataViewer from '@/components/admin/TrainingDataViewer';
 import ApiKeyManagement from '@/components/admin/ApiKeyManagement';
@@ -123,6 +124,7 @@ const AdminPanel: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <NotificationBell />
+          <ChangePassword />
           <Button variant="outline" onClick={() => navigate('/agent')}>Agent Panel</Button>
           <Button variant="outline" onClick={() => navigate('/assessor')}>Assessor Panel</Button>
           {user && <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>}
