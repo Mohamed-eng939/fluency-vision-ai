@@ -76,8 +76,30 @@ serve(async (req) => {
       if (lvl) cefr[lvl] = (cefr[lvl] || 0) + 1;
     }
 
+    // Platform-wide storage/database consumption — global admin only (org NULL).
+    // Audio in Supabase Storage is the binding limit, not the DB. Plan limits are
+    // the free tier; bump these two constants if the project upgrades to Pro
+    // (8 GB DB / 100 GB files).
+    let usage: Record<string, number | string> | null = null;
+    if (!orgId) {
+      const { data: u } = await admin.rpc("platform_usage");
+      if (u) {
+        usage = {
+          db_bytes: Number((u as any).db_bytes || 0),
+          storage_bytes: Number((u as any).storage_bytes || 0),
+          storage_objects: Number((u as any).storage_objects || 0),
+          sessions: Number((u as any).sessions || 0),
+          responses_with_audio: Number((u as any).responses_with_audio || 0),
+          db_limit_bytes: 500 * 1024 * 1024,
+          storage_limit_bytes: 1024 * 1024 * 1024,
+          plan: "free",
+        };
+      }
+    }
+
     return json({
       stats: {
+        usage,
         total_sessions: all.length,
         in_progress: byStatus("in_progress"),
         awaiting_review: byStatus("completed"),
