@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, FileText, Clock, CheckCircle, ArrowRight } from 'lucide-react';
+import ChangePassword from '@/components/account/ChangePassword';
 
 const statusMeta = (status: string, reviewed: boolean) => {
   if (reviewed) return { label: 'Reviewed', cls: 'bg-green-100 text-green-800', Icon: CheckCircle };
@@ -57,9 +58,12 @@ const MyResults: React.FC = () => {
             </h1>
             <p className="text-sm text-muted-foreground">Your {brand.displayName} assessments and reports</p>
           </div>
-          <Link to="/assessment">
-            <Button variant="outline">Take a new test</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <ChangePassword />
+            <Link to="/assessment">
+              <Button variant="outline">Take a new test</Button>
+            </Link>
+          </div>
         </div>
 
         {busy ? (

@@ -7,6 +7,7 @@ import { Loader2, Clock, User, Globe, Languages } from 'lucide-react';
 import { assessorService, type PendingAssessment } from '@/services/assessorService';
 import AssessmentReviewModal from '@/components/assessor/AssessmentReviewModal';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import ChangePassword from '@/components/account/ChangePassword';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -139,6 +140,7 @@ const AssessorPanel: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <NotificationBell />
+          <ChangePassword />
           <Button variant="outline" onClick={() => window.location.href = '/'}>
             Home
           </Button>
