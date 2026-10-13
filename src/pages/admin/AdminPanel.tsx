@@ -12,6 +12,7 @@ import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignme
 import UserManagement from '@/components/admin/UserManagement';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import ChangePassword from '@/components/account/ChangePassword';
+import RoleTour from '@/components/onboarding/RoleTour';
 import PromptManagement from '@/components/admin/PromptManagement';
 import TrainingDataViewer from '@/components/admin/TrainingDataViewer';
 import ApiKeyManagement from '@/components/admin/ApiKeyManagement';
@@ -135,6 +136,7 @@ const AdminPanel: React.FC = () => {
           <p className="text-muted-foreground">Welcome, {user?.full_name || 'Admin'}</p>
         </div>
         <div className="flex items-center gap-2">
+          <RoleTour role="admin" />
           <NotificationBell />
           <ChangePassword />
           <Button variant="outline" onClick={() => navigate('/agent')}>Agent Panel</Button>
