@@ -27,6 +27,10 @@ export const TOURS: Partial<Record<UserRole, Tour>> = {
         body: 'Open a test, listen to each answer, and grade Grammar, Fluency and Vocabulary, then confirm the overall CEFR level (you can override it with a reason).',
       },
       {
+        title: 'Your review trains the system',
+        body: 'Every review is saved as a labelled example — the system learns from your judgement. Grade on what you hear, and when the auto level is wrong, override it with a specific reason. Consistent, well-reasoned reviews are what will eventually let the test place a learner on its own.',
+      },
+      {
         title: 'Build the performance report',
         body: 'Choose the Upedia program + Private/Group + level (the band fills in). Add Goals, Feedback and any Other Programs, then click Preview to see exactly what the student gets.',
       },

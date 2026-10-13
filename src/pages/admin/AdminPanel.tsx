@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download, KeyRound, Building2 } from 'lucide-react';
+import { Loader2, Users, ClipboardList, RefreshCw, UserCog, MessageSquare, Database, Download, KeyRound, Building2, Brain } from 'lucide-react';
 import AssessmentAssignmentDashboard from '@/components/admin/AssessmentAssignmentDashboard';
 import UserManagement from '@/components/admin/UserManagement';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -31,8 +31,17 @@ interface UsageInfo {
   plan: string;
 }
 
+interface MlInfo {
+  rows: number;         // labelled training examples captured so far
+  tests: number;        // distinct tests those rows came from
+  comparable: number;   // rows with BOTH a system and a human CEFR
+  agree: number;        // comparable rows where system == human
+  overridden: number;   // rows the human overrode (the correction signal)
+}
+
 interface AdminStats {
   usage?: UsageInfo | null;
+  ml?: MlInfo | null;
   total_sessions: number;
   in_progress: number;
   awaiting_review: number;
@@ -278,6 +287,63 @@ const AdminPanel: React.FC = () => {
                         </p>
                       )}
                       <p className="text-[11px] text-muted-foreground">Upgrading to Supabase Pro raises these to 8 GB database / 100 GB files.</p>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
+
+              {stats.ml && (() => {
+                const m = stats.ml;
+                // Gate to "enough to start validating": 100 labelled examples
+                // across 50 tests is a reasonable first milestone, not a promise
+                // of a model. Scoring today is heuristics + APIs, not ML.
+                const ROWS_GOAL = 100;
+                const rowsPct = Math.min(100, (m.rows / ROWS_GOAL) * 100);
+                const agreePct = m.comparable > 0 ? Math.round((m.agree / m.comparable) * 100) : null;
+                const overridePct = m.comparable > 0 ? Math.round((m.overridden / m.comparable) * 100) : null;
+                const barColor = (p: number) => (p >= 85 ? 'bg-emerald-500' : p >= 40 ? 'bg-amber-500' : 'bg-slate-400');
+                return (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Brain className="h-4 w-4" /> ML training data
+                        <Badge variant="outline" className="ml-1">heuristics today</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium">Labelled examples captured</span>
+                          <span className="tabular-nums text-muted-foreground">{m.rows.toLocaleString()} / {ROWS_GOAL}+ ({Math.round(rowsPct)}%)</span>
+                        </div>
+                        <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div className={`h-full rounded-full ${barColor(rowsPct)}`} style={{ width: `${Math.max(2, rowsPct)}%` }} />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          Each reviewed test adds human-vs-system labels — from {m.tests.toLocaleString()} test{m.tests === 1 ? '' : 's'} so far. The dataset grows every time a tester submits a review.
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-lg bg-muted/40 p-3">
+                          <div className="text-xs text-muted-foreground">Human↔system agreement</div>
+                          <div className="text-xl font-bold tabular-nums">{agreePct === null ? '—' : `${agreePct}%`}</div>
+                          <div className="text-[11px] text-muted-foreground">{m.comparable.toLocaleString()} comparable so far</div>
+                        </div>
+                        <div className="rounded-lg bg-muted/40 p-3">
+                          <div className="text-xs text-muted-foreground">Human overrode system</div>
+                          <div className="text-xl font-bold tabular-nums">{overridePct === null ? '—' : `${overridePct}%`}</div>
+                          <div className="text-[11px] text-muted-foreground">{m.overridden.toLocaleString()} correction{m.overridden === 1 ? '' : 's'}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-lg bg-assessment-blue/5 p-3 text-sm">
+                        {m.rows === 0 ? (
+                          <>No labelled data yet. It starts filling the moment testers review real submissions — nothing to do but run tests.</>
+                        ) : m.rows < ROWS_GOAL ? (
+                          <>Collecting. A model isn’t trained yet — we first need a validated dataset. Keep testers reviewing (and overriding when the level is wrong) so these labels accumulate.</>
+                        ) : (
+                          <>Enough examples to begin a validation study (agreement vs. known-level speakers). Accuracy is earned from this reviewed data — not switched on.</>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 );

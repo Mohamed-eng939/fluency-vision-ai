@@ -81,6 +81,7 @@ serve(async (req) => {
     // the free tier; bump these two constants if the project upgrades to Pro
     // (8 GB DB / 100 GB files).
     let usage: Record<string, number | string> | null = null;
+    let ml: Record<string, number> | null = null;
     if (!orgId) {
       const { data: u } = await admin.rpc("platform_usage");
       if (u) {
@@ -95,11 +96,26 @@ serve(async (req) => {
           plan: "free",
         };
       }
+      // ML flywheel readiness: how many human-labelled examples exist, how often
+      // the human overrode the system, and human↔system agreement. This is the
+      // training signal that must accumulate (+ be validated) before any model —
+      // scoring today is heuristics + APIs, not ML.
+      const { data: m } = await admin.rpc("ml_readiness");
+      if (m) {
+        ml = {
+          rows: Number((m as any).rows || 0),
+          tests: Number((m as any).tests || 0),
+          comparable: Number((m as any).comparable || 0),
+          agree: Number((m as any).agree || 0),
+          overridden: Number((m as any).overridden || 0),
+        };
+      }
     }
 
     return json({
       stats: {
         usage,
+        ml,
         total_sessions: all.length,
         in_progress: byStatus("in_progress"),
         awaiting_review: byStatus("completed"),

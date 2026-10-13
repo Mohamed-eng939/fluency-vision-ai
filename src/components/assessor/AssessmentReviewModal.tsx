@@ -314,8 +314,15 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               human_vocabulary_cefr: humanVocab,
               is_overridden: !!rReview?.cefr_level && rReview.cefr_level !== systemCefr,
               session_is_overridden: isOverridden,
+              override_reason: isOverridden ? (finalCEFRReason || null) : null,
               final_session_cefr: finalCEFRLevel,
               calculated_session_cefr: calculatedCEFR,
+              // Upedia-scale labels so the dataset can train toward Upedia's own
+              // scale later, not only CEFR (swappable-scale principle).
+              program: program || null,
+              program_subtrack: subtrack || null,
+              upedia_level: levelCode || null,
+              upedia_band: autoBand || null,
               audio_url: r.audio_url || null,
               overall_score: r.overall_score || null,
               grammar_score: r.grammar_score || null,
@@ -726,6 +733,22 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Honest training-signal guidance: the human decision here is what
+                  the system learns from. No ML runs yet — this is how the dataset
+                  is built toward eventually placing without a reviewer. */}
+              <div className="rounded-lg border border-assessment-blue/30 bg-assessment-blue/5 p-3 text-xs text-slate-700 space-y-1">
+                <p className="font-semibold text-assessment-blue">🧠 Your review trains the system</p>
+                <p>
+                  Every review you submit is saved as a labelled example — the system learns from
+                  <strong> your</strong> judgement, not its own. To make that signal count:
+                </p>
+                <ul className="list-disc ml-4 space-y-0.5">
+                  <li>Grade <strong>Grammar, Fluency and Vocabulary</strong> on what you actually hear — don’t just accept the auto values.</li>
+                  <li>When the auto level is wrong, <strong>override it</strong> and give a specific reason (e.g. “relies on memorised phrases, little spontaneous range” — not just “sounds B1”). Corrections are the most valuable signal.</li>
+                  <li>Be consistent: the same evidence should get the same level. Agreement between reviewers is what eventually lets the system place on its own.</li>
+                </ul>
+              </div>
+
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 {reviewedCount === totalResponses ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
