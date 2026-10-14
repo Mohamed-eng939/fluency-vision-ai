@@ -32,11 +32,13 @@ interface UsageInfo {
 }
 
 interface MlInfo {
-  rows: number;         // labelled training examples captured so far
-  tests: number;        // distinct tests those rows came from
-  comparable: number;   // rows with BOTH a system and a human CEFR
-  agree: number;        // comparable rows where system == human
-  overridden: number;   // rows the human overrode (the correction signal)
+  rows: number;            // labelled training examples captured so far
+  tests: number;           // distinct tests those rows came from
+  comparable: number;      // rows with BOTH a system and a human CEFR
+  agree: number;           // comparable rows where system == human
+  overridden: number;      // rows the human overrode (the correction signal)
+  llm_comparable?: number; // rows with BOTH an AI rubric read and a human CEFR
+  llm_agree?: number;      // of those, where the AI read == human
 }
 
 interface AdminStats {
@@ -301,6 +303,8 @@ const AdminPanel: React.FC = () => {
                 const rowsPct = Math.min(100, (m.rows / ROWS_GOAL) * 100);
                 const agreePct = m.comparable > 0 ? Math.round((m.agree / m.comparable) * 100) : null;
                 const overridePct = m.comparable > 0 ? Math.round((m.overridden / m.comparable) * 100) : null;
+                const llmComparable = m.llm_comparable || 0;
+                const llmAgreePct = llmComparable > 0 ? Math.round(((m.llm_agree || 0) / llmComparable) * 100) : null;
                 const barColor = (p: number) => (p >= 85 ? 'bg-emerald-500' : p >= 40 ? 'bg-amber-500' : 'bg-slate-400');
                 return (
                   <Card>
@@ -334,6 +338,17 @@ const AdminPanel: React.FC = () => {
                           <div className="text-xl font-bold tabular-nums">{overridePct === null ? '—' : `${overridePct}%`}</div>
                           <div className="text-[11px] text-muted-foreground">{m.overridden.toLocaleString()} correction{m.overridden === 1 ? '' : 's'}</div>
                         </div>
+                      </div>
+                      <div className="rounded-lg border border-purple-200 bg-purple-50/40 p-3 flex items-center justify-between">
+                        <div>
+                          <div className="text-xs text-purple-900 font-medium">AI rubric rater ↔ human agreement</div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {llmComparable > 0
+                              ? `${(m.llm_agree || 0).toLocaleString()} of ${llmComparable.toLocaleString()} where testers pulled an AI read`
+                              : 'No AI reads compared yet — testers can pull one per response while reviewing.'}
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold tabular-nums text-purple-900">{llmAgreePct === null ? '—' : `${llmAgreePct}%`}</div>
                       </div>
                       <div className="rounded-lg bg-assessment-blue/5 p-3 text-sm">
                         {m.rows === 0 ? (

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle, Languages, Mic, BookOpen, GraduationCap, Eye } from 'lucide-react';
+import { Loader2, Star, AudioLines, FileText, User, AlertCircle, CheckCircle, Languages, Mic, BookOpen, GraduationCap, Eye, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cefrToNumber, numberToCefr, type CEFRLevel } from '@/utils/scoring/cefrUtils';
@@ -91,6 +91,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     date: formatReportDate(), name: '', age: '', nationality: '', residency: '', occupation: '', track: '',
   });
   const [showPreview, setShowPreview] = useState(false);
+
+  // On-demand "AI rubric read" (second opinion) per response, from rubric-rater.
+  const [aiReads, setAiReads] = useState<Record<string, { loading: boolean; data?: any; error?: string }>>({});
 
   const pConfig = program ? programConfig(program) : null;
   const levelOptions = program ? levelsFor(program, subtrack || null) : [];
@@ -292,6 +295,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           const humanGrammar = rReview?.grammar_cefr || sysScoring.grammarCefr || null;
           const humanFluency = rReview?.fluency_cefr || sysScoring.fluencyCefr || null;
           const humanVocab = rReview?.vocabulary_cefr || sysScoring.vocabCefr || null;
+          // The AI rubric read for this response, if the tester pulled one.
+          const aiRub = aiReads[r.id]?.data?.rubric || null;
+          const aiFeat = aiReads[r.id]?.data?.features || null;
           return {
             response_id: r.id,
             transcript: r.transcript || null,
@@ -315,6 +321,14 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               is_overridden: !!rReview?.cefr_level && rReview.cefr_level !== systemCefr,
               session_is_overridden: isOverridden,
               override_reason: isOverridden ? (finalCEFRReason || null) : null,
+              // LLM rubric-rater read (second opinion) + the text fluency features,
+              // captured so we can measure LLM-vs-human agreement over time.
+              llm_cefr: aiRub?.overall_cefr || null,
+              llm_grammar_cefr: aiRub?.grammar_cefr || null,
+              llm_fluency_cefr: aiRub?.fluency_cefr || null,
+              llm_vocabulary_cefr: aiRub?.vocabulary_cefr || null,
+              llm_confidence: typeof aiRub?.confidence === 'number' ? aiRub.confidence : null,
+              fluency_features: aiFeat || null,
               final_session_cefr: finalCEFRLevel,
               calculated_session_cefr: calculatedCEFR,
               // Upedia-scale labels so the dataset can train toward Upedia's own
@@ -427,6 +441,47 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
     const vocabCefr = analysis.cefrVocabularyLevel || feedback.cefrVocabularyLevel || null;
     
     return { grammarCefr, grammarScores, fluencyCefr, fluencySpm, fluencySyllables, vocabCefr };
+  };
+
+  /**
+   * Pull an AI rubric read (second opinion) for one response. This is advisory —
+   * it never auto-grades; the tester compares, then decides. Its read is also
+   * captured into training_data so we can measure LLM-vs-human agreement.
+   */
+  const fetchAiRead = async (response: any) => {
+    setAiReads((prev) => ({ ...prev, [response.id]: { loading: true } }));
+    try {
+      const { data, error } = await supabase.functions.invoke('rubric-rater', {
+        body: {
+          transcript: response.transcript || '',
+          duration_seconds: response.audio_duration || null,
+          prompt_text: response.prompt_text || response.prompt_identifier || '',
+          question_type: response.question_type || '',
+        },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Rater failed');
+      setAiReads((prev) => ({ ...prev, [response.id]: { loading: false, data } }));
+    } catch (e: any) {
+      setAiReads((prev) => ({ ...prev, [response.id]: { loading: false, error: e?.message || 'Failed' } }));
+      toast.error('AI rubric read failed — grade manually.');
+    }
+  };
+
+  /** Copy the AI read's levels into the tester's editable grades (still editable). */
+  const applyAiRead = (responseId: string, rubric: any) => {
+    if (!rubric) return;
+    setResponseReviews((prev) => ({
+      ...prev,
+      [responseId]: {
+        cefr_level: rubric.overall_cefr || prev[responseId]?.cefr_level || '',
+        notes: prev[responseId]?.notes || '',
+        grammar_cefr: rubric.grammar_cefr || prev[responseId]?.grammar_cefr || '',
+        fluency_cefr: rubric.fluency_cefr || prev[responseId]?.fluency_cefr || '',
+        vocabulary_cefr: rubric.vocabulary_cefr || prev[responseId]?.vocabulary_cefr || '',
+      },
+    }));
+    toast.success('AI levels copied in — adjust anything you disagree with.');
   };
 
   if (!assessmentDetails) return null;
@@ -635,6 +690,63 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                           <p className="text-sm">{response.transcript}</p>
                         </div>
                       )}
+
+                      {/* AI rubric read — an on-demand SECOND OPINION. Advisory
+                          only: the tester compares and decides. Captured into
+                          training_data to measure LLM-vs-human agreement. */}
+                      {response.transcript && (() => {
+                        const ai = aiReads[response.id];
+                        const rub = ai?.data?.rubric;
+                        return (
+                          <div className="rounded-lg border border-purple-200 bg-purple-50/40 p-3">
+                            {!ai && (
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 text-xs text-purple-900">
+                                  <Sparkles className="h-4 w-4" />
+                                  <span>Want a second opinion? Get the AI's rubric read, then decide for yourself.</span>
+                                </div>
+                                <Button size="sm" variant="outline" className="h-8 shrink-0" onClick={() => fetchAiRead(response)}>
+                                  AI rubric read
+                                </Button>
+                              </div>
+                            )}
+                            {ai?.loading && (
+                              <div className="flex items-center gap-2 text-xs text-purple-900">
+                                <Loader2 className="h-4 w-4 animate-spin" /> Reading the response…
+                              </div>
+                            )}
+                            {ai?.error && (
+                              <div className="flex items-center justify-between gap-2 text-xs text-red-700">
+                                <span>AI read failed — grade manually.</span>
+                                <Button size="sm" variant="outline" className="h-7" onClick={() => fetchAiRead(response)}>Retry</Button>
+                              </div>
+                            )}
+                            {rub && (
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="flex items-center gap-1 text-xs font-semibold text-purple-900">
+                                    <Sparkles className="h-3.5 w-3.5" /> AI rubric read
+                                  </span>
+                                  <Badge className={getCEFRColor(rub.grammar_cefr)}>G {rub.grammar_cefr || '—'}</Badge>
+                                  <Badge className={getCEFRColor(rub.fluency_cefr)}>F {rub.fluency_cefr || '—'}</Badge>
+                                  <Badge className={getCEFRColor(rub.vocabulary_cefr)}>V {rub.vocabulary_cefr || '—'}</Badge>
+                                  <Badge variant="outline" className="border-purple-300">Overall {rub.overall_cefr || '—'}</Badge>
+                                  <span className="text-[11px] text-muted-foreground">confidence {rub.confidence ?? '—'}%</span>
+                                </div>
+                                {rub.rationale?.overall && (
+                                  <p className="text-[11px] text-slate-700"><span className="font-medium">Why:</span> {rub.rationale.overall}</p>
+                                )}
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[10px] text-muted-foreground">Advisory — no audio, so pronunciation isn’t judged. You are the decision-maker.</span>
+                                  <Button size="sm" variant="outline" className="h-7 shrink-0" onClick={() => applyAiRead(response.id, rub)}>
+                                    Use these grades
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       {/* Per-response scoring: the assessor grades Grammar,
                           Fluency, and Vocabulary as CEFR. Each dropdown is

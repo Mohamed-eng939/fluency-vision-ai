@@ -108,6 +108,8 @@ serve(async (req) => {
           comparable: Number((m as any).comparable || 0),
           agree: Number((m as any).agree || 0),
           overridden: Number((m as any).overridden || 0),
+          llm_comparable: Number((m as any).llm_comparable || 0),
+          llm_agree: Number((m as any).llm_agree || 0),
         };
       }
     }

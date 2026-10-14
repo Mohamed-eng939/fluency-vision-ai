@@ -30,7 +30,14 @@ AS $$
     'agree', (SELECT count(*) FROM public.training_data
                 WHERE scores->>'system_cefr' IS NOT NULL
                   AND scores->>'system_cefr' = scores->>'human_cefr'),
-    'overridden', (SELECT count(*) FROM public.training_data WHERE scores->>'is_overridden' = 'true')
+    'overridden', (SELECT count(*) FROM public.training_data WHERE scores->>'is_overridden' = 'true'),
+    -- LLM rubric-rater (rubric-rater edge fn) vs human agreement — the dial that
+    -- tracks how close the AI second opinion is to the tester's decision.
+    'llm_comparable', (SELECT count(*) FROM public.training_data
+                         WHERE scores->>'llm_cefr' IS NOT NULL AND scores->>'human_cefr' IS NOT NULL),
+    'llm_agree', (SELECT count(*) FROM public.training_data
+                    WHERE scores->>'llm_cefr' IS NOT NULL
+                      AND scores->>'llm_cefr' = scores->>'human_cefr')
   );
 $$;
 REVOKE ALL ON FUNCTION public.ml_readiness() FROM anon, authenticated;
