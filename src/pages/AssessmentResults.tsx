@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Separator } from '@/components/ui/separator';
 import PerformanceReport from '@/components/reports/PerformanceReport';
 import type { PerformanceReportPayload } from '@/data/report';
+import PublicTopBar from '@/components/PublicTopBar';
 
 const getCEFRColor = (level: string) => {
   const colors: Record<string, string> = {
@@ -146,8 +147,9 @@ const AssessmentResults: React.FC = () => {
   const finalCEFR = review?.override_scores?.final_cefr_level || session.overall_cefr_level;
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <PublicTopBar />
+      <div className="max-w-5xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-6">
           <Button variant="outline" onClick={() => navigate('/')} className="mb-4">
