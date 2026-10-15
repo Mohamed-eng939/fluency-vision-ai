@@ -41,7 +41,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   new: { label: 'New', cls: 'bg-gray-100 text-gray-700' },
   link_sent: { label: 'Link sent', cls: 'bg-blue-100 text-blue-800' },
   account_created: { label: 'Signed up', cls: 'bg-indigo-100 text-indigo-800' },
-  test_submitted: { label: 'Test submitted', cls: 'bg-amber-100 text-amber-800' },
+  test_submitted: { label: 'Completed the test', cls: 'bg-amber-100 text-amber-800' },
   reviewed: { label: 'Reviewed', cls: 'bg-green-100 text-green-800' },
 };
 
@@ -62,6 +62,7 @@ const AgentPanel: React.FC = () => {
   const brand = useBrandingContext();
   const fileRef = useRef<HTMLInputElement>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [assessorByLead, setAssessorByLead] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -83,6 +84,15 @@ const AgentPanel: React.FC = () => {
       .order('created_at', { ascending: false });
     if (error) toast.error(`Failed to load leads: ${error.message}`);
     setLeads((data as Lead[]) ?? []);
+    // Which tester each completed/reviewed lead is assigned to (name only).
+    try {
+      const { data: assessors } = await (supabase as any).rpc('agent_lead_assessors');
+      const map: Record<string, string> = {};
+      (assessors as any[] | null)?.forEach((r) => {
+        if (r?.lead_id && r?.assessor_name) map[r.lead_id] = r.assessor_name;
+      });
+      setAssessorByLead(map);
+    } catch { /* non-fatal — assignment column just stays blank */ }
     setLoading(false);
   }, []);
 
@@ -273,7 +283,14 @@ const AgentPanel: React.FC = () => {
                       <TableCell className="text-sm">{l.phone || '—'}</TableCell>
                       <TableCell className="text-sm">{l.nationality || '—'}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{intent || '—'}</TableCell>
-                      <TableCell><Badge className={st.cls}>{st.label}</Badge></TableCell>
+                      <TableCell>
+                        <Badge className={st.cls}>{st.label}</Badge>
+                        {assessorByLead[l.id] && (l.status === 'test_submitted' || l.status === 'reviewed') && (
+                          <div className="text-[11px] text-muted-foreground mt-1">
+                            Tester: {assessorByLead[l.id]}
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           <Button
