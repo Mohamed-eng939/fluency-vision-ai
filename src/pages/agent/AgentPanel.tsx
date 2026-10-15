@@ -12,7 +12,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Plus, Upload, RefreshCw, MessageCircle, FileText, Printer, LogOut } from 'lucide-react';
+import { Loader2, Plus, Upload, RefreshCw, MessageCircle, FileText, Printer, Download, LogOut } from 'lucide-react';
+import { downloadPerformanceReportPdf } from '@/utils/reports/performanceReportPdf';
 import { toast } from 'sonner';
 import { PROGRAMS } from '@/data/programLevels';
 import PerformanceReport from '@/components/reports/PerformanceReport';
@@ -371,7 +372,21 @@ const AgentPanel: React.FC = () => {
           <DialogHeader><DialogTitle>Performance report</DialogTitle></DialogHeader>
           {report && <PerformanceReport report={report} />}
           <DialogFooter className="no-print">
-            <Button onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Print</Button>
+            <Button
+              onClick={() =>
+                report &&
+                downloadPerformanceReportPdf(
+                  report,
+                  `Performance-Report-${(report.header?.name || 'student').replace(/\s+/g, '-')}.pdf`,
+                  brand.displayName,
+                )
+              }
+            >
+              <Download className="mr-2 h-4 w-4" /> Download
+            </Button>
+            <Button variant="outline" onClick={() => window.print()}>
+              <Printer className="mr-2 h-4 w-4" /> Print
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
