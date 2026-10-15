@@ -4,6 +4,7 @@ import { getFullAssessmentTests } from '@/utils/assessmentUtils';
 import FullAssessmentIntro from '@/components/FullAssessmentIntro';
 import FullAssessment from '@/components/FullAssessment';
 import AssessmentFlow from '@/components/assessment/AssessmentFlow';
+import PublicTopBar from '@/components/PublicTopBar';
 
 const AssessmentPage: React.FC = () => {
   const fullAssessmentTests = getFullAssessmentTests();
@@ -49,15 +50,18 @@ const AssessmentPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 sm:px-6 lg:max-w-5xl">
-      <h1 className="text-3xl font-bold text-assessment-blue mb-6">
-        English Placement Assessment
-      </h1>
+    <>
+      <PublicTopBar />
+      <div className="container mx-auto py-6 px-4 sm:px-6 lg:max-w-5xl">
+        <h1 className="text-3xl font-bold text-assessment-blue mb-6">
+          English Placement Assessment
+        </h1>
 
-      <AssessmentFlow
-        onTakeFullAssessment={handleShowFullAssessmentIntro}
-      />
-    </div>
+        <AssessmentFlow
+          onTakeFullAssessment={handleShowFullAssessmentIntro}
+        />
+      </div>
+    </>
   );
 };
 
