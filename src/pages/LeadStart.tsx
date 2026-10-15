@@ -32,6 +32,9 @@ const LeadStart: React.FC = () => {
       });
       if (error || !data?.ok) { setState('invalid'); return; }
       setName(data.lead?.name ?? '');
+      // Stash what the agent already captured so sign-up / the profile form can
+      // pre-fill it instead of asking the student to retype it.
+      try { sessionStorage.setItem('lead_candidate', JSON.stringify(data.lead || {})); } catch { /* ignore */ }
       setState('ok');
     })();
   }, [token]);

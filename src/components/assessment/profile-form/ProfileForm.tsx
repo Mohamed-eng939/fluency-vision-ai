@@ -14,6 +14,7 @@ import { StudentInfo } from '@/hooks/assessment';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/language/LanguageContext';
+import { useAuth } from '@/contexts/auth';
 
 interface ProfileFormProps {
   onSubmit: (data: StudentInfo) => void;
@@ -23,6 +24,7 @@ interface ProfileFormProps {
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const { toast } = useToast();
   const { t, dir } = useLanguage();
+  const { user } = useAuth();
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -50,6 +52,57 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const hasProceededRef = React.useRef(false);
   const authPhaseRef = React.useRef<'idle' | 'waiting_session' | 'proceeded'>('idle');
+
+  // Pre-fill from what we already know so the student never re-types data we
+  // already hold: the signed-in profile, or the lead/invite the agent/partner
+  // already captured. When signed in, the account (email/password) section is
+  // hidden and no second account is created.
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const set = (k: keyof ProfileFormValues, v: any) => {
+        if (v !== undefined && v !== null && v !== '') form.setValue(k, v as any, { shouldValidate: false });
+      };
+      // Lead / invite candidate captured earlier (sales agent or partner handoff).
+      try {
+        const lead = JSON.parse(sessionStorage.getItem('lead_candidate') || 'null');
+        const inv = JSON.parse(sessionStorage.getItem('invite_candidate') || 'null');
+        const c = lead || inv;
+        if (c) {
+          set('name', c.name);
+          set('email', c.email);
+          set('phone', c.phone);
+          set('citizenshipCountry', c.nationality || c.country);
+        }
+      } catch { /* ignore */ }
+
+      if (user) {
+        set('name', user.full_name);
+        set('email', user.email);
+        try {
+          const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+          if (!cancelled && data) {
+            const p = data as any;
+            set('phone', p.phone);
+            set('citizenshipCountry', p.country_of_citizenship);
+            set('residenceCountry', p.country_of_residence);
+            set('firstLanguage', p.first_language);
+            if (p.date_of_birth) form.setValue('dateOfBirth', new Date(p.date_of_birth));
+          }
+        } catch { /* ignore */ }
+        // The account section is hidden when signed in; satisfy the schema with
+        // a throwaway password (never used — we skip signUp) and a stable username.
+        const pw = `Aa1!${Math.random().toString(36).slice(2, 12)}`;
+        form.setValue('password', pw);
+        form.setValue('confirmPassword', pw);
+        const uname = ((user.email || user.full_name || 'user').split('@')[0] || 'user')
+          .replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
+        form.setValue('username', uname.length >= 3 ? uname : `user${Math.floor(Math.random() * 1000)}`);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Safety: never allow an infinite "Saving..." state
   React.useEffect(() => {
@@ -153,8 +206,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
     authPhaseRef.current = 'idle';
 
     try {
-      // Validate required fields first
-      if (!values.name || !values.email || !values.password) {
+      // Validate required fields first (password only matters for new accounts)
+      if (!values.name || !values.email || (!user && !values.password)) {
         throw new Error('Please fill in all required fields');
       }
 
@@ -168,6 +221,14 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
       // - Fire signUp first.
       // - If user already exists, fire signIn.
       // - Do NOT block the UX on those promises; instead proceed when Supabase session becomes available.
+      let userId: string;
+
+      if (user) {
+        // Already signed in — never create a second account. Reuse the session;
+        // the detailed fields below are gathered once.
+        userId = user.id;
+        console.log('✅ Already authenticated; reusing session for', userId);
+      } else {
       let session;
 
       console.time('⏱️ supabase.auth.signUp (best-effort)');
@@ -235,7 +296,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
         throw new Error('Authentication failed - no session created');
       }
 
-      const userId = session.user.id;
+      userId = session.user.id;
+      }
       console.log('✅ Authentication successful, userId:', userId);
 
       // 4️⃣ Convert to StudentInfo format
@@ -337,7 +399,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
   const getButtonText = () => {
     if (loading) return t('Saving…', 'جارٍ الحفظ…');
     if (errorMsg) return `${t('Error', 'خطأ')}: ${errorMsg}`;
-    return t('Create Profile & Start Assessment', 'أنشئ الملف وابدأ التقييم');
+    return user
+      ? t('Confirm & Start Assessment', 'تأكيد وبدء التقييم')
+      : t('Create Profile & Start Assessment', 'أنشئ الملف وابدأ التقييم');
   };
 
   const getButtonStyle = () => {
@@ -349,7 +413,10 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit }) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8" dir={dir}>
         <PersonalInfoSection form={form} countries={countries} languages={languages} />
-        <AccountSection form={form} />
+        {/* Account creation is only for brand-new users — a signed-in student
+            (or one who already registered) is never asked for email/password
+            again. */}
+        {!user && <AccountSection form={form} />}
         <LearningContextSection form={form} testReasons={testReasons} cefrLevels={cefrLevels} />
         <PreferencesSection form={form} />
         <ConsentSection form={form} />
