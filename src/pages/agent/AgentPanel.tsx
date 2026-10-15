@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Plus, Upload, RefreshCw, MessageCircle, FileText, Download, Mail, LogOut } from 'lucide-react';
+import { Loader2, Plus, Upload, RefreshCw, MessageCircle, FileText, Printer, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { PROGRAMS } from '@/data/programLevels';
 import PerformanceReport from '@/components/reports/PerformanceReport';
@@ -63,6 +63,7 @@ const AgentPanel: React.FC = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [assessorByLead, setAssessorByLead] = useState<Record<string, string>>({});
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -73,8 +74,6 @@ const AgentPanel: React.FC = () => {
 
   const [reportOpen, setReportOpen] = useState(false);
   const [report, setReport] = useState<PerformanceReportPayload | null>(null);
-  const [reportSession, setReportSession] = useState<string | null>(null);
-  const [emailing, setEmailing] = useState(false);
 
   const loadLeads = useCallback(async () => {
     setLoading(true);
@@ -183,26 +182,11 @@ const AgentPanel: React.FC = () => {
       if (error) throw error;
       if (!data?.report) { toast.info('No report has been produced for this student yet.'); return; }
       setReport(data.report as PerformanceReportPayload);
-      setReportSession(lead.session_id);
       setReportOpen(true);
     } catch (e: any) {
       toast.error(`Could not open report: ${e.message ?? e}`);
     } finally {
       setBusyId(null);
-    }
-  };
-
-  const emailReport = async () => {
-    if (!reportSession) return;
-    setEmailing(true);
-    try {
-      const { data, error } = await invokeEdge('report-manager', { action: 'email', session_id: reportSession });
-      if (error) throw error;
-      toast.success(`Report emailed to ${data?.to ?? 'the student'}`);
-    } catch (e: any) {
-      toast.error(`Email failed: ${e.message ?? e}`);
-    } finally {
-      setEmailing(false);
     }
   };
 
@@ -226,10 +210,22 @@ const AgentPanel: React.FC = () => {
           </div>
         </div>
 
-        {/* Status summary */}
+        {/* Status filters — click a chip to filter the list; click again (or "All") to clear */}
         <div className="mb-4 flex flex-wrap gap-2">
+          <Badge
+            onClick={() => setStatusFilter(null)}
+            className={`cursor-pointer bg-gray-100 text-gray-700 ${statusFilter === null ? 'ring-2 ring-offset-1 ring-assessment-blue' : ''}`}
+          >
+            All: {leads.length}
+          </Badge>
           {Object.entries(STATUS).map(([k, v]) => (
-            <Badge key={k} className={v.cls}>{v.label}: {counts[k] || 0}</Badge>
+            <Badge
+              key={k}
+              onClick={() => setStatusFilter((cur) => (cur === k ? null : k))}
+              className={`cursor-pointer ${v.cls} ${statusFilter === k ? 'ring-2 ring-offset-1 ring-assessment-blue' : ''}`}
+            >
+              {v.label}: {counts[k] || 0}
+            </Badge>
           ))}
         </div>
 
@@ -274,7 +270,14 @@ const AgentPanel: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leads.map((l) => {
+                {leads.filter((l) => !statusFilter || l.status === statusFilter).length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                      No leads with this status. <button className="underline" onClick={() => setStatusFilter(null)}>Show all</button>
+                    </TableCell>
+                  </TableRow>
+                )}
+                {leads.filter((l) => !statusFilter || l.status === statusFilter).map((l) => {
                   const st = STATUS[l.status] ?? { label: l.status, cls: 'bg-gray-100 text-gray-700' };
                   const intent = [l.raw?.intended_program, l.raw?.intended_track].filter(Boolean).join(' · ');
                   return (
@@ -368,11 +371,7 @@ const AgentPanel: React.FC = () => {
           <DialogHeader><DialogTitle>Performance report</DialogTitle></DialogHeader>
           {report && <PerformanceReport report={report} />}
           <DialogFooter className="no-print">
-            <Button variant="outline" onClick={() => window.print()}><Download className="mr-2 h-4 w-4" /> Download</Button>
-            <Button onClick={emailReport} disabled={emailing}>
-              {emailing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
-              Email to student
-            </Button>
+            <Button onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Print</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

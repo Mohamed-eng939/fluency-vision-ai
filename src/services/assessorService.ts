@@ -156,7 +156,9 @@ export const assessorService = {
             full_name,
             email,
             first_language,
-            country_of_residence
+            country_of_residence,
+            country_of_citizenship,
+            date_of_birth
           )
         `)
         .eq('id', sessionId)
