@@ -35,11 +35,24 @@ const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  // Pre-fill from the lead/invite the agent or partner already captured, so the
+  // student doesn't retype their name/email.
+  const prefill = React.useMemo(() => {
+    try {
+      const lead = JSON.parse(sessionStorage.getItem('lead_candidate') || 'null');
+      const inv = JSON.parse(sessionStorage.getItem('invite_candidate') || 'null');
+      const c = lead || inv || {};
+      return { name: c.name || '', email: c.email || '' };
+    } catch {
+      return { name: '', email: '' };
+    }
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      email: '',
+      name: prefill.name,
+      email: prefill.email,
       password: '',
       confirmPassword: '',
     },
