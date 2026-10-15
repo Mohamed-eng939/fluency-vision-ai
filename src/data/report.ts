@@ -95,7 +95,7 @@ export function headerDefaultsFromSession(session: any): Partial<ReportHeader> {
   const age =
     typeof si.age === 'number' && si.age > 0
       ? String(si.age)
-      : ageFromDob(si.dateOfBirth);
+      : ageFromDob(si.dateOfBirth || prof.date_of_birth);
   return {
     date: formatReportDate(),
     name: prof.full_name || si.name || '',

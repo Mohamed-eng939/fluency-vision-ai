@@ -7,6 +7,25 @@ import { kidsPrompts } from '@/data/speaking/kidsPrompts';
 import { teensPrompts } from '@/data/speaking/teensPrompts';
 import type { Track } from '@/data/assessment/tracks';
 
+const LEVEL_ORDER: Record<string, number> = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 };
+
+/**
+ * Order prompts by CEFR level (gradual difficulty), placing each level's
+ * read-aloud item(s) right after that level's free-speaking prompts — so an A1
+ * read-aloud sits among the A1 questions, a B1 read-aloud among the B1s, etc.,
+ * instead of all read-alouds bunched at the very end of the test.
+ */
+const interleaveByLevel = (prompts: SpeakingPrompt[]): SpeakingPrompt[] => {
+  const rank = (p: SpeakingPrompt) => LEVEL_ORDER[(p.cefrLevel || '').toUpperCase()] ?? 99;
+  const levels = [...new Set(prompts.map(rank))].sort((a, b) => a - b);
+  const out: SpeakingPrompt[] = [];
+  for (const lvl of levels) {
+    const atLevel = prompts.filter((p) => rank(p) === lvl);
+    out.push(...atLevel.filter((p) => !p.isReadAloud), ...atLevel.filter((p) => p.isReadAloud));
+  }
+  return out;
+};
+
 export const usePromptManagement = (maxPrompts: number = 38, track: Track = 'adults') => {
   // Adults prompts come from Supabase (with a local fallback). Kids & Teens
   // question banks are authored locally in src/data/speaking.
@@ -17,19 +36,13 @@ export const usePromptManagement = (maxPrompts: number = 38, track: Track = 'adu
     if (fetchedRef.current) return;
     fetchedRef.current = true;
     fetchPromptsFromSupabase().then(prompts => {
-      const speaking = prompts.filter(p => !p.isReadAloud);
-      const readAloud = prompts.filter(p => p.isReadAloud);
-      setLoadedAdultPrompts([...speaking, ...readAloud]);
+      setLoadedAdultPrompts(interleaveByLevel(prompts));
     });
   }, []);
 
   const adultPrompts = loadedAdultPrompts.length > 0
     ? loadedAdultPrompts
-    : (() => {
-        const speaking = mockPrompts.filter(p => !p.isReadAloud);
-        const readAloud = mockPrompts.filter(p => p.isReadAloud);
-        return [...speaking, ...readAloud];
-      })();
+    : interleaveByLevel(mockPrompts);
 
   // Resolve the question bank for a given age-based track.
   const getPromptsForTrack = useCallback((t: Track): SpeakingPrompt[] => {
