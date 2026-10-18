@@ -20,6 +20,7 @@ import AdminPanel from "./pages/admin/AdminPanel";
 import AssessorPanel from "./pages/assessor/AssessorPanel";
 import AgentPanel from "./pages/agent/AgentPanel";
 import InviteEntry from "./pages/InviteEntry";
+import EmbedAssessment from "./pages/EmbedAssessment";
 import LeadStart from "./pages/LeadStart";
 import LeadClaimOnAuth from "./components/LeadClaimOnAuth";
 
@@ -36,6 +37,7 @@ const AppContent: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/t/:token" element={<InviteEntry />} />
+        <Route path="/embed/:token" element={<EmbedAssessment />} />
         <Route path="/start/:token" element={<LeadStart />} />
         <Route path="/admin/*" element={
           <ProtectedRoute allowedRoles={['admin']}>

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Mic, AlertCircle } from 'lucide-react';
+import { inviteSession } from '@/data/assessment/inviteSession';
 
 interface Resolved {
   valid: boolean;
@@ -36,9 +37,14 @@ const InviteEntry: React.FC = () => {
         if (error) throw error;
         setData(res as Resolved);
         if (res?.valid && res.organization) {
-          sessionStorage.setItem('invite_token', token);
-          sessionStorage.setItem('invite_brand', JSON.stringify({ name: res.organization.name, branding: res.organization.branding || {} }));
-          sessionStorage.setItem('invite_candidate', JSON.stringify(res.candidate || {}));
+          const brandRow = { name: res.organization.name, branding: res.organization.branding || {} };
+          // Storage-independent carrier (survives iframes) + best-effort storage.
+          inviteSession.set({ token, candidate: res.candidate || {}, brandRow });
+          try {
+            sessionStorage.setItem('invite_token', token);
+            sessionStorage.setItem('invite_brand', JSON.stringify(brandRow));
+            sessionStorage.setItem('invite_candidate', JSON.stringify(res.candidate || {}));
+          } catch { /* ignore */ }
         }
       } catch {
         setData({ valid: false, reason: 'error' });

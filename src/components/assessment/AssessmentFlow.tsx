@@ -10,6 +10,7 @@ import AssessmentStepRenderer from './AssessmentStepRenderer';
 import AgeGateStep from './AgeGateStep';
 import { useAuth } from '@/contexts/auth';
 import { trackForAge, type Track } from '@/data/assessment/tracks';
+import { inviteSession } from '@/data/assessment/inviteSession';
 
 // Module-level flags to persist across re-renders caused by auth state changes
 let moduleInitializing = false;
@@ -153,26 +154,27 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
   useEffect(() => {
     if (moduleHasInitialized || moduleInitializing) return;
     if (studentInfo || currentStep !== 'entry') return;
-    let raw: string | null = null;
-    try { raw = sessionStorage.getItem('invite_candidate'); } catch { /* ignore */ }
-    if (!raw) return;
-    try {
-      const c = JSON.parse(raw);
-      moduleInitializing = true;
-      isFromProfileForm.current = true;
-      handleStudentInfoSubmit({
-        name: c.name || 'Candidate',
-        email: c.email || '',
-        sessionId: sessionId || `session-${Date.now()}`,
-        countryCode: '',
-        phoneNumber: '',
-      });
-      setShowAssessmentOptions(false);
-      initializeAssessment(false, moduleTrack).finally(() => {
-        moduleInitializing = false;
-        moduleHasInitialized = true;
-      });
-    } catch { /* ignore */ }
+    // Prefer the storage-independent carrier (survives iframes); fall back to
+    // sessionStorage for the plain /t/:token path when storage is available.
+    let c: any = inviteSession.candidate;
+    if (!c) {
+      try { const raw = sessionStorage.getItem('invite_candidate'); if (raw) c = JSON.parse(raw); } catch { /* ignore */ }
+    }
+    if (!c) return;
+    moduleInitializing = true;
+    isFromProfileForm.current = true;
+    handleStudentInfoSubmit({
+      name: c.name || 'Candidate',
+      email: c.email || '',
+      sessionId: sessionId || `session-${Date.now()}`,
+      countryCode: '',
+      phoneNumber: '',
+    });
+    setShowAssessmentOptions(false);
+    initializeAssessment(false, moduleTrack).finally(() => {
+      moduleInitializing = false;
+      moduleHasInitialized = true;
+    });
   }, [currentStep, studentInfo, sessionId, handleStudentInfoSubmit, initializeAssessment]);
 
   // After an auth-driven re-mount, restore the track chosen at the age gate.
@@ -297,11 +299,13 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
         </div>
       )}
 
-      {/* Auth Buttons - Optional, shown for convenience */}
-      {showAssessmentOptions && !user && (
-        <AuthButtons 
-          onLoginClick={handleLoginClick} 
-          onSignUpClick={handleSignUpClick} 
+      {/* Auth Buttons - Optional, shown for convenience. Never shown for a
+          partner-invite/embed candidate: they're already signed in to the
+          partner's system and must not see our login/sign-up. */}
+      {showAssessmentOptions && !user && !inviteSession.token && (
+        <AuthButtons
+          onLoginClick={handleLoginClick}
+          onSignUpClick={handleSignUpClick}
         />
       )}
 
