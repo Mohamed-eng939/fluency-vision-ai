@@ -93,7 +93,11 @@ serve(async (req) => {
 
       const base = Deno.env.get("APP_URL") || "https://english-placement-test.lovable.app";
       return json({
+        // Full-page link (shows a welcome card, then the test).
         link: `${base}/t/${token}`,
+        // Chromeless, login-free link for embedding in an <iframe> inside the
+        // partner's own app (the candidate is already signed in there).
+        embed_link: `${base}/embed/${token}`,
         token: invite.token,
         external_id: invite.external_id,
         status: invite.status,

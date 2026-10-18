@@ -7,6 +7,7 @@ import ProcessingResults from './ProcessingResults';
 import { useSessionManagement } from '@/hooks/assessment/useSessionManagement';
 import { supabase } from '@/integrations/supabase/client';
 import { trackLabel, type Track } from '@/data/assessment/tracks';
+import { inviteSession } from '@/data/assessment/inviteSession';
 
 interface ResultsStepProps {
   result: AssessmentResult | null;
@@ -59,12 +60,15 @@ const ResultsStep: React.FC<ResultsStepProps> = ({
   // finished session back to it so the partner can retrieve the result.
   useEffect(() => {
     if (!result?.sessionId || isProcessing) return;
-    let token: string | null = null;
-    try { token = sessionStorage.getItem('invite_token'); } catch { return; }
+    // Prefer the storage-independent carrier (survives iframes); fall back to
+    // sessionStorage for the plain /t/:token path.
+    let token: string | null = inviteSession.token;
+    if (!token) { try { token = sessionStorage.getItem('invite_token'); } catch { /* ignore */ } }
     if (!token) return;
     supabase.functions
       .invoke('assessment-invite', { body: { action: 'link', token, session_id: result.sessionId } })
       .finally(() => {
+        inviteSession.clear();
         try {
           sessionStorage.removeItem('invite_token');
           sessionStorage.removeItem('invite_brand');

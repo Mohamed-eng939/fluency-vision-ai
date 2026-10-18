@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { OrganizationBrand, DEFAULT_BRAND } from './types';
+import { inviteSession } from '@/data/assessment/inviteSession';
 
 function parseBrand(row: { name: string; branding: any }): OrganizationBrand {
   const b = row.branding ?? {};
@@ -24,16 +25,20 @@ export function useBranding() {
     let cancelled = false;
     const hostname = window.location.hostname;
 
-    // Partner-handoff override: a candidate arriving via /t/:token has the
-    // tenant's brand stashed in sessionStorage — use it for the whole session.
-    try {
-      const stashed = sessionStorage.getItem('invite_brand');
-      if (stashed) {
-        setBrand(parseBrand(JSON.parse(stashed)));
-        setIsLoading(false);
-        return;
-      }
-    } catch { /* ignore */ }
+    // Partner-invite/embed override: use the tenant's brand once an invite
+    // resolves. The in-memory carrier works inside iframes (where sessionStorage
+    // may be blocked); sessionStorage is a best-effort fallback.
+    const applyInvite = (): boolean => {
+      const row = inviteSession.brandRow;
+      if (row) { setBrand(parseBrand(row as any)); setIsLoading(false); return true; }
+      try {
+        const stashed = sessionStorage.getItem('invite_brand');
+        if (stashed) { setBrand(parseBrand(JSON.parse(stashed))); setIsLoading(false); return true; }
+      } catch { /* ignore */ }
+      return false;
+    };
+    const unsub = inviteSession.subscribe(() => { if (!cancelled) applyInvite(); });
+    if (applyInvite()) { return () => { cancelled = true; unsub(); }; }
 
     supabase
       .from('organizations')
@@ -58,7 +63,7 @@ export function useBranding() {
         if (!cancelled) setIsLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => { cancelled = true; unsub(); };
   }, []);
 
   return { brand, isLoading };
