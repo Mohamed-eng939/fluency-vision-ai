@@ -120,6 +120,7 @@ Mint a one-time, branded link for a candidate.
 ```json
 {
   "link": "https://english-placement-test.lovable.app/t/ab12cd34…",
+  "embed_link": "https://english-placement-test.lovable.app/embed/ab12cd34…",
   "token": "ab12cd34…",
   "external_id": "your-candidate-123",
   "status": "issued",
@@ -127,7 +128,33 @@ Mint a one-time, branded link for a candidate.
 }
 ```
 
-Redirect the candidate to `link` (or email it to them).
+You get **two** ways to deliver the test — use whichever fits your product:
+
+| Field | Use it when | What the candidate sees |
+|---|---|---|
+| `link` (`/t/<token>`) | You want to **redirect** (or email) the candidate to a full‑page hosted test. | A short branded welcome card, then the test. |
+| `embed_link` (`/embed/<token>`) | You want to **embed the test inside your own app** (iframe) — e.g. the user is already signed in to your system. | The test only — **no login, no sign‑up, no header** — just your branding. |
+
+### Option A — redirect
+Send the candidate to `link` (redirect or email). Done.
+
+### Option B — embed in an iframe (recommended when the user is already logged into your app)
+Drop `embed_link` into an iframe. The candidate goes **straight into the test** — they are already **identified** by the data you sent at `create`, so there is **no second login** and your tester still sees exactly who took it.
+
+```html
+<iframe
+  src="https://english-placement-test.lovable.app/embed/ab12cd34…"
+  allow="microphone"
+  style="width:100%; height:100%; min-height:640px; border:0"
+  title="English placement test">
+</iframe>
+```
+
+> ⚠️ **Two requirements, or the test can't run inside your page:**
+> 1. **`allow="microphone"`** on the `<iframe>` — the test records the candidate's voice; without mic permission recording fails.
+> 2. If you add a `sandbox` attribute it **must** include `allow-scripts allow-same-origin allow-forms allow-popups` (simplest: don't sandbox it).
+>
+> Serve your page over **HTTPS** — browsers block microphone access on non‑secure origins. When the candidate finishes, the result flows back exactly as in §4 (poll by your `external_id`).
 
 ---
 
@@ -247,9 +274,12 @@ Behind your two API calls, three roles operate the assessment. Knowing them expl
 why results are asynchronous and how access is scoped.
 
 ### Candidate (your end-user)
-- Reaches the test **only** through the one-time branded link you mint (`/t/<token>`).
+- Reaches the test **only** through the one-time branded link you mint — as a full page
+  (`/t/<token>`) or embedded in your own app in an iframe (`/embed/<token>`).
 - No login and no platform account — the token *is* their access, and it carries **your**
-  branding plus the details you passed at `create` (so they never re-register).
+  branding plus the details you passed at `create` (so they never re-register). In the
+  embedded (`/embed/<token>`) flow we show **no login/sign-up at all**, since your user is
+  already authenticated on your side.
 - On finish they see a **thank-you screen** ("results within 24 hours") — never a raw
   score. The result is released only after human review, and only back to **you** via the
   API (and/or emailed to the candidate, if that option is enabled).
@@ -321,6 +351,7 @@ The full partner loop is verified end-to-end against the live backend:
 | Org-admin isolation | ✅ an organization admin sees only their own org's data/users/assessments; other tenants are fully excluded |
 
 *Last verified: 2026-09-06 — data-level integration test against the live project.*
+*Updated 2026-10-18: added the embedded (`/embed/<token>`) delivery option + the `embed_link` response field, and fixed the embedded flow so it no longer shows our login and reliably saves/links the session inside a partner iframe. The iframe + microphone requirements are documented in §3.*
 
 ---
 
