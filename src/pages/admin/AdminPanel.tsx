@@ -108,8 +108,8 @@ const AdminPanel: React.FC = () => {
       if (error) throw error;
       const flat = (data ?? []).map((s: any) => ({
         id: s.id,
-        name: s.profiles?.full_name || s.student_info?.name || 'Anonymous',
-        email: s.profiles?.email || s.student_info?.email || '',
+        name: s.student_info?.name?.trim() || s.profiles?.full_name || 'Anonymous',
+        email: s.student_info?.email?.trim() || s.profiles?.email || '',
         type: s.session_type,
         status: s.status,
         cefr: s.overall_cefr_level || '',
