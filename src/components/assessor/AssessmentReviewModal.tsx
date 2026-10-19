@@ -518,7 +518,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
                 <div>
                   <Label className="text-sm font-medium">Name</Label>
                   <p className="text-sm text-muted-foreground">
-                    {session.profiles?.full_name || session.student_info?.name || 'Anonymous User'}
+                    {session.student_info?.name?.trim() || session.profiles?.full_name || 'Anonymous User'}
                   </p>
                 </div>
                 <div>

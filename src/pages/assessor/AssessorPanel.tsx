@@ -222,7 +222,7 @@ const AssessorPanel: React.FC = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <User className="h-4 w-4 text-gray-500" />
                           <span className="font-medium">
-                            {assessment.profiles?.full_name || assessment.student_info?.name || 'Anonymous User'}
+                            {assessment.student_info?.name?.trim() || assessment.profiles?.full_name || 'Anonymous User'}
                           </span>
                           <Badge variant="secondary" className="text-xs">
                             {assessment.session_type}
@@ -299,7 +299,7 @@ const AssessorPanel: React.FC = () => {
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <User className="h-4 w-4 text-gray-500" />
                           <span className="font-medium">
-                            {assessment.profiles?.full_name || assessment.student_info?.name || 'Anonymous User'}
+                            {assessment.student_info?.name?.trim() || assessment.profiles?.full_name || 'Anonymous User'}
                           </span>
                           <Badge variant="secondary" className="text-xs">{assessment.session_type}</Badge>
                           <Badge className={assessment.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>

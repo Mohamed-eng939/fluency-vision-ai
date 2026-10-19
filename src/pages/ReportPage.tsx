@@ -94,8 +94,8 @@ const ReportPage: React.FC = () => {
 
         setReport({
           id: session.id,
-          name: profiles?.full_name || studentInfo?.name || 'Anonymous User',
-          email: profiles?.email || studentInfo?.email || 'N/A',
+          name: studentInfo?.name?.trim() || profiles?.full_name || 'Anonymous User',
+          email: studentInfo?.email?.trim() || profiles?.email || 'N/A',
           date: new Date(session.created_at).toLocaleDateString('en-US', {
             year: 'numeric', month: 'long', day: 'numeric',
           }),
