@@ -309,7 +309,9 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
               rReview?.notes ? `Response note: ${rReview.notes}` : null
             ].filter(Boolean).join('\n') || null,
             organization_id: (assessmentDetails.session as any).organization_id || null,
-            quality_rating: humanCefr ? cefrToNumber(humanCefr as CEFRLevel) : null,
+            // CEFR ordinal 0..6 (Pre-A1..C2); clamp defensively so one odd grade
+            // can never fail the whole training_data batch (the DB CHECK allows 0..6).
+            quality_rating: humanCefr ? Math.max(0, Math.min(6, cefrToNumber(humanCefr as CEFRLevel))) : null,
             scores: {
               system_cefr: systemCefr || null,
               human_cefr: humanCefr || null,
