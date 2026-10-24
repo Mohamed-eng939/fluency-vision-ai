@@ -124,11 +124,19 @@ serve(async (req) => {
     }
 
     if (action === "result") {
-      const { external_id, token } = body;
-      if (!external_id && !token) return json({ error: "Provide external_id or token" }, 400);
-      let q = admin.from("assessment_invites").select("*").eq("organization_id", org.id);
-      q = token ? q.eq("token", token) : q.eq("external_id", external_id);
-      const { data: invite } = await q.order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { external_id, token, code } = body;
+      const ref = external_id ?? code ?? null;
+      if (!ref && !token) return json({ error: "Provide code (or external_id) or token" }, 400);
+      // Look up the invite safely (no string interpolation into filters): by token,
+      // else by external_id, falling back to candidate_code.
+      const base = () => admin.from("assessment_invites").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(1);
+      let invite: any = null;
+      if (token) {
+        ({ data: invite } = await base().eq("token", token).maybeSingle());
+      } else {
+        ({ data: invite } = await base().eq("external_id", ref).maybeSingle());
+        if (!invite) ({ data: invite } = await base().eq("candidate_code", ref).maybeSingle());
+      }
       if (!invite) return json({ error: "No invite found for that reference" }, 404);
 
       if (!invite.session_id) {
@@ -136,7 +144,7 @@ serve(async (req) => {
       }
       const { data: session } = await admin
         .from("assessment_sessions")
-        .select("id, status, overall_cefr_level, reviewed_at")
+        .select("id, status, overall_cefr_level, overall_score, program, program_subtrack, upedia_level, reviewed_at")
         .eq("id", invite.session_id)
         .single();
       const finalized = session && (session.status === "approved" || session.status === "rejected");
@@ -154,13 +162,32 @@ serve(async (req) => {
       return json({
         external_id: invite.external_id,
         status: "completed",
+        // Echo who this result belongs to so the partner can match it to their
+        // own student record by `code` (or `external_id`).
+        candidate: {
+          name: invite.candidate_name ?? null,
+          code: invite.candidate_code ?? invite.external_id ?? null,
+          external_id: invite.external_id ?? null,
+          age: invite.candidate_age ?? null,
+        },
         result: {
+          // Human-reviewed CEFR level (falls back to the assessor's final level).
           cefr: session.overall_cefr_level || os.final_cefr_level || null,
+          overall_score: session.overall_score ?? null,
           criteria: {
             grammar: os.grammar_cefr ?? null,
             fluency: os.fluency_cefr ?? null,
             vocabulary: os.vocabulary_cefr ?? null,
           },
+          // Upedia program placement decided by the assessor at review time —
+          // this is what Upedia enrols the student into.
+          upedia: {
+            program: session.program ?? null,
+            subtrack: session.program_subtrack ?? null,
+            level: session.upedia_level ?? null,
+          },
+          decision: review?.review_status ?? session.status ?? null,
+          is_overridden: os.is_overridden ?? null,
           feedback: review?.assessor_feedback ?? null,
           recommendation: review?.recommendation ?? null,
           reviewed_at: session.reviewed_at ?? null,
