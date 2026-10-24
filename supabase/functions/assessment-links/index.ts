@@ -65,6 +65,20 @@ serve(async (req) => {
         return json({ error: "Assessment quota exceeded for this plan." }, 402);
       }
       const candidate = body.candidate || {};
+      // A candidate is identified by `code` (the partner's own student code).
+      // `external_id` stays as a backward-compatible alias — either one works for
+      // the later `result` lookup. `code` and `name` are the only required fields.
+      const code = candidate.code ?? candidate.external_id ?? body.external_id ?? null;
+      const name = candidate.name ?? null;
+      if (!code || !name) {
+        return json({ error: "candidate.code and candidate.name are required." }, 400);
+      }
+      // Optional age: when the partner sends it, the test skips the age question
+      // and uses this age to pick the track (kids / teens / adults). When it is
+      // omitted, the candidate is asked for their age at the start of the test.
+      const ageNum = Number(candidate.age);
+      const candidate_age = Number.isFinite(ageNum) && ageNum > 0 ? Math.floor(ageNum) : null;
+
       const token = randomToken();
       const expiresInHours = Number(body.expires_in_hours) > 0 ? Number(body.expires_in_hours) : 168; // default 7 days
       const expires_at = new Date(Date.now() + expiresInHours * 3600 * 1000).toISOString();
@@ -74,16 +88,18 @@ serve(async (req) => {
         .insert({
           organization_id: org.id,
           token,
-          external_id: candidate.external_id ?? body.external_id ?? null,
-          candidate_name: candidate.name ?? null,
+          external_id: candidate.external_id ?? code,
+          candidate_code: code,
+          candidate_name: name,
           candidate_email: candidate.email ?? null,
+          candidate_age,
           test_type: body.test_type || "speaking",
           webhook_url: body.webhook_url ?? null,
           redirect_url: body.redirect_url ?? null,
           expires_at,
           created_by: keyRow.id,
         })
-        .select("token, external_id, expires_at, status")
+        .select("token, external_id, candidate_code, candidate_age, expires_at, status")
         .single();
       if (error) return json({ error: error.message }, 500);
 
@@ -99,7 +115,9 @@ serve(async (req) => {
         // partner's own app (the candidate is already signed in there).
         embed_link: `${base}/embed/${token}`,
         token: invite.token,
+        code: invite.candidate_code,
         external_id: invite.external_id,
+        age: invite.candidate_age,
         status: invite.status,
         expires_at: invite.expires_at,
       });

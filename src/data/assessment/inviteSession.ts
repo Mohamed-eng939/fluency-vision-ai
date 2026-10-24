@@ -6,7 +6,7 @@
 // partner-supplied candidate data, and the tenant's brand row.
 
 export type InviteBrandRow = { name: string; branding: any } | null;
-export type InviteCandidate = { name?: string; email?: string; external_id?: string } | null;
+export type InviteCandidate = { name?: string; email?: string; external_id?: string; code?: string; age?: number } | null;
 
 let _token: string | null = null;
 let _candidate: InviteCandidate = null;
