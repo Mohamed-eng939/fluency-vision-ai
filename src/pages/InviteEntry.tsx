@@ -11,7 +11,7 @@ interface Resolved {
   reason?: string;
   already_completed?: boolean;
   organization?: { id: string; name: string; branding: any };
-  candidate?: { name: string | null; email: string | null };
+  candidate?: { name: string | null; email: string | null; age?: number | null; code?: string | null; external_id?: string | null };
   test_type?: string;
 }
 

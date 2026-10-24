@@ -31,7 +31,7 @@ serve(async (req) => {
       if (!token) return json({ error: "token required" }, 400);
       const { data: invite } = await admin
         .from("assessment_invites")
-        .select("id, organization_id, candidate_name, candidate_email, test_type, status, expires_at, redirect_url")
+        .select("id, organization_id, candidate_name, candidate_email, candidate_age, candidate_code, external_id, test_type, status, expires_at, redirect_url")
         .eq("token", token)
         .maybeSingle();
       if (!invite) return json({ valid: false, reason: "not_found" });
@@ -52,7 +52,15 @@ serve(async (req) => {
         valid: true,
         already_completed: invite.status === "completed",
         organization: { id: org?.id, name: org?.name, branding: org?.branding || {} },
-        candidate: { name: invite.candidate_name, email: invite.candidate_email },
+        candidate: {
+          name: invite.candidate_name,
+          email: invite.candidate_email,
+          // Age is optional: present only when the partner supplied it. The flow
+          // skips the age question when this is set, and shows it when it is null.
+          age: invite.candidate_age ?? null,
+          code: invite.candidate_code ?? invite.external_id ?? null,
+          external_id: invite.external_id ?? null,
+        },
         test_type: invite.test_type,
         redirect_url: invite.redirect_url,
       });

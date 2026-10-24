@@ -163,19 +163,35 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onTakeFullAssessment })
     if (!c) return;
     moduleInitializing = true;
     isFromProfileForm.current = true;
+
+    // When the partner supplied the candidate's age, pick the track from it and
+    // skip the age question entirely. When no age was sent, leave the age gate to
+    // run as usual so the candidate chooses it at the start of the test.
+    const ageNum = Number(c.age);
+    const hasAge = Number.isFinite(ageNum) && ageNum > 0;
+    const chosen: Track = hasAge ? trackForAge(ageNum) : moduleTrack;
+    if (hasAge) {
+      moduleAge = ageNum;
+      moduleTrack = chosen;
+      moduleAgeCaptured = true;
+      setTrack(chosen);
+      setAgeCaptured(true);
+    }
+
     handleStudentInfoSubmit({
       name: c.name || 'Candidate',
       email: c.email || '',
       sessionId: sessionId || `session-${Date.now()}`,
       countryCode: '',
       phoneNumber: '',
+      ...(hasAge ? { age: ageNum, track: chosen } : {}),
     });
     setShowAssessmentOptions(false);
-    initializeAssessment(false, moduleTrack).finally(() => {
+    initializeAssessment(false, chosen).finally(() => {
       moduleInitializing = false;
       moduleHasInitialized = true;
     });
-  }, [currentStep, studentInfo, sessionId, handleStudentInfoSubmit, initializeAssessment]);
+  }, [currentStep, studentInfo, sessionId, handleStudentInfoSubmit, initializeAssessment, setTrack]);
 
   // After an auth-driven re-mount, restore the track chosen at the age gate.
   useEffect(() => {
