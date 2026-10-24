@@ -271,6 +271,7 @@ const AssessmentReviewModal: React.FC<AssessmentReviewModalProps> = ({
           program,
           program_subtrack: subtrack || null,
           upedia_level: levelCode || null,
+          has_score_override: isOverridden,
         })
         .eq('id', assessmentDetails.session.id);
 

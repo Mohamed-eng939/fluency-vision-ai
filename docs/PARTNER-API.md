@@ -97,9 +97,10 @@ Mint a one-time, branded link for a candidate.
 {
   "action": "create",
   "candidate": {
-    "name": "Sara Ali",
-    "email": "sara@example.com",
-    "external_id": "your-candidate-123"
+    "code": "st-123456",
+    "name": "hamza",
+    "age": "15",
+    "external_id": "st-123456"
   },
   "test_type": "speaking",
   "expires_in_hours": 168
@@ -109,9 +110,11 @@ Mint a one-time, branded link for a candidate.
 | Field | Required | Notes |
 |---|---|---|
 | `action` | ✅ | `"create"` |
-| `candidate.name` | – | Shown to the candidate (“Hi Sara”). |
-| `candidate.email` | – | The address results relate to. |
-| `candidate.external_id` | ★ recommended | **Your** id for this candidate/attempt — you use it to fetch the result later. |
+| `candidate.code` | ✅ | **Your** id for this candidate/attempt — you use it to fetch the result later. (`external_id` is accepted as an alias.) |
+| `candidate.name` | ✅ | Shown to the candidate (“Hi Hamza”) and to our assessor. |
+| `candidate.age` | – | **If you send it, the test skips the age question** and places the student automatically (kids / teens / adults). If you omit it, the candidate is asked for their age at the start of the test. |
+| `candidate.email` | – | The address results relate to (optional). |
+| `candidate.external_id` | – | Back-compatible alias of `code`. |
 | `test_type` | – | Defaults to `"speaking"`. |
 | `expires_in_hours` | – | Link lifetime. Default `168` (7 days). |
 
@@ -122,7 +125,9 @@ Mint a one-time, branded link for a candidate.
   "link": "https://english-placement-test.lovable.app/t/ab12cd34…",
   "embed_link": "https://english-placement-test.lovable.app/embed/ab12cd34…",
   "token": "ab12cd34…",
-  "external_id": "your-candidate-123",
+  "code": "st-123456",
+  "external_id": "st-123456",
+  "age": 15,
   "status": "issued",
   "expires_at": "2026-09-02T10:00:00.000Z"
 }
@@ -182,17 +187,37 @@ Poll once the candidate has finished and the result has been reviewed.
 
 ```json
 {
-  "external_id": "your-candidate-123",
+  "external_id": "st-123456",
   "status": "completed",
+  "candidate": {
+    "name": "hamza",
+    "code": "st-123456",
+    "external_id": "st-123456",
+    "age": 15
+  },
   "result": {
     "cefr": "B2",
+    "overall_score": 78,
     "criteria": { "grammar": "B2", "fluency": "B1", "vocabulary": "B2" },
+    "upedia": { "program": "General English", "subtrack": "Private", "level": "3A" },
+    "decision": "approved",
+    "is_overridden": true,
     "feedback": "Confident speaker; work on connected speech.",
     "recommendation": "General English — upper intermediate",
     "reviewed_at": "2026-08-27T09:12:00.000Z"
   }
 }
 ```
+
+| Field | Meaning |
+|---|---|
+| `result.cefr` | The human-reviewed CEFR level (the assessor's final decision). |
+| `result.overall_score` | Overall score out of 100. |
+| `result.criteria` | Per-skill CEFR: grammar, fluency, vocabulary. |
+| `result.upedia` | **Upedia program placement** chosen by the assessor — `program`, `subtrack`, and `level` are what you enrol the student into. |
+| `result.decision` | `approved` or `rejected`. |
+| `result.is_overridden` | `true` if the assessor changed the system's auto-level. |
+| `candidate` | Echo of who this result belongs to, so you can match it to your own student by `code`. |
 
 Poll every few minutes (or hourly) until `status` is `completed`.
 
@@ -239,17 +264,18 @@ const created = await fetch(`${BASE}/assessment-links`, {
   headers,
   body: JSON.stringify({
     action: "create",
-    candidate: { name: "Sara Ali", email: "sara@example.com", external_id: "cand-123" },
+    // `age` is optional — include it to skip the age question in the test.
+    candidate: { code: "cand-123", name: "Sara Ali", age: 15 },
   }),
 }).then(r => r.json());
 
-// -> redirect the candidate to created.link
+// -> redirect the candidate to created.link (or iframe created.embed_link)
 
 // 2) later, fetch the result
 const res = await fetch(`${BASE}/assessment-links`, {
   method: "POST",
   headers,
-  body: JSON.stringify({ action: "result", external_id: "cand-123" }),
+  body: JSON.stringify({ action: "result", code: "cand-123" }),
 }).then(r => r.json());
 
 if (res.status === "completed") {
