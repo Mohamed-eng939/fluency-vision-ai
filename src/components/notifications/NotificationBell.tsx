@@ -80,9 +80,13 @@ const NotificationBell: React.FC = () => {
 
   const load = useCallback(async () => {
     if (!user) return;
+    // Scope to the current user explicitly. RLS lets a platform admin read ALL
+    // notifications, so without this filter an admin's bell would show rows
+    // addressed to testers and agents, not just their own.
     const { data } = await supabase
       .from('notifications')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(30);
     const rows = (data as Notification[]) ?? [];
@@ -125,9 +129,10 @@ const NotificationBell: React.FC = () => {
   };
 
   const markOne = async (id: string) => {
+    if (!user) return;
     const now = new Date().toISOString();
     setItems((list) => list.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n)));
-    await supabase.from('notifications').update({ read_at: now }).eq('id', id).is('read_at', null);
+    await supabase.from('notifications').update({ read_at: now }).eq('id', id).eq('user_id', user.id).is('read_at', null);
   };
 
   if (!user) return null;
