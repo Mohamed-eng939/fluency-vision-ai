@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { inviteSession } from '@/data/assessment/inviteSession';
 import AssessmentFlow from '@/components/assessment/AssessmentFlow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, AlertCircle, ExternalLink } from 'lucide-react';
 
 /**
  * Chromeless, login-free assessment surface for partner embedding (iframe).
@@ -21,6 +22,12 @@ const EmbedAssessment: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const [state, setState] = useState<'loading' | 'ready' | 'invalid'>('loading');
   const [reason, setReason] = useState('This assessment link is not valid.');
+
+  // A microphone (and secure crypto) only work in a "secure context". An HTTPS
+  // iframe inside a NON-secure (http://) parent page is itself not secure, so
+  // recording is blocked here. Rather than fail silently, offer to re-open the
+  // test as its own top-level HTTPS tab, where it IS a secure context.
+  const insecureEmbed = typeof window !== 'undefined' && window.isSecureContext === false;
 
   useEffect(() => {
     if (!token) { setState('invalid'); return; }
@@ -58,6 +65,31 @@ const EmbedAssessment: React.FC = () => {
     })();
     return () => { cancelled = true; };
   }, [token]);
+
+  if (insecureEmbed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <ExternalLink className="mx-auto mb-2 h-10 w-10 text-primary" />
+            <CardTitle>Open the test in a new tab</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center text-muted-foreground space-y-4">
+            <p>
+              Your microphone can't be used while the test is embedded on a non‑secure
+              (http://) page. Open it in its own tab to continue — your details carry over
+              automatically.
+            </p>
+            <Button asChild>
+              <a href={window.location.href} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="mr-2 h-4 w-4" /> Open the test in a new tab
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (state === 'loading') {
     return (
