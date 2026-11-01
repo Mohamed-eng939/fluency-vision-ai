@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { safeRandomUUID } from '@/utils/uuid';
 import { supabase, SUPABASE_PROJECT_URL } from '@/integrations/supabase/client';
 import { AssessmentResult, SpeakingPrompt } from '@/types/assessment';
 import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
@@ -30,7 +31,7 @@ export const useSupabaseStorage = () => {
         },
         body: JSON.stringify({
           sessionId,
-          promptId: prompt.id || crypto.randomUUID(),
+          promptId: prompt.id || safeRandomUUID(),
           promptOrder,
           userResponse: result.transcript,
           transcript,

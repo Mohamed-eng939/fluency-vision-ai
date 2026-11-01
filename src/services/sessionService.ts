@@ -1,5 +1,6 @@
 import { supabase, SUPABASE_PROJECT_URL } from '@/integrations/supabase/client';
 import { normalizeCEFRForDatabase } from '@/utils/cefrNormalization';
+import { safeRandomUUID } from '@/utils/uuid';
 
 export interface SessionData {
   sessionId: string;
@@ -128,7 +129,7 @@ async function createAnonymousSession(withEmail: boolean): Promise<SessionRespon
   } catch (error: any) {
     console.error('💥 [sessionService] Anonymous session fallback failed:', error);
     // Last resort - return a client-side session ID
-    const fallbackId = crypto.randomUUID();
+    const fallbackId = safeRandomUUID();
     return {
       success: true,
       sessionId: fallbackId,

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { sessionService } from '@/services/sessionService';
+import { safeRandomUUID } from '@/utils/uuid';
 import { useSupabaseStorage } from './useSupabaseStorage';
 import { suggestedTrackForResult, trackLabel, TRACKS, type Track } from '@/data/assessment/tracks';
 
@@ -27,7 +28,7 @@ export const useSessionManagement = () => {
       } else {
         console.error('❌ [useSessionManagement] Failed to initialize session:', response.error);
         // Generate proper UUID fallback
-        const fallbackId = crypto.randomUUID();
+        const fallbackId = safeRandomUUID();
         setSessionId(fallbackId);
         setEmailResults(withEmail);
         return fallbackId;
@@ -35,7 +36,7 @@ export const useSessionManagement = () => {
     } catch (error) {
       console.error('💥 [useSessionManagement] Exception during session initialization:', error);
       // Generate proper UUID fallback
-      const fallbackId = crypto.randomUUID();
+      const fallbackId = safeRandomUUID();
       setSessionId(fallbackId);
       setEmailResults(withEmail);
       return fallbackId;
@@ -45,7 +46,7 @@ export const useSessionManagement = () => {
   // Store assessment data
   const storeAssessmentData = async (studentInfo: any, promptHistory: any[], finalResult: any) => {
     // Use the sessionId from studentInfo if our sessionId is empty or invalid
-    const effectiveSessionId = sessionId || studentInfo?.sessionId || crypto.randomUUID();
+    const effectiveSessionId = sessionId || studentInfo?.sessionId || safeRandomUUID();
 
     // Record the age-based track with the result, and — if the student scored
     // above their track's ceiling (e.g. a teen above A2) — flag the track a

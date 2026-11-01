@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { safeRandomUUID } from '@/utils/uuid';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeEdge } from '@/utils/edge/invokeEdge';
 import { useAuth } from '@/contexts/auth';
@@ -121,7 +122,7 @@ const AgentPanel: React.FC = () => {
         notes: form.notes.trim() || null,
         source: 'manual',
         status: 'new',
-        token: crypto.randomUUID(),
+        token: safeRandomUUID(),
         raw: { intended_program: form.program || null, intended_track: form.track || null },
       });
       if (error) throw error;
@@ -157,7 +158,7 @@ const AgentPanel: React.FC = () => {
     try {
       let token = lead.token;
       const patch: Record<string, unknown> = {};
-      if (!token) { token = crypto.randomUUID(); patch.token = token; }
+      if (!token) { token = safeRandomUUID(); patch.token = token; }
       if (lead.status === 'new') patch.status = 'link_sent';
       if (Object.keys(patch).length) {
         patch.updated_at = new Date().toISOString();

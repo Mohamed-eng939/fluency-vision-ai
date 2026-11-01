@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { safeRandomUUID } from '@/utils/uuid';
 import { supabase } from '@/integrations/supabase/client';
 import { ensureAuthSession } from '@/services/sessionService';
 import { SpeakingPrompt, AssessmentResult } from '@/types/assessment';
@@ -36,7 +37,7 @@ export const useSupabaseStorageResponse = () => {
         body: {
           action: 'save-response',
           sessionId,
-          promptId: crypto.randomUUID(), // Always generate a valid UUID
+          promptId: safeRandomUUID(), // Always generate a valid UUID
           promptIdentifier: prompt.id || `Q${promptOrder}`, // Store original ID separately
           promptOrder,
           userResponse: transcript || '',
@@ -92,7 +93,7 @@ export const useSupabaseStorageResponse = () => {
         .from('assessment_responses')
         .insert({
           session_id: sessionId,
-          prompt_id: crypto.randomUUID(), // Always generate a valid UUID
+          prompt_id: safeRandomUUID(), // Always generate a valid UUID
           prompt_identifier: prompt.id || `Q${promptOrder}`, // Store original ID separately
           prompt_order: promptOrder,
           user_response: transcript || '',
